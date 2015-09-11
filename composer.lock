@@ -1,0 +1,93 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "hash": "8e59265c16bea0429a0786a60159b58e",
+    "packages": [],
+    "packages-dev": [
+        {
+            "name": "simpletest/simpletest",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/simpletest/simpletest.git",
+                "reference": "df5a9759233d8265e516dd24841705cd8bec0d19"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/simpletest/simpletest/zipball/df5a9759233d8265e516dd24841705cd8bec0d19",
+                "reference": "df5a9759233d8265e516dd24841705cd8bec0d19",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.0.5"
+            },
+            "replace": {
+                "lastcraft/simpletest": "self.version",
+                "vierbergenlars/simpletest": "self.version"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "."
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "Lars Vierbergen",
+                    "email": "vierbergenlars@gmail.com"
+                },
+                {
+                    "name": "Lachlan Donald",
+                    "email": "lachlan@ljd.cc"
+                },
+                {
+                    "name": "Marcus Baker",
+                    "email": "marcus@lastcraft.com",
+                    "role": "Original project lead"
+                },
+                {
+                    "name": "Jason Sweat",
+                    "role": "Original developer"
+                },
+                {
+                    "name": "Travis Swicegood",
+                    "role": "Original developer"
+                },
+                {
+                    "name": "Perrick Penet",
+                    "role": "Original developer"
+                },
+                {
+                    "name": "Edward Z. Yang",
+                    "role": "Original developer"
+                }
+            ],
+            "description": "Unit testing, mock objects and web testing framework for PHP built around test cases.",
+            "homepage": "http://simpletest.org/",
+            "keywords": [
+                "SimpleTest",
+                "code-coverage",
+                "selenium",
+                "testing",
+                "unit-test"
+            ],
+            "time": "2015-08-02 10:59:14"
+        }
+    ],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "simpletest/simpletest": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}

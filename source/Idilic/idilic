@@ -1,0 +1,40 @@
+#!/usr/bin/env php
+<?php
+chdir(dirname(__FILE__));
+
+$composer = require '../../../../project/SeanMorris/Ids/init.php';
+
+use \SeanMorris\Ids\Path;
+use \SeanMorris\Ids\Router;
+
+use \SeanMorris\Ids\Idilic\Route\RootRoute;
+
+foreach($argv as $arg)
+{
+	if(!preg_match('/^--?/', $arg))
+	{
+		$args[] = $arg;
+	}
+}
+
+array_shift($args);
+
+$request = new \SeanMorris\Ids\Request([
+	'path' => $path = new Path(...$args)
+]);
+$routes = new RootRoute;
+$router = new Router($request, $routes);
+$router->contextSet('composer', $composer);
+
+$res = $router->route();
+
+if(!is_scalar($res) && $res !==  null)
+{
+	print json_encode($res, JSON_PRETTY_PRINT);
+}
+else
+{
+	print $res;
+}
+
+print PHP_EOL;
