@@ -3,7 +3,15 @@ $start = microtime(true);
 
 define('IDS_ROOT', dirname(__FILE__) . '/');
 define('IDS_ASSET_ROOT', dirname(IDS_ROOT) . '/asset/');
-define('IDS_VENDOR_ROOT', dirname(IDS_ROOT) . '/vendor/');
+$internalVendorDir = dirname(IDS_ROOT) . '/vendor/';
+if(file_exists($internalVendorDir))
+{
+	define('IDS_VENDOR_ROOT', dirname(IDS_ROOT) . '/vendor/');	
+}
+else
+{
+	define('IDS_VENDOR_ROOT', dirname(dirname(dirname(IDS_ROOT))) . '/vendor/');
+}
 define('IDS_PUBLIC_ROOT', dirname(IDS_ROOT) . '/public/');
 define('IDS_PUBLIC_DYNAMIC', 'Static/Dynamic/');
 define('IDS_PRIVATE_DYNAMIC', 'Static/Private/');
