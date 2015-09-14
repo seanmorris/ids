@@ -1,1 +1,4 @@
+!./local
+!./local/sites
 ./local/*
+./local/sites/*

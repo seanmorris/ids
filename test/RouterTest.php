@@ -12,6 +12,9 @@ class RouterTest extends \UnitTestCase
 			'/foo' => 'subindex',
 			'/foo/index' => 'subindex',
 			'/foo/more' => 'more stuff',
+			'/bar' => 'subindex',
+			'/bar/index' => 'subindex',
+			'/bar/more' => 'more stuff',
 		];
 
 		foreach($urisToValues as $uri => $value)

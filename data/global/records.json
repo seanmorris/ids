@@ -1,0 +1,20 @@
+{
+	"Foozle": [
+		{
+			"id": 1,
+			"class": "SeanMorris\\Ids\\Test\\Foozle",
+			"value": "blahBlahBlah"
+		},
+		{
+			"id": 2,
+			"class": "SeanMorris\\Ids\\Test\\Foobar",
+			"value": "is FOOBAR!"
+		},
+	],
+	"Foobar": [
+		{
+			"id": 2,
+			"barValue": "BAR"
+		}
+	]
+}

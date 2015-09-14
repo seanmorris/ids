@@ -1,0 +1,15 @@
+{
+	"entrypoint" : "SeanMorris\\Ids\\Test\\Route\\RootRoute"
+	, "devmode" : true
+	, "databases" : {
+		"main" : {
+			"connection" : "mysql:dbname=newninja_test;host=localhost;"
+			, "username" : ""
+			, "password" : ""
+		}
+	}
+	, "clearLogs": false
+	, "logLevel": "query"
+	, "logPackages": {
+	}
+}
