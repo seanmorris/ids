@@ -10,7 +10,7 @@ if(file_exists($internalVendorDir))
 }
 else
 {
-	define('IDS_VENDOR_ROOT', dirname(dirname(dirname(IDS_ROOT))));
+	define('IDS_VENDOR_ROOT', dirname(dirname(dirname(IDS_ROOT))) . '/');
 }
 
 define('IDS_PUBLIC_ROOT', dirname(IDS_ROOT) . '/public/');
