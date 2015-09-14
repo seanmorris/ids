@@ -48,7 +48,7 @@ class Settings
 			$package = Package::get('SeanMorris\Ids');
 
 			$settingsFile = $package->localDir()
-				. 'Sites/'
+				. 'sites/'
 				. $hostname
 				. '.json';
 

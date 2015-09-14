@@ -38,8 +38,16 @@ class Package
 
 	protected function __construct($package)
 	{
-		$this->folder = str_replace('\\', '/', $package) . '/';
-		$this->packageName = static::name($package);
+		if(class_exists($package . '\Package'))
+		{
+			$reflection = new \ReflectionClass($package . '\Package');
+			$classFile = $reflection->getFileName();
+			$this->folder = dirname(dirname($classFile)) . '/';
+		}
+		else
+		{
+			throw new \Exception('No IDS Package defined for ' . $package);
+		}
 	}
 
 	public static function listPackages(\Composer\Autoload\ClassLoader $composer)
@@ -90,19 +98,9 @@ class Package
 		return str_replace('/', '\\', $package);
 	}
 
-	public function packageDir(\Composer\Autoload\ClassLoader $composer)
+	public function packageDir()
 	{
-		$directories = array_merge(...array_values($composer->getPrefixes()));
-
-		foreach($directories as $directory)
-		{
-			$packageDir = $directory . '/' . $this->folder;
-
-			if(file_exists($packageDir))
-			{
-				return $packageDir;
-			}
-		}
+		return $this->folder;
 
 		return false;
 	}
@@ -120,25 +118,25 @@ class Package
 	public function assetDir()
 	{
 		// Todo: Use site settings to locate asset directory
-		return IDS_ASSET_ROOT . $this->folder;
+		return $this->folder . 'asset/';
 	}
 
 	public function publicDir()
 	{
 		// Todo: Use site settings to locate public directory
-		return IDS_PUBLIC_ROOT . $this->folder;
+		return $this->folder . 'public';;
 	}
 
 	public function globalDir()
 	{
 		// Todo: Use site settings to locate global directory
-		return IDS_GLOBAL_DATA_ROOT . $this->folder;
+		return $this->packageDir() . 'data/global/';
 	}
 
 	public function localDir()
 	{
 		// Todo: Use site settings to locate local directory
-		return IDS_LOCAL_DATA_ROOT . $this->folder;
+		return $this->packageDir() . 'data/local/';
 	}
 
 	public function assetManager()
@@ -368,6 +366,8 @@ class Package
 		{
 			$schema->revisions = new \StdClass;
 		}
+
+		// var_dump($schema, $changes);
 
 		if($changeCount)
 		{
@@ -710,6 +710,11 @@ class Package
 				}
 				else
 				{
+					if(!isset($exportTables->$table->keys))
+					{
+						continue;
+					}
+					
 					foreach($exportTables->$table->fields as $field)
 					{
 						$queries[] = sprintf(
@@ -869,5 +874,15 @@ class Package
 				$model->create();
 			}
 		}
+	}
+
+	public static function tables()
+	{
+		return static::$tables;
+	}
+
+	public static function setTables($tables)
+	{
+		static::$tables = $tables;
 	}
 }

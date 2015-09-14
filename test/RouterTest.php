@@ -1,8 +1,5 @@
 <?php
 namespace SeanMorris\Ids\Test;
-chdir(dirname(__FILE__));
-$composer = require '../source/init.php';
-
 class RouterTest extends \UnitTestCase
 {
 	public function testRouting()
@@ -23,46 +20,19 @@ class RouterTest extends \UnitTestCase
 				'uri' => $uri
 			]);
 
-			$routes = new TestRoute;
+			$routes = new \SeanMorris\Ids\Test\Route\RootRoute;
 			$router = new \SeanMorris\Ids\Router($request, $routes);
 			$response = $router->route();
 
-			var_dump($uri);
-
-			$this->assertEqual($response, $value);
+			$this->assertEqual(
+				$response
+				, $value
+				, sprintf(
+					"Unexpected response for %s\n%s"
+					, $uri
+					, $response
+				)
+			);
 		}
 	}
 }
-
-class TestRoute implements \SeanMorris\Ids\Routable
-{
-	public
-		$routes = [
-			'foo' => 'SeanMorris\Ids\Test\OtherTestRoute'
-		];
- 	function index($router)
-	{
-		return 'index';
-	}
-
-	function otherPage($router)
-	{
-		return 'not index';
-	}
-}
-
-class OtherTestRoute implements \SeanMorris\Ids\Routable
-{
-	function index($router)
-	{
-		return 'subindex';
-	}
-
-	function more($router)
-	{
-		return 'more stuff';
-	}
-}
-
-$test = new RouterTest('Testing Unit Test');
-$test->run(new \TextReporter());

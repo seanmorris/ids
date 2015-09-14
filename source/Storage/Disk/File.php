@@ -14,11 +14,6 @@ class File
 	{
 		$this->name = $fileName;
 		$this->originalName = $originalName;
-		
-		if($this->check())
-		{
-			// $this->content = $this->slurp();
-		}
 	}
 
 	public function check()
@@ -36,8 +31,21 @@ class File
 		return $this->originalName;
 	}
 
-	public function read($bytes = 1024, $reset = FALSE)
+	public function eof()
 	{
+		if(!$this->check())
+		{
+			return TRUE;
+		}
+
+		return $this->readHandle
+			&& feof($this->readHandle);
+	}
+
+	public function read()
+	{
+		list($bytes, $reset) = func_get_args() + [1024, FALSE];
+
 		if(!$this->exists)
 		{
 			if(!$this->check())
@@ -56,17 +64,25 @@ class File
 			$this->readHandle = fopen($this->name, 'r');
 		}
 
-		return fread($this->readHandle, $bytes);
+		if($bytes)
+		{
+			return fread($this->readHandle, $bytes);
+		}
 	}
 
 	public function write($data, $append = TRUE)
 	{
-		if(!$this->writeHandle)
+		if(!$this->writeHandle || !$append)
 		{
 			$this->writeHandle = fopen($this->name, $append ? 'a' : 'w');
 		}
 
 		return fwrite($this->writeHandle, $data);
+	}
+
+	public function delete()
+	{
+		unlink($this->name);
 	}
 
 	public function slurp()
@@ -76,7 +92,7 @@ class File
 
 	public function copy($newFileName)
 	{
-		$newFile = new static($newFileName);
+		$newFile = new static($newFileName, $this->originalName);
 		$newFile->write(NULL, FALSE);
 
 		while($chunk = $this->read(1024))

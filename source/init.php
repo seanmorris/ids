@@ -36,10 +36,9 @@ register_shutdown_function(function() use($start){
 		, PHP_EOL
 	);
 });
-
 set_exception_handler(['\SeanMorris\Ids\Log', 'logException']);
-set_error_handler(
-	function($errorNumber, $errorString, $errorFile, $errorLine, $errorContext)
+$existingErrorHangler = set_error_handler(
+	function($errorNumber, $errorString, $errorFile, $errorLine, $errorContext) use(&$existingErrorHangler)
 	{
 		ob_start();
 		$errorContextContent = ob_get_contents();
@@ -54,6 +53,14 @@ set_error_handler(
 			, $errorFile
 			, $errorLine
 			, $errorContextContent
+		);
+
+		$existingErrorHangler && $existingErrorHangler(
+			$errorNumber
+			, $errorString
+			, $errorFile
+			, $errorLine
+			, $errorContext
 		);
 
 		throw new \ErrorException($line, $errorNumber, 0, $errorFile, $errorLine);

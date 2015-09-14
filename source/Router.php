@@ -184,7 +184,14 @@ class Router
 							}
 							else
 							{
-								$result	= $routes->$route($this);
+								if(is_callable([$routes, $route]))
+								{
+									$result	= $routes->$route($this);
+								}
+								else
+								{
+									$result	= FALSE;
+								}
 								break;
 							}
 						}
