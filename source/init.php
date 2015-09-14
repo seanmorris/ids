@@ -10,8 +10,9 @@ if(file_exists($internalVendorDir))
 }
 else
 {
-	define('IDS_VENDOR_ROOT', dirname(dirname(dirname(IDS_ROOT))) . '/vendor/');
+	define('IDS_VENDOR_ROOT', dirname(dirname(dirname(IDS_ROOT))));
 }
+
 define('IDS_PUBLIC_ROOT', dirname(IDS_ROOT) . '/public/');
 define('IDS_PUBLIC_DYNAMIC', 'Static/Dynamic/');
 define('IDS_PRIVATE_DYNAMIC', 'Static/Private/');
