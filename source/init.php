@@ -17,7 +17,7 @@ date_default_timezone_set('GMT+0');
 
 ini_set("error_log", IDS_LOG_PATH);
 
-$composer = require IDS_VENDOR_ROOT . '/autoload.php';
+$composer = require IDS_VENDOR_ROOT . 'autoload.php';
 
 register_shutdown_function(function() use($start){
 	$error = error_get_last();
