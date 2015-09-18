@@ -2,8 +2,9 @@
 $start = microtime(true);
 
 define('IDS_ROOT', dirname(__FILE__) . '/');
-define('IDS_ASSET_ROOT', dirname(IDS_ROOT) . '/asset/');
+
 $internalVendorDir = dirname(IDS_ROOT) . '/vendor/';
+
 if(file_exists($internalVendorDir))
 {
 	define('IDS_VENDOR_ROOT', dirname(IDS_ROOT) . '/vendor/');	
@@ -13,13 +14,13 @@ else
 	define('IDS_VENDOR_ROOT', dirname(dirname(dirname(IDS_ROOT))) . '/');
 }
 
-define('IDS_PUBLIC_ROOT', dirname(IDS_ROOT) . '/public/');
-define('IDS_PUBLIC_DYNAMIC', 'Static/Dynamic/');
-define('IDS_PRIVATE_DYNAMIC', 'Static/Private/');
-define('IDS_LOCAL_DATA_ROOT', dirname(IDS_ROOT) . '/data/local/');
-define('IDS_GLOBAL_DATA_ROOT', dirname(IDS_ROOT) . '/data/global/');
-//define('IDS_TEMPORARY_ROOT', dirname(IDS_ROOT) . '/temporary/');
 define('IDS_TEMPORARY_ROOT', '/tmp/ids/');
+
+if(!file_exists(IDS_TEMPORARY_ROOT))
+{
+	mkdir(IDS_TEMPORARY_ROOT, 0666);
+}
+
 define('IDS_LOG_PATH', IDS_TEMPORARY_ROOT . 'log.txt');
 
 date_default_timezone_set('GMT+0');

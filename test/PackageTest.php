@@ -5,23 +5,36 @@ class PackageTest extends \UnitTestCase
 	public function setUp()
 	{
 		$this->database = \SeanMorris\Ids\Database::get('main');
-		$package =$this->package = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
+		$package = $this->package = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
 		$package::setTables(['main' => ['Foobar', 'Foozle']]);
+	}
+
+	public function tearDown()
+	{	
+		$testSchemaFile = new \SeanMorris\Ids\Storage\Disk\File(
+			$this->package->packageDir()
+			. 'test/data/testApplySchema.json'
+		);
+
+		$testSchemaFile->copy(
+			$this->package->globalDir() . 'schema.json'
+		);
+
+		$this->package->applySchema(TRUE);
 	}
 
 	public function testApplySchema()
 	{
-		$package = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
-
 		$testSchemaFile = new \SeanMorris\Ids\Storage\Disk\File(
-			$package->globalDir() . 'testApplySchema.json'
+			$this->package->packageDir()
+			. 'test/data/testApplySchema.json'
 		);
 
-		$schemaFile = $testSchemaFile->copy($package->globalDir() . 'schema.json');
+		$schemaFile = $testSchemaFile->copy($this->package->globalDir() . 'schema.json');
 
-		$package->applySchema();
+		$this->package->applySchema(TRUE);
 		
-		foreach($package->tables() as $dbName => $tables)
+		foreach($this->package->tables() as $dbName => $tables)
 		{
 			$db = \SeanMorris\Ids\Database::get($dbName);
 
@@ -47,6 +60,99 @@ class PackageTest extends \UnitTestCase
 
 	public function testStoreSchema()
 	{
-		// $this->package->storeSchema();
+		$this->package->storeSchema();
+		
+		$schemaFile = new \SeanMorris\Ids\Storage\Disk\File(
+			$this->package->globalDir() . 'schema.json'
+		);
+
+		$testSchemaFile = new \SeanMorris\Ids\Storage\Disk\File(
+			$this->package->packageDir()
+			. 'test/data/testApplySchema.json'
+		);
+
+		$this->assertEqual(
+			$schemaFile->slurp()
+			, $testSchemaFile->slurp()
+			, 'Unexpected output from storeSchema'
+		);
+	}
+
+	public function testColumnAddApplySchema()
+	{
+		$this->package->storeSchema();
+
+		$testSchemaFile = new \SeanMorris\Ids\Storage\Disk\File(
+			$this->package->packageDir()
+			. 'test/data/testColumnAddSchema.json'
+		);
+
+		$testSchemaFile->copy(
+			$this->package->globalDir() . 'schema.json'
+		);
+
+		$this->package->applySchema(TRUE);
+		
+		$db = \SeanMorris\Ids\Database::get('main');
+
+		$sth = $db->prepare('SHOW COLUMNS FROM Foozle WHERE field LIKE ?');
+		
+		$sth->execute(['caption']);
+
+		$this->assertTrue(
+			$sth->fetchObject()
+			, 'Failed to create column "caption" on table "Foozle"'
+		);
+	}
+
+	public function testColumnRemoveApplySchema()
+	{
+		$this->package->storeSchema();
+
+		$testSchemaFile = new \SeanMorris\Ids\Storage\Disk\File(
+			$this->package->packageDir()
+			. 'test/data/testColumnRemoveSchema.json'
+		);
+
+		$testSchemaFile->copy(
+			$this->package->globalDir() . 'schema.json'
+		);
+
+		$this->package->applySchema(TRUE);
+
+		$db = \SeanMorris\Ids\Database::get('main');
+
+		$sth = $db->prepare('SHOW COLUMNS FROM Foozle WHERE field LIKE ?');
+		$sth->execute(['value']);
+
+		$this->assertFalse(
+			$sth->fetchObject()
+			, 'Failed to delete column "value" on table "Foozle"'
+		);
+	}
+
+	public function testDirectories()
+	{
+		global $composer;
+
+		$packageDir = $this->package->packageDir();
+		$localDir = $this->package->localDir();
+		$globalDir = $this->package->globalDir();
+		$assetDir = $this->package->assetDir();
+
+		$this->assertTrue(
+			$packageDir->has( $this->package->localDir() )
+			, 'Subdirectory detection failed for local directory'
+		);
+
+		$this->assertTrue(
+			$packageDir->has( $this->package->globalDir() )
+			, 'Subdirectory detection failed for global directory'
+		);
+		
+		$this->assertTrue(
+			$packageDir->has( $this->package->assetDir() )
+			, 'Subdirectory detection failed for asset directory'
+		);
 	}
 }

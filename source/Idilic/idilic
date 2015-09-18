@@ -1,8 +1,9 @@
 #!/usr/bin/env php
 <?php
+$_SERVER['HTTP_HOST'] = 'test.dev';
 chdir(dirname(__FILE__));
 
-$composer = require '../../../../project/SeanMorris/Ids/init.php';
+$composer = require '../init.php';
 
 use \SeanMorris\Ids\Path;
 use \SeanMorris\Ids\Router;

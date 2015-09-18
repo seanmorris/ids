@@ -87,6 +87,8 @@ class Router
 				$this->match = $node;
 				$this->routedTo = $node;
 
+				Log::debug(sprintf('Routing to function %s for url node "%s".', $node, $node));
+
 				if(is_callable([$routes, '_preRoute']))
 				{
 					if($routes->_preRoute($this, $node) !== false)
@@ -95,6 +97,8 @@ class Router
 					}
 					else
 					{
+						$result = $routes->$node($this);
+
 						if($result === false && is_callable([$routes, '_notFound']))
 						{
 							$this->match = false;
@@ -199,7 +203,7 @@ class Router
 				}
 			}
 
-			if(!$result && is_callable([$routes, '_dynamic']))
+			if($result === FALSE && is_callable([$routes, '_dynamic']))
 			{
 				Log::debug(sprintf('Routing to _dynamic for url node "%s".', $node));
 

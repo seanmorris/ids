@@ -6,7 +6,7 @@ class Log
 	const SECOND_SIGNIFICANCE	= 5
 		, TEXT_COLOR			= 'none'
 		, TEXT_BACKGROUND		= 'none'
-		, HEAD_COLOR			= 'lightGrey'
+		, HEAD_COLOR			= 'darkGrey'
 		, HEAD_BACKGROUND		= 'none'
 		, DATA_COLOR			= 'green'
 		, DATA_BACKGROUND		= 'black'
@@ -51,6 +51,17 @@ class Log
 		, 'trace' => 6
 	);
 
+	static $colors = [
+		'key' => 'blue'
+		, 'keyBg' => NULL
+		, 'type' => 'green'
+		, 'typeBg' => NULL
+		, 'value' => NULL
+		, 'valueBg' => NULL
+		, 'line' => NULL
+		, 'lineBg' => NULL
+	];
+
 	protected static
 		$started = false
 		, $colorOutput = true
@@ -82,19 +93,16 @@ class Log
 		static::log(__FUNCTION__, ...$data);
 	}
 
+	protected static function getColor($type)
+	{
+		if(isset(static::$colors[$type]))
+		{
+			return static::$colors[$type];
+		}
+	}
+
 	protected static function log($levelString, ...$data)
 	{
-		$colors = [
-			'key' => 'yellow'
-			, 'keyBg' => 'black'
-			, 'type' => 'green'
-			, 'typeBg' => 'black'
-			, 'value' => 'white'
-			, 'valueBg' => 'black'
-			, 'line' => 'white'
-			, 'lineBg' => 'black'
-		];
-
 		$output = null;
 
 		$logPackages = (array)Settings::read('logPackages');
@@ -198,12 +206,12 @@ class Log
 		{
 			if(is_scalar($datum))
 			{
-				$output .= static::color($datum, $colors['line'], $colors['lineBg']);
+				$output .= static::color($datum, static::getColor('line'), static::getColor('lineBg'));
 				$output .= PHP_EOL;
 				continue;
 			}
 
-			$output .= static::dump($datum, [], $colors);
+			$output .= static::dump($datum, [], static::$colors);
 		}
 
 		file_put_contents(

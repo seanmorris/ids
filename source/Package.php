@@ -9,7 +9,7 @@ class Package
 
 	protected static
 		$assetManager
-		, $tables = []
+		, $tables = ['main'=>['Foozle', 'Foobar']]
 	;
 
 	public static function get($packageName = NULL)
@@ -37,10 +37,12 @@ class Package
 	}
 
 	protected function __construct($package)
-	{
-		if(class_exists($package . '\Package'))
+	{		
+		$package = preg_replace('/\\+/', '\\', $package . '\Package');
+
+		if(class_exists($package))
 		{
-			$reflection = new \ReflectionClass($package . '\Package');
+			$reflection = new \ReflectionClass($package);
 			$classFile = $reflection->getFileName();
 			$this->folder = dirname(dirname($classFile)) . '/';
 		}
@@ -100,9 +102,9 @@ class Package
 
 	public function packageDir()
 	{
-		return $this->folder;
-
-		return false;
+		return new \SeanMorris\Ids\Storage\Disk\Directory(
+			$this->folder
+		);
 	}
 
 	public function packageSpace()
@@ -117,26 +119,31 @@ class Package
 
 	public function assetDir()
 	{
-		// Todo: Use site settings to locate asset directory
-		return $this->folder . 'asset/';
+		return new \SeanMorris\Ids\Storage\Disk\Directory(
+			$this->folder . 'asset/'
+		);
 	}
 
 	public function publicDir()
 	{
 		// Todo: Use site settings to locate public directory
-		return $this->folder . 'public';;
+		return new \SeanMorris\Ids\Storage\Disk\Directory(
+			$this->folder . 'public'
+		);
 	}
 
 	public function globalDir()
 	{
-		// Todo: Use site settings to locate global directory
-		return $this->packageDir() . 'data/global/';
+		return new \SeanMorris\Ids\Storage\Disk\Directory(
+			$this->packageDir() . 'data/global/'
+		);
 	}
 
 	public function localDir()
 	{
-		// Todo: Use site settings to locate local directory
-		return $this->packageDir() . 'data/local/';
+		return new \SeanMorris\Ids\Storage\Disk\Directory(
+			$this->packageDir() . 'data/local/'
+		);
 	}
 
 	public function assetManager()
@@ -337,8 +344,13 @@ class Package
 				){
 					$obj1->$prop = $objectMerge($obj1->$prop, $obj2->$prop);
 				}
+				else if($val === FALSE)
+				{
+					unset($obj1->$prop);
+				}
 				else
 				{
+
 					$obj1->$prop = $obj2->$prop;
 				}
 			}
@@ -348,7 +360,7 @@ class Package
 
 		foreach($schema->revisions as $index => $revision)
 		{
-			$fullSchema = $objectMerge($revision, $fullSchema);	
+			$fullSchema = $objectMerge($fullSchema, $revision);	
 		}
 
 		return $fullSchema;
@@ -366,8 +378,6 @@ class Package
 		{
 			$schema->revisions = new \StdClass;
 		}
-
-		// var_dump($schema, $changes);
 
 		if($changeCount)
 		{
@@ -388,8 +398,14 @@ class Package
 		$storedSchema = $this->getFullSchema();
 		$changes = (object)[];
 
-		foreach(static::$tables as $db => $tables)
+		$classTables = static::$tables + ['main' => []];
+
+		foreach($classTables as $db => $tables)
 		{
+			// @TODO: GENERALIZE FOR MULTIPLE DBs
+			// Need to refactor all schema functions...
+			$tables += array_keys((array)$storedSchema);
+
 			$db = Database::get($db);
 			foreach($tables as $table)		
 			{
@@ -408,7 +424,9 @@ class Package
 					$storedSchema->$table->keys = new \StdClass;
 				}
 
-				$query = $db->prepare('SHOW FULL COLUMNS FROM ' . $table);
+				$queryString = 'SHOW FULL COLUMNS FROM ' . $table;
+				\SeanMorris\Ids\Log::query($queryString);
+				$query = $db->prepare($queryString);
 				$query->execute();
 
 				while($column = $query->fetchObject())
@@ -434,7 +452,9 @@ class Package
 					$changes->$table->fields->{$column->Field} = $column;
 				}
 
-				$query = $db->prepare('SHOW INDEXES FROM ' . $table);
+				$queryString = 'SHOW INDEXES FROM ' . $table;
+				\SeanMorris\Ids\Log::query($queryString);
+				$query = $db->prepare($queryString);
 				$query->execute();
 
 				while($index = $query->fetchObject())
@@ -498,15 +518,20 @@ class Package
 		{
 			$db = Database::get($db);
 			
+			$tables += array_keys((array)$exportTables);
+
 			foreach($tables as $table)
 			{
-				$query = $db->prepare('SHOW FULL COLUMNS FROM ' . $table);
+				$queryString = 'SHOW FULL COLUMNS FROM ' . $table;
+				\SeanMorris\Ids\Log::query($queryString);
+				$query = $db->prepare($queryString);
 				$query->execute();
 
 				$tableFound = false;
 
 				while($column = $query->fetchObject())
 				{
+					\SeanMorris\Ids\Log::query('Loaded', $column);
 					if(!isset($exportTables->$table->fields->{$column->Field}))
 					{
 						$queries[] = sprintf(
@@ -540,7 +565,7 @@ class Package
 							? 'auto_increment'
 							: NULL
 						, $exportTables->$table->fields->{$column->Field}->Collation
-							? 'COLLATE ' . $exportTables[$table]['field'][$column->Field]->Collation
+							? 'COLLATE ' . $exportTables->$table->fields->{$column->Field}->Collation
 							: NULL
 						, $exportTables->$table->fields->{$column->Field}->Comment
 					);
@@ -548,11 +573,14 @@ class Package
 					unset($exportTables->$table->fields->{$column->Field});
 				}
 
-				$query = $db->prepare('SHOW INDEXES FROM ' . $table);
+				$queryString = 'SHOW INDEXES FROM ' . $table;
+				\SeanMorris\Ids\Log::query($queryString);
+				$query = $db->prepare($queryString);
 				$query->execute();
 
 				while($index = $query->fetchObject())
 				{
+					\SeanMorris\Ids\Log::query('Loaded', $index);
 					if(!isset($exportTables->$table->keys->{$index->Key_name}))
 					{
 						continue;
@@ -657,46 +685,44 @@ class Package
 						);
 					}
 
-					if(!isset($exportTables->$table->keys))
-					{
-						continue;
-					}
-
 					$createIndex = [];
 
-					foreach($exportTables->$table->keys as $keyName => $key)
+					if(isset($exportTables->$table->keys))
 					{
-						$key = $this->latestKeys($key);
-						$columns = $this->latestColumns($key);
-
-						$arKey = (array)$key;
-
-						if($keyName == 'PRIMARY')
+						foreach($exportTables->$table->keys as $keyName => $key)
 						{
-							$createIndex[] = sprintf(
-								"\tPRIMARY KEY (`%s`)"
-								, $columns
-							);
+							$key = $this->latestKeys($key);
+							$columns = $this->latestColumns($key);
 
-							continue;
-						}
-						else if($key[1]->Non_unique == 0)
-						{
-							$createIndex[] = sprintf(
-								"\tUNIQUE KEY `%s` (`%s`)"
-								, $key[1]->Key_name 
-								, $columns
-							);
+							$arKey = (array)$key;
 
-							continue;
-						}
-						else
-						{
-							$createIndex[] = sprintf(
-								"\tKEY `%s` (`%s`)"
-								, $key[1]->Key_name 
-								, $columns
-							);
+							if($keyName == 'PRIMARY')
+							{
+								$createIndex[] = sprintf(
+									"\tPRIMARY KEY (`%s`)"
+									, $columns
+								);
+
+								continue;
+							}
+							else if($key[1]->Non_unique == 0)
+							{
+								$createIndex[] = sprintf(
+									"\tUNIQUE KEY `%s` (`%s`)"
+									, $key[1]->Key_name 
+									, $columns
+								);
+
+								continue;
+							}
+							else
+							{
+								$createIndex[] = sprintf(
+									"\tKEY `%s` (`%s`)"
+									, $key[1]->Key_name 
+									, $columns
+								);
+							}
 						}
 					}
 
@@ -710,15 +736,15 @@ class Package
 				}
 				else
 				{
-					if(!isset($exportTables->$table->keys))
-					{
-						continue;
-					}
-					
 					foreach($exportTables->$table->fields as $field)
 					{
-						$queries[] = sprintf(
-							'ALTER TABLE %s ADD %s %s %s %s'
+						if(!isset($exportTables->$table->fields->{$field->Field}))
+						{
+							continue;
+						}
+
+						$queries[$field->Field] = sprintf(
+							'ALTER TABLE %s ADD COLUMN %s %s %s %s'
 							, $table
 							, $exportTables->$table->fields->{$field->Field}->Field
 							, $exportTables->$table->fields->{$field->Field}->Type
@@ -726,48 +752,53 @@ class Package
 								? 'NULL'
 								: 'NOT NULL'
 							, $exportTables->$table->fields->{$field->Field}->Extra == 'auto_increment'
-								? 'auto_increment'
+								? 'auto_increment PRIMARY KEY'
 								: NULL
 						);
 					}
 
-					foreach($exportTables->$table->keys as $keyName => $key)
+					if(isset($exportTables->$table->keys))
 					{
-						$columns = $this->latestColumns($key);
-						$_arKey = (array)$key;
-
-						foreach($_arKey as $key=>$val)
+						foreach($exportTables->$table->keys as $keyName => $key)
 						{
-							$arKey[(int)$key] = $val;
-						}
+							$columns = $this->latestColumns($key);
+							$_arKey = (array)$key;
 
-						if($keyName == 'PRIMARY')
-						{
-							$queries[] = sprintf(
-								"ALTER TABLE `%s` ADD PRIMARY KEY (`%s`)"
-								, $table
-								, $columns
-							);
+							foreach($_arKey as $key=>$val)
+							{
+								$arKey[(int)$key] = $val;
+							}
 
-							continue;
-						}
-						else if($arKey[$arKey["1"]->Seq_in_index]->Non_unique == 0)
-						{
-							$queries[] = sprintf(
-								"ALTER TABLE `%s` ADD UNIQUE KEY (`%s`)"
-								, $table
-								, $columns
-							);
+							if($keyName == 'PRIMARY')
+							{
+								/*
+								$queries[] = sprintf(
+									"ALTER TABLE `%s` ADD PRIMARY KEY (`%s`)"
+									, $table
+									, $columns
+								);
+								*/
 
-							continue;
-						}
-						else
-						{
-							$queries[] = sprintf(
-								"ALTER TABLE `%s` ADD KEY (`%s`)"
-								, $table
-								, $columns
-							);
+								continue;
+							}
+							else if($arKey[$arKey["1"]->Seq_in_index]->Non_unique == 0)
+							{
+								$queries[] = sprintf(
+									"ALTER TABLE `%s` ADD UNIQUE KEY (`%s`)"
+									, $table
+									, $columns
+								);
+
+								continue;
+							}
+							else
+							{
+								$queries[] = sprintf(
+									"ALTER TABLE `%s` ADD KEY (`%s`)"
+									, $table
+									, $columns
+								);
+							}
 						}
 					}
 
@@ -779,6 +810,7 @@ class Package
 		{
 			foreach($queries as $query)
 			{
+				\SeanMorris\Ids\Log::query($query);
 				$query = $db->prepare($query);
 				$query->execute();
 			}

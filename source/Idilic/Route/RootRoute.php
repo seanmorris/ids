@@ -60,4 +60,189 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		return $subRouter->route();
 	}
+
+	public function runTests($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		if(!$packageName = array_shift($args))
+		{
+			return 'No package specified.';
+		}
+
+		$packageName = str_replace('/', '\\', $packageName);
+
+		foreach($args as $test)
+		{
+			echo PHP_EOL;
+			$testClass = $packageName . '\\Test\\' . $test;
+			$test = new $testClass;
+			$test->run(new \TextReporter());
+		}
+	}
+
+	public function applySchema($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		if(!$packageName = array_shift($args))
+		{
+			echo "No package supplied.\n";
+			return;
+		}
+
+		$real = array_shift($args);
+
+		$package = $this->_getPackage($packageName);
+
+		$result = $package->applySchema($real);
+
+		if(!$result)
+		{
+			echo "No schema changes detected.\n";
+		}
+
+		if(!$real && $result)
+		{
+			while(1)
+			{
+				echo 'Changes have not yet been applied.' . PHP_EOL;
+
+				foreach($result as $query)
+				{
+					print $query;
+					print PHP_EOL;
+				}
+
+				$answer = \SeanMorris\Ids\Idilic\Cli::question(
+					'Apply the above changes to the schema? (y/n)'
+				);
+
+				if($answer === 'y')
+				{
+					$package->applySchema(true);
+					break;
+				}
+
+				if($answer === 'n')
+				{
+					break;
+				}
+			}
+		}
+	}
+
+	public function storeSchema($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		if(!$packageName = array_shift($args))
+		{
+			return;
+		}
+
+		$package = $this->_getPackage($packageName);
+
+		return $package->storeSchema();
+	}
+
+	public function _getPackageFromClass($class)
+	{
+		$splitClass = preg_split('/\//', $class);
+		
+		$packageName = '';
+		$packageName .= array_shift($splitClass);
+		$packageName .= '/';
+		$packageName .= array_shift($splitClass);
+
+		return $packageName;
+	}
+
+	public function exportModels($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		if(!$modelClass = array_shift($args))
+		{
+			return;
+		}
+
+		$packageName = $this->_getPackageFromClass($modelClass);
+
+		$generator = array_shift($args);
+
+		$package = $this->_getPackage($packageName);
+		$modelClass = preg_replace('/\//', '\\', $modelClass);
+
+		$models = $package->exportModels($modelClass, $generator, $args);
+		$header = false;
+		$out = \SeanMorris\Ids\Idilic\Cli::outHandle();
+
+		foreach($models as $model)
+		{
+			$arModel = $model->unconsume();
+
+			if(!$header)
+			{
+				fputcsv($out, array_keys($arModel));
+				$header = true;
+			}
+
+			fputcsv($out, array_values($arModel));
+		}
+	}
+
+	public function importModels($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		if(!$modelClass = array_shift($args))
+		{
+			return;
+		}
+
+		$in = \SeanMorris\Ids\Idilic\Cli::inHandle();
+		
+		$header = [];
+
+		$modelClass = preg_replace('/\//', '\\', $modelClass);
+
+		if(!class_exists($modelClass))
+		{
+			return;
+		}
+
+		while($line = fgetcsv($in))
+		{
+			if(!$header)
+			{
+				$header = $line;
+				continue;
+			}
+
+			if(count($line) !== count($header))
+			{
+				continue;
+			}
+
+			$line = array_combine($header, $line);
+
+			
+		}
+	}
+
+	public function _getPackage($packageName)
+	{
+		$packageName = \SeanMorris\Ids\Package::name($packageName);
+
+		return \SeanMorris\Ids\Package::get($packageName);		
+	}
+
+	public function listPackages($router)
+	{
+		return implode(
+			PHP_EOL
+			, \SeanMorris\Ids\Package::listPackages($router->contextGet('composer'))
+		);
+	}
 }

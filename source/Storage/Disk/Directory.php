@@ -64,20 +64,22 @@ class Directory extends File
 		return new $class($name);
 	}
 
-	public function write()
-	{
-	}
-
 	public function delete()
 	{
 		rmdir($this->name);
 	}
 
-	public function slurp()
+	public function has($directory)
 	{
+		return substr($directory->name, 0, strlen($this->name)) == $this->name;
 	}
 
-	public function copy($newFileName)
+	public function isWritable()
 	{
+		
 	}
+
+	public function write(){}
+	public function slurp(){}
+	public function copy($newFileName){}
 }

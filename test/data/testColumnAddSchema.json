@@ -42,7 +42,7 @@
                         "Default": null,
                         "Extra": "",
                         "Comment": ""
-                    }   
+                    }
                 },
                 "keys": {
                     "PRIMARY": {
@@ -66,7 +66,7 @@
             "Foobar": {
                 "fields": {
                     "barValue": {
-                        "Field": "barValue",
+                        "Field": "value",
                         "Type": "varchar(255)",
                         "Collation": "latin1_swedish_ci",
                         "Null": "NO",
@@ -79,6 +79,22 @@
                         "Field": "id",
                         "Type": "int(11)",
                         "Collation": null,
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    }
+                }
+            }
+        },
+        "1": {
+            "Foozle": {
+                "fields": {
+                    "caption": {
+                        "Field": "caption",
+                        "Type": "varchar(255)",
+                        "Collation": "latin1_swedish_ci",
                         "Null": "NO",
                         "Key": "",
                         "Default": null,

@@ -70,8 +70,10 @@ class File
 		}
 	}
 
-	public function write($data, $append = TRUE)
+	public function write()
 	{
+		list($data, $append) = func_get_args() + [NULL, TRUE];
+
 		if(!$this->writeHandle || !$append)
 		{
 			$this->writeHandle = fopen($this->name, $append ? 'a' : 'w');
@@ -103,5 +105,10 @@ class File
 		$newFile->check();
 
 		return $newFile;
+	}
+
+	public function __toString()
+	{
+		return $this->name;
 	}
 }

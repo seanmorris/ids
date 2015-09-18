@@ -8,6 +8,7 @@
 			, "password" : ""
 		}
 	}
+	, "public": ""
 	, "clearLogs": false
 	, "logLevel": "query"
 	, "logPackages": {

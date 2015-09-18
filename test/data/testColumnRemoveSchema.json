@@ -42,7 +42,7 @@
                         "Default": null,
                         "Extra": "",
                         "Comment": ""
-                    }   
+                    }
                 },
                 "keys": {
                     "PRIMARY": {
@@ -85,6 +85,29 @@
                         "Extra": "",
                         "Comment": ""
                     }
+                }
+            }
+        },
+        "1": {
+            "Foozle": {
+                "fields": {
+                    "caption": {
+                        "Field": "class",
+                        "Type": "varchar(255)",
+                        "Collation": "latin1_swedish_ci",
+                        "Null": "YES",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    }
+                }
+            }
+        },
+        "2": {
+            "Foozle": {
+                "fields": {
+                    "value": false
                 }
             }
         }

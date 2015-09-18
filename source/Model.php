@@ -329,7 +329,17 @@ class Model
 		$gen = static::selectStatement($name, null, $args)->generate();
 		$rawArgs = $args;
 
-		// \SeanMorris\Ids\Log::debug('Resolved def', $name, $def, 'for', get_called_class());
+		\SeanMorris\Ids\Log::debug(
+			'Resolved def'
+			, $name
+			, $def
+			, 'for'
+			, get_called_class()
+			, 'of type'
+			, isset($def['type'])
+				? $def['type']
+				: 'load --- UNSET'
+		);
 
 		$args = array_map(
 			function($arg)
