@@ -193,7 +193,7 @@ class Log
 			{
 				$path = $path . PHP_EOL
 					. 'Request: ' . PHP_EOL
-					. static::dump($_REQUEST, [], $colors)
+					. static::dump($_REQUEST, [], static::$colors)
 				;
 			}
 
