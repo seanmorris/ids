@@ -3,8 +3,7 @@ namespace SeanMorris\Ids\Test\Model;
 class Foobar extends Foozle
 {
 	protected
-		$id
-		, $barValue
+		$barValue
 	;
 
 	protected static

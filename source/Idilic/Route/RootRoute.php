@@ -74,6 +74,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		foreach($args as $test)
 		{
+			sleep(1);
+			
 			echo PHP_EOL;
 			$testClass = $packageName . '\\Test\\' . $test;
 			$test = new $testClass;

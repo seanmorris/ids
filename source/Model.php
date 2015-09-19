@@ -28,12 +28,13 @@ class Model
 	protected function _create($curClass)
 	{
 		$parentClass = get_parent_class($curClass);
+		$parentModel = NULL;
 
 		while($parentClass)
 		{
 			$tableProperty = new \ReflectionProperty($parentClass, 'table');
 
-			if($tableProperty->class !== $parentClass && $parentClass::$table)
+			if($parentClass::$table && $parentClass::$table !== static::$table)
 			{
 				$parentModel = $this->_create($parentClass);
 				break;

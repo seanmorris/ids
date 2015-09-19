@@ -51,6 +51,11 @@ class Linker
 
 		if($package === TRUE)
 		{
+			if(!$links)
+			{
+				return [];
+			}
+
 			return array_merge(...array_values(array_map(
 				function($link)
 				{

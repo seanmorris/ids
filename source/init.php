@@ -18,7 +18,7 @@ define('IDS_TEMPORARY_ROOT', '/tmp/ids/');
 
 if(!file_exists(IDS_TEMPORARY_ROOT))
 {
-	mkdir(IDS_TEMPORARY_ROOT, 0666);
+	mkdir(IDS_TEMPORARY_ROOT, 0777);
 }
 
 define('IDS_LOG_PATH', IDS_TEMPORARY_ROOT . 'log.txt');

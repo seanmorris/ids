@@ -69,7 +69,7 @@
                         "Field": "value",
                         "Type": "varchar(255)",
                         "Collation": "latin1_swedish_ci",
-                        "Null": "NO",
+                        "Null": "YES",
                         "Key": "",
                         "Default": null,
                         "Extra": "",

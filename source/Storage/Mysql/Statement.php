@@ -54,9 +54,8 @@ abstract class Statement
 
 		if($errorCode !== '00000')
 		{
-			\SeanMorris\Ids\Log::debug($queryObject->errorInfo());
-			\SeanMorris\Ids\Log::trace();
-			die;
+			$error = $queryObject->errorInfo();
+			throw new \Exception($error[2]);
 		}
 
 		return $queryObject;

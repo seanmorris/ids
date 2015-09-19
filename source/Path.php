@@ -23,12 +23,16 @@ class Path
 
 	public function append(...$nodes)
 	{
+		$newPath = clone $this;
+		
 		foreach($nodes as $node)
 		{
-			$this->nodes[] = $node;
+			$newPath->nodes[] = $node;
 		}
 
-		return $this;
+		$newPath->counter--;
+
+		return $newPath;
 	}
 
 	public function pop(&$node = null)
@@ -86,7 +90,7 @@ class Path
 
 	public function unconsumeNode()
 	{
-		--$this->counter;
+		return $this->counter--;
 	}
 
 	public function consumeNodes()
