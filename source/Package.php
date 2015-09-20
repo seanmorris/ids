@@ -57,7 +57,7 @@ class Package
 
 			if(isset($packages[$packageDir]))
 			{
-				$this->packageName = $packages[$packageDir];
+				$this->packageName = $packageName;
 				$this->folder = $packages[$packageDir];
 			}
 			else
