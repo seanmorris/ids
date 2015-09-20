@@ -74,8 +74,6 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		foreach($args as $test)
 		{
-			sleep(1);
-			
 			echo PHP_EOL;
 			$testClass = $packageName . '\\Test\\' . $test;
 			$test = new $testClass;
@@ -244,7 +242,12 @@ class RootRoute implements \SeanMorris\Ids\Routable
 	{
 		return implode(
 			PHP_EOL
-			, \SeanMorris\Ids\Package::listPackages($router->contextGet('composer'))
+			, \SeanMorris\Ids\Package::listPackages()
 		);
+	}
+
+	public function link($router)
+	{
+		\SeanMorris\Ids\Linker::link();
 	}
 }

@@ -2,9 +2,12 @@
 namespace SeanMorris\Ids;
 class Linker
 {
-	public static function link($composer)
+	protected static
+		$exposeVars = [];
+
+	public static function link()
 	{
-		$packages = \SeanMorris\Ids\Package::listPackages($composer);
+		$packages = \SeanMorris\Ids\Package::listPackages();
 		$links = array();
 
 		foreach($packages as $package)
@@ -41,6 +44,8 @@ class Linker
 
 		if($package && !is_bool($package))
 		{
+			$package = strtolower($package);
+			
 			if(array_key_exists($package, $links))
 			{
 				return $links[$package];
@@ -70,5 +75,11 @@ class Linker
 
 	public static function expose()
 	{
+		return [] + static::$exposeVars;
+	}
+
+	public static function set($key, $value)
+	{
+		static::$exposeVars[$key] = $value;
 	}
 }

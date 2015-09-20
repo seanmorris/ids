@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+ini_set('display_errors', TRUE);
 $_SERVER['HTTP_HOST'] = 'test.dev';
 chdir(dirname(__FILE__));
 

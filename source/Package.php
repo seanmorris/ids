@@ -38,22 +38,81 @@ class Package
 
 	protected function __construct($package)
 	{		
-		$package = preg_replace('/\\+/', '\\', $package . '\Package');
+		$packageName = static::name($package);
+		$packageDir = static::dir($package);
 
-		if(class_exists($package))
+		$packageClass = $packageName . '\Package';
+
+		if(class_exists($packageClass))
 		{
-			$reflection = new \ReflectionClass($package);
+			$reflection = new \ReflectionClass($packageClass);
 			$classFile = $reflection->getFileName();
 			$this->folder = dirname(dirname($classFile)) . '/';
+			$this->packageName = $packageName;
 		}
 		else
 		{
-			throw new \Exception('No IDS Package defined for ' . $package);
+			$packages = static::_packageDirectories();
+			$package = strtolower($package);
+
+			if(isset($packages[$packageDir]))
+			{
+				$this->packageName = $packages[$packageDir];
+				$this->folder = $packages[$packageDir];
+			}
+			else
+			{
+				throw new \Exception('No Package defined for ' . $package);
+			}
 		}
 	}
 
-	public static function listPackages(\Composer\Autoload\ClassLoader $composer)
+	public static function listPackages()
 	{
+		return array_keys(static::_packageDirectories());
+	}
+
+	public static function _packageDirectories()
+	{
+		$packages = [];
+
+		$vendorRoot = new \SeanMorris\Ids\Storage\Disk\Directory(IDS_VENDOR_ROOT);
+		
+		while($vendorDir = $vendorRoot->read())
+		{
+			while($packageDir = $vendorDir->read())
+			{
+				if(!$packageDir instanceof \SeanMorris\Ids\Storage\Disk\Directory)
+				{
+					continue;
+				}
+
+				$composerJson = $packageDir->file('composer.json');
+
+				if(!$composerJson->check())
+				{
+					continue;
+				}
+
+				$composerData = json_decode($composerJson->slurp());
+
+				$packages[$composerData->name] = $packageDir->name();
+			}
+		}
+
+		$appRoot = $vendorRoot->parent();
+
+		$composerJson = $appRoot->file('composer.json');
+
+		$composerData = json_decode($composerJson->slurp());
+
+		$packages[$composerData->name] = $appRoot->name();
+
+		ksort($packages);
+
+		return $packages;
+
+		/*
 		$directories = array_merge(...array_values($composer->getPrefixes()));
 
 		$packages = [];
@@ -93,11 +152,17 @@ class Package
 		sort($packages);
 
 		return $packages;
+		*/
 	}
 
 	public static function name($package)
 	{
 		return str_replace('/', '\\', $package);
+	}
+
+	public static function dir($package)
+	{
+		return str_replace('\\', '/', $package);
 	}
 
 	public function packageDir()

@@ -1,4 +1,6 @@
 <?php
+error_reporting(-1);
+
 $start = microtime(true);
 
 define('IDS_ROOT', dirname(__FILE__) . '/');
@@ -35,6 +37,7 @@ register_shutdown_function(function() use($start){
     {
     	\SeanMorris\Ids\Log::error(
     		'FATAL ERROR OCCURRED.'
+    		, $error
     	);
     }
 	\SeanMorris\Ids\Log::info(

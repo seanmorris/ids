@@ -26,6 +26,16 @@ class File
 		return $this->name;
 	}
 
+	public function parent()
+	{
+		return new Directory(dirname($this->name));
+	}
+
+	public function basename()
+	{
+		return basename($this->name);
+	}
+
 	public function originalName()
 	{
 		return $this->originalName;

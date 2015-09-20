@@ -5,6 +5,21 @@ class Directory extends File
 	protected
 		$eod = NULL;
 
+	public function __construct($fileName, $originalName = NULL)
+	{
+		parent::__construct($fileName, $originalName);
+
+		if(substr($this->name, -1, 1) !== '/')
+		{
+			$this->name .= '/';
+		}
+
+		if(substr($this->originalName, -1, 1) !== '/')
+		{
+			$this->originalName .= '/';
+		}
+	}
+
 	public function eof()
 	{
 		return $this->eod;
@@ -62,6 +77,13 @@ class Directory extends File
 		}
 
 		return new $class($name);
+	}
+
+	public function file($name)
+	{
+		return new \SeanMorris\Ids\Storage\Disk\File(
+			$this->name . $name
+		);
 	}
 
 	public function delete()

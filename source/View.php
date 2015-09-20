@@ -82,7 +82,6 @@ class View
 
 	public function __toString()
 	{
-		//Todo: Try/Catch and LOG any Exceptions thrown within
 		try{
 			$result = $this->render();
 		} catch (\Exception $e) {
