@@ -174,7 +174,7 @@ class Log
 
 			if(Settings::read('clearLogs'))
 			{
-				file_put_contents(IDS_LOG_PATH, ' ');
+				file_put_contents(ini_get('error_log'), ' ');
 			}
 
 			$path = NULL;
@@ -215,7 +215,7 @@ class Log
 		}
 
 		file_put_contents(
-			IDS_LOG_PATH
+			ini_get('error_log')
 			, PHP_EOL . $output
 			, FILE_APPEND
 		);
@@ -437,7 +437,7 @@ class Log
 
 	public static function clear()
 	{
-		file_put_contents(IDS_LOG_PATH, null);
+		file_put_contents(ini_get('error_log'), null);
 	}
 
 	protected static function file()
@@ -480,7 +480,7 @@ class Log
 		}
 
 		file_put_contents(
-			IDS_LOG_PATH
+			ini_get('error_log')
 			,	PHP_EOL . (static::$started
 					? (NULL)
 					: (static::LOG_SEPERATOR . PHP_EOL . $path. PHP_EOL)
@@ -617,7 +617,7 @@ class Log
 		error_log(
 			$line
 			, 3
-			, IDS_LOG_PATH
+			, ini_get('error_log')
 		);
 	}
 

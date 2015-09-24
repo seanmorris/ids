@@ -4,8 +4,35 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "8e59265c16bea0429a0786a60159b58e",
-    "packages": [],
+    "hash": "60af133ee66c81cfaad5d35f98716ea7",
+    "packages": [
+        {
+            "name": "seanmorris/theme",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "/home/sean/packages/SeanMorris/Theme",
+                "reference": "19961704cfacb9d8e5b85d11347464d4022af359"
+            },
+            "require-dev": {
+                "simpletest/simpletest": "dev-master"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SeanMorris\\Theme\\Test\\": "test/",
+                    "SeanMorris\\Theme\\": "source/"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Sean Morris",
+                    "email": "sean@sean-morris.com"
+                }
+            ],
+            "time": "2015-09-21 03:49:31"
+        }
+    ],
     "packages-dev": [
         {
             "name": "simpletest/simpletest",
@@ -84,6 +111,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "seanmorris/theme": 20,
         "simpletest/simpletest": 20
     },
     "prefer-stable": false,

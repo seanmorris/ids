@@ -52,7 +52,7 @@ class Package
 		}
 		else
 		{
-			$packages = static::_packageDirectories();
+			$packages = static::packageDirectories();
 			$package = strtolower($package);
 
 			if(isset($packages[$packageDir]))
@@ -69,10 +69,10 @@ class Package
 
 	public static function listPackages()
 	{
-		return array_keys(static::_packageDirectories());
+		return array_keys(static::packageDirectories());
 	}
 
-	public static function _packageDirectories()
+	public static function packageDirectories()
 	{
 		$packages = [];
 
@@ -175,11 +175,6 @@ class Package
 	public function packageSpace()
 	{
 		return $this->packageName;
-	}
-
-	public function dirSpace()
-	{
-		return $this->folder;
 	}
 
 	public function assetDir()
@@ -733,6 +728,11 @@ class Package
 
 					foreach($exportTables->$table->fields as $field)
 					{
+						if(!isset($exportTables->$table->fields->{$field->Field}))
+						{
+							continue;
+						}
+
 						$createColumn[] = sprintf(
 							"\t`%s` %s %s %s %s COMMENT '%s'"
 							, $exportTables->$table->fields->{$field->Field}->Field

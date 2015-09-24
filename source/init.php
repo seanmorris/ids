@@ -3,33 +3,34 @@ error_reporting(-1);
 
 $start = microtime(true);
 
-define('IDS_ROOT', dirname(__FILE__) . '/');
-
-$internalVendorDir = dirname(IDS_ROOT) . '/vendor/';
-
-if(file_exists($internalVendorDir))
-{
-	define('IDS_VENDOR_ROOT', dirname(IDS_ROOT) . '/vendor/');	
-}
-else
-{
-	define('IDS_VENDOR_ROOT', dirname(dirname(dirname(IDS_ROOT))) . '/');
-}
-
-define('IDS_TEMPORARY_ROOT', '/tmp/ids/');
-
-if(!file_exists(IDS_TEMPORARY_ROOT))
-{
-	mkdir(IDS_TEMPORARY_ROOT, 0777);
-}
-
-define('IDS_LOG_PATH', IDS_TEMPORARY_ROOT . 'log.txt');
-
 date_default_timezone_set('GMT+0');
 
-ini_set("error_log", IDS_LOG_PATH);
+$dir = getcwd();
 
-$composer = require IDS_VENDOR_ROOT . 'autoload.php';
+while(TRUE)
+{
+	print $dir . PHP_EOL;
+
+	$autoloadPath = $dir . '/vendor/autoload.php';
+	
+	if(file_exists($autoloadPath))
+	{
+		define('IDS_VENDOR_ROOT', $dir);
+		$composer = require $autoloadPath;
+		break;
+	}
+	
+	$nextDir = dirname($dir);
+
+	if($nextDir === $dir)
+	{
+		break;
+	}
+
+	$dir = $nextDir;
+}
+
+ini_set("error_log", '/tmp/ids_log.txt');
 
 register_shutdown_function(function() use($start){
 	$error = error_get_last();

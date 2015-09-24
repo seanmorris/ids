@@ -2,11 +2,35 @@
 namespace SeanMorris\Ids\Test;
 class PackageTest extends \UnitTestCase
 {
+	protected $setUp;
+
 	public function setUp()
 	{
+		if($this->setUp)
+		{
+			return;
+		}
+
 		$this->database = \SeanMorris\Ids\Database::get('main');
 		$package = $this->package = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
 		$package::setTables(['main' => ['Foobar', 'Foozle']]);
+
+		foreach($this->package->tables() as $dbName => $tables)
+		{
+			$db = \SeanMorris\Ids\Database::get($dbName);
+
+			foreach($tables as $table)
+			{
+				$dropTable = $db->prepare(sprintf(
+					'DROP TABLE %s'
+					, $table
+				));
+
+				$dropTable->execute();
+			}
+		}
+
+		$this->setUp = 1;
 	}
 
 	public function tearDown()

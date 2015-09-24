@@ -1,18 +1,27 @@
 {
-    "name": "seanmorris/ids"
-    , "authors": [
-        {
-            "name": "Sean Morris",
-            "email": "sean@sean-morris.com"
-        }
-    ]
-    , "require-dev": {
+	"name": "seanmorris/ids"
+	, "authors": [
+		{
+			"name": "Sean Morris",
+			"email": "sean@sean-morris.com"
+		}
+	]
+	, "require-dev": {
 		"simpletest/simpletest": "dev-master"
 	}
-    , "autoload": {
-        "psr-4": {
-            "SeanMorris\\Ids\\Test\\": "test/",
-            "SeanMorris\\Ids\\": "source/"
-        }
-    }
+	, "require": {
+		"seanmorris/theme": "dev-master"
+	},
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "/home/sean/packages/SeanMorris/Theme"
+		}
+	]
+	, "autoload": {
+		"psr-4": {
+			"SeanMorris\\Ids\\Test\\": "test/",
+			"SeanMorris\\Ids\\": "source/"
+		}
+	}
 }

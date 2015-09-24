@@ -2,9 +2,8 @@
 <?php
 ini_set('display_errors', TRUE);
 $_SERVER['HTTP_HOST'] = 'test.dev';
-chdir(dirname(__FILE__));
 
-$composer = require '../init.php';
+$composer = require dirname(__FILE__) . '/../init.php';
 
 use \SeanMorris\Ids\Path;
 use \SeanMorris\Ids\Router;

@@ -27,6 +27,7 @@ class DirectoryTest extends \UnitTestCase
 			)
 		);
 
+		/*
 		$testName2 = $this->testFilename . 'testing2';
 		$testDirStatic = $directory::create($testName2);
 
@@ -39,6 +40,7 @@ class DirectoryTest extends \UnitTestCase
 				, $testName2
 			)
 		);
+		*/
 	}
 
 	public function testRead()
@@ -77,12 +79,14 @@ class DirectoryTest extends \UnitTestCase
 
 		$testDir->delete();
 
-		$this->assertFalse($testDir->check()
+		$this->assertFalse(
+			$testDir->check()
 			, 'Delete failed for '
 				. $this->testFilename
 				. $testName
 		);
 
+		/*
 		$testName2 = $this->testFilename . 'testing2';
 		$testDirStatic = $directory::create($testName2);
 
@@ -93,6 +97,6 @@ class DirectoryTest extends \UnitTestCase
 				. $this->testFilename
 				. $testName2
 		);
-
+		*/
 	}
 }
