@@ -53,12 +53,11 @@ class Package
 		else
 		{
 			$packages = static::packageDirectories();
-			$package = strtolower($package);
-
-			if(isset($packages[$packageDir]))
+			
+			if(isset($packages[strtolower($packageDir)]))
 			{
 				$this->packageName = $packageName;
-				$this->folder = $packages[$packageDir];
+				$this->folder = $packages[strtolower($packageDir)];
 			}
 			else
 			{
@@ -75,8 +74,10 @@ class Package
 	public static function packageDirectories()
 	{
 		$packages = [];
-
-		$vendorRoot = new \SeanMorris\Ids\Storage\Disk\Directory(IDS_VENDOR_ROOT);
+		
+		$vendorRoot = new \SeanMorris\Ids\Storage\Disk\Directory(
+			IDS_VENDOR_ROOT
+		);
 		
 		while($vendorDir = $vendorRoot->read())
 		{
@@ -186,10 +187,16 @@ class Package
 
 	public function publicDir()
 	{
-		// Todo: Use site settings to locate public directory
-		return new \SeanMorris\Ids\Storage\Disk\Directory(
-			$this->folder . 'public'
+		if(!$publicDir = Settings::read('public'))
+		{
+			return;
+		}
+
+		$dir = new \SeanMorris\Ids\Storage\Disk\Directory(
+			$publicDir . $this->dir($this->packageSpace())
 		);
+
+		return $dir;
 	}
 
 	public function globalDir()
@@ -209,16 +216,18 @@ class Package
 	public function assetManager()
 	{
 		$assetManager = static::$assetManager;
-		
-		if(!static::$assetManager)
-		{
-			$assetManager = $this->packageSpace() . '\Suffix\AssetManager';
-		}		
 
+		if(!$assetManager)
+		{
+			$assetManager = 'SeanMorris\Ids\AssetManager';
+		}	
+		
 		if(class_exists($assetManager))
 		{
 			return new $assetManager;
 		}
+
+		return new $assetManager;
 	}
 
 	public function setVar($var, $val, $type = 'local')
@@ -428,6 +437,22 @@ class Package
 
 	public function storeSchema()
 	{
+		$globalDir = $this->globalDir();
+		$schemaFilename = $globalDir . 'schema.json';
+
+		if(!$globalDir->check())
+		{
+			$globalDir->create(NULL, 0766, TRUE);
+
+			var_dump($globalDir);
+			die;
+		}
+
+		if(!file_exists($schemaFilename))
+		{
+			file_put_contents($schemaFilename, '{}');
+		}
+
 		$schema = $this->getStoredSchema();
 		$changes = $this->getSchemaChanges();
 
@@ -457,6 +482,11 @@ class Package
 	{
 		$storedSchema = $this->getFullSchema();
 		$changes = (object)[];
+
+		if(!$storedSchema)
+		{
+			$storedSchema = (object)[];
+		}
 
 		$classTables = static::$tables + ['main' => []];
 
@@ -571,6 +601,8 @@ class Package
 
 	public function applySchema($real = false)
 	{
+		$exportTables = $this->getFullSchema();
+		
 		$exportTables = $this->getFullSchema();
 		$queries = [];
 
@@ -718,13 +750,16 @@ class Package
 
 				if(!$tableFound)
 				{
+					// var_dump("$table NOT FOUND!");
 					$createColumn = [];
 
 					if(!isset($exportTables->$table)
 						|| !isset($exportTables->$table->fields)
 					){
-						continue;
+						// continue;
 					}
+
+					// var_dump("$table test------", $exportTables);
 
 					foreach($exportTables->$table->fields as $field)
 					{

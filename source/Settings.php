@@ -40,8 +40,15 @@ class Settings
 				
 				if(!$hostname)
 				{
-					$idsPackage = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
-					$hostname = $idsPackage->getVar('defaultDomain');	
+					//$idsPackage = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
+					//$hostname = $idsPackage->getVar('defaultDomain');
+					if(file_exists(getenv("HOME") . '/.idilicProfile.json'))
+					$userFile = new \SeanMorris\Ids\Storage\Disk\File(
+						getenv("HOME") . '/.idilicProfile.json'
+					);
+					$userSettings = json_decode($userFile->slurp());
+					$domain = $userSettings->root;
+					var_dump($userSettings);
 				}
 			}
 

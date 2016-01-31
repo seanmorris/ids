@@ -9,6 +9,7 @@ class Request
 		, $post
 		, $files
 		, $context
+		, $switches
 	;
 
 	public function __construct($vars = [])
@@ -38,6 +39,11 @@ class Request
 		if(!$this->context)
 		{
 			$this->context = [];
+		}
+
+		if(!$this->switches)
+		{
+			$this->switches = [];
 		}
 	}
 
@@ -91,7 +97,10 @@ class Request
 
 	public function params()
 	{
-		return static::files() + static::post() + static::get();
+		return $this->files()
+			+ $this->post()
+			+ $this->get()
+			+ $this->switches();
 	} 
 
 	public function get()
@@ -115,13 +124,43 @@ class Request
 				continue;
 			}
 
-			$file = new \SeanMorris\Ids\Storage\Disk\File($fileDef['tmp_name'], $fileDef['name']);
+			$file = new \SeanMorris\Ids\Storage\Disk\File(
+				$fileDef['tmp_name']
+				, $fileDef['name']
+			);
 
 			$files[$fieldName] = $file;
 
 		}
 
 		return $files;
+	}
+
+	public function switches(...$args)
+	{
+		if(!$args)
+		{
+			return $this->switches;
+		}
+
+		if(count($args) == 1)
+		{
+			return isset($this->switches[$args[0]])
+				? $this->switches[$args[0]]
+				: NULL;
+		}
+
+		while($name = array_shift($args))
+		{
+			if(!$args)
+			{
+				return $name;
+			}
+			else if(isset($this->switches[$name]))
+			{
+				return $this->switches[$name];
+			}
+		}
 	}
 
 	public function &context()

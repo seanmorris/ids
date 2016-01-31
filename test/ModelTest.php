@@ -116,6 +116,8 @@ class ModelTest extends \UnitTestCase
 
 			$model->delete();
 
+			$modelClass::clearCache();
+
 			$model = $modelClass::loadOneById($this->modelIds[$modelClass]);
 
 			$this->assertFalse(

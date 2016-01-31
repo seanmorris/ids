@@ -9,6 +9,7 @@ class Model
 
 	protected static
 		$table
+		, $relationshipClass
 		, $relationshipTable
 		, $createColumns = []
 		, $readColumns = []
@@ -18,6 +19,7 @@ class Model
 		, $hasMany = []
 		, $byId = ['where' => [['id' => '?']]]
 		, $byNothing = ['where' => [['id' => 'NULL', 'IS NOT']]]
+		, $cache = []
 	;
 
 	public function create()
@@ -67,17 +69,67 @@ class Model
 
 		foreach($columns as $column)
 		{
+			$colVal = $this->$column;
+
+			if(isset(static::$hasOne[$column]))
+			{
+				$columnClass = static::$hasOne[$column];
+
+				if(is_array($colVal)
+					&& isset($colVal['id'])
+					&& isset($colVal['class'])
+					&& is_a($colVal['class'], $columnClass, true)
+				){
+					$columnClass = $colVal['class'];
+				}
+				else if(is_array($colVal)
+					&& isset($colVal['class'])
+					&& !is_a($colVal['class'], $columnClass, true)
+					|| (is_array($colVal) && !$colVal['class'])
+				){
+					throw new \Exception(sprintf(
+						'Bad id and/or classname supplied for column %s.'
+						, $column
+					));
+				}
+				
+				if(is_array($colVal) && isset($colVal['id']))
+				{
+					$columnObject = $columnClass::loadOneById($colVal['id']);
+					$columnObject->consume($colVal);
+					$columnObject->save();
+
+					\SeanMorris\Ids\Log::debug($columnObject);
+
+					$colVal = $columnObject->id;
+				}
+				else if(is_array($colVal))
+				{
+					$columnObject = new $columnClass;
+					$columnObject->consume($colVal);
+					$columnObject->save();
+
+					\SeanMorris\Ids\Log::debug($columnObject);
+
+					$colVal = $columnObject->id;
+				}
+				else if(is_object($colVal) && is_a($colVal, $columnClass) && isset($colVal->id))
+				{
+					$colVal = $colVal->id;
+				}
+			}
+
 			if($column === 'class')
 			{
 				$values[] = get_called_class();
 			}
 			else if(isset($wrappers[$column]) && $insert->hasReplacements($wrappers[$column]))
 			{
-				$values[] = $this->$column;
+				$values[] = $colVal;
 			}
 			elseif(!isset($wrappers[$column]))
 			{
-				$values[] = $this->$column;
+				$values[] = $colVal;
 			}
 		}
 
@@ -154,13 +206,58 @@ class Model
 
 		foreach($columns as $column)
 		{
+			$colVal = $this->$column;
+
+			if(isset(static::$hasOne[$column]))
+			{
+				$columnClass = static::$hasOne[$column];
+
+				if(is_array($colVal)
+					&& isset($colVal['id'])
+					&& isset($colVal['class'])
+					&& (
+						is_a($colVal['class'], $columnClass)
+						|| $colVal['class'] == $columnClass
+					)
+				){
+					$columnClass = $colVal['class'];
+				}
+				else if(isset($colVal['class']))
+				{
+					throw new \Exception(sprintf(
+						'Bad classname supplied for column %s (%s).'
+						, $column
+						, isset($colVal['class'])
+							? print_r($colVal['class'], true)
+							: null
+					));
+				}	
+
+				if(is_array($colVal) && isset($colVal['id']))
+				{
+					$columnObject = $columnClass::loadOneById($colVal['id']);
+
+					$columnObject->consume($colVal);
+
+					$columnObject->save();
+
+					\SeanMorris\Ids\Log::debug($columnObject);
+
+					$colVal = $colVal['id'];
+				}
+				else
+				{
+					// @todo Create new model based on input/classDef
+				}
+			}
+
 			if(isset($wrappers[$column]) && $update->hasReplacements($wrappers[$column]))
 			{
-				$namedValues[$column] = $values[] = $this->$column;
+				$namedValues[$column] = $values[] = $colVal;
 			}
 			elseif(!isset($wrappers[$column]))
 			{
-				$namedValues[$column] = $values[] = $this->$column;	
+				$namedValues[$column] = $values[] = $colVal;	
 			}
 		}
 
@@ -192,11 +289,20 @@ class Model
 					continue;
 				}
 
+				if(isset($curClass::$hasOne[$property]))
+				{
+					// var_dump($this->{$property});
+					//die;
+					//$this->storeRelationship($property, $this->{$property});
+				}
+
 				if(isset($curClass::$hasMany[$property]) && is_array($this->{$property}))
 				{
 					$this->storeRelationships($property, $this->{$property});
 				}
 			}
+
+			$saved = NULL;
 
 			if($parentClass = get_parent_class($curClass))
 			{
@@ -232,7 +338,8 @@ class Model
 				while($parentClass && $tableProperty->class !== $parentClass)
 				{
 					\SeanMorris\Ids\Log::debug('CHECKING CLASS ' . $parentClass);
-					if($parentClass::afterUpdate($saved, $namedValues) === FALSE
+					if($saved
+						&& $parentClass::afterUpdate($saved, $namedValues) === FALSE
 						|| $parentClass::afterWrite($saved, $namedValues) === FALSE
 					){
 						return FALSE;
@@ -314,10 +421,39 @@ class Model
 		}			
 	}
 
+	public static function clearCache($descentants = TRUE)
+	{
+		foreach(static::$cache as $class => &$cache)
+		{
+			if($descentants && is_subclass_of($class, get_called_class(), TRUE)
+				|| $class === get_called_class()
+			){
+				$cache = [];
+			}
+		}
+	}
+
 	public static function __callStatic($name, $args = null)
 	{
+		$cacheKey = get_called_class()
+			. '::'
+			. $name
+			. '  '
+			. md5(print_r(func_get_args(), 1));
+
+		if(!isset(static::$cache[$cacheKey]))
+		{
+			//static::$cache[$cacheKey] = NULL;
+		}
+
+		$cache =& static::$cache[get_called_class()][$name][md5(print_r(func_get_args(), 1))];
+
 		\SeanMorris\Ids\Log::debug(sprintf(
-			'Static call to %s::%s', get_called_class(), $name
+			'Static call to %s::%s, Cache: %s'
+			, get_called_class()
+			, $name
+			, $cacheKey
+			, $cache ? '*' : ''
 		), $args);
 
 		if(!$args)
@@ -326,21 +462,10 @@ class Model
 		}
 
 		$def = static::resolveDef($name, $args);
-		// $gen = static::selectStatement($def, null, $args)->generate();
-		$gen = static::selectStatement($name, null, $args)->generate();
+		$select = static::selectStatement($name, null, $args);
+		$gen = $select->generate();
+		
 		$rawArgs = $args;
-
-		\SeanMorris\Ids\Log::debug(
-			'Resolved def'
-			, $name
-			, $def
-			, 'for'
-			, get_called_class()
-			, 'of type'
-			, isset($def['type'])
-				? $def['type']
-				: 'load --- UNSET'
-		);
 
 		$args = array_map(
 			function($arg)
@@ -355,35 +480,59 @@ class Model
 			$args
 		);
 
+		// $count = $select->countStatement('id');
+		// $countResult = $count->execute(...$args);
+
+
 		if(isset($def['type']) && $def['type'] == 'generate')
 		{
 			\SeanMorris\Ids\Log::debug(sprintf(
 				'Generating %s', get_called_class()
 			));
 
-			return function(...$overArgs) use($gen, $args, $rawArgs)
+			return function(...$overArgs) use($gen, $args, $rawArgs, &$cache)
 			{
-				$args = $overArgs + $args;
+				$overArgs = [];
+				$i = 0;
 
-				foreach($gen(...$args) as $skeleton)
+				if($cache)
 				{
-					$subSkeleton = static::subSkeleton($skeleton);
-
-					if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+					while(isset($cache[$i]))
 					{
-						continue;
+						\SeanMorris\Ids\Log::debug('From cache...');
+
+						yield $cache[$i];
+						$i++;
 					}
+				}
+				else
+				{
+					$args = $overArgs + $args;
 
-					$model = static::instantiate($skeleton, $args, $rawArgs);
-
-					if(static::afterRead($model, $subSkeleton) === FALSE)
+					foreach($gen(...$args) as $skeleton)
 					{
-						continue;
-					}
+						$subSkeleton = static::subSkeleton($skeleton);
 
-					\SeanMorris\Ids\Log::debug('Loaded ', $model);
-					
-					yield $model;
+						if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+						{
+							continue;
+						}
+
+						$model = static::instantiate($skeleton, $args, $rawArgs);
+
+						if(static::afterRead($model, $subSkeleton) === FALSE)
+						{
+							continue;
+						}
+
+						\SeanMorris\Ids\Log::debug('Loaded ', $i, $model);
+
+						$cache[$i] = $model;
+						
+						yield $model;
+
+						$i++;
+					}
 				}
 			};
 		}
@@ -394,21 +543,92 @@ class Model
 				'Loading one %s', get_called_class()
 			));
 
-			foreach($gen(...$args) as $skeleton)
+			if(isset($cache[0]))
 			{
+				\SeanMorris\Ids\Log::debug('From cache...');
+
+				return $cache[0];
+			}
+
+			foreach($gen(...$args) as $skeleton)
+			{	
+				$subSkeleton = static::subSkeleton($skeleton);
+
+				if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+				{
+					continue;
+				}
+
 				$model = static::instantiate($skeleton, $args, $rawArgs);
+
+				if(static::afterRead($model, $subSkeleton) === FALSE)
+				{
+					continue;
+				}
+
 				\SeanMorris\Ids\Log::debug('Loaded ', $model);
+
+				$cache[0] = $model;
+
 				return $model;
 			}
 
 			return false;
 		}
 
-		return function(...$overArgs) use($gen, $args, $rawArgs)
+		if(isset($def['type']) && $def['type'] == 'get')
+		{
+			\SeanMorris\Ids\Log::debug(sprintf(
+				'Getting %s', get_called_class()
+			));
+
+			if($cache)
+			{
+				\SeanMorris\Ids\Log::debug('From cache...');
+
+				return $cache;
+			}
+
+			$models = [];
+
+			foreach($gen(...$args) as $skeleton)
+			{
+				$subSkeleton = static::subSkeleton($skeleton);
+
+				if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+				{
+					continue;
+				}
+
+				$model = static::instantiate($skeleton, $args, $rawArgs);
+
+				if(static::afterRead($model, $subSkeleton) === FALSE)
+				{
+					continue;
+				}
+
+				$cache[count($models)] = $model;
+
+				$models[] = $model;
+				
+				\SeanMorris\Ids\Log::debug('Got ', $model);
+			}
+
+			return $models;
+		}
+
+		return function(...$overArgs) use($gen, $args, $rawArgs, &$cache)
 		{
 			\SeanMorris\Ids\Log::debug(sprintf(
 				'Loading %s', get_called_class()
 			));
+
+			if($cache)
+			{
+				\SeanMorris\Ids\Log::debug('From cache...');
+
+				return $cache;
+			}
 
 			$models = [];
 
@@ -416,8 +636,23 @@ class Model
 
 			foreach($gen(...$args) as $skeleton)
 			{
+				$subSkeleton = static::subSkeleton($skeleton);
+
+				if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+				{
+					continue;
+				}
+
 				$model = static::instantiate($skeleton, $args, $rawArgs);
+
+				if(static::afterRead($model, $subSkeleton) === FALSE)
+				{
+					continue;
+				}
+
 				\SeanMorris\Ids\Log::debug('Loaded ', $model);
+
+				$cache[count($models)] = $model;
 
 				$models[] = $model;
 			}
@@ -490,7 +725,14 @@ class Model
 
 				if($subject)
 				{
-					$relationship = new \SeanMorris\Ids\Relationship();
+					$relationshipClass = '\SeanMorris\Ids\Relationship';
+
+					if(static::$relationshipClass)
+					{
+						$relationshipClass = static::$relationshipClass;
+					}
+
+					$relationship = new $relationshipClass;
 
 					$relationship->consume([
 							'ownerId'         => $this->id
@@ -586,9 +828,10 @@ class Model
 
 	protected static function resolveDef($name, &$args = null)
 	{
+		\SeanMorris\Ids\Log::debug( "MODEL RESOLVEDEF\n" );
 		$type = 'generate';
 		
-		if(preg_match('/^(loadOne|load|generate)(By.+)/', $name, $match))
+		if(preg_match('/^(loadOne|load|generate|get)(By.+)/', $name, $match))
 		{
 			if(isset($match[1]))
 			{
@@ -637,6 +880,7 @@ class Model
 			$class = $parentClass;
 		}
 
+		\SeanMorris\Ids\Log::debug( "MODEL RESOLVEDEF END\n" );
 		return $def;
 	}
 
@@ -661,7 +905,21 @@ class Model
 
 		$columns = array_keys($columnsToWrappers);
 
-		$selectDef = static::resolveDef($selectDefName, $args);
+		$called = get_called_class();
+
+		$selectDef = $called::resolveDef($selectDefName, $args);
+
+		\SeanMorris\Ids\Log::debug(
+			'Resolved def'
+			, $selectDefName
+			, $selectDef
+			, 'for'
+			, get_called_class()
+			, 'of type'
+			, isset($def['type'])
+				? $def['type']
+				: 'generate'
+		);
 
 		$where = [];
 		$order = [];
@@ -682,6 +940,22 @@ class Model
 			->conditions($where)
 		;
 
+		\SeanMorris\Ids\Log::debug($called, $selectDefName, $selectDef, isset($selectDef['join']));
+
+		if(isset($selectDef['join']) && is_array($selectDef['join']))
+		{
+			\SeanMorris\Ids\Log::debug($called, $selectDef['join']);
+
+			foreach($selectDef['join'] as $joinClass => $join)
+			{
+				$defName = 'loadBy'.ucwords($join['by']);
+				$subSelect = $joinClass::selectStatement($defName, $select, $args, $table);
+
+				$select->subjugate($subSelect);
+				$select->join($subSelect, $join['on'], 'id');		
+			}
+		}
+
 		$curClass = get_called_class();
 		$parentClass = get_parent_class($curClass);
 
@@ -690,9 +964,8 @@ class Model
 			$parentClass = get_parent_class($parentClass);
 		}
 
-		if($parentClass
-			&& $parentClass::$table
-		){
+		if($parentClass && $parentClass::$table)
+		{
 			$subSelect = $parentClass::selectStatement($selectDefName, $select, $args, $table);
 
 			$subSelect->subjugate($select);
@@ -964,6 +1237,20 @@ class Model
 					, $subjects
 				);
 			}
+
+			foreach(static::$hasOne as $property => $class)
+			{
+				$subject = $this->getSubject($property);
+
+				\SeanMorris\Ids\Log::debug($property, $subject);
+
+				if(!$subject)
+				{
+					continue;
+				}
+
+				$skeleton[$property] = $subject->unconsume($children -1);
+			}
 		}
 
 		return $skeleton;
@@ -1050,7 +1337,14 @@ class Model
 			));
 		}
 
-		$gen = \SeanMorris\Ids\Relationship::generateByOwner(
+		$relationshipClass = '\SeanMorris\Ids\Relationship';
+
+		if(static::$relationshipClass)
+		{
+			$relationshipClass = static::$relationshipClass;
+		}
+
+		$gen = $relationshipClass::generateByOwner(
 			$this, $column
 		);
 
@@ -1161,5 +1455,10 @@ class Model
 	protected static function afterDelete($instance)
 	{
 
+	}
+
+	public static function getCache()
+	{
+		return static::$cache;
 	}
 }

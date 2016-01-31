@@ -23,6 +23,21 @@ class SelectStatement extends WhereStatement
 		return parent::__construct($table);
 	}
 
+	public function countStatement($column, $unique = FALSE)
+	{
+		$count = new CountStatement($this->table);
+
+		foreach($this as $property => $value)
+		{
+			$count->{$property} = $value;
+		}
+
+		$count->column = $column;
+		$count->unique = $unique;
+
+		return $count;
+	}
+
 	public function aliasColumns()
 	{
 		$alias = $this->alias;
@@ -56,6 +71,11 @@ class SelectStatement extends WhereStatement
 		);
 	}
 
+	public function joins()
+	{
+		return $this->joins;
+	}
+
 	public function assemble()
 	{
 		$args = func_get_args();
@@ -78,6 +98,8 @@ class SelectStatement extends WhereStatement
 			$tableString .= ' AS ' . $this->alias;
 		}
 
+		//$tableString .= '--';
+
 		$conditionString = $this->conditionTree(
 			$this->conditions
 			, 'AND'
@@ -85,28 +107,59 @@ class SelectStatement extends WhereStatement
 			, $namedArgs
 		);
 
-		foreach($this->joins as $join)
+		$conditionString = '('
+			. ($conditionString
+				? $conditionString
+				: 1
+			)
+			. ')'
+		;
+
+		foreach($this->joins() as $join)
 		{
 			list($sub, $superCol, $subCol, $type) = $join;
 
 			$superCol = $this->alias . '.' . $superCol;
 
 			$sub->conditions(['AND' => [
-				[$subCol => $superCol]
+				//[$subCol => $superCol]
 			]]);
 
-			list($subTableString, $subColString, $joinConditionString) = $sub->assembleJoin($type, $namedArgs);
+			list($subTableString, $subColString, $joinConditionString) = $sub->assembleJoin($type, $namedArgs, $superCol, $subCol);
 
-			$tableString .= ' ' . $subTableString;
-			$columnString .= $columnString
+			//$subTableString .= "\t" . 'ON ' . '((' . $joinConditionString . '))';
+			//$subTableString .= "--";
+
+			$this->valueRequired += array_merge($this->valueRequired, $sub->valueRequired);
+			$this->valueNames += array_merge($this->valueNames, $sub->valueNames);
+
+			$columnString .= ($columnString && $subColString)
 				? (', ' . $subColString)
 				: NULL;
+
 			if(!$conditionString)
 			{
 				$conditionString = 1;
 			}
 
-			$conditionString .= PHP_EOL . 'AND ' . $joinConditionString;
+			$joinConditionString = '('
+				. $joinConditionString
+					? $joinConditionString
+					: 1
+				. ')'
+			;
+
+			if($joinConditionString)
+			{
+				if($conditionString)
+				{
+					$conditionString .= PHP_EOL . 'AND ';
+				}
+
+				$conditionString .= $joinConditionString;
+			}
+
+			$tableString .= ' ' . $subTableString;
 		}
 
 		$orderStrings = [];
@@ -123,23 +176,26 @@ class SelectStatement extends WhereStatement
 
 			if($orderStrings)
 			{
-				$orderString = ' ORDER BY ' . implode(', ', $orderStrings);			
+				$orderString = PHP_EOL . PHP_EOL . 'ORDER BY ' . implode(', ', $orderStrings);			
 			}
 		}
 
 		return sprintf(
-			"SELECT\n%s\nFROM\n%s\nWHERE\n%s"
+			"SELECT\n%s\n\nFROM\n%s\n\nWHERE\n%s"
 			, $columnString
 			, $tableString
 			, $conditionString ?: 1
 		) . $orderString;
 	}
 
-	protected function assembleJoin($type = null, $args = null)
+	protected function assembleJoin($type = null, $args = null, $col, $joinCol)
 	{
 		$columnString = implode(', ', $this->aliasColumns());
 
+		\SeanMorris\Ids\Log::debug($this->conditions);
+
 		$tableString = $this->table;
+
 		$conditionString = $this->conditionTree(
 			['AND' => $this->conditions]
 			, null
@@ -156,6 +212,8 @@ class SelectStatement extends WhereStatement
 			, $this->alias
 		);
 
+		$joinString.=  sprintf(' ON (%s = %s.%s)', $col, $this->alias, $joinCol);
+
 		foreach($this->joins as $join)
 		{
 			list($sub, $superCol, $subCol, $subType) = $join;
@@ -163,13 +221,17 @@ class SelectStatement extends WhereStatement
 			$superCol = $this->alias . '.' . $superCol;
 
 			$sub->conditions(['AND' => [
-				[$subCol => $superCol]
+				//[$subCol => $superCol]
 			]]);
 
-			list($subJoinString, $subColString) = $sub->assembleJoin($subType, $args);
+			list($subJoinString, $subColString, $subConditionString) = $sub->assembleJoin($subType, $args, $superCol, $joinCol);
+
+			$this->valueRequired += array_merge($this->valueRequired, $sub->valueRequired);
+			$this->valueNames += array_merge($this->valueNames, $sub->valueNames);
 
 			$joinString .= ' ' . $subJoinString;
 			$columnString .= ', ' . $subColString;
+			$conditionString .= sprintf('(%s)', $subConditionString);
 		}
 
 		return [$joinString, $columnString, $conditionString];

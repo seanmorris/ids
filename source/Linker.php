@@ -17,14 +17,10 @@ class Linker
 
 			$linker = $packageSpace . '\Linker';
 
-			var_dump($linker);
-
 			if(!class_exists($linker))
 			{
 				continue;
 			}
-
-			var_dump($linker);
 
 			if($exposedLinks = $linker::expose())
 			{

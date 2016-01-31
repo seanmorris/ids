@@ -25,6 +25,7 @@ class Relationship extends Model
 				, ['property' => '?']
 			]
 			, 'order' => ['delta' => 'ASC']
+			, 'by' => 'moderated'
 		]
 	;
 
@@ -87,11 +88,13 @@ class Relationship extends Model
 
 	protected static function resolveDef($name, &$args = [])
 	{
+		//\SeanMorris\Ids\Log::debug( "RELATIONSHIP RESOLVEDEF\n" );
 		// \SeanMorris\Ids\Log::debug($name, $args);
-
 		$def = parent::resolveDef($name, $args);
 
 		preg_match('/.+?By(.+)$/', $name, $match);
+
+		//var_dump($match);
 
 		if(isset($match[1]) && $match[1] == 'Owner')
 		{
@@ -100,22 +103,30 @@ class Relationship extends Model
 			$owner = array_shift($_args);
 			$column = array_shift($_args);
 
-			if($subjectClass = $owner->getSubjectClass($column))
+			// @TODO: Eliminate dirty hack.
+			if($_args)
+			{
+				$column = array_shift($_args);
+			}
+
+			//\SeanMorris\Ids\Log::debug($owner, $column, $owner::getSubjectClass($column));
+
+			if($subjectClass = $owner::getSubjectClass($column))
 			{
 				array_splice($args, 1, 0, [get_class($owner)]);
 
 				// \SeanMorris\Ids\Log::debug($args, $_args);
 				// \SeanMorris\Ids\Log::debug([$name, $owner, $column]);
 
-				
 				$def['join'][$subjectClass] = [
 					'on' => 'subjectId'
-					, 'by' => 'moderated'
-					, 'type' => 'LEFT'
+					, 'by' => $def['by']
+					, 'type' => 'INNER'
 				];
 			}
 		}
 
+		//\SeanMorris\Ids\Log::debug( "RELATIONSHIP RESOLVEDEF END\n" );	
 		return $def;
 	}
 }

@@ -10,7 +10,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		if(!$packageName)
 		{
-			echo "Error: no command/package supplied";
+			echo 'Error: no command/package supplied';
 			echo PHP_EOL;
 
 			return;
@@ -36,16 +36,21 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 				$routes = $packageName . '\Idilic\Route\RootRoute';
 			}
+		}
 
-			if(!class_exists($routes))
-			{
-				echo "Error: no such package: " . $packageName;
-				echo PHP_EOL;
-				echo "No Idilic RootRoute: " . $routes;
-				echo PHP_EOL;
+		try
+		{
+			$package = \SeanMorris\Ids\Package::get($packageName);
+		}
+		catch(\Exception $e)
+		{
+			printf("Error: Cannot find package/command %s\n", $packageName);
+			return;
+		}
 
-				return;
-			}
+		if(!$args)
+		{
+			return $package->packageDir()->name();
 		}
 
 		$request = new \SeanMorris\Ids\Request([
@@ -74,10 +79,10 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		foreach($args as $test)
 		{
-			echo PHP_EOL;
 			$testClass = $packageName . '\\Test\\' . $test;
 			$test = new $testClass;
 			$test->run(new \TextReporter());
+			echo PHP_EOL;
 		}
 	}
 
@@ -87,7 +92,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		if(!$packageName = array_shift($args))
 		{
-			echo "No package supplied.\n";
+			echo 'No package supplied.\n';
 			return;
 		}
 
@@ -99,7 +104,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		if(!$result)
 		{
-			echo "No schema changes detected.\n";
+			echo 'No schema changes detected.\n';
 		}
 
 		if(!$real && $result)
@@ -130,6 +135,18 @@ class RootRoute implements \SeanMorris\Ids\Routable
 				}
 			}
 		}
+	}
+
+	public function remoteJob()
+	{
+		$job = new \SeanMorris\Kommie\ControlJob;
+		$job->start();
+	}
+
+	public function countJob()
+	{
+		$job = new \SeanMorris\Multiota\Test\Count\CountJob;
+		$job->start();
 	}
 
 	public function storeSchema($router)
@@ -249,5 +266,227 @@ class RootRoute implements \SeanMorris\Ids\Routable
 	public function link($router)
 	{
 		\SeanMorris\Ids\Linker::link();
+	}
+
+	public function buildAssets($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		if(!$packageName = array_shift($args))
+		{
+			return;
+		}
+
+		$package = \SeanMorris\Ids\Package::get($packageName);
+		$assetManager = $package->assetManager();
+
+		if(!$assetManager)
+		{
+			$assetManager = 'SeanMorris\Ids\AssetManager';
+		}
+
+		$assetManager::buildAssets($package);
+	}
+
+	public function help($router)
+	{
+		$packages = \SeanMorris\Ids\Package::listPackages($router->contextGet('composer'));
+		$idsPackage = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
+
+		foreach($packages as $packageName)
+		{
+			$package = \SeanMorris\Ids\Package::get($packageName);
+
+			if(!$help = $package->getVar('idilic:help', [], 'global'))
+			{
+				continue;	
+			}
+
+			print \SeanMorris\Ids\Idilic\Cli::color('Package: ', 'white')
+				. \SeanMorris\Ids\Idilic\Cli::color($packageName, 'yellow') . PHP_EOL;
+
+			if(isset($help->summary))
+			{
+				print "\t" . $help->summary;
+				print PHP_EOL;
+				print PHP_EOL;
+			}
+
+			if(!isset($help->commands))
+			{
+				continue;
+			}
+
+			print \SeanMorris\Ids\Idilic\Cli::color('Commands: ', 'white') . PHP_EOL;
+
+			foreach($help->commands as $command => $commandHelp)
+			{
+				$commandPackage = $idsPackage->getVar('idilic:commands:' . $command);
+
+				$indicator = NULL;
+				
+				if($commandPackage)
+				{
+					$indicator = '*';
+				}
+
+				$usage = NULL;
+
+				if(isset($commandHelp->usage))
+				{
+					printf(
+						"\t%s%s %s\n"
+						, $indicator
+						, \SeanMorris\Ids\Idilic\Cli::color($command, 'green')
+						, $commandHelp->usage
+					);
+				}
+				else
+				{
+					printf(
+						"\t%s%s\n"
+						, $indicator
+						, \SeanMorris\Ids\Idilic\Cli::color($command, 'green')
+					);
+				}
+
+				if(isset($commandHelp->description))
+				{
+					printf("\t\t%s\n", $commandHelp->description);
+				}
+
+				print "\n";
+			}
+		}
+	}
+
+	public function set($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		if(!$packageName = array_shift($args))
+		{
+			return;
+		}
+
+		if(!$var = array_shift($args))
+		{
+			return;
+		}
+
+		if(!$val = array_shift($args))
+		{
+			return;
+		}
+
+		$package = \SeanMorris\Ids\Package::get($packageName);
+
+		return $package->setVar($var, $val);
+	}
+
+	public function get($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		if(!$packageName = array_shift($args))
+		{
+			return;
+		}
+
+		if(!$var = array_shift($args))
+		{
+			return;
+		}
+
+		$package = \SeanMorris\Ids\Package::get($packageName);
+
+		return $package->getVar($var);
+	}
+
+	public function delete($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		if(!$packageName = array_shift($args))
+		{
+			return;
+		}
+
+		if(!$var = array_shift($args))
+		{
+			return;
+		}
+
+		$package = \SeanMorris\Ids\Package::get($packageName);
+
+		return $package->deleteVar($var);
+	}
+
+	public function apacheConfig($router)
+	{
+		if(!$domain = $router->request()->switches('d', 'domain', NULL))
+		{
+			if(file_exists(getenv("HOME") . '/.idilicProfile.json'))
+			{
+				$userFile = new \SeanMorris\Ids\Storage\Disk\File(
+					getenv("HOME") . '/.idilicProfile.json'
+				);
+				$userSettings = json_decode($userFile->slurp());
+
+				$domain = $userSettings->domain;
+			}
+		}
+
+		return sprintf(<<<'EOF'
+<VirtualHost *:80>
+  ServerName %s
+  DocumentRoot %s
+
+  <Directory %s>
+    Options Indexes FollowSymLinks
+    AllowOverride All
+    Order allow,deny
+    Allow from all
+    Require all granted
+  </Directory>
+
+  # Possible values: debug, info, notice, warn, error, crit,
+  # alert, emerg.
+  LogLevel warn
+  ErrorLog ${APACHE_LOG_DIR}/error.log
+  CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+EOF
+			, $domain
+			, \SeanMorris\Ids\Settings::read('public')
+			, \SeanMorris\Ids\Settings::read('public')
+		);
+	}
+
+	public function batch($router)
+	{
+		$job = new \SeanMorris\Multiota\Test\Count\CountJob;
+		$job->start();
+		/*
+		$pool = new \SeanMorris\Multiota\Pool(
+			'\SeanMorris\Multiota\DataSource'
+			, '\SeanMorris\Multiota\Processor'
+		);
+
+		$pool->start();
+		*/
+		exit;
+	}
+
+	public function batchProcess($router)
+	{
+
+		$processor = $router->path()->consumeNode();
+		$child = $router->path()->consumeNode();
+		$max = $router->path()->consumeNode();
+
+		$processor = new $processor($child, $max);
+
+		$processor->spin();
 	}
 }

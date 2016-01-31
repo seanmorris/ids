@@ -37,9 +37,16 @@ class Path
 
 	public function pop(&$node = null)
 	{
-		$node = array_pop($this->nodes);
+		$newPath = clone $this;
+		
+		foreach($this->nodes as $node)
+		{
+			$newPath->nodes[] = $node;
+		}
 
-		return $this;
+		$node = array_pop($newPath->nodes);
+
+		return $newPath;
 	}
 
 	public function getSpentPath()
@@ -140,6 +147,11 @@ class Path
 	public function count()
 	{
 		return count($this->nodes);
+	}
+
+	public function remaining()
+	{
+		return count($this->nodes) - $this->counter; 
 	}
 
 	public function setAlias($alias)

@@ -103,6 +103,7 @@ class Log
 
 	protected static function log($levelString, ...$data)
 	{
+
 		$output = null;
 
 		$logPackages = (array)Settings::read('logPackages');
@@ -200,7 +201,7 @@ class Log
 			$output = static::LOG_SEPERATOR . PHP_EOL . $path. PHP_EOL;
 		}
 
-		$output .= static::header($levelString). static::positionString(1);
+		$output .= static::header($levelString) . static::positionString(1);
 
 		foreach($data as $datum)
 		{
@@ -214,11 +215,18 @@ class Log
 			$output .= static::dump($datum, [], static::$colors);
 		}
 
+		$fileExists = file_exists(ini_get('error_log'));
+
 		file_put_contents(
 			ini_get('error_log')
 			, PHP_EOL . $output
 			, FILE_APPEND
 		);
+
+		if(!$fileExists)
+		{
+			chmod(ini_get('error_log'), 0666);
+		}
 	}
 
 	protected static function dump($val, $parents = [], $colors = [])
@@ -485,7 +493,7 @@ class Log
 					? (NULL)
 					: (static::LOG_SEPERATOR . PHP_EOL . $path. PHP_EOL)
 				)
-				. static::header()
+				. static::header() . PHP_EOL
 				. static::positionString($depth +2)
 				. static::render($line) . PHP_EOL
 			, FILE_APPEND
@@ -515,7 +523,7 @@ class Log
 			, date('Y-m-d h:i:s')
 			, $mill
 			, getmypid()
-		) . PHP_EOL;
+		);
 	}
 
 	public static function position($depth = 0)
@@ -558,14 +566,14 @@ class Log
 
 		if(isset($backtrace[$depth + 1], $backtrace[$depth + 1]['file']))
 		{
-			return $backtrace[$depth + 1]['file']
-				. ':' . $backtrace[$depth + 1]['line'] . $glue
-				. (isset($backtrace[$depth + 2]['class']) ? (
+			return (isset($backtrace[$depth + 2]['class']) ? (
 					$backtrace[$depth + 2]['class'] . '::'
 				) : NULL)
 				. (isset($backtrace[$depth + 2]['function']) ? (
 					$backtrace[$depth + 2]['function']  . PHP_EOL
-				) : NULL);
+				) : NULL)
+				. $backtrace[$depth + 1]['file']
+				. ':' . $backtrace[$depth + 1]['line'] . $glue;
 		}
 		else
 		{

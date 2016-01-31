@@ -9,14 +9,10 @@ $dir = getcwd();
 
 while(TRUE)
 {
-	print $dir . PHP_EOL;
-
 	$autoloadPath = $dir . '/vendor/autoload.php';
-	
+
 	if(file_exists($autoloadPath))
 	{
-		define('IDS_VENDOR_ROOT', $dir);
-		$composer = require $autoloadPath;
 		break;
 	}
 	
@@ -24,10 +20,37 @@ while(TRUE)
 
 	if($nextDir === $dir)
 	{
+		$autoloadPath = NULL;
 		break;
 	}
 
 	$dir = $nextDir;
+}
+
+if(!$autoloadPath)
+{
+	$userFile = getenv("HOME") . '/.idilicProfile.json';
+	$userSettings = json_decode(file_get_contents($userFile));
+	
+	$autoloadPath = $userSettings->root . '/vendor/autoload.php';
+}
+
+if($autoloadPath)
+{
+	define('IDS_VENDOR_ROOT', dirname($autoloadPath));
+	$composer = require $autoloadPath;
+}
+else
+{
+	print 'Cannot locate project directory.' . PHP_EOL;
+	exit(1);
+}
+
+$idsPackage = \SeanMorris\Ids\Package::get('SeanMorris/Ids');
+
+if(!isset($_SERVER['HTTP_HOST']))
+{
+	$_SERVER['HTTP_HOST'] =  $idsPackage->getVar('idilic:defaultDomain', 'test.dev');
 }
 
 ini_set("error_log", '/tmp/ids_log.txt');

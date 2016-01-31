@@ -38,6 +38,7 @@ abstract class WhereStatement extends Statement
 		{
 			$queryObject = $this->prepare();
 		}
+
 		$args = array_map(
 			function($value, $wrapper)
 			{
@@ -116,7 +117,7 @@ abstract class WhereStatement extends Statement
 		{
 			if(!is_array($condition))
 			{
-				throw new \Exception('Malformed condition.' . PHP_EOL . print_r($condition, 1));
+				throw new \Exception('Malformed condition.' . PHP_EOL . print_r($tree, 1));
 			}
 
 			if($key === 'AND' || $key === 'OR')
@@ -172,8 +173,6 @@ abstract class WhereStatement extends Statement
 				);
 			}
 		}
-
-		// var_dump($this);
 
 		return implode(
 			sprintf(' %s ', $operator)

@@ -62,8 +62,9 @@ class Directory extends File
 		return $file;
 	}
 
-	public function create($name, $permissions = 0777, $recursive = FALSE)
+	public function create($name = NULL, $permissions = 0777, $recursive = FALSE)
 	{
+		$name = (string)$name;
 		$class = get_class();
 
 		if(isset($this) && is_a($this, $class))
@@ -93,7 +94,12 @@ class Directory extends File
 
 	public function has($directory)
 	{
-		return substr($directory->name, 0, strlen($this->name)) == $this->name;
+		if(substr($directory->name, 0, strlen($this->name)) == $this->name)
+		{
+			return substr($directory->name, strlen($this->name));
+		}
+
+		return FALSE;
 	}
 
 	public function isWritable()

@@ -97,9 +97,12 @@ class Router
 					}
 					else
 					{
-						$result = $routes->$node($this);
+						
+						//$result = $routes->$node($this);
+						$result = NULL;
 
-						if($result === false && is_callable([$routes, '_notFound']))
+						//if($result === false && is_callable([$routes, '_notFound']))
+						if(is_callable([$routes, '_notFound']))
 						{
 							$this->match = false;
 							$this->routedTo = false;
@@ -166,11 +169,11 @@ class Router
 								break;
 							}
 						}
-						else
+						else if(is_callable([$routes, $route]))
 						{
 							if(is_callable([$routes, '_preRoute']))
 							{
-								if($routes->_preRoute($router, $node) !== false)
+								if($routes->_preRoute($this, $node) !== false)
 								{
 									$result	= $routes->$route($this);
 								}
@@ -205,7 +208,11 @@ class Router
 
 			if($result === FALSE && is_callable([$routes, '_dynamic']))
 			{
-				Log::debug(sprintf('Routing to _dynamic for url node "%s".', $node));
+				Log::debug(sprintf(
+					'Routing to _dynamic for url node "%s" for routes %s.'
+					, $node
+					, get_class($routes)
+				));
 
 				$this->match = $node;
 				$this->routedTo = '_dynamic';
