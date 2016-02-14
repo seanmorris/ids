@@ -6,6 +6,9 @@
 			"email": "sean@sean-morris.com"
 		}
 	]
+	, "bin": [
+		"source/Idilic/idilic"
+	]
 	, "require-dev": {
 		"simpletest/simpletest": "dev-master"
 	}
