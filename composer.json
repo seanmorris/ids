@@ -10,14 +10,8 @@
 		"simpletest/simpletest": "dev-master"
 	}
 	, "require": {
-		"seanmorris/theme": "dev-master"
-	},
-	"repositories": [
-		{
-			"type": "vcs",
-			"url": "/home/sean/packages/SeanMorris/Theme"
-		}
-	]
+		"seanmorris/theme": "1.0.0"
+	}
 	, "autoload": {
 		"psr-4": {
 			"SeanMorris\\Ids\\Test\\": "test/",
