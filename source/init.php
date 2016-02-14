@@ -30,9 +30,12 @@ while(TRUE)
 if(!$autoloadPath)
 {
 	$userFile = getenv("HOME") . '/.idilicProfile.json';
-	$userSettings = json_decode(file_get_contents($userFile));
-	
-	$autoloadPath = $userSettings->root . '/vendor/autoload.php';
+
+	if(file_exists($userFile))
+	{
+		$userSettings = json_decode(file_get_contents($userFile));
+		$autoloadPath = $userSettings->root . '/vendor/autoload.php';
+	}	
 }
 
 if($autoloadPath)

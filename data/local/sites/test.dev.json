@@ -1,5 +1,5 @@
 {
-	"entrypoint" : "SeanMorris\\Ids\\Test\\Route\\RootRoute"
+	"entrypoint" : "SeanMorris\\DemoSite\\Route\\RootRoute"
 	, "devmode" : true
 	, "databases" : {
 		"main" : {
@@ -8,7 +8,7 @@
 			, "password" : ""
 		}
 	}
-	, "public": ""
+	, "public": "/home/sean/newninja/public/"
 	, "clearLogs": false
 	, "logLevel": "query"
 	, "logPackages": {

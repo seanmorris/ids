@@ -143,6 +143,12 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		$job->start();
 	}
 
+	public function remoteDoublerJob()
+	{
+		$job = new \SeanMorris\Kommie\RemoteDoublerJob;
+		$job->start();
+	}
+
 	public function countJob()
 	{
 		$job = new \SeanMorris\Multiota\Test\Count\CountJob;
@@ -484,8 +490,9 @@ EOF
 		$processor = $router->path()->consumeNode();
 		$child = $router->path()->consumeNode();
 		$max = $router->path()->consumeNode();
+		$timeout = $router->path()->consumeNode();
 
-		$processor = new $processor($child, $max);
+		$processor = new $processor($child, $max, $timeout);
 
 		$processor->spin();
 	}
