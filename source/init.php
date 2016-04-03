@@ -77,13 +77,17 @@ register_shutdown_function(function() use($start){
 	);
 });
 set_exception_handler(['\SeanMorris\Ids\Log', 'logException']);
-$existingErrorHangler = set_error_handler(
-	function($errorNumber, $errorString, $errorFile, $errorLine, $errorContext) use(&$existingErrorHangler)
+$existingErrorHandler = set_error_handler(
+	function($errorNumber, $errorString, $errorFile, $errorLine, $errorContext) use(&$existingErrorHandler)
 	{
+		$errorContextContent = NULL;
+		
+		/*
 		ob_start();
 		$errorContextContent = ob_get_contents();
 		ob_end_clean();
-
+		*/
+		
 		$line = sprintf(
 			'(%d)"%s" thrown in %s:%d'
 				.  PHP_EOL
@@ -95,7 +99,7 @@ $existingErrorHangler = set_error_handler(
 			, $errorContextContent
 		);
 
-		$existingErrorHangler && $existingErrorHangler(
+		$existingErrorHandler && $existingErrorHandler(
 			$errorNumber
 			, $errorString
 			, $errorFile

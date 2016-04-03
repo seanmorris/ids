@@ -9,19 +9,21 @@ class Router
 		, $child
 		, $routedTo
 		, $subRouted
+		, $aliased
 		, $match
 		, $regex
 		, $matches
 		, $context = []
 	;
 
-	public function __construct(Request $request, Routable $routes, Router $parent = null, $subRouted = false)
+	public function __construct(Request $request, Routable $routes, Router $parent = null, $subRouted = false, $aliased = FALSE)
 	{
 		$this->request = $request;
 		$this->path = $request->path();
 		$this->routes = $routes;
 		$this->parent = $parent;
 		$this->subRouted = $subRouted;
+		$this->aliased = $aliased;
 
 		if($parent && !$subRouted)
 		{
@@ -72,6 +74,8 @@ class Router
 				$node = '__' . $node;
 			}
 
+			$aliased = FALSE;
+
 			if(isset($routes->alias[$node]))
 			{
 				if(!array_filter($path->nodes()))
@@ -79,7 +83,29 @@ class Router
 					$path->setAlias($routes->alias[$node]);
 				}
 
-				$node = $routes->alias[$node];				
+				$node = $routes->alias[$node];
+				$aliased = TRUE;
+			}
+
+			if(isset($routes->alias)
+				&& ($i = array_search($node, $routes->alias)) !== FALSE
+				&& !$aliased
+				&& $path->remaining() <= 1
+			){
+				$path = $this->path()->pop();
+				
+				if($i !== 'index')
+				{
+					$path = $path->append($i);
+				}
+
+				throw new \SeanMorris\Ids\Http\Http303(
+					$path->pathString()
+					. ($_GET
+						? '?' . http_build_query($_GET)
+						: NULL
+					)
+				);
 			}
 
 			if(is_callable([$routes, $node]))
@@ -97,7 +123,6 @@ class Router
 					}
 					else
 					{
-						
 						//$result = $routes->$node($this);
 						$result = NULL;
 
@@ -148,14 +173,14 @@ class Router
 								&& $routes->_preRoute($this, $node) !== false
 							){
 								$routeObj = new $route;
-								$router = new Static($this->request, $routeObj, $this);
+								$router = new Static($this->request, $routeObj, $this, FALSE, $aliased);
 								$result = $router->route();
 								break;
 							}
 							else
 							{
 								$routeObj = new $route;
-								$router = new Static($this->request, $routeObj, $this);
+								$router = new Static($this->request, $routeObj, $this, FALSE, $aliased);
 								$result = $router->route();
 
 								if($result === false && is_callable([$routes, '_notFound']))
@@ -281,13 +306,13 @@ class Router
 
 	public function &getContext()
 	{
-		\SeanMorris\Ids\Log::info(__FUNCTION__ . ' deprecated');
+		// \SeanMorris\Ids\Log::info(__FUNCTION__ . ' deprecated');
 		return $this->context;
 	}
 
 	public function contextGet($name)
 	{
-		\SeanMorris\Ids\Log::info(__FUNCTION__ . ' deprecated');
+		// \SeanMorris\Ids\Log::info(__FUNCTION__ . ' deprecated');
 		if(isset($this->context[$name]))
 		{
 			return $this->context[$name];
@@ -296,7 +321,7 @@ class Router
 
 	public function contextSet($name, $value)
 	{
-		\SeanMorris\Ids\Log::info(__FUNCTION__ . ' deprecated');
+		// \SeanMorris\Ids\Log::info(__FUNCTION__ . ' deprecated');
 		$this->context[$name] = $value;
 	}
 
@@ -321,6 +346,11 @@ class Router
 		return $this->subRouted;
 	}
 
+	public function aliased()
+	{
+		return $this->aliased;
+	}
+
 	public function resumeRouting(Routable $routes, Request $request = null, $subRouted = false)
 	{
 		if(!$request)
@@ -341,6 +371,17 @@ class Router
 	public function parent()
 	{
 		return $this->parent;
+	}
+
+	public function root()
+	{
+		$root = $parent = $this;
+		while($parent = $parent->parent())
+		{
+			$root = $parent;
+		}
+
+		return $root;
 	}
 
 	public function child()

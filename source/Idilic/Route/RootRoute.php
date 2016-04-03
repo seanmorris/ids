@@ -211,6 +211,14 @@ class RootRoute implements \SeanMorris\Ids\Routable
 				$header = true;
 			}
 
+			foreach($arModel as &$value)
+			{
+				if(is_object($value))
+				{
+					$value = $value->id;
+				}
+			}
+
 			fputcsv($out, array_values($arModel));
 		}
 	}

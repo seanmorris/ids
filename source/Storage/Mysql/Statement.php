@@ -8,6 +8,8 @@ abstract class Statement
 		, $wrappers = []
 	;
 
+	protected static $queryCount = 0;
+
 	public function __construct($table)
 	{
 		$this->table = $this::cleanTableName($table);
@@ -49,14 +51,18 @@ abstract class Statement
 		\SeanMorris\Ids\Log::debug($args);
 
 		$queryObject->execute($args);
-
+		static::$queryCount++;
+		\SeanMorris\Ids\Log::debug('Queries Run: ' . static::$queryCount);
+		
 		$errorCode = $queryObject->errorCode();
 
 		if($errorCode !== '00000')
 		{
 			$error = $queryObject->errorInfo();
-			throw new \Exception($error[2]);
+			throw new \Exception($error[0] . ' ' . $error[2], $error[1]);
 		}
+
+		static::$queryCount++;
 
 		return $queryObject;
 	}

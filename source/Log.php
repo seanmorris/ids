@@ -201,7 +201,11 @@ class Log
 			$output = static::LOG_SEPERATOR . PHP_EOL . $path. PHP_EOL;
 		}
 
-		$output .= static::header($levelString) . static::positionString(1);
+		$output .= static::color(
+			static::header() . ' ' . static::positionString(1)
+			, static::HEAD_COLOR
+			, static::HEAD_BACKGROUND
+		);
 
 		foreach($data as $datum)
 		{
@@ -510,16 +514,12 @@ class Log
 		$mill = round($mill*$mull);
 
 		return sprintf(
-			static::color(
-				"[%s.%04d]::[%d]"
-				 . (
-					$level
-						? sprintf('[%s]', $level)
-						: NULL
-				) 
-				, static::HEAD_COLOR
-				, static::HEAD_BACKGROUND
-			)
+			"[%s.%04d]::[%d]"
+			 . (
+				$level
+					? sprintf('[%s]', $level)
+					: NULL
+			) 
 			, date('Y-m-d h:i:s')
 			, $mill
 			, getmypid()
@@ -607,20 +607,24 @@ class Log
 			, $e->getTraceAsString()
 		);
 
-		$line = static::header() . PHP_EOL . static::color(
-			sprintf(
-				"%s thrown from %s:%d"
-					. PHP_EOL
-					. '%s'
-					. PHP_EOL
-				, get_class($e)
-				, $e->getFile()
-				, $e->getLine()
-				, $e->getMessage()
-			)
-			, static::ERROR_COLOR
-			, static::ERROR_BACKGROUND
-		). PHP_EOL . $indentedTrace . PHP_EOL;
+		$line = static::color(
+			static::header()
+				, static::HEAD_COLOR
+				, static::HEAD_BACKGROUND
+			) . PHP_EOL . static::color(
+				sprintf(
+					"%s thrown from %s:%d"
+						. PHP_EOL
+						. '%s'
+						. PHP_EOL
+					, get_class($e)
+					, $e->getFile()
+					, $e->getLine()
+					, $e->getMessage()
+				)
+				, static::ERROR_COLOR
+				, static::ERROR_BACKGROUND
+			). PHP_EOL . $indentedTrace . PHP_EOL;
 
 		error_log(
 			$line

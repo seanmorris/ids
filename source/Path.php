@@ -38,6 +38,8 @@ class Path
 	public function pop(&$node = null)
 	{
 		$newPath = clone $this;
+
+		$newPath->nodes = [];
 		
 		foreach($this->nodes as $node)
 		{

@@ -192,7 +192,7 @@ class SelectStatement extends WhereStatement
 	{
 		$columnString = implode(', ', $this->aliasColumns());
 
-		\SeanMorris\Ids\Log::debug($this->conditions);
+		// \SeanMorris\Ids\Log::debug($this->conditions);
 
 		$tableString = $this->table;
 

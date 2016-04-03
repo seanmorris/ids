@@ -7,6 +7,7 @@ class Relationship extends Model
 		, $ownerId
 		, $property
 		, $subjectId
+		, $subjectClass
 		, $delta
 		, $ownerObject
 		, $subjectObject
@@ -25,7 +26,13 @@ class Relationship extends Model
 				, ['property' => '?']
 			]
 			, 'order' => ['delta' => 'ASC']
-			, 'by' => 'moderated'
+		]
+		, $bySubject = [
+			'where' => [
+				['subjectId' => '?']
+				, ['subjectClass' => '?']
+			]
+			, 'order' => ['ownerClass' => 'ASC', 'ownerId' => 'ASC']
 		]
 	;
 
@@ -45,9 +52,8 @@ class Relationship extends Model
 	{
 		if(!$this->subjectObject)
 		{
-			$owner = $this->ownerObject;
-
-			$subjectClass = $owner->getSubjectClass($this->property);
+			$ownerClass = $this->ownerClass;
+			$subjectClass = $ownerClass::getSubjectClass($this->property);
 
 			$this->subjectObject = $subjectClass::loadOneById($this->subjectId);
 		}
@@ -117,12 +123,22 @@ class Relationship extends Model
 
 				// \SeanMorris\Ids\Log::debug($args, $_args);
 				// \SeanMorris\Ids\Log::debug([$name, $owner, $column]);
-
 				$def['join'][$subjectClass] = [
 					'on' => 'subjectId'
-					, 'by' => $def['by']
+					, 'by' => isset($def['by']) ? $def['by'] : NULL
 					, 'type' => 'INNER'
 				];
+			}
+		}
+		if(isset($match[1]) && $match[1] == 'Subject')
+		{
+			$_args = $args;
+
+			$subject = array_shift($_args);
+			
+			if(is_object($subject))
+			{
+				$args = [$subject->id, get_class($subject)];
 			}
 		}
 

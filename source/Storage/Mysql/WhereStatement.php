@@ -55,7 +55,9 @@ abstract class WhereStatement extends Statement
 
 		\SeanMorris\Ids\Log::debug('Args:', $args);
 		$queryObject->execute($args);
-
+		static::$queryCount++;
+		\SeanMorris\Ids\Log::debug('Queries Run: ' . static::$queryCount);
+		
 		$errorCode = $queryObject->errorCode();
 
 		if($errorCode !== '00000')
@@ -64,7 +66,7 @@ abstract class WhereStatement extends Statement
 			\SeanMorris\Ids\Log::trace();
 			die;
 		}
-
+		
 		return $queryObject;
 	}
 

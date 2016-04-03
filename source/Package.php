@@ -955,19 +955,17 @@ class Package
 
 		if(!$model::getGenerator($function))
 		{
-			$function = 'ByNothing';
+			$function = 'ByNull';
 		}
 
 		$function = ucwords($function);
 
 		$function = 'generate' . $function;
 
-		// var_dump($function);
-
-		$generator = $model::$function();
+		$generator = $model::$function(...$args);
 		$models = [];
 
-		foreach($generator(...$args) as $model)
+		foreach($generator() as $model)
 		{
 			if(!$model)
 			{
