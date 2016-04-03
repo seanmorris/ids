@@ -4,35 +4,9 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "60af133ee66c81cfaad5d35f98716ea7",
-    "packages": [
-        {
-            "name": "seanmorris/theme",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "/home/sean/packages/SeanMorris/Theme",
-                "reference": "19961704cfacb9d8e5b85d11347464d4022af359"
-            },
-            "require-dev": {
-                "simpletest/simpletest": "dev-master"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "SeanMorris\\Theme\\Test\\": "test/",
-                    "SeanMorris\\Theme\\": "source/"
-                }
-            },
-            "authors": [
-                {
-                    "name": "Sean Morris",
-                    "email": "sean@sean-morris.com"
-                }
-            ],
-            "time": "2015-09-21 03:49:31"
-        }
-    ],
+    "hash": "e5bba1629e1c99eeac80bafd4a0bdc52",
+    "content-hash": "738851889384018fba8dec643e5815f3",
+    "packages": [],
     "packages-dev": [
         {
             "name": "simpletest/simpletest",
@@ -40,16 +14,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/simpletest/simpletest.git",
-                "reference": "df5a9759233d8265e516dd24841705cd8bec0d19"
+                "reference": "7929413286a405a59c1187e77ff73f43ede23849"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simpletest/simpletest/zipball/df5a9759233d8265e516dd24841705cd8bec0d19",
-                "reference": "df5a9759233d8265e516dd24841705cd8bec0d19",
+                "url": "https://api.github.com/repos/simpletest/simpletest/zipball/7929413286a405a59c1187e77ff73f43ede23849",
+                "reference": "7929413286a405a59c1187e77ff73f43ede23849",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.0.5"
+                "php": "^5.4 || ^7.0"
             },
             "replace": {
                 "lastcraft/simpletest": "self.version",
@@ -105,13 +79,12 @@
                 "testing",
                 "unit-test"
             ],
-            "time": "2015-08-02 10:59:14"
+            "time": "2016-01-23 20:03:54"
         }
     ],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "seanmorris/theme": 20,
         "simpletest/simpletest": 20
     },
     "prefer-stable": false,
