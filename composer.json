@@ -13,7 +13,6 @@
 		"simpletest/simpletest": "dev-master"
 	}
 	, "require": {
-		"seanmorris/theme": "^0.1"
 	}
 	, "autoload": {
 		"psr-4": {
