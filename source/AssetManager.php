@@ -152,7 +152,7 @@ class AssetManager
 	{
 		$assetDir = $package->assetDir();
 		$publicDir = $package->publicDir();
-		
+
 		if(!$assetDir->check())
 		{
 			return false;
