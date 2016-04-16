@@ -12,7 +12,7 @@ class Router
 		, $aliased
 		, $match
 		, $regex
-		, $matches
+		, $matches = []
 		, $context = []
 	;
 

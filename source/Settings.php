@@ -48,7 +48,7 @@ class Settings
 					);
 					$userSettings = json_decode($userFile->slurp());
 					$domain = $userSettings->root;
-					var_dump($userSettings);
+					//var_dump($userSettings);
 				}
 			}
 

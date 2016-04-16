@@ -71,7 +71,7 @@ register_shutdown_function(function() use($start){
 		'Response Complete.'
 		, [
 			'Space' => memory_get_peak_usage(true) / (1024*1024) . ' MB'
-			, 'Time' => number_format(microtime(true) - $start, 6)  . ' sec'
+			, 'Time' => number_format(microtime(true) - $start, 2)  . ' sec'
 		]
 		, PHP_EOL
 	);
