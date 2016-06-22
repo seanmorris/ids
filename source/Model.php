@@ -140,7 +140,7 @@ class Model
 		}
 
 		if($curClass::beforeCreate($this, $namedValues) === FALSE
-			|| $curClass::beforeWrite($this, $namedValues) === FALSE
+			| $curClass::beforeWrite($this, $namedValues) === FALSE
 		){
 			return false;
 		}
@@ -275,18 +275,20 @@ class Model
 
 			if(isset($wrappers[$column]) && $update->hasReplacements($wrappers[$column]))
 			{
-				$namedValues[$column] = $values[] = $colVal;
+				$namedValues[$column] =& $values[];
+				$namedValues[$column] = $colVal;
 			}
 			elseif(!isset($wrappers[$column]))
 			{
-				$namedValues[$column] = $values[] = $colVal;	
+				$namedValues[$column] =& $values[];
+				$namedValues[$column] = $colVal;
 			}
 		}
 
 		$values[] = $this->id;
 
-		if($curClass::beforeUpdate($this, $namedValues) === FALSE
-			|| $curClass::beforeWrite($this, $namedValues) === FALSE
+		if(($curClass::beforeUpdate($this, $namedValues) === FALSE)
+			| ($curClass::beforeWrite($this, $namedValues) === FALSE)
 		){
 			return FALSE;
 		}
@@ -340,7 +342,7 @@ class Model
 				{
 					\SeanMorris\Ids\Log::debug('CHECKING CLASS ' . $parentClass);
 					if($parentClass::beforeUpdate($this, $namedValues) === FALSE
-						|| $parentClass::beforeWrite($this, $namedValues) === FALSE
+						| $parentClass::beforeWrite($this, $namedValues) === FALSE
 					){
 						return FALSE;
 					}
@@ -522,10 +524,6 @@ class Model
 			$args
 		);
 
-		// $count = $select->countStatement('id');
-		// $countResult = $count->execute(...$args);
-
-
 		if(isset($def['type']) && $def['type'] == 'generate')
 		{
 			\SeanMorris\Ids\Log::debug(sprintf(
@@ -700,6 +698,18 @@ class Model
 			}
 
 			return $models;
+		}
+
+		if(isset($def['type']) && $def['type'] == 'count')
+		{
+			\SeanMorris\Ids\Log::debug(sprintf(
+				'Counting %s', get_called_class()
+			));
+
+			$count = $select->countStatement('id');
+			$countResult = $count->execute(...$args);
+
+			return (int) $countResult->fetchColumn();
 		}
 
 		return function(...$overArgs) use($gen, $args, $rawArgs, &$cache, &$idCache)
@@ -960,7 +970,7 @@ class Model
 		// \SeanMorris\Ids\Log::debug("MODEL RESOLVEDEF\n");
 		$type = 'generate';
 		
-		if(preg_match('/^(loadOne|load|generate|get)(By.+)/', $name, $match))
+		if(preg_match('/^(loadOne|load|generate|get|count)(By.+)/', $name, $match))
 		{
 			if(isset($match[1]))
 			{

@@ -54,6 +54,15 @@ abstract class WhereStatement extends Statement
 		);
 
 		\SeanMorris\Ids\Log::debug('Args:', $args);
+		
+		if($nonscalar = array_filter($args, function($a){return !is_scalar($a) && !is_null($a);}))
+		{
+			\SeanMorris\Ids\Log::debug('Nonscalar argument supplied.');
+			\SeanMorris\Ids\Log::debug($nonscalar);
+			\SeanMorris\Ids\Log::trace();
+			die;	
+		}
+
 		$queryObject->execute($args);
 		static::$queryCount++;
 		\SeanMorris\Ids\Log::debug('Queries Run: ' . static::$queryCount);

@@ -309,7 +309,14 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		foreach($packages as $packageName)
 		{
-			$package = \SeanMorris\Ids\Package::get($packageName);
+			try
+			{
+				$package = \SeanMorris\Ids\Package::get($packageName);
+			}
+			catch (\Exception $e)
+			{
+				continue;
+			}
 
 			if(!$help = $package->getVar('idilic:help', [], 'global'))
 			{
