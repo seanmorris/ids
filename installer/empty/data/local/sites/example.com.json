@@ -1,0 +1,13 @@
+{
+	"entrypoint" : "SeanMorris\\ExampleSite\\Route\\RootRoute"
+	, "devmode" : false
+	, "databases" : {
+		"main" : {
+			"connection" : "mysql:dbname=example_site;host=localhost;"
+			, "username" : "example_db_username"
+			, "password" : "example_db_password"
+		}
+	}
+	, "public": "/var/www/examplesite"
+	, "logLevel": "off"
+}

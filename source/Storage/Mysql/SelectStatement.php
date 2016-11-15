@@ -10,6 +10,8 @@ class SelectStatement extends WhereStatement
 		, $columnAliases = []
 		, $master
 		, $order = []
+		, $limit = NULL
+		, $offset = NULL
 		, $conditions = []
 		, $joins = []
 		, $superior
@@ -34,6 +36,9 @@ class SelectStatement extends WhereStatement
 
 		$count->column = $column;
 		$count->unique = $unique;
+
+		$count->limit = NULL;
+		$count->offset = NULL;
 
 		return $count;
 	}
@@ -176,7 +181,19 @@ class SelectStatement extends WhereStatement
 
 			if($orderStrings)
 			{
-				$orderString = PHP_EOL . PHP_EOL . 'ORDER BY ' . implode(', ', $orderStrings);			
+				$orderString = PHP_EOL . PHP_EOL . 'ORDER BY ' . implode(', ', $orderStrings);
+			}
+		}
+
+		$limitString = NULL;
+
+		if($this->limit)
+		{
+			$limitString = PHP_EOL . PHP_EOL . sprintf('LIMIT %d', $this->limit);
+
+			if($this->offset)
+			{
+				$limitString .= sprintf(' OFFSET %d', $this->offset);
 			}
 		}
 
@@ -185,7 +202,7 @@ class SelectStatement extends WhereStatement
 			, $columnString
 			, $tableString
 			, $conditionString ?: 1
-		) . $orderString;
+		) . $orderString . $limitString;
 	}
 
 	protected function assembleJoin($type = null, $args = null, $col, $joinCol)
@@ -261,6 +278,16 @@ class SelectStatement extends WhereStatement
 		return $this;
 	}
 
+	public function limit($limit, $offset = NULL)
+	{
+		$this->limit = $limit;
+
+		if($offset !== NULL)
+		{
+			$this->offset = $offset;
+		}
+	}
+
 	public function subjugate($join)
 	{
 		$join->master = $this->master;
@@ -295,13 +322,37 @@ class SelectStatement extends WhereStatement
 		return $this->columnAliases[$tableAlias][$columnName];
 	}
 
+	public function fetch(...$args)
+	{
+		static $queryObject;
+
+		if(!$queryObject)
+		{
+			try
+			{
+				$queryObject = $this->execute(...$args);
+			}
+			catch(\Exception $e)
+			{
+				\SeanMorris\Ids\Log::error($e);
+				\SeanMorris\Ids\Log::trace();
+				die;
+			}
+		}
+
+		return $queryObject->fetch();
+	}
+
 	public function generate()
 	{
   		$closure = function(...$args)
 		{
-			try{
+			try
+			{
 				$queryObject = $this->execute(...$args);
-			} catch(\Exception $e) {
+			}
+			catch(\Exception $e)
+			{
 				\SeanMorris\Ids\Log::error($e);
 				\SeanMorris\Ids\Log::trace();
 				die;
@@ -309,6 +360,8 @@ class SelectStatement extends WhereStatement
 
 			while($row = $queryObject->fetch())
 			{
+				\SeanMorris\Ids\Log::debug($row);
+
 				$result = [];
 
 				foreach($this->columnAliases as $tableAlias => $columnAliases)
@@ -329,7 +382,7 @@ class SelectStatement extends WhereStatement
 					}
 				}
 
-				// \SeanMorris\Ids\Log::debug($this->tableAliases, $result);
+				\SeanMorris\Ids\Log::debug($this->tableAliases, $result);
 
 				yield $result;
 			}

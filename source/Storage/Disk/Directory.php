@@ -92,11 +92,25 @@ class Directory extends File
 		rmdir($this->name);
 	}
 
-	public function has($directory)
+	public function has($sub)
 	{
-		if(substr($directory->name, 0, strlen($this->name)) == $this->name)
+		if(!is_object($sub))
 		{
-			return substr($directory->name, strlen($this->name));
+			$sub = $this->file($sub);
+
+			if(!$sub->check())
+			{
+				return FALSE;
+			}
+		};
+
+		if(substr($sub->name, 0, strlen($this->name)) == $this->name)
+		{
+			if(is_dir($sub->name))
+			{
+				return new Directory($sub->name . '/');
+			}
+			return new File($sub->name);
 		}
 
 		return FALSE;

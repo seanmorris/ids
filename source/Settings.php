@@ -48,13 +48,13 @@ class Settings
 					);
 					$userSettings = json_decode($userFile->slurp());
 					$domain = $userSettings->root;
-					var_dump($userSettings);
+					//var_dump($userSettings);
 				}
 			}
 
-			$package = Package::get('SeanMorris\Ids');
-
-			$settingsFile = $package->localDir()
+			$rootPackage = Package::getRoot();
+			
+			$settingsFile = $rootPackage->localDir()
 				. 'sites/'
 				. $hostname
 				. '.json';

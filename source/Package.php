@@ -9,8 +9,34 @@ class Package
 
 	protected static
 		$assetManager
-		, $tables = ['main'=>['Foozle', 'Foobar']]
+		, $tables = ['main'=>[]]
+		//, $tables = ['main'=>['Foozle', 'Foobar']]
 	;
+
+	public static function getRoot()
+	{
+		$vendorRoot = new \SeanMorris\Ids\Storage\Disk\Directory(
+			IDS_VENDOR_ROOT
+		);
+
+		$appRoot = $vendorRoot->parent();
+
+		$composerJson = $appRoot->file('composer.json');
+
+		$composerData = json_decode($composerJson->slurp());
+
+		$packageName = static::name($composerData->name);
+		$packageClass = $packageName . '\\Package';
+
+		if(class_exists($packageClass))
+		{
+			return new $packageClass($packageName);
+		}
+
+		$package = new static($packageName);
+
+		return $package;
+	}
 
 	public static function get($packageName = NULL)
 	{
@@ -37,7 +63,7 @@ class Package
 	}
 
 	protected function __construct($package)
-	{		
+	{
 		$packageName = static::name($package);
 		$packageDir = static::dir($package);
 
@@ -53,8 +79,13 @@ class Package
 		else
 		{
 			$packages = static::packageDirectories();
-			
-			if(isset($packages[strtolower($packageDir)]))
+
+			if(isset($packages[$packageDir]))
+			{
+				$this->packageName = $packageName;
+				$this->folder = $packages[$packageDir];
+			}
+			else if(isset($packages[strtolower($packageDir)]))
 			{
 				$this->packageName = $packageName;
 				$this->folder = $packages[strtolower($packageDir)];
@@ -74,11 +105,11 @@ class Package
 	public static function packageDirectories()
 	{
 		$packages = [];
-		
+
 		$vendorRoot = new \SeanMorris\Ids\Storage\Disk\Directory(
 			IDS_VENDOR_ROOT
 		);
-		
+
 		while($vendorDir = $vendorRoot->read())
 		{
 			while($packageDir = $vendorDir->read())
@@ -144,7 +175,7 @@ class Package
 					}
 
 					$packagePath = $directory . '/' . $vendorDir . '/' . $packageDir;
-					
+
 					$packages[] = $vendorDir . '/' . $packageDir;
 				}
 			}
@@ -220,8 +251,8 @@ class Package
 		if(!$assetManager)
 		{
 			$assetManager = 'SeanMorris\Ids\AssetManager';
-		}	
-		
+		}
+
 		if(class_exists($assetManager))
 		{
 			return new $assetManager;
@@ -272,8 +303,8 @@ class Package
 				{
 					$currentVar = (object)[];
 				}
-				
-				$currentVar =& $currentVar->$varName;	
+
+				$currentVar =& $currentVar->$varName;
 			}
 
 			$currentVar = $val;
@@ -315,7 +346,7 @@ class Package
 
 			while($varName = array_shift($varPath))
 			{
-				$currentVar =& $currentVar->$varName;	
+				$currentVar =& $currentVar->$varName;
 			}
 
 			return $currentVar;
@@ -429,7 +460,7 @@ class Package
 
 		foreach($schema->revisions as $index => $revision)
 		{
-			$fullSchema = $objectMerge($fullSchema, $revision);	
+			$fullSchema = $objectMerge($fullSchema, $revision);
 		}
 
 		return $fullSchema;
@@ -497,7 +528,7 @@ class Package
 			$tables += array_keys((array)$storedSchema);
 
 			$db = Database::get($db);
-			foreach($tables as $table)		
+			foreach($tables as $table)
 			{
 				if(!isset($storedSchema->$table))
 				{
@@ -602,14 +633,14 @@ class Package
 	public function applySchema($real = false)
 	{
 		$exportTables = $this->getFullSchema();
-		
+
 		$exportTables = $this->getFullSchema();
 		$queries = [];
 
 		foreach(static::$tables as $db => $tables)
 		{
 			$db = Database::get($db);
-			
+
 			$tables += array_keys((array)$exportTables);
 
 			foreach($tables as $table)
@@ -728,7 +759,7 @@ class Package
 							, $index->Key_name
 							, $columns
 							, $arKey[$index->Seq_in_index]->Index_comment
-						);	
+						);
 					}
 					else
 					{
@@ -742,7 +773,7 @@ class Package
 							, $index->Key_name
 							, $columns
 							, $arKey[$index->Seq_in_index]->Index_comment
-						);	
+						);
 					}
 
 					unset($exportTables->$table->keys->{$index->Key_name});
@@ -756,7 +787,7 @@ class Package
 					if(!isset($exportTables->$table)
 						|| !isset($exportTables->$table->fields)
 					){
-						// continue;
+						continue;
 					}
 
 					// var_dump("$table test------", $exportTables);
@@ -809,7 +840,7 @@ class Package
 							{
 								$createIndex[] = sprintf(
 									"\tUNIQUE KEY `%s` (`%s`)"
-									, $key[1]->Key_name 
+									, $key[1]->Key_name
 									, $columns
 								);
 
@@ -819,7 +850,7 @@ class Package
 							{
 								$createIndex[] = sprintf(
 									"\tKEY `%s` (`%s`)"
-									, $key[1]->Key_name 
+									, $key[1]->Key_name
 									, $columns
 								);
 							}

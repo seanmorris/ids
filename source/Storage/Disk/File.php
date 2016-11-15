@@ -121,4 +121,19 @@ class File
 	{
 		return (string)$this->name;
 	}
+
+	public function subtract($dir)
+	{
+		if(is_string($dir))
+		{
+			$dir = new Directory($dir);
+		}
+
+		if($dir->name === substr($this->name, 0, strlen($dir->name)))
+		{
+			return substr($this->name, strlen($dir->name));
+		}
+
+		return FALSE;
+	}
 }

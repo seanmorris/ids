@@ -4,12 +4,17 @@ class CountStatement extends SelectStatement
 {
 	protected
 		$column
-		, $unique;
+		, $unique
+	;
+
 	public function aliasColumns()
 	{
 		$this->order = [];
-		
-		return [sprintf('COUNT(%s.%s) AS count', $this->alias, $this->column)];
+		$this->columns = ['count'];
+
+		$countAlias = $this->aliasColumnName('count', $this->alias);
+
+		return [sprintf('COUNT(%s.%s) AS %s', $this->alias, $this->column, $countAlias)];
 	}
 
 	public function joins()
@@ -27,5 +32,10 @@ class CountStatement extends SelectStatement
 			}
 			, $this->joins
 		);
+	}
+
+	public function generate()
+	{
+		return parent::generate();
 	}
 }

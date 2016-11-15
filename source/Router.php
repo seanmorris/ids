@@ -3,7 +3,7 @@ namespace SeanMorris\Ids;
 class Router
 {
 	protected
-		$path	
+		$path
 		, $routes
 		, $parent
 		, $child
@@ -12,7 +12,7 @@ class Router
 		, $aliased
 		, $match
 		, $regex
-		, $matches
+		, $matches = []
 		, $context = []
 	;
 
@@ -64,7 +64,7 @@ class Router
 			{
 				if(!$path->nodes())
 				{
-					$path->append(null);	
+					$path->append(null);
 				}
 				$node = 'index';
 			}
@@ -93,7 +93,7 @@ class Router
 				&& $path->remaining() <= 1
 			){
 				$path = $this->path()->pop();
-				
+
 				if($i !== 'index')
 				{
 					$path = $path->append($i);
@@ -113,7 +113,7 @@ class Router
 				$this->match = $node;
 				$this->routedTo = $node;
 
-				Log::debug(sprintf('Routing to function %s for url node "%s".', $node, $node));
+				Log::debug(sprintf('Routing to function %s for url node "%s". (%s)', $node, $node, get_class($routes)));
 
 				if(is_callable([$routes, '_preRoute']))
 				{
@@ -190,7 +190,7 @@ class Router
 
 									$result = $routes->_notFound($this);
 								}
-								
+
 								break;
 							}
 						}
@@ -264,7 +264,12 @@ class Router
 					$result = $routes->_dynamic($this);
 				}
 			}
-			
+
+			if($result instanceof \SeanMorris\Ids\Http\HttpResponse)
+			{
+				throw $result;
+			}			
+
 			if($result === false && is_callable([$routes, '_notFound']))
 			{
 				$this->match = false;
@@ -277,7 +282,16 @@ class Router
 			{
 				$result = $routes->_postRoute($this, $result, $preroutePath);
 			}
-			
+		}
+		catch(\SeanMorris\Ids\Http\HttpDocument $e)
+		{
+			$e->onCatch();
+			return $e;
+		}
+		catch(\SeanMorris\Ids\Http\HttpResponse $e)
+		{
+			$e->onCatch();
+			$result = $e->getMessage();
 		}
 		catch(\SeanMorris\Ids\Http\HttpException $e)
 		{
@@ -291,13 +305,11 @@ class Router
 			if(!$this->subRouted)
 			{
 				$result = $e->getMessage();
-				$status = $e->getCode();
-
 				$e->onCatch();
 			}
 			else if($this->subRouted && $e instanceof \SeanMorris\Ids\Http\Http303)
 			{
-				throw new \SeanMorris\Ids\Http\Http303($this->path()->pathString(2));
+				throw new \SeanMorris\Ids\Http\Http303($this->path()->pathString(2), 303, $e);
 			}
 		}
 
@@ -310,13 +322,15 @@ class Router
 		return $this->context;
 	}
 
-	public function contextGet($name)
+	public function contextGet($name, $default = NULL)
 	{
 		// \SeanMorris\Ids\Log::info(__FUNCTION__ . ' deprecated');
 		if(isset($this->context[$name]))
 		{
 			return $this->context[$name];
 		}
+
+		return $default;
 	}
 
 	public function contextSet($name, $value)
@@ -355,7 +369,7 @@ class Router
 	{
 		if(!$request)
 		{
-			$request = $this->request;	
+			$request = $this->request;
 		}
 
 		$router = new static($request, $routes, $this, $subRouted ? $subRouted : $this->subRouted);

@@ -36,6 +36,8 @@ class AssetManager
 			return;
 		}
 
+		$devmode = Settings::read('devmode');
+
 		$filename = 'Static/Dynamic/Min/' . $fullHash;
 
 		$outputFile = new \SeanMorris\Ids\Storage\Disk\File($publicDir . $filename);
@@ -45,54 +47,70 @@ class AssetManager
 			return '/' . $filename;
 		}
 
+		\SeanMorris\Ids\Log::debug('Building assets:', $assets);
+
 		$assetHashes = [];
 		$assetOrder = [];
-		
+
 		foreach($assets as $asset)
 		{
 			$chunks = array_filter(explode('/', $asset));
 			$vendor = array_shift($chunks);
 			$packageName = array_shift($chunks);
+			$fullPackageName = $vendor . '/' . $packageName;
 			
-			$package = Package::get($vendor . '/' . $packageName);
-			$assetName = implode('/', $chunks);
-
-			\SeanMorris\Ids\Log::debug('Building asset ' . $assetName, 'From ' . $vendor . '/' . $packageName);
-
-			if($asset = $package->assetDir()->has($assetName))
+			if($fullPackageName !== 'Static/Dynamic')
 			{
-				$assetType = pathinfo($asset->name(), PATHINFO_EXTENSION);
-				$assetContent = $asset->slurp();
+				$assetName = implode('/', $chunks);
 
-				$assetHashes[$assetType][$packageName][sha1($assetContent)] = $asset;
+				\SeanMorris\Ids\Log::debug('Building asset ' . $assetName, 'From ' . $vendor . '/' . $packageName);
+
+				$package = Package::get($fullPackageName);
+				
+
+				if($asset = $package->assetDir()->has($assetName))
+				{
+					$assetType = pathinfo($asset->name(), PATHINFO_EXTENSION);
+					$assetHashes[$assetType][$fullPackageName][$asset->name()] = $asset;
+				}
+			}
+			else
+			{
+				$assetName = $fullPackageName . '/' . implode('/', $chunks);
+
+				\SeanMorris\Ids\Log::debug('Building asset ' . $assetName, 'From ' . $vendor . '/' . $packageName);
+
+				$asset = new \SeanMorris\Ids\Storage\Disk\File($assetName);
+				if($asset->check())
+				{
+					$assetType = pathinfo($asset->name(), PATHINFO_EXTENSION);
+					$assetHashes[$assetType][$fullPackageName][$asset->name()] = $asset;
+				}
 			}
 		}
 
 		if(isset($assetHashes['js']))
 		{
-			//$fullHash = NULL;
-
-			foreach($assetHashes['js'] as $package => $js)
-			{
-				foreach($js as $contentHash => $asset)
-				{
-					// $fullHash = sha1($fullHash . $contentHash);
-				}
-			}
-
-			$filename = 'Static/Dynamic/Min/' . $fullHash; // . '.js';
+			$filename .= '.js';
 
 			$outputFile = new \SeanMorris\Ids\Storage\Disk\File($publicDir . $filename);
 
-			if($outputFile->check())
+			if($outputFile->check() && !$devmode)
 			{
+				\SeanMorris\Ids\Log::debug('Returning cached asset: '  . $filename);
 				return '/' . $filename;
 			}
-			
+
 			$outputFile->write('// ' . time() . PHP_EOL, FALSE);
 
 			foreach($assetHashes['js'] as $package => $js)
 			{
+				$outputFile->write('// ' . $package . PHP_EOL);
+				foreach($js as $contentHash => $asset)
+				{
+					$outputFile->write('//   ' . $asset->name() . PHP_EOL);
+				}
+				$outputFile->write('// ' . PHP_EOL);
 				foreach($js as $contentHash => $asset)
 				{
 					$outputFile->write('// ' . $asset->name() . PHP_EOL);
@@ -100,10 +118,9 @@ class AssetManager
 				}
 			}
 
+			\SeanMorris\Ids\Log::debug('Built asset: '  . $filename);
 			return '/' . $filename;
 		}
-
-		$filename = 'Static/Dynamic/Min' . $listHash; // . '.css';
 
 		$outputFile = new \SeanMorris\Ids\Storage\Disk\File($publicDir . $filename);
 
@@ -114,40 +131,38 @@ class AssetManager
 
 		if(isset($assetHashes['css']))
 		{
-			// $fullHash = NULL;
+			$filename .= '.css';
 
-			foreach($assetHashes['css'] as $package => $js)
-			{
-				foreach($js as $contentHash => $asset)
-				{
-					// $fullHash = sha1($fullHash . $contentHash);
-				}
-			}
-
-			$filename = 'Static/Dynamic/Min/' . $fullHash; // . '.css';
-			
 			$outputFile = new \SeanMorris\Ids\Storage\Disk\File($publicDir . $filename);
 
-			if($outputFile->check())
+			if($outputFile->check() && !$devmode)
 			{
+				\SeanMorris\Ids\Log::debug('Returning cached asset: '  . $filename);
 				return '/' . $filename;
 			}
-			
+
 			$outputFile->write('// ' . time() . PHP_EOL, FALSE);
 
 			foreach($assetHashes['css'] as $package => $js)
 			{
+				$outputFile->write('/* ' . $package . PHP_EOL);
 				foreach($js as $contentHash => $asset)
 				{
-					$outputFile->write('// ' . $asset->name() . PHP_EOL);
+					$outputFile->write('/* ' . $asset->name() . PHP_EOL);
+				}
+				$outputFile->write('/* ' . PHP_EOL);
+				foreach($js as $contentHash => $asset)
+				{
+					$outputFile->write('/* ' . $asset->name() . ' */' .PHP_EOL);
 					$outputFile->write($asset->slurp() . PHP_EOL);
 				}
 			}
 
+			\SeanMorris\Ids\Log::debug('Built asset: '  . $filename);
 			return '/' . $filename;
 		}
 	}
-	
+
 	public static function buildAssets($package, $pharDir = null)
 	{
 		$assetDir = $package->assetDir();
@@ -175,7 +190,7 @@ class AssetManager
 				{
 					$subDir = $dir->subtract($assetDir);
 				}
-				
+
 				if(!$dir = $publicDir->has($subDir))
 				{
 					$dir = $publicDir->create($subDir, 0777, TRUE);

@@ -15,7 +15,7 @@ while(TRUE)
 	{
 		break;
 	}
-	
+
 	$nextDir = dirname($dir);
 
 	if($nextDir === $dir)
@@ -35,7 +35,7 @@ if(!$autoloadPath)
 	{
 		$userSettings = json_decode(file_get_contents($userFile));
 		$autoloadPath = $userSettings->root . '/vendor/autoload.php';
-	}	
+	}
 }
 
 if($autoloadPath)
@@ -53,10 +53,17 @@ $idsPackage = \SeanMorris\Ids\Package::get('SeanMorris/Ids');
 
 if(!isset($_SERVER['HTTP_HOST']))
 {
-	$_SERVER['HTTP_HOST'] =  $idsPackage->getVar('idilic:defaultDomain', 'test.dev');
+	$_SERVER['HTTP_HOST'] =  $idsPackage->getVar('idilic:defaultDomain', 'localhost');
 }
 
-ini_set("error_log", '/tmp/ids_log.txt');
+$errorPath = IDS_VENDOR_ROOT . '/../temporary/log.txt';
+
+if(!file_exists($errorPath))
+{
+	touch($errorPath);
+}
+
+ini_set("error_log", $errorPath);
 
 register_shutdown_function(function() use($start){
 	$error = error_get_last();
@@ -71,7 +78,7 @@ register_shutdown_function(function() use($start){
 		'Response Complete.'
 		, [
 			'Space' => memory_get_peak_usage(true) / (1024*1024) . ' MB'
-			, 'Time' => number_format(microtime(true) - $start, 6)  . ' sec'
+			, 'Time' => number_format(microtime(true) - $start, 2)  . ' sec'
 		]
 		, PHP_EOL
 	);
@@ -81,13 +88,13 @@ $existingErrorHandler = set_error_handler(
 	function($errorNumber, $errorString, $errorFile, $errorLine, $errorContext) use(&$existingErrorHandler)
 	{
 		$errorContextContent = NULL;
-		
+
 		/*
 		ob_start();
 		$errorContextContent = ob_get_contents();
 		ob_end_clean();
 		*/
-		
+
 		$line = sprintf(
 			'(%d)"%s" thrown in %s:%d'
 				.  PHP_EOL

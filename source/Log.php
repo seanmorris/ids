@@ -179,7 +179,7 @@ class Log
 			}
 
 			$path = NULL;
-			
+
 			if(isset($_SERVER['REQUEST_URI']))
 			{
 				$path = $_SERVER['REQUEST_URI'] . PHP_EOL;
@@ -195,6 +195,7 @@ class Log
 				$path = $path . PHP_EOL
 					. 'Request: ' . PHP_EOL
 					. static::dump($_REQUEST, [], static::$colors)
+					. ($_FILES ? 'Files: ' . static::dump($_FILES, [], static::$colors) : NULL)
 				;
 			}
 
@@ -202,7 +203,7 @@ class Log
 		}
 
 		$output .= static::color(
-			static::header() . ' ' . static::positionString(1)
+			static::header($levelString) . ' ' . static::positionString(1)
 			, static::HEAD_COLOR
 			, static::HEAD_BACKGROUND
 		);
@@ -341,7 +342,7 @@ class Log
 					, $colors['typeBg']
 				);
 			}
-			
+
 			$output .= PHP_EOL;
 			$output .= str_repeat($indent, count($parents));
 			$output .= '{';
@@ -519,7 +520,7 @@ class Log
 				$level
 					? sprintf('[%s]', $level)
 					: NULL
-			) 
+			)
 			, date('Y-m-d h:i:s')
 			, $mill
 			, getmypid()

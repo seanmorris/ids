@@ -71,7 +71,7 @@ abstract class WhereStatement extends Statement
 
 		if($errorCode !== '00000')
 		{
-			\SeanMorris\Ids\Log::debug($queryObject->errorInfo());
+			\SeanMorris\Ids\Log::error($queryObject->errorInfo());
 			\SeanMorris\Ids\Log::trace();
 			die;
 		}

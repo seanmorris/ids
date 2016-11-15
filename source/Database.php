@@ -27,15 +27,18 @@ class		Database
 				, $name
 			));
 		}
+
 		return isset(static::$connections[$name])
 			? static::$connections[$name]
 			: static::$connections[$name] = new \PDO(
 				static::$credentials[$name][0]
 				, static::$credentials[$name][1]
 				, static::$credentials[$name][2]
+				/*
 				, isset(static::$credentials[$name][3])
 					? isset(static::$credentials[$name][3])
 					: array()
+				*/
 		);
 	}
 

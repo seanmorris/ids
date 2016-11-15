@@ -20,7 +20,7 @@ foreach($argv as $arg)
 	{
 		if(!$args)
 		{
-			continue;
+			//continue;
 		}
 
 		$requestProto->args = $args;
@@ -30,9 +30,11 @@ foreach($argv as $arg)
 
 		$requests[] = new stdClass;
 		$requestProto =& $requests[count($requests) - 1];
+
+		continue;
 	}
 
-	if(!preg_match('/^(--?)(\w+)\s?=?\s?(\S+)?$/', $arg, $match))
+	if(!preg_match('/^(-+?)(\w+)\s?=?\s?(\S+)?$/', $arg, $match))
 	{
 		$args[] = $arg;
 	}
@@ -46,10 +48,10 @@ foreach($argv as $arg)
 
 		$switches[$switch] = $value;
 	}
-}
 
-$requestProto->args = $args;
-$requestProto->switches = $switches;
+	$requestProto->args = $args;
+	$requestProto->switches = $switches;
+}
 
 if(isset($switches['d']))
 {
@@ -83,5 +85,5 @@ foreach ($requests as $req)
 		print $res;
 	}
 
-	print PHP_EOL;	
+	print PHP_EOL;
 }
