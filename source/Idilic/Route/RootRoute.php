@@ -495,7 +495,7 @@ EOF
 
 		$processor->spin();
 	}
-
+	
 	public function countJob()
 	{
 		$job = new \SeanMorris\Multiota\Test\Count\CountJob(
@@ -580,7 +580,6 @@ EOF
 					print $this->backspace($line, $offset);
 					$line = substr($line, 0, strlen($line)-($offset+1)) . substr($line, strlen($line)-$offset);
 					print $line;
-
 				}
 				if(!$line)
 				{

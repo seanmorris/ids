@@ -285,12 +285,12 @@ class Router
 		}
 		catch(\SeanMorris\Ids\Http\HttpDocument $e)
 		{
-			$e->onCatch();
+			$e->onCatch($this);
 			return $e;
 		}
 		catch(\SeanMorris\Ids\Http\HttpResponse $e)
 		{
-			$e->onCatch();
+			$e->onCatch($this);
 			$result = $e->getMessage();
 		}
 		catch(\SeanMorris\Ids\Http\HttpException $e)
@@ -302,10 +302,11 @@ class Router
 
 			\SeanMorris\Ids\Log::logException($e);
 
+			$result = $e->getMessage();
+
 			if(!$this->subRouted)
 			{
-				$result = $e->getMessage();
-				$e->onCatch();
+				$e->onCatch($this);
 			}
 			else if($this->subRouted && $e instanceof \SeanMorris\Ids\Http\Http303)
 			{

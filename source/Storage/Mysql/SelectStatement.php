@@ -197,6 +197,18 @@ class SelectStatement extends WhereStatement
 			}
 		}
 
+		$limitString = NULL;
+
+		if($this->limit)
+		{
+			$limitString = PHP_EOL . PHP_EOL . sprintf('LIMIT %d', $this->limit);
+
+			if($this->offset)
+			{
+				$limitString .= sprintf(' OFFSET %d', $this->offset);
+			}
+		}
+
 		return sprintf(
 			"SELECT\n%s\n\nFROM\n%s\n\nWHERE\n%s"
 			, $columnString

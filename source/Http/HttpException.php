@@ -7,7 +7,7 @@ class HttpException extends \Exception
 		parent::__construct($message, $code, $previous);
 	}
 
-	public function onCatch()
+	public function onCatch($router)
 	{
 
 	}

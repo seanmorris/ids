@@ -37,9 +37,7 @@ class AssetManager
 		}
 
 		$devmode = Settings::read('devmode');
-
 		$filename = 'Static/Dynamic/Min/' . $fullHash;
-
 		$outputFile = new \SeanMorris\Ids\Storage\Disk\File($publicDir . $filename);
 
 		if($outputFile->check())
@@ -57,6 +55,7 @@ class AssetManager
 			$chunks = array_filter(explode('/', $asset));
 			$vendor = array_shift($chunks);
 			$packageName = array_shift($chunks);
+
 			$fullPackageName = $vendor . '/' . $packageName;
 			
 			if($fullPackageName !== 'Static/Dynamic')
@@ -111,6 +110,7 @@ class AssetManager
 					$outputFile->write('//   ' . $asset->name() . PHP_EOL);
 				}
 				$outputFile->write('// ' . PHP_EOL);
+
 				foreach($js as $contentHash => $asset)
 				{
 					$outputFile->write('// ' . $asset->name() . PHP_EOL);
@@ -154,10 +154,6 @@ class AssetManager
 				foreach($js as $contentHash => $asset)
 				{
 					$outputFile->write('/* ' . $asset->name() . ' */' .PHP_EOL);
-					$outputFile->write($asset->slurp() . PHP_EOL);
-				}
-			}
-
 			\SeanMorris\Ids\Log::debug('Built asset: '  . $filename);
 			return '/' . $filename;
 		}
