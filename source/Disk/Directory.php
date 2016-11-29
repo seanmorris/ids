@@ -1,5 +1,5 @@
 <?php
-namespace SeanMorris\Ids\Storage\Disk;
+namespace SeanMorris\Ids\Disk;
 class Directory extends File
 {
 	protected
@@ -82,7 +82,7 @@ class Directory extends File
 
 	public function file($name)
 	{
-		return new \SeanMorris\Ids\Storage\Disk\File(
+		return new \SeanMorris\Ids\Disk\File(
 			$this->name . $name
 		);
 	}

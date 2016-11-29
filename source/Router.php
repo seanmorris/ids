@@ -285,12 +285,18 @@ class Router
 		}
 		catch(\SeanMorris\Ids\Http\HttpDocument $e)
 		{
-			$e->onCatch();
+			if(!\SeanMorris\Ids\Idilic\Cli::isCli())
+			{
+				$e->onCatch();
+			}
 			return $e;
 		}
 		catch(\SeanMorris\Ids\Http\HttpResponse $e)
 		{
-			$e->onCatch();
+			if(!\SeanMorris\Ids\Idilic\Cli::isCli())
+			{
+				$e->onCatch();
+			}
 			$result = $e->getMessage();
 		}
 		catch(\SeanMorris\Ids\Http\HttpException $e)
@@ -305,7 +311,18 @@ class Router
 			if(!$this->subRouted)
 			{
 				$result = $e->getMessage();
-				$e->onCatch();
+				if(!\SeanMorris\Ids\Idilic\Cli::isCli())
+				{
+					$e->onCatch();
+				}
+				else if($e instanceof \SeanMorris\Ids\Http\Http303)
+				{
+					$subRequest = new Request(['uri' => $e->getMessage()]);
+
+					$router = new static($subRequest, $routes, $this);
+					
+					return $router->route();
+				}
 			}
 			else if($this->subRouted && $e instanceof \SeanMorris\Ids\Http\Http303)
 			{

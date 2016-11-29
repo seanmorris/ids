@@ -40,7 +40,7 @@ class AssetManager
 
 		$filename = 'Static/Dynamic/Min/' . $fullHash;
 
-		$outputFile = new \SeanMorris\Ids\Storage\Disk\File($publicDir . $filename);
+		$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . $filename);
 
 		if($outputFile->check())
 		{
@@ -80,7 +80,7 @@ class AssetManager
 
 				\SeanMorris\Ids\Log::debug('Building asset ' . $assetName, 'From ' . $vendor . '/' . $packageName);
 
-				$asset = new \SeanMorris\Ids\Storage\Disk\File($assetName);
+				$asset = new \SeanMorris\Ids\Disk\File($assetName);
 				if($asset->check())
 				{
 					$assetType = pathinfo($asset->name(), PATHINFO_EXTENSION);
@@ -93,7 +93,7 @@ class AssetManager
 		{
 			$filename .= '.js';
 
-			$outputFile = new \SeanMorris\Ids\Storage\Disk\File($publicDir . $filename);
+			$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . $filename);
 
 			if($outputFile->check() && !$devmode)
 			{
@@ -122,7 +122,7 @@ class AssetManager
 			return '/' . $filename;
 		}
 
-		$outputFile = new \SeanMorris\Ids\Storage\Disk\File($publicDir . $filename);
+		$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . $filename);
 
 		if($outputFile->check())
 		{
@@ -133,7 +133,7 @@ class AssetManager
 		{
 			$filename .= '.css';
 
-			$outputFile = new \SeanMorris\Ids\Storage\Disk\File($publicDir . $filename);
+			$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . $filename);
 
 			if($outputFile->check() && !$devmode)
 			{
@@ -141,7 +141,7 @@ class AssetManager
 				return '/' . $filename;
 			}
 
-			$outputFile->write('// ' . time() . PHP_EOL, FALSE);
+			$outputFile->write('/* ' . time() . ' */' . PHP_EOL, FALSE);
 
 			foreach($assetHashes['css'] as $package => $js)
 			{

@@ -1,5 +1,5 @@
 <?php
-namespace SeanMorris\Ids\Storage\Mysql;
+namespace SeanMorris\Ids\Mysql;
 class DeleteStatement extends WhereStatement
 {
 	public function assemble()

@@ -63,7 +63,7 @@ class Model
 
 		$where = [];
 
-		$insert = new \SeanMorris\Ids\Storage\Mysql\InsertStatement($curClass::$table);
+		$insert = new \SeanMorris\Ids\Mysql\InsertStatement($curClass::$table);
 
 		$values = [];
 
@@ -213,7 +213,7 @@ class Model
 
 		$where = [];
 
-		$update = new \SeanMorris\Ids\Storage\Mysql\UpdateStatement($curClass::$table);
+		$update = new \SeanMorris\Ids\Mysql\UpdateStatement($curClass::$table);
 		$update->columns(...$columns)->wrappers($wrappers)
 			->conditions([['id' => '?']]);
 
@@ -438,7 +438,7 @@ class Model
 
 		foreach($tables as $table)
 		{
-			$delete = new \SeanMorris\Ids\Storage\Mysql\DeleteStatement($table);
+			$delete = new \SeanMorris\Ids\Mysql\DeleteStatement($table);
 			$delete->conditions([['id' => '?']]);
 			if(!$delete->execute($this->id))
 			{
@@ -1094,7 +1094,7 @@ class Model
 	{
 		$table = !empty(static::$table) ? static::$table : $table;
 
-		$select = new \SeanMorris\Ids\Storage\Mysql\SelectStatement($table);
+		$select = new \SeanMorris\Ids\Mysql\SelectStatement($table);
 
 		$columnsToWrappers = static::getColumns('read', FALSE);
 

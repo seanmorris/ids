@@ -35,7 +35,7 @@ class PackageTest extends \UnitTestCase
 
 	public function tearDown()
 	{	
-		$testSchemaFile = new \SeanMorris\Ids\Storage\Disk\File(
+		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
 			$this->package->packageDir()
 			. 'test/data/testApplySchema.json'
 		);
@@ -49,7 +49,7 @@ class PackageTest extends \UnitTestCase
 
 	public function testApplySchema()
 	{
-		$testSchemaFile = new \SeanMorris\Ids\Storage\Disk\File(
+		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
 			$this->package->packageDir()
 			. 'test/data/testApplySchema.json'
 		);
@@ -86,11 +86,11 @@ class PackageTest extends \UnitTestCase
 	{
 		$this->package->storeSchema();
 		
-		$schemaFile = new \SeanMorris\Ids\Storage\Disk\File(
+		$schemaFile = new \SeanMorris\Ids\Disk\File(
 			$this->package->globalDir() . 'schema.json'
 		);
 
-		$testSchemaFile = new \SeanMorris\Ids\Storage\Disk\File(
+		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
 			$this->package->packageDir()
 			. 'test/data/testApplySchema.json'
 		);
@@ -106,7 +106,7 @@ class PackageTest extends \UnitTestCase
 	{
 		$this->package->storeSchema();
 
-		$testSchemaFile = new \SeanMorris\Ids\Storage\Disk\File(
+		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
 			$this->package->packageDir()
 			. 'test/data/testColumnAddSchema.json'
 		);
@@ -133,7 +133,7 @@ class PackageTest extends \UnitTestCase
 	{
 		$this->package->storeSchema();
 
-		$testSchemaFile = new \SeanMorris\Ids\Storage\Disk\File(
+		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
 			$this->package->packageDir()
 			. 'test/data/testColumnRemoveSchema.json'
 		);

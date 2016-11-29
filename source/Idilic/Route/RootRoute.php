@@ -433,7 +433,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		{
 			if(file_exists(getenv("HOME") . '/.idilicProfile.json'))
 			{
-				$userFile = new \SeanMorris\Ids\Storage\Disk\File(
+				$userFile = new \SeanMorris\Ids\Disk\File(
 					getenv("HOME") . '/.idilicProfile.json'
 				);
 				$userSettings = json_decode($userFile->slurp());

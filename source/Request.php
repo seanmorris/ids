@@ -124,7 +124,7 @@ class Request
 				continue;
 			}
 
-			$file = new \SeanMorris\Ids\Storage\Disk\File(
+			$file = new \SeanMorris\Ids\Disk\File(
 				$fileDef['tmp_name']
 				, $fileDef['name']
 			);
