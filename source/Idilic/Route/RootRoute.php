@@ -571,7 +571,7 @@ EOF
 			}
 			if($offset > strlen($line))
 			{
-				$offset = strlen($line);
+				$offset = strlen($line);	
 			}
 			if($byte == '7f')
 			{
@@ -580,7 +580,6 @@ EOF
 					print $this->backspace($line, $offset);
 					$line = substr($line, 0, strlen($line)-($offset+1)) . substr($line, strlen($line)-$offset);
 					print $line;
-
 				}
 				if(!$line)
 				{
@@ -705,6 +704,6 @@ EOF
 			$string .= str_repeat("\x1b\x5b\x44", abs($offset));
 		}
 
-		return $string;
+		return $string;	
 	}
 }

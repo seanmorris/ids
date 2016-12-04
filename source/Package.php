@@ -224,7 +224,7 @@ class Package
 		}
 
 		$dir = new \SeanMorris\Ids\Disk\Directory(
-			$publicDir . $this->dir($this->packageSpace())
+			$publicDir . '/' . $this->dir($this->packageSpace())
 		);
 
 		return $dir;

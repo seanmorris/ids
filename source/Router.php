@@ -227,6 +227,12 @@ class Router
 								break;
 							}
 						}
+
+						Log::error(sprintf(
+							'No valid route for "%s" on "%s"!!!'
+							, $node
+							, get_class($routes)
+						));
 					}
 				}
 			}

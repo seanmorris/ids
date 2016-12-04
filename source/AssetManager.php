@@ -40,13 +40,6 @@ class AssetManager
 
 		$filename = 'Static/Dynamic/Min/' . $fullHash;
 
-		$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . $filename);
-
-		if($outputFile->check())
-		{
-			return '/' . $filename;
-		}
-
 		\SeanMorris\Ids\Log::debug('Building assets:', $assets);
 
 		$assetHashes = [];
@@ -66,13 +59,17 @@ class AssetManager
 				\SeanMorris\Ids\Log::debug('Building asset ' . $assetName, 'From ' . $vendor . '/' . $packageName);
 
 				$package = Package::get($fullPackageName);
-				
 
 				if($asset = $package->assetDir()->has($assetName))
 				{
 					$assetType = pathinfo($asset->name(), PATHINFO_EXTENSION);
 					$assetHashes[$assetType][$fullPackageName][$asset->name()] = $asset;
-				}
+
+					if(!$asset->check())
+					{
+						\SeanMorris\Ids\Log::error(sprintf("Asset %s not found!\n%s", $asset, $assetName));
+					}
+				}	
 			}
 			else
 			{
@@ -81,10 +78,15 @@ class AssetManager
 				\SeanMorris\Ids\Log::debug('Building asset ' . $assetName, 'From ' . $vendor . '/' . $packageName);
 
 				$asset = new \SeanMorris\Ids\Disk\File($assetName);
+
 				if($asset->check())
 				{
 					$assetType = pathinfo($asset->name(), PATHINFO_EXTENSION);
 					$assetHashes[$assetType][$fullPackageName][$asset->name()] = $asset;
+				}
+				else
+				{
+					\SeanMorris\Ids\Log::error(sprintf("Asset %s not found!\n%s", $asset->name(), $assetName));
 				}
 			}
 		}
@@ -92,8 +94,8 @@ class AssetManager
 		if(isset($assetHashes['js']))
 		{
 			$filename .= '.js';
-
-			$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . $filename);
+			$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . '/' . $filename);
+			$outputFile->write(NULL, FALSE);
 
 			if($outputFile->check() && !$devmode)
 			{
@@ -113,17 +115,23 @@ class AssetManager
 				$outputFile->write('// ' . PHP_EOL);
 				foreach($js as $contentHash => $asset)
 				{
+					\SeanMorris\Ids\Log::debug(sprintf(
+						"Writing %s\n\tto %s."
+						, $asset->name()
+						, $publicDir . '/' . $filename
+					));
 					$outputFile->write('// ' . $asset->name() . PHP_EOL);
 					$outputFile->write($asset->slurp() . PHP_EOL);
 				}
 			}
 
 			\SeanMorris\Ids\Log::debug('Built asset: '  . $filename);
+
 			return '/' . $filename;
 		}
 
-		$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . $filename);
-
+		$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . '/' . $filename);
+		
 		if($outputFile->check())
 		{
 			return '/' . $filename;
@@ -132,32 +140,36 @@ class AssetManager
 		if(isset($assetHashes['css']))
 		{
 			$filename .= '.css';
-
-			$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . $filename);
+			$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . '/' . $filename);
+			$outputFile->write(NULL, FALSE);
 
 			if($outputFile->check() && !$devmode)
 			{
 				\SeanMorris\Ids\Log::debug('Returning cached asset: '  . $filename);
 				return '/' . $filename;
 			}
+			
+			$outputFile->write(sprintf("/* %s */\n", time()));
 
-			$outputFile->write('/* ' . time() . ' */' . PHP_EOL, FALSE);
-
-			foreach($assetHashes['css'] as $package => $js)
+			foreach($assetHashes['css'] as $package => $css)
 			{
-				$outputFile->write('/* ' . $package . PHP_EOL);
-				foreach($js as $contentHash => $asset)
+				$outputFile->write(sprintf("/* %s */\n", $package));
+				foreach($css as $contentHash => $asset)
 				{
-					$outputFile->write('/* ' . $asset->name() . PHP_EOL);
+					$outputFile->write(sprintf("/*   %s */\n", $asset->name()));
 				}
-				$outputFile->write('/* ' . PHP_EOL);
-				foreach($js as $contentHash => $asset)
+				$outputFile->write('/* */ ' . PHP_EOL);
+				foreach($css as $contentHash => $asset)
 				{
-					$outputFile->write('/* ' . $asset->name() . ' */' .PHP_EOL);
+					\SeanMorris\Ids\Log::debug(sprintf(
+						"Writing %s\n\tto %s."
+						, $asset->name()
+						, $publicDir . '/' . $filename
+					));
+					$outputFile->write(sprintf("/* %s */\n", $asset->name()));
 					$outputFile->write($asset->slurp() . PHP_EOL);
 				}
 			}
-
 			\SeanMorris\Ids\Log::debug('Built asset: '  . $filename);
 			return '/' . $filename;
 		}
@@ -179,7 +191,8 @@ class AssetManager
 		}
 		else
 		{
-			$publicDir->create();
+			var_dump($publicDir);
+			$publicDir->create(NULL, 0777, TRUE);
 		}
 
 		static::mapAssets(

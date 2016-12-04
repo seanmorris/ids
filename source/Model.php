@@ -471,6 +471,23 @@ class Model
 
 		foreach(static::$cache as $class => &$cache)
 		{
+			\SeanMorris\Ids\Log::debug(sprintf(
+				'Static cache clearing for %s.'
+				, $class
+			));
+			if($descentants && is_subclass_of($class, get_called_class(), TRUE)
+				|| $class === get_called_class()
+			){
+				$cache = [];
+			}
+		}
+
+		foreach(static::$idCache as $class => &$cache)
+		{
+			\SeanMorris\Ids\Log::debug(sprintf(
+				'ID Static cache clearing for %s.'
+				, $class
+			));
 			if($descentants && is_subclass_of($class, get_called_class(), TRUE)
 				|| $class === get_called_class()
 			){
@@ -528,12 +545,10 @@ class Model
 
 		$def = static::resolveDef($name, $args);
 		$select = static::selectStatement($name, null, $args);
-
 		if($def['paged'])
 		{
 			$limit = (int) array_pop($args);
 			$offset = (int) array_pop($args) * $limit;
-
 			$select->limit($limit, $offset);
 		}
 
@@ -1329,7 +1344,6 @@ class Model
 		{
 			return;
 		}
-
 		$this->$name = $value;
 	}
 
@@ -1829,6 +1843,4 @@ class Model
 	{
 		return static::$cache;
 	}
-
-
 }
