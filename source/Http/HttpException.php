@@ -11,4 +11,9 @@ class HttpException extends \Exception
 	{
 
 	}
+
+	public function __toString()
+	{
+		return '<pre>' . parent::__toString() . '<pre>';
+	}
 }

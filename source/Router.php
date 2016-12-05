@@ -227,6 +227,12 @@ class Router
 								break;
 							}
 						}
+
+						Log::error(sprintf(
+							'No valid route for "%s" on "%s"!!!'
+							, $node
+							, get_class($routes)
+						));
 					}
 				}
 			}
@@ -285,12 +291,18 @@ class Router
 		}
 		catch(\SeanMorris\Ids\Http\HttpDocument $e)
 		{
-			$e->onCatch($this);
+			if(!\SeanMorris\Ids\Idilic\Cli::isCli())
+			{
+				$e->onCatch();
+			}
 			return $e;
 		}
 		catch(\SeanMorris\Ids\Http\HttpResponse $e)
 		{
-			$e->onCatch($this);
+			if(!\SeanMorris\Ids\Idilic\Cli::isCli())
+			{
+				$e->onCatch();
+			}
 			$result = $e->getMessage();
 		}
 		catch(\SeanMorris\Ids\Http\HttpException $e)
@@ -306,7 +318,19 @@ class Router
 
 			if(!$this->subRouted)
 			{
-				$e->onCatch($this);
+				$result = $e->getMessage();
+				if(!\SeanMorris\Ids\Idilic\Cli::isCli())
+				{
+					$e->onCatch();
+				}
+				else if($e instanceof \SeanMorris\Ids\Http\Http303)
+				{
+					$subRequest = new Request(['uri' => $e->getMessage()]);
+
+					$router = new static($subRequest, $routes, $this);
+					
+					return $router->route();
+				}
 			}
 			else if($this->subRouted && $e instanceof \SeanMorris\Ids\Http\Http303)
 			{

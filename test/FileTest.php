@@ -16,7 +16,7 @@ class FileTest extends \UnitTestCase
 	{
 		$appendData = "12345678";
 
-		$file = new \SeanMorris\Ids\Storage\Disk\File($this->testFilename);
+		$file = new \SeanMorris\Ids\Disk\File($this->testFilename);
 
 		$file->write($this->testData, FALSE);
 		$this->assertEqual(
@@ -42,7 +42,7 @@ class FileTest extends \UnitTestCase
 
 	public function testRead()
 	{
-		$file = new \SeanMorris\Ids\Storage\Disk\File($this->testFilename);
+		$file = new \SeanMorris\Ids\Disk\File($this->testFilename);
 		$data = str_split(file_get_contents($this->testFilename));
 
 		while(!$file->eof()) 
@@ -68,7 +68,7 @@ class FileTest extends \UnitTestCase
 
 	public function testDelete()
 	{
-		$file = new \SeanMorris\Ids\Storage\Disk\File($this->testFilename);
+		$file = new \SeanMorris\Ids\Disk\File($this->testFilename);
 
 		$file->delete();
 

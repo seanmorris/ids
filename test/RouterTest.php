@@ -31,9 +31,10 @@ class RouterTest extends \UnitTestCase
 				$response
 				, $value
 				, sprintf(
-					"Unexpected response for %s\n%s"
+					"Unexpected response for %s (got '%s', expected '%s')"
 					, $uri
 					, $response
+					, $value
 				)
 			);
 		}

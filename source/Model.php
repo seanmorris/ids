@@ -63,7 +63,7 @@ class Model
 
 		$where = [];
 
-		$insert = new \SeanMorris\Ids\Storage\Mysql\InsertStatement($curClass::$table);
+		$insert = new \SeanMorris\Ids\Mysql\InsertStatement($curClass::$table);
 
 		$values = [];
 
@@ -213,7 +213,7 @@ class Model
 
 		$where = [];
 
-		$update = new \SeanMorris\Ids\Storage\Mysql\UpdateStatement($curClass::$table);
+		$update = new \SeanMorris\Ids\Mysql\UpdateStatement($curClass::$table);
 		$update->columns(...$columns)->wrappers($wrappers)
 			->conditions([['id' => '?']]);
 
@@ -438,7 +438,7 @@ class Model
 
 		foreach($tables as $table)
 		{
-			$delete = new \SeanMorris\Ids\Storage\Mysql\DeleteStatement($table);
+			$delete = new \SeanMorris\Ids\Mysql\DeleteStatement($table);
 			$delete->conditions([['id' => '?']]);
 			if(!$delete->execute($this->id))
 			{
@@ -536,7 +536,7 @@ class Model
 			, $name
 			, $cacheKey
 			, isset($cache) ? '*' : ''
-		), $args);
+		), 'Args:', $args);
 
 		if(!$args)
 		{
@@ -545,17 +545,17 @@ class Model
 
 		$def = static::resolveDef($name, $args);
 		$select = static::selectStatement($name, null, $args);
-
 		if($def['paged'])
 		{
 			$limit = (int) array_pop($args);
+			$offset = (int) array_pop($args) * $limit;
 			$select->limit($limit, $offset);
 		}
 
 		if(isset($def['type']) && $def['type'] == 'count')
 		{
 			$countStatement = $select->countStatement('id');
-			return (int) $countStatement->execute($args)->fetchColumn();
+			return (int) $countStatement->fetchColumn();
 		}
 
 		$gen = $select->generate();
@@ -1109,7 +1109,7 @@ class Model
 	{
 		$table = !empty(static::$table) ? static::$table : $table;
 
-		$select = new \SeanMorris\Ids\Storage\Mysql\SelectStatement($table);
+		$select = new \SeanMorris\Ids\Mysql\SelectStatement($table);
 
 		$columnsToWrappers = static::getColumns('read', FALSE);
 
@@ -1344,7 +1344,6 @@ class Model
 		{
 			return;
 		}
-
 		$this->$name = $value;
 	}
 

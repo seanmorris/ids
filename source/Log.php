@@ -70,27 +70,53 @@ class Log
 
 	public static function error(...$data)
 	{
-		static::log(__FUNCTION__, ...$data);
+		static::log(
+			static::color(__FUNCTION__, 'red')
+			, ...$data
+		);
 	}
 
 	public static function warn(...$data)
 	{
-		static::log(__FUNCTION__, ...$data);
+		static::log(
+			static::color(__FUNCTION__, 'yellow')
+			, ...$data
+		);
 	}
 
 	public static function info(...$data)
 	{
-		static::log(__FUNCTION__, ...$data);
+		static::log(
+			static::color(__FUNCTION__, 'blue')
+			, ...$data
+		);
 	}
 
 	public static function debug(...$data)
 	{
-		static::log(__FUNCTION__, ...$data);
+		static::log(
+			static::color(__FUNCTION__, 'green')
+			, ...$data
+		);
 	}
 
 	public static function query(...$data)
 	{
-		static::log(__FUNCTION__, ...$data);
+		$data = array_map(
+			function($datum)
+			{
+				if(is_string($datum))
+				{
+					$datum = Log::color($datum, 'yellow');
+				}
+				return $datum;
+			}
+			, $data
+		);
+		static::log(
+			static::color(__FUNCTION__, 'brown')
+			, ...$data
+		);
 	}
 
 	protected static function getColor($type)

@@ -1,5 +1,5 @@
 <?php
-namespace SeanMorris\Ids\Storage\Disk;
+namespace SeanMorris\Ids\Disk;
 class File
 {
 	protected

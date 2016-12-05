@@ -12,14 +12,14 @@ class DirectoryTest extends \UnitTestCase
 
 	public function testCreate()
 	{
-		$directory = new \SeanMorris\Ids\Storage\Disk\Directory($this->testFilename);
+		$directory = new \SeanMorris\Ids\Disk\Directory($this->testFilename);
 
 		$testName = 'testing';
 		$testDir = $directory->create($testName);
 
 		$this->assertIsA(
 			$testDir
-			, '\SeanMorris\Ids\Storage\Disk\Directory'
+			, '\SeanMorris\Ids\Disk\Directory'
 			, sprintf(
 				"Create directory failed:\n%s/%s/"
 				, $this->testFilename
@@ -33,7 +33,7 @@ class DirectoryTest extends \UnitTestCase
 
 		$this->assertIsA(
 			$testDirStatic
-			, '\SeanMorris\Ids\Storage\Disk\Directory'
+			, '\SeanMorris\Ids\Disk\Directory'
 			, sprintf(
 				"Static create directory failed:\n%s"
 				, $this->testFilename
@@ -51,28 +51,28 @@ class DirectoryTest extends \UnitTestCase
 			{
 				$this->assertIsA(
 					$file
-					, '\SeanMorris\Ids\Storage\Disk\File'
+					, '\SeanMorris\Ids\Disk\File'
 					, sprintf(
 						"File object not found:\n%s"
 						, print_r($file, 1)
 					)
 				);
 
-				if($file instanceof \SeanMorris\Ids\Storage\Disk\Directory)
+				if($file instanceof \SeanMorris\Ids\Disk\Directory)
 				{
 					$testInvoluter($file);
 				}
 			}
 		};
 
-		$directory = new \SeanMorris\Ids\Storage\Disk\Directory($this->testFilename);
+		$directory = new \SeanMorris\Ids\Disk\Directory($this->testFilename);
 
 		$testInvoluter($directory);
 	}
 
 	public function testDelete()
 	{
-		$directory = new \SeanMorris\Ids\Storage\Disk\Directory($this->testFilename);
+		$directory = new \SeanMorris\Ids\Disk\Directory($this->testFilename);
 
 		$testName = 'testing';
 		$testDir = $directory->create($testName);

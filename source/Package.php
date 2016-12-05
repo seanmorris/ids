@@ -15,7 +15,7 @@ class Package
 
 	public static function getRoot()
 	{
-		$vendorRoot = new \SeanMorris\Ids\Storage\Disk\Directory(
+		$vendorRoot = new \SeanMorris\Ids\Disk\Directory(
 			IDS_VENDOR_ROOT
 		);
 
@@ -106,7 +106,7 @@ class Package
 	{
 		$packages = [];
 
-		$vendorRoot = new \SeanMorris\Ids\Storage\Disk\Directory(
+		$vendorRoot = new \SeanMorris\Ids\Disk\Directory(
 			IDS_VENDOR_ROOT
 		);
 
@@ -114,7 +114,7 @@ class Package
 		{
 			while($packageDir = $vendorDir->read())
 			{
-				if(!$packageDir instanceof \SeanMorris\Ids\Storage\Disk\Directory)
+				if(!$packageDir instanceof \SeanMorris\Ids\Disk\Directory)
 				{
 					continue;
 				}
@@ -199,7 +199,7 @@ class Package
 
 	public function packageDir()
 	{
-		return new \SeanMorris\Ids\Storage\Disk\Directory(
+		return new \SeanMorris\Ids\Disk\Directory(
 			$this->folder
 		);
 	}
@@ -211,7 +211,7 @@ class Package
 
 	public function assetDir()
 	{
-		return new \SeanMorris\Ids\Storage\Disk\Directory(
+		return new \SeanMorris\Ids\Disk\Directory(
 			$this->folder . 'asset/'
 		);
 	}
@@ -223,8 +223,8 @@ class Package
 			return;
 		}
 
-		$dir = new \SeanMorris\Ids\Storage\Disk\Directory(
-			$publicDir . $this->dir($this->packageSpace())
+		$dir = new \SeanMorris\Ids\Disk\Directory(
+			$publicDir . '/' . $this->dir($this->packageSpace())
 		);
 
 		return $dir;
@@ -232,14 +232,14 @@ class Package
 
 	public function globalDir()
 	{
-		return new \SeanMorris\Ids\Storage\Disk\Directory(
+		return new \SeanMorris\Ids\Disk\Directory(
 			$this->packageDir() . 'data/global/'
 		);
 	}
 
 	public function localDir()
 	{
-		return new \SeanMorris\Ids\Storage\Disk\Directory(
+		return new \SeanMorris\Ids\Disk\Directory(
 			$this->packageDir() . 'data/local/'
 		);
 	}

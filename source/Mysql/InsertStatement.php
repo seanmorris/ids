@@ -1,5 +1,5 @@
 <?php
-namespace SeanMorris\Ids\Storage\Mysql;
+namespace SeanMorris\Ids\Mysql;
 class InsertStatement extends Statement
 {
 	public function assemble()

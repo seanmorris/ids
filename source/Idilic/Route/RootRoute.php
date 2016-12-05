@@ -433,7 +433,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		{
 			if(file_exists(getenv("HOME") . '/.idilicProfile.json'))
 			{
-				$userFile = new \SeanMorris\Ids\Storage\Disk\File(
+				$userFile = new \SeanMorris\Ids\Disk\File(
 					getenv("HOME") . '/.idilicProfile.json'
 				);
 				$userSettings = json_decode($userFile->slurp());
@@ -495,7 +495,7 @@ EOF
 
 		$processor->spin();
 	}
-	
+
 	public function countJob()
 	{
 		$job = new \SeanMorris\Multiota\Test\Count\CountJob(
@@ -571,7 +571,7 @@ EOF
 			}
 			if($offset > strlen($line))
 			{
-				$offset = strlen($line);
+				$offset = strlen($line);	
 			}
 			if($byte == '7f')
 			{
@@ -703,7 +703,6 @@ EOF
 		{
 			$string .= str_repeat("\x1b\x5b\x44", abs($offset));
 		}
-
-		return $string;
+		return $string;	
 	}
 }
