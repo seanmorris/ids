@@ -36,11 +36,11 @@ class AssetManager
 			return;
 		}
 
-		$devmode = Settings::read('devmode');
+		$cacheAssets = Settings::read('cacheAssets');
 
 		$filename = 'Static/Dynamic/Min/' . $fullHash;
 
-		\SeanMorris\Ids\Log::debug('Building assets:', $assets);
+		// \SeanMorris\Ids\Log::debug('Building assets:', $assets);
 
 		$assetHashes = [];
 		$assetOrder = [];
@@ -56,7 +56,7 @@ class AssetManager
 			{
 				$assetName = implode('/', $chunks);
 
-				\SeanMorris\Ids\Log::debug('Building asset ' . $assetName, 'From ' . $vendor . '/' . $packageName);
+				// \SeanMorris\Ids\Log::debug('Building asset ' . $assetName, 'From ' . $vendor . '/' . $packageName);
 
 				$package = Package::get($fullPackageName);
 
@@ -75,7 +75,7 @@ class AssetManager
 			{
 				$assetName = $fullPackageName . '/' . implode('/', $chunks);
 
-				\SeanMorris\Ids\Log::debug('Building asset ' . $assetName, 'From ' . $vendor . '/' . $packageName);
+				// \SeanMorris\Ids\Log::debug('Building asset ' . $assetName, 'From ' . $vendor . '/' . $packageName);
 
 				$asset = new \SeanMorris\Ids\Disk\File($assetName);
 
@@ -95,14 +95,11 @@ class AssetManager
 		{
 			$filename .= '.js';
 			$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . '/' . $filename);
-			$outputFile->write(NULL, FALSE);
-
-			if($outputFile->check() && !$devmode)
+			if($outputFile->check() && $cacheAssets)
 			{
 				\SeanMorris\Ids\Log::debug('Returning cached asset: '  . $filename);
 				return '/' . $filename;
 			}
-
 			$outputFile->write('// ' . time() . PHP_EOL, FALSE);
 
 			foreach($assetHashes['js'] as $package => $js)
@@ -141,9 +138,7 @@ class AssetManager
 		{
 			$filename .= '.css';
 			$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . '/' . $filename);
-			$outputFile->write(NULL, FALSE);
-
-			if($outputFile->check() && !$devmode)
+			if($outputFile->check() && $cacheAssets)
 			{
 				\SeanMorris\Ids\Log::debug('Returning cached asset: '  . $filename);
 				return '/' . $filename;

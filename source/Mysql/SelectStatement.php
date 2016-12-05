@@ -334,6 +334,33 @@ class SelectStatement extends WhereStatement
 		return $this->columnAliases[$tableAlias][$columnName];
 	}
 
+	public function fetchColumn(...$args)
+	{
+		static $queryObject;
+
+		if(!$queryObject)
+		{
+			try
+			{
+				$queryObject = $this->execute(...$args);
+			}
+			catch(\Exception $e)
+			{
+				\SeanMorris\Ids\Log::error($e);
+				\SeanMorris\Ids\Log::trace();
+				die;
+			}
+		}
+
+		if($col = $queryObject->fetchColumn())
+		{
+			\SeanMorris\Ids\Log::debug('Fetching column...', $col);
+			return $col;
+		}
+
+		\SeanMorris\Ids\Log::debug('DONE FETCHING COLUMNS!');		
+	}
+
 	public function fetch(...$args)
 	{
 		static $queryObject;
@@ -352,7 +379,14 @@ class SelectStatement extends WhereStatement
 			}
 		}
 
-		return $queryObject->fetch();
+		if($row = $queryObject->fetch())
+		{
+			\SeanMorris\Ids\Log::debug('Fetching row...', $row);
+
+			return $row;
+		}
+
+		\SeanMorris\Ids\Log::debug('DONE FETCHING ROWS!');
 	}
 
 	public function generate()
@@ -372,7 +406,7 @@ class SelectStatement extends WhereStatement
 
 			while($row = $queryObject->fetch())
 			{
-				\SeanMorris\Ids\Log::debug($row);
+				\SeanMorris\Ids\Log::debug('Generating row...', $row);
 
 				$result = [];
 
@@ -394,12 +428,12 @@ class SelectStatement extends WhereStatement
 					}
 				}
 
-				\SeanMorris\Ids\Log::debug($this->tableAliases, $result);
+				// \SeanMorris\Ids\Log::debug($this->tableAliases, $result);
 
 				yield $result;
 			}
 
-			\SeanMorris\Ids\Log::debug('DONE!');
+			\SeanMorris\Ids\Log::debug('DONE GENERATING ROWS!');
 		};
 
 		return $closure;

@@ -536,7 +536,7 @@ class Model
 			, $name
 			, $cacheKey
 			, isset($cache) ? '*' : ''
-		), $args);
+		), 'Args:', $args);
 
 		if(!$args)
 		{
@@ -555,7 +555,7 @@ class Model
 		if(isset($def['type']) && $def['type'] == 'count')
 		{
 			$countStatement = $select->countStatement('id');
-			return (int) $countStatement->execute($args)->fetchColumn();
+			return (int) $countStatement->fetchColumn();
 		}
 
 		$gen = $select->generate();

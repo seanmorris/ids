@@ -102,6 +102,17 @@ class Log
 
 	public static function query(...$data)
 	{
+		$data = array_map(
+			function($datum)
+			{
+				if(is_string($datum))
+				{
+					$datum = Log::color($datum, 'yellow');
+				}
+				return $datum;
+			}
+			, $data
+		);
 		static::log(
 			static::color(__FUNCTION__, 'brown')
 			, ...$data
