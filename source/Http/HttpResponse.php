@@ -7,7 +7,7 @@ class HttpResponse extends HttpException
 		parent::__construct($message, $code, $previous);
 	}
 
-	public function onCatch()
+	public function onCatch($router)
 	{
 		header(sprintf("HTTP/1.1 %s", $this->getCode()));
 	}

@@ -293,7 +293,7 @@ class Router
 		{
 			if(!\SeanMorris\Ids\Idilic\Cli::isCli())
 			{
-				$e->onCatch();
+				$e->onCatch($this);
 			}
 			return $e;
 		}
@@ -301,7 +301,7 @@ class Router
 		{
 			if(!\SeanMorris\Ids\Idilic\Cli::isCli())
 			{
-				$e->onCatch();
+				$e->onCatch($this);
 			}
 			$result = $e->getMessage();
 		}
@@ -321,7 +321,7 @@ class Router
 				$result = $e->getMessage();
 				if(!\SeanMorris\Ids\Idilic\Cli::isCli())
 				{
-					$e->onCatch();
+					$e->onCatch($this);
 				}
 				else if($e instanceof \SeanMorris\Ids\Http\Http303)
 				{
