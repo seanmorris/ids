@@ -76,10 +76,16 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		}
 
 		$packageName = str_replace('/', '\\', $packageName);
+		$package = $this->_getPackage($packageName);
+		$tests = $package->testDir();
 
-		foreach($args as $test)
+		while($test = $tests->read())
 		{
-			$testClass = $packageName . '\\Test\\' . $test;
+			if(!preg_match('/(\w+?Test)\.php/', $test->name(), $m))
+			{
+				continue;
+			}
+			$testClass = $packageName . '\\Test\\' . $m[1];
 			$test = new $testClass;
 			$test->run(new \TextReporter());
 			echo PHP_EOL;

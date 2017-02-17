@@ -244,6 +244,20 @@ class Package
 		);
 	}
 
+	public function sourceDir()
+	{
+		return new \SeanMorris\Ids\Disk\Directory(
+			$this->packageDir() . 'source/'
+		);
+	}
+
+	public function testDir()
+	{
+		return new \SeanMorris\Ids\Disk\Directory(
+			$this->packageDir() . 'test/'
+		);
+	}
+
 	public function assetManager()
 	{
 		$assetManager = static::$assetManager;
