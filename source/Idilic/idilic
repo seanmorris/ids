@@ -52,7 +52,6 @@ foreach($argv as $arg)
 	$requestProto->args = $args;
 	$requestProto->switches = $switches;
 }
-
 if(isset($switches['d']))
 {
 	$_SERVER['HTTP_HOST'] = $switches['d'];

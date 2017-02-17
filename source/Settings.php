@@ -34,21 +34,21 @@ class Settings
 			{	
 				$hostname = $_SERVER['HTTP_HOST'];
 			}
-			elseif(!$hostname)
+
+			if(!$hostname)
 			{
 				$hostname = \SeanMorris\Ids\Idilic\Cli::option('domain', 'd');
 				
 				if(!$hostname)
 				{
-					//$idsPackage = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
-					//$hostname = $idsPackage->getVar('defaultDomain');
 					if(file_exists(getenv("HOME") . '/.idilicProfile.json'))
-					$userFile = new \SeanMorris\Ids\Disk\File(
-						getenv("HOME") . '/.idilicProfile.json'
-					);
-					$userSettings = json_decode($userFile->slurp());
-					$domain = $userSettings->root;
-					//var_dump($userSettings);
+					{
+						$userFile = new \SeanMorris\Ids\Disk\File(
+							getenv("HOME") . '/.idilicProfile.json'
+						);
+						$userSettings = json_decode($userFile->slurp());
+						$hostname = $userSettings->domain;
+					}
 				}
 			}
 

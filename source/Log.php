@@ -410,60 +410,6 @@ class Log
 		return $output . PHP_EOL;
 	}
 
-	/*
-	public static function printData($struct, $colors = array(), $depth = 0)
-	{
-		print_r($struct);
-		$structString = print_r($struct, 1);
-
-		$colors['key'] = 'red';
-
-		$structString = preg_replace_callback(
-			'/^(\s+)\[(.+?)\] =>(.+?)/ms'
-			, function($match) use($colors)
-			{
-				static::debug($match);
-				if(!isset($colors['key']))
-				{
-					$colors['key'] = 'none';
-				}
-
-				if(!isset($colors['keyBg']))
-				{
-					$colors['keyBg'] = 'none';
-				}
-
-				if(!isset($colors['bracket']))
-				{
-					$colors['bracket'] = 'none';
-				}
-
-				if(!isset($colors['bracketBg']))
-				{
-					$colors['bracketBg'] = 'none';
-				}
-
-				if(!isset($colors['text']))
-				{
-					$colors['text'] = 'none';
-				}
-
-				if(!isset($colors['textBg']))
-				{
-					$colors['textBg'] = 'none';
-				}
-
-				$key = static::color($match[2], $colors['key'], $colors['keyBg']);
-
-				return $match[1] . '[' . $key . '] => ';
-			}
-			, $structString
-		);
-
-		static::debug($struct);
-		static::debug($structString);
-	}*/
-
 	public static function suppress()
 	{
 		static::$suppress = true;
@@ -535,7 +481,7 @@ class Log
 
 	public static function header($level = '')
 	{
-		$mull = pow(10,static::SECOND_SIGNIFICANCE-1);
+		$mull = pow(10,static::SECOND_SIGNIFICANCE);
 		$mill = microtime(true);
 		$mill -= floor($mill);
 		$mill = round($mill*$mull);
@@ -544,13 +490,15 @@ class Log
 			"[%s.%04d]::[%d]"
 			 . (
 				$level
-					? sprintf('[%s]', $level)
+					? ('['. $level . static::color(']', static::HEAD_COLOR, static::HEAD_BACKGROUND, FALSE))
 					: NULL
 			)
 			, date('Y-m-d h:i:s')
 			, $mill
 			, getmypid()
 		);
+
+		
 	}
 
 	public static function position($depth = 0)

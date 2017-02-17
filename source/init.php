@@ -36,6 +36,16 @@ if(!$autoloadPath)
 		$userSettings = json_decode(file_get_contents($userFile));
 		$autoloadPath = $userSettings->root . '/vendor/autoload.php';
 	}
+	else
+	{
+		throw new \ErrorException(
+			'Unable to locate autoloader. ' . (
+				(php_sapi_name() === 'cli')
+				 	? 'Run idilic inside the project directory or configure ~/.idilicProfile.json'
+				 	: 'Check your directory structure.'
+			 )
+		);
+	}
 }
 
 if($autoloadPath)
@@ -53,7 +63,7 @@ $idsPackage = \SeanMorris\Ids\Package::get('SeanMorris/Ids');
 
 if(!isset($_SERVER['HTTP_HOST']))
 {
-	$_SERVER['HTTP_HOST'] =  $idsPackage->getVar('idilic:defaultDomain', 'localhost');
+	$_SERVER['HTTP_HOST'] =  $idsPackage->getVar('idilic:defaultDomain', NULL);
 }
 
 $errorPath = IDS_VENDOR_ROOT . '/../temporary/log.txt';
