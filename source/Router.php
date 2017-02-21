@@ -190,7 +190,6 @@ class Router
 
 									$result = $routes->_notFound($this);
 								}
-
 								break;
 							}
 						}
@@ -202,17 +201,16 @@ class Router
 								{
 									$result	= $routes->$route($this);
 								}
-								else
+								
+								if($result === false && is_callable([$routes, '_notFound']))
 								{
-									if($result === false && is_callable([$routes, '_notFound']))
-									{
-										$this->match = false;
-										$this->routedTo = false;
+									$this->match = false;
+									$this->routedTo = false;
 
-										$result = $routes->_notFound($this);
-										break;
-									}
+									$result = $routes->_notFound($this);
 								}
+
+								break;
 							}
 							else
 							{

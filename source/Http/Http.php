@@ -11,7 +11,6 @@ class Http
 
 			ob_start();
 			register_shutdown_function(function() use(&$disconnect){
-				session_write_close();
 				ignore_user_abort(TRUE);
 				header(sprintf('Content-Length: %s', ob_get_length()));
 				header('Connection: close');

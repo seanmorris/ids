@@ -62,6 +62,14 @@ class Log
 		, 'lineBg' => NULL
 	];
 
+	static $levelColors = [
+		'error'   => 'red'
+		, 'warn'  => 'yellow'
+		, 'info'  => 'blue'
+		, 'debug' => 'green'
+		, 'query' => 'brown'
+	];
+
 	protected static
 		$started = false
 		, $colorOutput = true
@@ -70,34 +78,22 @@ class Log
 
 	public static function error(...$data)
 	{
-		static::log(
-			static::color(__FUNCTION__, 'red')
-			, ...$data
-		);
+		static::log(__FUNCTION__, ...$data);
 	}
 
 	public static function warn(...$data)
 	{
-		static::log(
-			static::color(__FUNCTION__, 'yellow')
-			, ...$data
-		);
+		static::log(__FUNCTION__, ...$data);
 	}
 
 	public static function info(...$data)
 	{
-		static::log(
-			static::color(__FUNCTION__, 'blue')
-			, ...$data
-		);
+		static::log(__FUNCTION__, ...$data);
 	}
 
 	public static function debug(...$data)
 	{
-		static::log(
-			static::color(__FUNCTION__, 'green')
-			, ...$data
-		);
+		static::log(__FUNCTION__, ...$data);
 	}
 
 	public static function query(...$data)
@@ -113,10 +109,7 @@ class Log
 			}
 			, $data
 		);
-		static::log(
-			static::color(__FUNCTION__, 'brown')
-			, ...$data
-		);
+		static::log(__FUNCTION__, ...$data);
 	}
 
 	protected static function getColor($type)
@@ -129,7 +122,6 @@ class Log
 
 	protected static function log($levelString, ...$data)
 	{
-
 		$output = null;
 
 		$logPackages = (array)Settings::read('logPackages');
@@ -176,7 +168,12 @@ class Log
 			}
 		}
 
-		if($level > $maxLevel)
+		if(isset(static::$levelColors[$levelString]))
+		{
+			$levelString = static::color($levelString, static::$levelColors[$levelString]);
+		}
+
+		if($level > $maxLevel || $level == 0)
 		{
 			return;
 		}
@@ -216,7 +213,7 @@ class Log
 				$path = $_SERVER['REQUEST_METHOD'] . ':' . $path;
 			}
 
-			if(count($_REQUEST) && $level <= 4)
+			if(count($_REQUEST) && $level >= 4)
 			{
 				$path = $path . PHP_EOL
 					. 'Request: ' . PHP_EOL
