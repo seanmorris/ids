@@ -89,7 +89,17 @@ class File
 			$this->writeHandle = fopen($this->name, $append ? 'a' : 'w');
 		}
 
-		return fwrite($this->writeHandle, $data);
+		if($data instanceof static)
+		{
+			while($d = $data->read())
+			{
+				$return = fwrite($this->writeHandle, $d);
+			}
+		}
+		else
+		{
+			$return = fwrite($this->writeHandle, $data);
+		}
 	}
 
 	public function delete()
@@ -135,5 +145,14 @@ class File
 		}
 
 		return FALSE;
+	}
+
+	public function age()
+	{
+		if(!$this->check())
+		{
+			return PHP_INT_MAX;
+		}
+		return time()-filectime($this->name);
 	}
 }

@@ -519,7 +519,7 @@ EOF
 			'SeanMorris\Multiota\Test\Capitalize\CapitalizeProcessor'
 			, 'SeanMorris\Multiota\RemotePool'
 			, [
-				'servers' => ['localhost', 'seantop']
+				'servers' => ['thewhtrbt.com', 'buzzingbeesalon.com']
 			]
 		);
 		$job->start();

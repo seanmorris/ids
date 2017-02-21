@@ -1526,11 +1526,11 @@ class Model
 			$skeleton[$property] = $this->$property;
 		}
 
-		\SeanMorris\Ids\Log::debug($children);
+		//\SeanMorris\Ids\Log::debug($children);
 
 		if($children)
 		{
-			\SeanMorris\Ids\Log::debug(static::$hasMany);
+			//\SeanMorris\Ids\Log::debug(static::$hasMany);
 
 			foreach(static::$hasMany as $property => $class)
 			{

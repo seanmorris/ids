@@ -577,8 +577,8 @@ class Log
 	public static function logException($e)
 	{
 		$indentedTrace = preg_replace(
-			'/^/m'
-			, "\t"
+			['/^/m', '/\:\s(.+)/']
+			, ["\t", "\n\t\t\$1\n"]
 			, $e->getTraceAsString()
 		);
 

@@ -2,6 +2,7 @@
 namespace SeanMorris\Ids;
 class AssetManager
 {
+	protected static $builtAssets = [];
 	protected static function mapAssets($package, $callback, $dir = null)
 	{
 		if(!$dir)
@@ -40,7 +41,7 @@ class AssetManager
 
 		$filename = 'Static/Dynamic/Min/' . $fullHash;
 
-		// \SeanMorris\Ids\Log::debug('Building assets:', $assets);
+		\SeanMorris\Ids\Log::debug('Building assets:', $assets);
 
 		$assetHashes = [];
 		$assetOrder = [];
@@ -50,6 +51,14 @@ class AssetManager
 			$vendor = array_shift($chunks);
 			$packageName = array_shift($chunks);
 			$fullPackageName = $vendor . '/' . $packageName;
+
+			if(isset(static::$builtAssets[$asset]))
+			{
+				//\SeanMorris\Ids\Log::debug(sprintf("Asset %s already built.", $asset));
+				continue;
+			}
+
+			static::$builtAssets[$asset] = TRUE;
 			
 			if($fullPackageName !== 'Static/Dynamic')
 			{
@@ -66,9 +75,13 @@ class AssetManager
 
 					if(!$asset->check())
 					{
-						\SeanMorris\Ids\Log::error(sprintf("Asset %s not found!\n%s", $asset, $assetName));
+						\SeanMorris\Ids\Log::error(sprintf("Asset %s not found in %s!", $assetName, $fullPackageName));
 					}
-				}	
+				}
+				else
+				{
+					\SeanMorris\Ids\Log::error(sprintf("Asset %s not found in %s!", $assetName, $fullPackageName));
+				}
 			}
 			else
 			{
@@ -90,81 +103,65 @@ class AssetManager
 			}
 		}
 
-		if(isset($assetHashes['js']))
+		foreach(['js', 'css'] as $assetType)
 		{
-			$filename .= '.js';
-			$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . '/' . $filename);
-			if($outputFile->check() && $cacheAssets)
+			if(isset($assetHashes[$assetType]))
 			{
-				\SeanMorris\Ids\Log::debug('Returning cached asset: '  . $filename);
+				$filename .= '.' . $assetType;
+				$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . '/' . $filename);
+				\SeanMorris\Ids\Log::debug([
+					'Asset'  => $outputFile,
+					'Age'    => $outputFile->age(),
+					'Expiry' => $cacheAssets
+				]);
+				
+				if($outputFile->check() && $cacheAssets > $outputFile->age())
+				{
+					\SeanMorris\Ids\Log::debug('Returning cached asset: '  . $filename);
+					return '/' . $filename;
+				}
+
+				$build = function() use($assetHashes, $outputFile, $publicDir, $filename, $assetType){
+					sleep(1);
+					\SeanMorris\Ids\Log::debug('AFTER DISCONNECT!');
+					$outputFile->write('/* ' . time() . '*/' . PHP_EOL, FALSE);
+					foreach($assetHashes[$assetType] as $package => $assetSet)
+					{
+						$outputFile->write('/* ' . $package  . '*/'. PHP_EOL);
+						foreach($assetSet as $contentHash => $asset)
+						{
+							$outputFile->write('/*   ' . $asset->name() . '*/' . PHP_EOL);
+						}
+						$outputFile->write('/*  */' . PHP_EOL);
+						foreach($assetSet as $contentHash => $asset)
+						{
+							\SeanMorris\Ids\Log::debug(sprintf(
+								"Writing %s\n\tto %s."
+								, $asset->name()
+								, $publicDir . '/' . $filename
+							));
+							$outputFile->write('/* ' . $asset->name()  . '*/' . PHP_EOL);
+							$outputFile->write($asset);
+							$outputFile->write(PHP_EOL);
+						}
+					}
+				};
+
+				if($outputFile->check())
+				{
+					\SeanMorris\Ids\Http\Http::onDisconnect($build);
+					\SeanMorris\Ids\Log::debug('Returning cached asset: '  . $filename);
+					return '/' . $filename;
+				}
+				else
+				{
+					$build();
+				}			
+
+				\SeanMorris\Ids\Log::debug('Built asset: '  . $filename);
+
 				return '/' . $filename;
 			}
-			$outputFile->write('// ' . time() . PHP_EOL, FALSE);
-
-			foreach($assetHashes['js'] as $package => $js)
-			{
-				$outputFile->write('// ' . $package . PHP_EOL);
-				foreach($js as $contentHash => $asset)
-				{
-					$outputFile->write('//   ' . $asset->name() . PHP_EOL);
-				}
-				$outputFile->write('// ' . PHP_EOL);
-				foreach($js as $contentHash => $asset)
-				{
-					\SeanMorris\Ids\Log::debug(sprintf(
-						"Writing %s\n\tto %s."
-						, $asset->name()
-						, $publicDir . '/' . $filename
-					));
-					$outputFile->write('// ' . $asset->name() . PHP_EOL);
-					$outputFile->write($asset->slurp() . PHP_EOL);
-				}
-			}
-
-			\SeanMorris\Ids\Log::debug('Built asset: '  . $filename);
-
-			return '/' . $filename;
-		}
-
-		$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . '/' . $filename);
-		if($outputFile->check())
-		{
-			return '/' . $filename;
-		}
-
-		if(isset($assetHashes['css']))
-		{
-			$filename .= '.css';
-			$outputFile = new \SeanMorris\Ids\Disk\File($publicDir . '/' . $filename);
-			if($outputFile->check() && $cacheAssets)
-			{
-				\SeanMorris\Ids\Log::debug('Returning cached asset: '  . $filename);
-				return '/' . $filename;
-			}
-			
-			$outputFile->write(sprintf("/* %s */\n", time()));
-
-			foreach($assetHashes['css'] as $package => $css)
-			{
-				$outputFile->write(sprintf("/* %s */\n", $package));
-				foreach($css as $contentHash => $asset)
-				{
-					$outputFile->write(sprintf("/*   %s */\n", $asset->name()));
-				}
-				$outputFile->write('/* */ ' . PHP_EOL);
-				foreach($css as $contentHash => $asset)
-				{
-					\SeanMorris\Ids\Log::debug(sprintf(
-						"Writing %s\n\tto %s."
-						, $asset->name()
-						, $publicDir . '/' . $filename
-					));
-					$outputFile->write(sprintf("/* %s */\n", $asset->name()));
-					$outputFile->write($asset->slurp() . PHP_EOL);
-				}
-			}
-			\SeanMorris\Ids\Log::debug('Built asset: '  . $filename);
-			return '/' . $filename;
 		}
 	}
 
