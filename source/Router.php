@@ -200,30 +200,25 @@ class Router
 								if($routes->_preRoute($this, $node) !== false)
 								{
 									$result	= $routes->$route($this);
+									break;
 								}
-								
-								if($result === false && is_callable([$routes, '_notFound']))
-								{
-									$this->match = false;
-									$this->routedTo = false;
-
-									$result = $routes->_notFound($this);
-								}
-
-								break;
 							}
 							else
 							{
 								if(is_callable([$routes, $route]))
 								{
 									$result	= $routes->$route($this);
+									break;
 								}
-								else
-								{
-									$result	= FALSE;
-								}
-								break;
 							}
+						}
+
+						if($result === false && is_callable([$routes, '_notFound']))
+						{
+							$this->match = false;
+							$this->routedTo = false;
+
+							$result = $routes->_notFound($this);
 						}
 
 						Log::error(sprintf(
