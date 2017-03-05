@@ -122,8 +122,7 @@ class AssetManager
 				}
 
 				$build = function() use($assetHashes, $outputFile, $publicDir, $filename, $assetType){
-					sleep(1);
-					\SeanMorris\Ids\Log::debug('AFTER DISCONNECT!');
+					sleep(5);
 					$outputFile->write('/* ' . time() . '*/' . PHP_EOL, FALSE);
 					foreach($assetHashes[$assetType] as $package => $assetSet)
 					{

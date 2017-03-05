@@ -11,9 +11,12 @@ class Http
 
 			ob_start();
 			register_shutdown_function(function() use(&$disconnect){
+				\SeanMorris\Ids\Log::info('Post-Response Execution Starting.');
 				ignore_user_abort(TRUE);
+				session_write_close();
 				header(sprintf('Content-Length: %s', ob_get_length()));
 				header('Connection: close');
+				header('Content-Encoding: none');
 				ob_end_flush();
 				flush();
 
@@ -42,19 +45,8 @@ class Http
 		set_time_limit(0);
 		ignore_user_abort(1);
 
-		header(
-			sprintf(
-				"Location: %s",
-				$url
-			)
-		);
-
-		header(
-			sprintf(
-			   "Content-Length: %s",
-			   ob_get_length()
-			)
-		);
+		header(sprintf("Location: %s", $url));
+		header(sprintf("Content-Length: %s", ob_get_length()));
 
 		header('Connection: close');
 
