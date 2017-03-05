@@ -16,4 +16,13 @@ class HttpException extends \Exception
 	{
 		return '<pre>' . htmlspecialchars(parent::__toString()) . '</pre>';
 	}
+
+	public function indentedTrace()
+	{
+		return preg_replace(
+			['/^/m', '/\:\s(.+)/']
+			, ["\t", "\n\t\t\$1\n"]
+			, $this->getTraceAsString()
+		);
+	}
 }

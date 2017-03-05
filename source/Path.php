@@ -124,6 +124,11 @@ class Path
 		return false;
 	}
 
+	public function string()
+	{
+		return $this->pathString();
+	}
+
 	public function pathString($depth = 0)
 	{
 		$nodes = $this->nodes;
