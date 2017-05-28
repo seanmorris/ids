@@ -13,8 +13,13 @@ class Http303 extends HttpException
 		
 		if(php_sapi_name() !== 'cli')
 		{
+			$query = NULL;
+			if(isset($_GET['api']))
+			{
+				$query = '?api=' . $_GET['api'];
+			}
 			header(sprintf("HTTP/1.1 %d See Other", $this->getCode()));
-			header(sprintf("Location: /%s", $this->getMessage()));
+			header(sprintf("Location: /%s" . $query, $this->getMessage()));
 			return NULL;
 		}
 

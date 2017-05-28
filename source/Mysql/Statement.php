@@ -50,6 +50,14 @@ abstract class Statement
 		$queryObject = $this->prepare();
 		\SeanMorris\Ids\Log::debug($args);
 
+		foreach($args as &$arg)
+		{
+			if(is_bool($arg))
+			{
+				$arg = (int) $arg;
+			}
+		}
+
 		$queryObject->execute($args);
 		static::$queryCount++;
 		\SeanMorris\Ids\Log::debug('Queries Run: ' . static::$queryCount);
