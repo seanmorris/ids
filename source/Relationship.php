@@ -92,7 +92,7 @@ class Relationship extends Model
 		return $instance;
 	}
 
-	protected static function resolveDef($name, &$args = [])
+	protected static function resolveDef($name, &$args = [], $parentSelect = NULL)
 	{
 		//\SeanMorris\Ids\Log::debug( "RELATIONSHIP RESOLVEDEF\n" );
 		// \SeanMorris\Ids\Log::debug($name, $args);
@@ -109,9 +109,18 @@ class Relationship extends Model
 			$owner = array_shift($_args);
 			$column = array_shift($_args);
 
+			$ownerClass = is_string($owner) ? $owner : get_class($owner);
+
 			// @TODO: Eliminate dirty hack.
+			$joinBy = NULL;
 			if($_args)
 			{
+				if(is_string($owner))
+				{
+					$joinBy = $column;
+
+					$joinBy = preg_replace('/^by/', NULL, $joinBy);
+				}
 				$column = array_shift($_args);
 			}
 
@@ -119,15 +128,19 @@ class Relationship extends Model
 
 			if($subjectClass = $owner::getSubjectClass($column))
 			{
-				array_splice($args, 1, 0, [get_class($owner)]);
+				array_splice($args, 1, 0, [$ownerClass]);
 
 				// \SeanMorris\Ids\Log::debug($args, $_args);
 				// \SeanMorris\Ids\Log::debug([$name, $owner, $column]);
 				$def['join'][$subjectClass] = [
 					'on' => 'subjectId'
-					, 'by' => isset($def['by']) ? $def['by'] : NULL
+					, 'by' => isset($def['by']) ? $def['by'] : $joinBy
 					, 'type' => 'INNER'
 				];
+				if(is_string($owner))
+				{
+					unset($def['where']);
+				}
 			}
 		}
 		if(isset($match[1]) && $match[1] == 'Subject')

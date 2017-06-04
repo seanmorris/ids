@@ -67,8 +67,6 @@ class Model
 
 		$values = [];
 
-		// @TODO: Store Relationships
-
 		$namedValues = [];
 
 		foreach($columns as $column)
@@ -522,11 +520,6 @@ class Model
 			. '  '
 			. md5(print_r(func_get_args(), 1));
 
-		if(!isset(self::$cache[$curClass][$cacheKey]))
-		{
-			//static::$cache[$cacheKey] = NULL;
-		}
-
 		$cache =& self::$cache[$curClass][$cacheKey];
 		$idCache =& self::$idCache[$curClass];
 
@@ -544,6 +537,8 @@ class Model
 		}
 
 		$def = static::resolveDef($name, $args);
+
+		\SeanMorris\Ids\Log::debug($def);
 		$select = static::selectStatement($name, null, $args);
 		if($def['paged'])
 		{
@@ -779,57 +774,60 @@ class Model
 			return (int) $countResult->fetchColumn();
 		}
 
-		return function(...$overArgs) use($gen, $args, $rawArgs, &$cache, &$idCache)
+		if(isset($def['type']) && $def['type'] == 'load')
 		{
-			\SeanMorris\Ids\Log::debug(sprintf(
-				'Loading %s', get_called_class()
-			));
-
-			if(isset($cache))
+			return function(...$overArgs) use($gen, $args, $rawArgs, &$cache, &$idCache)
 			{
-				\SeanMorris\Ids\Log::debug('From cache...');
+				\SeanMorris\Ids\Log::debug(sprintf(
+					'Loading %s', get_called_class()
+				));
 
-				return $cache;
-			}
-
-			$models = [];
-
-			$args = $overArgs + $args;
-
-			foreach($gen(...$args) as $skeleton)
-			{
-				$subSkeleton = static::subSkeleton($skeleton);
-
-				if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+				if(isset($cache))
 				{
-					continue;
+					\SeanMorris\Ids\Log::debug('From cache...');
+
+					return $cache;
 				}
 
-				$model = static::instantiate($skeleton, $args, $rawArgs);
+				$models = [];
 
-				if(static::afterRead($model, $subSkeleton) === FALSE)
+				$args = $overArgs + $args;
+
+				foreach($gen(...$args) as $skeleton)
 				{
-					continue;
+					$subSkeleton = static::subSkeleton($skeleton);
+
+					if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+					{
+						continue;
+					}
+
+					$model = static::instantiate($skeleton, $args, $rawArgs);
+
+					if(static::afterRead($model, $subSkeleton) === FALSE)
+					{
+						continue;
+					}
+
+					\SeanMorris\Ids\Log::debug('Loaded ', $model);
+
+					$cache[count($models)] = $model;
+
+					if(isset($idCache[$model->id]))
+					{
+						\SeanMorris\Ids\Log::debug('Already loaded...', $model);
+
+						$model = $idCache[$model->id];
+					}
+
+					$idCache[$model->id] = $model;
+
+					$models[] = $model;
 				}
 
-				\SeanMorris\Ids\Log::debug('Loaded ', $model);
-
-				$cache[count($models)] = $model;
-
-				if(isset($idCache[$model->id]))
-				{
-					\SeanMorris\Ids\Log::debug('Already loaded...', $model);
-
-					$model = $idCache[$model->id];
-				}
-
-				$idCache[$model->id] = $model;
-
-				$models[] = $model;
-			}
-
-			return $models;
-		};
+				return $models;
+			};
+		}
 	}
 
 	protected static function instantiate($skeleton, $args = [], $rawArgs = [])
@@ -1037,7 +1035,8 @@ class Model
 	protected static function resolveDef($name, &$args = null)
 	{
 		// \SeanMorris\Ids\Log::debug("MODEL RESOLVEDEF\n");
-		$type = 'generate';
+		$type = NULL;
+		//$type = 'generate';
 		$paged = FALSE;
 
 		if(preg_match('/^(loadOne|load|generate|get|count)((?:Page)?)(By.+)/', $name, $match))
@@ -1128,7 +1127,7 @@ class Model
 
 		$called = get_called_class();
 
-		$selectDef = $called::resolveDef($selectDefName, $args);
+		$selectDef = $called::resolveDef($selectDefName, $args, $superior);
 		/*
 		\SeanMorris\Ids\Log::debug(
 			'Resolved def'
@@ -1176,6 +1175,64 @@ class Model
 				$select->subjugate($subSelect);
 				$select->join($subSelect, $join['on'], 'id');
 			}
+		}
+
+		if(isset($selectDef['with']) && is_array($selectDef['with']))
+		{
+			foreach($selectDef['with'] as $childProperty => $joinBy)
+			{
+				if(isset(static::$hasOne[$childProperty]))
+				{
+					$joinClass = static::$hasOne[$childProperty];
+					$defName   = 'load'.ucwords($join);
+					$subSelect = $joinClass::selectStatement($defName, $select, $args, $table);
+
+					$select->subjugate($subSelect);
+					$select->join($subSelect, $childProperty, 'id');
+				}
+				else if(isset(static::$hasMany[$childProperty]))
+				{
+					$relationshipClass = '\SeanMorris\Ids\Relationship';
+
+					if(static::$relationshipClass)
+					{
+						$relationshipClass = static::$relationshipClass;
+					}
+
+					$joinClass = static::$hasMany[$childProperty];
+					$defName      = 'loadByOwner';
+					
+					array_unshift($args, $childProperty);
+					array_unshift($args, $joinBy);
+					array_unshift($args, get_called_class());
+
+					$select->assemble();
+					
+					$subSelect = $relationshipClass::selectStatement($defName, $select, $args, $table);
+
+					\SeanMorris\Ids\Log::debug($subSelect);
+
+					$select->subjugate($subSelect);
+					$select->join($subSelect, 'id', 'ownerId');
+
+					\SeanMorris\Ids\Log::debug($subSelect);
+				}
+				else
+				{
+					\SeanMorris\Ids\Log::warn(sprintf(
+						'Invalid property %s for %s::$selectDef["with"]'
+						, $childProperty
+						, get_called_class()
+					));
+				}
+			}
+		}
+		else if(isset($selectDef['with']) && !is_array($selectDef['with']))
+		{
+			\SeanMorris\Ids\Log::warn(sprintf(
+				'Invalid value for %s::$selectDef["with"]'
+				, get_called_class()
+			));
 		}
 
 		$curClass = get_called_class();

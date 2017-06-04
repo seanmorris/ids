@@ -13,7 +13,6 @@ class Log
 		, ERROR_COLOR			= 'black'
 		, ERROR_BACKGROUND		= 'yellow'
 		, LOG_SEPERATOR			= '########################################'
-
 	;
 
 	static $foregroundColors = array(
@@ -52,7 +51,7 @@ class Log
 	);
 
 	static $colors = [
-		'key' => 'blue'
+		'key' => 'lightBlue'
 		, 'keyBg' => NULL
 		, 'type' => 'green'
 		, 'typeBg' => NULL
@@ -65,9 +64,9 @@ class Log
 	static $levelColors = [
 		'error'   => 'red'
 		, 'warn'  => 'yellow'
-		, 'info'  => 'blue'
+		, 'info'  => 'white'
 		, 'debug' => 'green'
-		, 'query' => 'brown'
+		, 'query' => 'lightBlue'
 	];
 
 	protected static
@@ -132,6 +131,11 @@ class Log
 		if(isset(static::$levels[$levelString]))
 		{
 			$level = static::$levels[$levelString];
+		}
+
+		if($level <= static::$levels['warn'] && php_sapi_name() == 'cli')
+		{
+			print_r($data);
 		}
 
 		$maxLevel = NULL;
@@ -484,7 +488,7 @@ class Log
 		$mill = round($mill*$mull);
 
 		return sprintf(
-			"[%s.%04d]::[%d]"
+			"[%s.%0" . static::SECOND_SIGNIFICANCE . "d]::[%d]"
 			 . (
 				$level
 					? ('['. $level . static::color(']', static::HEAD_COLOR, static::HEAD_BACKGROUND, FALSE))

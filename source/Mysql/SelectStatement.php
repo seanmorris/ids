@@ -8,6 +8,7 @@ class SelectStatement extends WhereStatement
 		, $aliases
 		, $tableAliases
 		, $columnAliases = []
+		, $aliasedSelects = []
 		, $master
 		, $order = []
 		, $limit = NULL
@@ -23,6 +24,11 @@ class SelectStatement extends WhereStatement
 		$this->master = $this;
 
 		return parent::__construct($table);
+	}
+
+	public function tableAlias()
+	{
+		return $this->alias;
 	}
 
 	public function countStatement($column, $unique = FALSE)
@@ -92,7 +98,7 @@ class SelectStatement extends WhereStatement
 			$namedArgs = $args[0];
 		}
 
-		$this->alias = $this->master->aliasTableName($this->table);
+		$this->alias = $this->master->aliasTableName($this->table, $this);
 
 		$columnString = implode(', ', $this->aliasColumns());
 
@@ -253,14 +259,18 @@ class SelectStatement extends WhereStatement
 				//[$subCol => $superCol]
 			]]);
 
-			list($subJoinString, $subColString, $subConditionString) = $sub->assembleJoin($subType, $args, $superCol, $joinCol);
+			list($subJoinString, $subColString, $subConditionString) = $sub->assembleJoin($subType, $args, $superCol, $subCol);
 
 			$this->valueRequired += array_merge($this->valueRequired, $sub->valueRequired);
 			$this->valueNames += array_merge($this->valueNames, $sub->valueNames);
 
 			$joinString .= ' ' . $subJoinString;
 			$columnString .= ', ' . $subColString;
-			$conditionString .= sprintf('(%s)', $subConditionString);
+			// @TODO: Why is $subConditionString sometimes empty?
+			if($subConditionString)
+			{
+				$conditionString .= sprintf('( %s )', $subConditionString);
+			}
 		}
 
 		return [$joinString, $columnString, $conditionString];
@@ -278,7 +288,7 @@ class SelectStatement extends WhereStatement
 			$type = 'INNER';
 		}
 
-		$join->alias = $join->master->aliasTableName($join->table);
+		$join->alias = $join->master->aliasTableName($join->table, $join);
 
 		$this->joins[] = [$join, $superCol, $subCol, $type, $operator, $superWrapper, $subWrapper];
 	}
@@ -306,8 +316,15 @@ class SelectStatement extends WhereStatement
 		$join->superior = $this;
 	}
 
-	protected function aliasTableName($tableName)
+	protected function aliasTableName($tableName, $select = NULL)
 	{
+		$this->aliasedSelects = [];
+
+		if(FALSE !== $index = array_search($select, $this->aliasedSelects))
+		{
+			return $tableName . '_' . $index;
+		}
+
 		if(isset($this->aliases[$tableName]))
 		{
 			$this->aliases[$tableName]++;
@@ -320,6 +337,11 @@ class SelectStatement extends WhereStatement
 		$alias = $tableName . '_' . $this->aliases[$tableName];
 
 		$this->tableAliases[$alias] = $tableName;
+
+		if($select)
+		{
+			$aliasedSelects[] = $select;
+		}
 
 		return $alias;
 	}
