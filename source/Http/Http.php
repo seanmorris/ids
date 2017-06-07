@@ -14,13 +14,11 @@ class Http
 				\SeanMorris\Ids\Log::info('Post-Response Execution Starting.');
 				ignore_user_abort(TRUE);
 				session_write_close();
+				header('Content-Encoding: none');
 				header(sprintf('Content-Length: %s', ob_get_length()));
 				header('Connection: close');
-				header('Content-Encoding: none');
 				ob_end_flush();
 				flush();
-
-				ob_start();
 				foreach ($disconnect as $d)
 				{
 					$d();
@@ -33,7 +31,6 @@ class Http
 					]
 					, PHP_EOL
 				);
-				ob_end_clean();
 			});
 		}
 

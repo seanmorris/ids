@@ -75,12 +75,24 @@ class AssetManager
 
 					if(!$asset->check())
 					{
-						\SeanMorris\Ids\Log::error(sprintf("Asset %s not found in %s!", $assetName, $fullPackageName));
+						\SeanMorris\Ids\Log::error(sprintf(
+							"Asset %s not found in %s!\nFilepath: %s%s"
+							, $assetName
+							, $fullPackageName
+							, $package->assetDir()
+							, $assetName
+						));
 					}
 				}
 				else
 				{
-					\SeanMorris\Ids\Log::error(sprintf("Asset %s not found in %s!", $assetName, $fullPackageName));
+					\SeanMorris\Ids\Log::error(sprintf(
+						"Asset %s not found in %s!\nFilepath: %s%s"
+						, $assetName
+						, $fullPackageName
+						, $package->assetDir()
+						, $assetName
+					));
 				}
 			}
 			else
@@ -122,7 +134,6 @@ class AssetManager
 				}
 
 				$build = function() use($assetHashes, $outputFile, $publicDir, $filename, $assetType){
-					sleep(5);
 					$outputFile->write('/* ' . time() . '*/' . PHP_EOL, FALSE);
 					foreach($assetHashes[$assetType] as $package => $assetSet)
 					{
@@ -146,7 +157,7 @@ class AssetManager
 					}
 				};
 
-				if($outputFile->check())
+				if(0 && $outputFile->check())
 				{
 					\SeanMorris\Ids\Http\Http::onDisconnect($build);
 					\SeanMorris\Ids\Log::debug('Returning cached asset: '  . $filename);
