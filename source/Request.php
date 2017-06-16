@@ -73,8 +73,12 @@ class Request
 		{
 			if(!$this->path)
 			{
-				$this->uri = $_SERVER['REQUEST_URI'];
-				$this->path();
+				$this->uri = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off')
+						? 'https://'
+						: 'http://'
+					. $_SERVER['HTTP_HOST']
+					. $_SERVER['REQUEST_URI']
+				;				$this->path();
 			}
 
 			$this->uri = $this->path->pathString();	
@@ -88,7 +92,9 @@ class Request
 		if(!$this->path)
 		{
 			$url = parse_url($this->uri());
-			$args = array_filter(explode('/', $url['path']));
+			Log::warn($url);
+			$args = explode('/', $url['path']);
+			$args && $args[0] || array_shift($args);
 			$this->path = new Path(...$args);
 		}
 		

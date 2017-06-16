@@ -1184,7 +1184,7 @@ class Model
 				if(isset(static::$hasOne[$childProperty]))
 				{
 					$joinClass = static::$hasOne[$childProperty];
-					$defName   = 'load'.ucwords($join);
+					$defName   = 'load'.ucwords($joinBy);
 					$subSelect = $joinClass::selectStatement($defName, $select, $args, $table);
 
 					$select->subjugate($subSelect);
