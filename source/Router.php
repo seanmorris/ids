@@ -212,6 +212,21 @@ class Router
 								}
 							}
 						}
+						else
+						{
+							Log::error($errorMessage = sprintf(
+								'Supplied url node "%s" matches "%s" on "%s"'
+									. PHP_EOL
+									. 'But, "%s" is not a valid classname or function under %s.'
+								, $node
+								, $match
+								, get_class($routes)
+								, $route
+								, get_class($routes)
+							));
+
+							throw new \Exception($errorMessage);
+						}
 
 						if($result === false && is_callable([$routes, '_notFound']))
 						{

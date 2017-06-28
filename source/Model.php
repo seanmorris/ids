@@ -540,17 +540,20 @@ class Model
 
 		\SeanMorris\Ids\Log::debug($def);
 		$select = static::selectStatement($name, null, $args);
-		if($def['paged'])
-		{
-			$limit = (int) array_pop($args);
-			$offset = (int) array_pop($args) * $limit;
-			$select->limit($limit, $offset);
-		}
 
 		if(isset($def['type']) && $def['type'] == 'count')
 		{
 			$countStatement = $select->countStatement('id');
-			return (int) $countStatement->fetchColumn();
+			
+			return (int) $countStatement->fetchColumn(...$args);
+		}
+
+		if($def['paged'])
+		{
+			$limit = (int) array_pop($args);
+			$offset = (int) array_pop($args) * $limit;
+
+			$select->limit($limit, $offset);
 		}
 
 		$gen = $select->generate();
@@ -1635,6 +1638,15 @@ class Model
 			if(!$this->{$property})
 			{
 				$this->{$property} = $this->getSubjects($property);
+			}
+
+			foreach($this->{$property} as $existingSubject)
+			{
+				if($existingSubject->id == $subject->id
+					&& get_class($existingSubject) == get_class($subject)
+				){
+					return;
+				}
 			}
 
 			\SeanMorris\Ids\Log::debug(
