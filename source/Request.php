@@ -92,7 +92,7 @@ class Request
 		if(!$this->path)
 		{
 			$url = parse_url($this->uri());
-			Log::debug($url, $this);
+			Log::debug($url, $this, $_SERVER);
 			$args = explode('/', $url['path']);
 			$args && $args[0] || array_shift($args);
 			$this->path = new Path(...$args);
