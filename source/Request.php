@@ -78,10 +78,10 @@ class Request
 						: 'http://'
 					. $_SERVER['HTTP_HOST']
 					. $_SERVER['REQUEST_URI']
-				;				$this->path();
+				;
+				$this->path();
 			}
-
-			$this->uri = $this->path->pathString();	
+			$this->uri = $this->path->pathString();
 		}
 
 		return $this->uri;
@@ -92,7 +92,7 @@ class Request
 		if(!$this->path)
 		{
 			$url = parse_url($this->uri());
-			Log::warn($url);
+			Log::debug($url, $this);
 			$args = explode('/', $url['path']);
 			$args && $args[0] || array_shift($args);
 			$this->path = new Path(...$args);

@@ -64,7 +64,7 @@ class Meta
 
 	public static function &staticSession($depth = 0)
 	{
-		if(session_status() === PHP_SESSION_NONE)
+		if(session_status() === PHP_SESSION_NONE && php_sapi_name() !== 'cli')
 		{
 			session_start();
 		}

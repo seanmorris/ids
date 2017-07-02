@@ -157,7 +157,7 @@ class Router
 							, $node
 							, $match
 							, get_class($routes)
-						));
+						), $path);
 
 						if($node !== $match)
 						{
@@ -279,10 +279,11 @@ class Router
 				}
 			}
 
-			if($result instanceof \SeanMorris\Ids\Http\HttpResponse)
-			{
+			if($result instanceof \SeanMorris\Ids\Http\HttpResponse
+				|| $result instanceof \SeanMorris\Ids\Http\HttpException
+			){
 				throw $result;
-			}			
+			}
 
 			if($result === false && is_callable([$routes, '_notFound']))
 			{
@@ -330,6 +331,7 @@ class Router
 				if(!\SeanMorris\Ids\Idilic\Cli::isCli())
 				{
 					$e->onCatch($this);
+					die;
 				}
 				else if($e instanceof \SeanMorris\Ids\Http\Http303)
 				{
