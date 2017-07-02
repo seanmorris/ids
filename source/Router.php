@@ -282,7 +282,10 @@ class Router
 			if($result instanceof \SeanMorris\Ids\Http\HttpResponse
 				|| $result instanceof \SeanMorris\Ids\Http\HttpException
 			){
-				throw $result;
+				if($this->parent())
+				{
+					throw $result;
+				}
 			}
 
 			if($result === false && is_callable([$routes, '_notFound']))
