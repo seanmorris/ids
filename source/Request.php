@@ -4,6 +4,9 @@ class Request
 {
 	protected
 		$uri
+		, $host
+		, $scheme
+		, $port
 		, $path
 		, $get
 		, $post
@@ -73,17 +76,9 @@ class Request
 		{
 			if(!$this->path)
 			{
-				$this->uri = (
-					(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off')
-						? 'https://'
-						: 'http://'
-					)
-					. $_SERVER['HTTP_HOST']
-					. $_SERVER['REQUEST_URI']
-				;
-				$this->path();
+				$this->uri = $_SERVER['REQUEST_URI'];
 			}
-			$this->uri = $this->path->pathString();
+			$this->uri = $this->path()->pathString();
 		}
 
 		return $this->uri;
@@ -101,6 +96,29 @@ class Request
 		}
 		
 		return $this->path;
+	}
+
+	public function host()
+	{
+		if(!$this->host && isset($_SERVER['HTTP_HOST']))
+		{
+			$this->host = $_SERVER['HTTP_HOST'];
+		}
+
+		return $_SERVER['HTTP_HOST'];
+	}
+
+	public function scheme()
+	{
+		if(!$this->scheme)
+		{
+			$this->scheme = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off')
+				? 'https://'
+				: 'http://'
+			);
+		}
+
+		return $this->scheme;
 	}
 
 	public function params()
