@@ -13,8 +13,28 @@ class Http303 extends HttpException
 		
 		if(php_sapi_name() !== 'cli')
 		{
+			$url = $this->getMessage();
+
+			$parsedUrl = parse_url($url);
+
+			if(!isset($parsedUrl['host']))
+			{
+				$url = '/' . $url;
+			}
+
+			$params = $router->request()->params();
+
+			if($params && empty($parsedUrl['query']))
+			{
+				$url = sprintf(
+					'/%s?%s'
+					, $parsedUrl['path']
+					, http_build_query($params)
+				);
+			}
+
 			header(sprintf("HTTP/1.1 %d See Other", $this->getCode()));
-			header(sprintf("Location: /%s", $this->getMessage()));
+			header(sprintf("Location: %s", $url));
 			return NULL;
 		}
 
