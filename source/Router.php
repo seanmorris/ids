@@ -262,15 +262,13 @@ class Router
 					{
 						$result = $routes->_dynamic($this);
 					}
-					else
+					
+					if($result === false && is_callable([$routes, '_notFound']))
 					{
-						if($result === false && is_callable([$routes, '_notFound']))
-						{
-							$this->match = false;
-							$this->routedTo = false;
+						$this->match = false;
+						$this->routedTo = false;
 
-							$result = $routes->_notFound($this);
-						}
+						$result = $routes->_notFound($this);
 					}
 				}
 				else
@@ -284,7 +282,7 @@ class Router
 			){
 				if($this->parent())
 				{
-					throw $result;
+					//throw $result;
 				}
 			}
 
@@ -343,6 +341,10 @@ class Router
 					$router = new static($subRequest, $routes, $this);
 					
 					return $router->route();
+				}
+				else
+				{
+					return FALSE;
 				}
 			}
 			else if($this->subRouted && $e instanceof \SeanMorris\Ids\Http\Http303)

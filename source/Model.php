@@ -994,21 +994,23 @@ class Model
 
 				if(isset($skeleton[$subjectClass::$table]))
 				{
-					\SeanMorris\Ids\Log::debug(
-						sprintf('Able to preload %s object', $subjectClass)
-						, $skeleton[$subjectClass::$table]
-					);
-
-					$model = $subjectClass::instantiate($skeleton);
-
-					if(isset($idCache[$model->id]))
+					if(isset($subSkeleton['id'], static::$idCache[$subjectClass][$subSkeleton['id']]))
 					{
+						$model = static::$idCache[$subjectClass][$subSkeleton['id']];
+						
 						\SeanMorris\Ids\Log::debug('Already loaded...', $model);
-
-						$model = $idCache[$model->id];
 					}
+					else
+					{
+						\SeanMorris\Ids\Log::debug(
+							sprintf('Able to preload %s object', $subjectClass)
+							, $skeleton[$subjectClass::$table]
+						);
 
-					$idCache[$model->id] = $model;
+						$model = $subjectClass::instantiate($skeleton);
+
+						static::$idCache[$subjectClass][$subSkeleton['id']] = $model;
+					}
 
 					$this->{$property} = $model;
 				}
@@ -1476,8 +1478,6 @@ class Model
 
 				$subject->consume($values);
 
-				\SeanMorris\Ids\Log::debug('Using existing model');
-
 				if($subject->save())
 				{
 					$this->{$property} = $subject->id;
@@ -1530,7 +1530,9 @@ class Model
 							continue;
 						}
 
-						\SeanMorris\Ids\Log::debug('Using existing model');
+						$subject->consume($values);
+
+						// \SeanMorris\Ids\Log::debug('Using existing model', $subject, $values);
 
 						if($subject->save())
 						{

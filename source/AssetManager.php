@@ -45,7 +45,7 @@ class AssetManager
 
 		$assetHashes = [];
 		$assetOrder = [];
-		foreach($assets as $asset)
+		foreach($assets as $assetIndex => $asset)
 		{
 			$chunks = array_filter(explode('/', $asset));
 			$vendor = array_shift($chunks);
@@ -71,7 +71,7 @@ class AssetManager
 				if($asset = $package->assetDir()->has($assetName))
 				{
 					$assetType = pathinfo($asset->name(), PATHINFO_EXTENSION);
-					$assetHashes[$assetType][$fullPackageName][$asset->name()] = $asset;
+					$assetHashes[$assetType][$fullPackageName][$asset->name()] = [$assetIndex => $asset];
 
 					if(!$asset->check())
 					{
@@ -99,7 +99,7 @@ class AssetManager
 			{
 				$assetName = $fullPackageName . '/' . implode('/', $chunks);
 
-				// \SeanMorris\Ids\Log::debug('Building asset ' . $assetName, 'From ' . $vendor . '/' . $packageName);
+				\SeanMorris\Ids\Log::debug('Building asset ' . $assetName, 'From ' . $vendor . '/' . $packageName);
 
 				$asset = new \SeanMorris\Ids\Disk\File($assetName);
 
@@ -107,6 +107,7 @@ class AssetManager
 				{
 					$assetType = pathinfo($asset->name(), PATHINFO_EXTENSION);
 					$assetHashes[$assetType][$fullPackageName][$asset->name()] = $asset;
+					\SeanMorris\Ids\Log::debug(sprintf("Asset %s found\n%s", $asset->name(), $assetName));
 				}
 				else
 				{
@@ -115,7 +116,7 @@ class AssetManager
 			}
 		}
 
-		foreach(['js', 'css'] as $assetType)
+		foreach(['css', 'js'] as $assetType)
 		{
 			if(isset($assetHashes[$assetType]))
 			{
@@ -135,14 +136,18 @@ class AssetManager
 
 				$build = function() use($assetHashes, $outputFile, $publicDir, $filename, $assetType){
 					$outputFile->write('/* ' . time() . '*/' . PHP_EOL, FALSE);
+					$assetList = [];
 					foreach($assetHashes[$assetType] as $package => $assetSet)
 					{
 						$outputFile->write('/* ' . $package  . '*/'. PHP_EOL);
 						foreach($assetSet as $contentHash => $asset)
 						{
-							$outputFile->write('/*   ' . $asset->name() . '*/' . PHP_EOL);
+							$index = key($asset);
+							$asset = current($asset);
+
+							$assetList[$index] = $asset;
 						}
-						$outputFile->write('/*  */' . PHP_EOL);
+						/*
 						foreach($assetSet as $contentHash => $asset)
 						{
 							\SeanMorris\Ids\Log::debug(sprintf(
@@ -150,10 +155,30 @@ class AssetManager
 								, $asset->name()
 								, $publicDir . '/' . $filename
 							));
-							$outputFile->write('/* ' . $asset->name()  . '*/' . PHP_EOL);
 							$outputFile->write($asset);
 							$outputFile->write(PHP_EOL);
 						}
+						*/
+					}
+					ksort($assetList);
+					$outputFile->write(PHP_EOL, FALSE);
+					$outputFile->write('/* Synopsis: */' . PHP_EOL);
+					foreach($assetList as $asset)
+					{
+						$outputFile->write('/* ' . $asset->name() . '*/' . PHP_EOL);
+					}
+					$outputFile->write(PHP_EOL);
+					$outputFile->write('/* Content: */' . PHP_EOL);
+					foreach($assetList as $asset)
+					{
+						$outputFile->write('/* ' . $asset->name() . '*/' . PHP_EOL);
+						\SeanMorris\Ids\Log::debug(sprintf(
+							"Writing %s\n\tto %s."
+							, $asset->name()
+							, $publicDir . '/' . $filename
+						));
+						$outputFile->write($asset);
+						$outputFile->write(PHP_EOL);
 					}
 				};
 

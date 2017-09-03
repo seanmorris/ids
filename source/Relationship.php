@@ -139,7 +139,12 @@ class Relationship extends Model
 				];
 				if(is_string($owner))
 				{
-					unset($def['where']);
+					//$def['where']
+					$def['where'] = [
+						['ownerId'      => sprintf('%s.id', $parentSelect->tableAlias())]
+						, ['ownerClass' => sprintf('"%s"', addslashes($owner))]
+						, ['property'   => sprintf('"%s"', $column)]
+					];
 				}
 			}
 		}

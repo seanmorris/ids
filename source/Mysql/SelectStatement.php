@@ -98,7 +98,10 @@ class SelectStatement extends WhereStatement
 			$namedArgs = $args[0];
 		}
 
-		$this->alias = $this->master->aliasTableName($this->table, $this);
+		if(!$this->alias)
+		{
+			$this->alias = $this->master->aliasTableName($this->table, $this);
+		}
 
 		$columnString = implode(', ', $this->aliasColumns());
 
@@ -247,7 +250,7 @@ class SelectStatement extends WhereStatement
 			, $this->alias
 		);
 
-		$joinString.=  sprintf(' ON (%s = %s.%s)', $col, $this->alias, $joinCol);
+		$joinString .= sprintf(' ON (%s = %s.%s)', $col, $this->alias, $joinCol);
 
 		foreach($this->joins as $join)
 		{
@@ -269,7 +272,7 @@ class SelectStatement extends WhereStatement
 			// @TODO: Why is $subConditionString sometimes empty?
 			if($subConditionString)
 			{
-				$conditionString .= sprintf('( %s )', $subConditionString);
+				$conditionString = sprintf('( %s ) AND ( %s )', $conditionString, $subConditionString);
 			}
 		}
 

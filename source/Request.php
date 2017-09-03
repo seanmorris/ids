@@ -143,6 +143,8 @@ class Request
 	{
 		$files = [];
 
+		$organizedFiles = [];
+
 		foreach($_FILES as $fieldName => $fileDef)
 		{
 			if(!$fileDef['tmp_name'])
@@ -150,16 +152,57 @@ class Request
 				continue;
 			}
 
-			$file = new \SeanMorris\Ids\Disk\File(
-				$fileDef['tmp_name']
-				, $fileDef['name']
-			);
+			if(!is_scalar($fileDef['tmp_name']))
+			{
+				$elementNames = ['name', 'tmp_name', 'error', 'size', 'type'];
 
-			$files[$fieldName] = $file;
+				foreach($elementNames as $elementName)
+				{
+					array_walk_recursive($fileDef[$elementName], function(&$element) use($elementName){
+						$element = [$elementName => $element];
+					});					
+				}
 
+				$newDef = [];
+
+				foreach($fileDef as $oldKey => $frags)
+				{
+					$newDef = array_replace_recursive($newDef, $frags);
+				}
+
+				$organizedFiles[$fieldName] = $newDef;
+			}
+			else
+			{
+				$organizedFiles[$fieldName] = $fileDef;
+			}
 		}
 
-		return $files;
+		$findFiles = function(&$f, $function) use(&$findFiles)
+		{
+			foreach($f as &$ff)
+			{
+				if(isset($ff['tmp_name']))
+				{
+					$ff = $function($ff);
+				}
+				else
+				{
+					$ff = $findFiles($ff, $function);
+				}
+			}
+
+			return $f;
+		};
+
+		$organizedFiles = $findFiles($organizedFiles, function($file){
+			return new \SeanMorris\Ids\Disk\File(
+				$file['tmp_name']
+				, $file['name']
+			);
+		});
+
+		return $organizedFiles;
 	}
 
 	public function switches(...$args)
