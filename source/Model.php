@@ -849,7 +849,10 @@ class Model
 			$class = $subSkeleton['class'];
 		}
 
-		if($class == NULL || !is_subclass_of($class, get_called_class()))
+		if($class == NULL || (
+			!is_subclass_of($class, get_called_class())
+			&& !is_subclass_of(get_called_class(), $class)
+		))
 		{
 			$class = get_called_class();
 		}

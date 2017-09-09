@@ -9,7 +9,7 @@ class Http303 extends HttpException
 
 	public function onCatch($router)
 	{
-		\SeanMorris\Ids\Log::debug(sprintf("Redirect Location: /%s", $this->getMessage()));
+		\SeanMorris\Ids\Log::debug(sprintf("Redirect Location: %s", $this->getMessage()));
 		
 		if(php_sapi_name() !== 'cli')
 		{
@@ -22,9 +22,9 @@ class Http303 extends HttpException
 				$url = '/' . $url;
 			}
 
-			$params = $router->request()->params();
+			$params = $router->request()->get();
 
-			if($params && empty($parsedUrl['query']))
+			if($params && empty($parsedUrl['query']) && empty($parsedUrl['host']))
 			{
 				$url = sprintf(
 					'/%s?%s'
