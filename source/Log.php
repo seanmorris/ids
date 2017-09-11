@@ -616,7 +616,7 @@ class Log
 			return $string;
 		}
 
-		$lines = preg_split('/\r?\n/', $string);
+		$lines = preg_split('/\r?\n/', is_scalar($string) ? $string : print_r($string, 1));
 
 		$fore = $foreground && isset(static::$foregroundColors[$foreground]);
 		$back = $background && isset(static::$backgroundColors[$background]);
