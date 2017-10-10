@@ -1632,6 +1632,11 @@ class Model
 
 	public function addSubject($property, $subject)
 	{
+		if($subject->onSubjugate($this, $property) === FALSE)
+		{
+			return;
+		}
+		
 		$subjectClass = get_class($subject);
 
 		if($subjectClass
@@ -1916,5 +1921,10 @@ class Model
 	public static function getCache()
 	{
 		return static::$cache;
+	}
+
+	protected function onSubjugate($parent, $property)
+	{
+
 	}
 }

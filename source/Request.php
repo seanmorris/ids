@@ -89,7 +89,6 @@ class Request
 		if(!$this->path)
 		{
 			$url = parse_url($this->uri());
-			Log::debug($url, $this, $_SERVER);
 			$args = explode('/', $url['path']);
 			$args && $args[0] || array_shift($args);
 			$this->path = new Path(...$args);
@@ -131,12 +130,12 @@ class Request
 
 	public function get()
 	{
-		return $this->get;
+		return $this->get ?? [];
 	}
 
 	public function post()
 	{
-		return $this->post;
+		return $this->post ?? [];
 	}
 
 	public function files()
@@ -209,7 +208,7 @@ class Request
 	{
 		if(!$args)
 		{
-			return $this->switches;
+			return $this->switches ?? [];
 		}
 
 		if(count($args) == 1)

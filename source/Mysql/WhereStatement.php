@@ -63,9 +63,21 @@ abstract class WhereStatement extends Statement
 			die;	
 		}
 
+		$queryStartTime = microtime(TRUE);
+
 		$queryObject->execute($args);
+
+		$queryTime = microtime(TRUE) - $queryStartTime;
+
 		static::$queryCount++;
-		\SeanMorris\Ids\Log::debug('Queries Run: ' . static::$queryCount);
+		
+		static::$queryTime += $queryTime;
+
+		\SeanMorris\Ids\Log::debug(
+			'Queries Run: ' . static::$queryCount
+			, sprintf('Query ran in %f seconds.', $queryTime)
+			, sprintf('Total time waiting on database: %f seconds.', parent::$queryTime)
+		);
 		
 		$errorCode = $queryObject->errorCode();
 

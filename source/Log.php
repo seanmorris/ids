@@ -196,6 +196,42 @@ class Log
 
 		$output = '';
 
+		$output .= static::color(
+			static::header($levelString) . ' ' . static::positionString(1)
+			, static::HEAD_COLOR
+			, static::HEAD_BACKGROUND
+		);
+
+		foreach($data as $datum)
+		{
+			if(is_scalar($datum))
+			{
+				$output .= static::color($datum, static::getColor('line'), static::getColor('lineBg'));
+				$output .= PHP_EOL;
+				continue;
+			}
+
+			$output .= static::dump($datum, [], static::$colors);
+		}
+
+		static::startLog($maxLevel);
+
+		$fileExists = file_exists(ini_get('error_log'));
+
+		file_put_contents(
+			ini_get('error_log')
+			, PHP_EOL . $output
+			, FILE_APPEND
+		);
+
+		if(!$fileExists)
+		{
+			chmod(ini_get('error_log'), 0666);
+		}
+	}
+
+	protected static function startLog($maxLevel = 0)
+	{
 		if(!static::$started)
 		{
 			static::$started = TRUE;
@@ -217,47 +253,30 @@ class Log
 				$path = $_SERVER['REQUEST_METHOD'] . ':' . $path;
 			}
 
-			if(count($_REQUEST) && $level >= 4)
+			$request = NULL;
+
+			if(count($_REQUEST) && $maxLevel >= 4)
 			{
-				$path = $path . PHP_EOL
-					. 'Request: ' . PHP_EOL
+				$request = 'Request: ' . PHP_EOL
 					. static::dump($_REQUEST, [], static::$colors)
 					. ($_FILES ? 'Files: ' . static::dump($_FILES, [], static::$colors) : NULL)
 				;
 			}
 
-			$output = static::LOG_SEPERATOR . PHP_EOL . $path. PHP_EOL;
-		}
+			$from = NULL;
 
-		$output .= static::color(
-			static::header($levelString) . ' ' . static::positionString(1)
-			, static::HEAD_COLOR
-			, static::HEAD_BACKGROUND
-		);
-
-		foreach($data as $datum)
-		{
-			if(is_scalar($datum))
+			if(isset($_SERVER, $_SERVER['REMOTE_ADDR']))
 			{
-				$output .= static::color($datum, static::getColor('line'), static::getColor('lineBg'));
-				$output .= PHP_EOL;
-				continue;
+				$from = 'From: ' . $_SERVER['REMOTE_ADDR'] . PHP_EOL;
 			}
 
-			$output .= static::dump($datum, [], static::$colors);
-		}
+			$output = static::LOG_SEPERATOR . PHP_EOL . $path . $from . $request . PHP_EOL;
 
-		$fileExists = file_exists(ini_get('error_log'));
-
-		file_put_contents(
-			ini_get('error_log')
-			, PHP_EOL . $output
-			, FILE_APPEND
-		);
-
-		if(!$fileExists)
-		{
-			chmod(ini_get('error_log'), 0666);
+			file_put_contents(
+				ini_get('error_log')
+				, PHP_EOL . $output
+				, FILE_APPEND
+			);
 		}
 	}
 
@@ -577,6 +596,21 @@ class Log
 
 	public static function logException($e)
 	{
+		if($e instanceof \SeanMorris\Ids\Http\HttpException)
+		{
+			$maxLevel = 0;
+			$maxLevelString = Settings::read('logLevel');
+
+			if(isset(static::$levels[$maxLevelString]))
+			{
+				$maxLevel = static::$levels[$maxLevelString];
+			}
+
+			if($maxLevel < 4)
+			{
+				return;
+			}
+		}
 		$indentedTrace = preg_replace(
 			['/^/m', '/\:\s(.+)/']
 			, ["\t", "\n\t\t\$1\n"]
@@ -601,6 +635,8 @@ class Log
 				, static::ERROR_COLOR
 				, static::ERROR_BACKGROUND
 			). PHP_EOL . $indentedTrace . PHP_EOL;
+
+		static::startLog();
 
 		error_log(
 			$line

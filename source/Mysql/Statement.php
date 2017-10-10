@@ -8,7 +8,7 @@ abstract class Statement
 		, $wrappers = []
 	;
 
-	protected static $queryCount = 0;
+	protected static $queryCount = 0, $queryTime = 0;
 
 	public function __construct($table)
 	{
@@ -50,10 +50,22 @@ abstract class Statement
 		$queryObject = $this->prepare();
 		\SeanMorris\Ids\Log::debug($args);
 
+		$queryStartTime = microtime(TRUE);
+
 		$queryObject->execute($args);
+
+		$queryTime = microtime(TRUE) - $queryStartTime;
+
 		static::$queryCount++;
-		\SeanMorris\Ids\Log::debug('Queries Run: ' . static::$queryCount);
-		
+
+		static::$queryTime += $queryTime;
+
+		\SeanMorris\Ids\Log::debug(
+			'Queries Run: ' . static::$queryCount
+			, sprintf('Query ran in %f seconds.', $queryTime)
+			, sprintf('Total time waiting on database: %f seconds.', static::$queryTime)
+		);
+
 		$errorCode = $queryObject->errorCode();
 
 		if($errorCode !== '00000')
@@ -61,8 +73,6 @@ abstract class Statement
 			$error = $queryObject->errorInfo();
 			throw new \Exception($error[0] . ' ' . $error[2], $error[1]);
 		}
-
-		static::$queryCount++;
 
 		return $queryObject;
 	}
