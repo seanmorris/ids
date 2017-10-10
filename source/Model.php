@@ -538,8 +538,21 @@ class Model
 
 		$def = static::resolveDef($name, $args);
 
+		if($def['cursor'])
+		{
+			$cursorValue = (int) array_pop($args);
+			$limit = (int) array_pop($args);
+
+			$def['where'][] = ['id' => $cursorValue, '>'];
+		}
+
 		\SeanMorris\Ids\Log::debug($def);
-		$select = static::selectStatement($name, null, $args);
+		$select = static::selectStatement($def, null, $args);
+
+		if($def['cursor'])
+		{
+			$select->limit($limit);
+		}
 
 		if(isset($def['type']) && $def['type'] == 'count')
 		{
@@ -1045,9 +1058,9 @@ class Model
 		// \SeanMorris\Ids\Log::debug("MODEL RESOLVEDEF\n");
 		$type = NULL;
 		//$type = 'generate';
-		$paged = FALSE;
+		$cursor = $paged = FALSE;
 
-		if(preg_match('/^(loadOne|load|generate|get|count)((?:Page)?)(By.+)/', $name, $match))
+		if(preg_match('/^(loadOne|load|generate|get|count)((?:Page|Cursor)?)(By.+)/', $name, $match))
 		{
 			if(isset($match[1]))
 			{
@@ -1057,6 +1070,11 @@ class Model
 			if(isset($match[2]) && $match[2] == 'Page')
 			{
 				$paged = TRUE;
+			}
+
+			if(isset($match[2]) && $match[2] == 'Cursor')
+			{
+				$cursor = TRUE;
 			}
 
 			if(isset($match[3]))
@@ -1107,6 +1125,7 @@ class Model
 		}
 
 		$def['paged'] = $paged;
+		$def['cursor'] = $cursor;
 
 		// \SeanMorris\Ids\Log::debug( "MODEL RESOLVEDEF END\n" );
 		return $def;
@@ -1135,7 +1154,9 @@ class Model
 
 		$called = get_called_class();
 
-		$selectDef = $called::resolveDef($selectDefName, $args, $superior);
+		$selectDef = !is_array($selectDefName)
+			? $called::resolveDef($selectDefName, $args, $superior)
+			: $selectDefName;
 		/*
 		\SeanMorris\Ids\Log::debug(
 			'Resolved def'
