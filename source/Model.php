@@ -540,10 +540,10 @@ class Model
 
 		if($def['cursor'])
 		{
-			$cursorValue = (int) array_pop($args);
+			//$cursorValue = (int) array_pop($args);
 			$limit = (int) array_pop($args);
 
-			$def['where'][] = ['id' => $cursorValue, '>'];
+			$def['where'][] = ['id' => '?', '>'];
 		}
 
 		\SeanMorris\Ids\Log::debug($def);
