@@ -14,33 +14,43 @@ class Linker
 		{
 			$package = \SeanMorris\Ids\Package::get($package);
 			$packageSpace = $package->packageSpace();
-
-			$linker = $packageSpace . '\Linker';
-
-			if(!class_exists($linker))
-			{
-				continue;
-			}
-
-			if($exposedLinks = $linker::expose())
+			
+			if($exposedLinks = $package->getVar('link', NULL, 'global'))
 			{
 				foreach($exposedLinks as $key => $value)
 				{
 					$links[$key][$packageSpace] = $value;
 				}
 			}
+			else
+			{
+				$linker = $packageSpace . '\Linker';
+
+				if(!class_exists($linker))
+				{
+					continue;
+				}
+
+				if($exposedLinks = $linker::expose())
+				{
+					foreach($exposedLinks as $key => $value)
+					{
+						$links[$key][$packageSpace] = $value;
+					}
+				}
+			}
 		}
 
-		$ids = \SeanMorris\Ids\Package::get();
+		$rootPackage = \SeanMorris\Ids\Package::getRoot();
 
-		$ids->setVar('linker:links', $links);
+		$rootPackage->setVar('linker:links', $links);
 	}
 
 	public static function get($key = NULL, $package = NULL)
 	{
-		$ids = \SeanMorris\Ids\Package::get();
+		$rootPackage = \SeanMorris\Ids\Package::getRoot();
 
-		$links = (array)$ids->getVar('linker:links:' . $key);
+		$links = (array)$rootPackage->getVar('linker:links:' . $key);
 
 		if($package && !is_bool($package))
 		{

@@ -157,8 +157,8 @@ abstract class WhereStatement extends Statement
 			}
 			else
 			{
-				$column = key($condition);
-				$value = current($condition);
+				$column   = key($condition);
+				$value    = current($condition);
 				$compare  = isset($condition[0]) ? $condition[0] : '=';
 				$wrapper  = isset($condition[1]) ? $condition[1] : '%s';
 				$name     = isset($condition[2]) ? $condition[2] : $column;
@@ -180,7 +180,7 @@ abstract class WhereStatement extends Statement
 					$column = $alias . '.' . $column;
 				}
 
-				if(!$required && !isset($namedArgs[$name]))
+				if(!$required && !isset($namedArgs[$name]) || !preg_match('/\?/', $value))
 				{
 					// var_dump($name, $namedArgs);
 					continue;

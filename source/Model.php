@@ -674,7 +674,7 @@ class Model
 				'Loading one %s', get_called_class()
 			));
 
-			if(isset($cache[0]))
+			if(isset($cache[0]) && $cache[0])
 			{
 				\SeanMorris\Ids\Log::debug('From cache...');
 
@@ -1016,19 +1016,20 @@ class Model
 						
 						\SeanMorris\Ids\Log::debug('Already loaded...', $model);
 					}
-					else
+					else if(array_filter($skeleton[$subjectClass::$table], 'array_filter'))
 					{
 						\SeanMorris\Ids\Log::debug(
 							sprintf('Able to preload %s object', $subjectClass)
 							, $skeleton[$subjectClass::$table]
+							, array_filter($skeleton[$subjectClass::$table], 'array_filter')
 						);
 
 						$model = $subjectClass::instantiate($skeleton);
 
 						static::$idCache[$subjectClass][$subSkeleton['id']] = $model;
-					}
 
-					$this->{$property} = $model;
+						$this->{$property} = $model;
+					}
 				}
 			}
 		}
@@ -1217,7 +1218,7 @@ class Model
 					$subSelect = $joinClass::selectStatement($defName, $select, $args, $table);
 
 					$select->subjugate($subSelect);
-					$select->join($subSelect, $childProperty, 'id');
+					$select->join($subSelect, $childProperty, 'id', 'LEFT');
 				}
 				else if(isset(static::$hasMany[$childProperty]))
 				{
@@ -1567,10 +1568,20 @@ class Model
 					}
 					else if(isset($values['class']) && $values['class'])
 					{
-						\SeanMorris\Ids\Log::debug('Creating new model');
+						\SeanMorris\Ids\Log::debug(
+							'Trying to create new model'
+							, $values['class']
+							, $propertyClass
+						);
 
 						if(is_a($values['class'], $propertyClass, TRUE))
 						{
+							\SeanMorris\Ids\Log::debug(
+								'Creating new model'
+								, $values['class']
+								, $propertyClass
+							);
+
 							$subject = new $values['class'];
 
 							$subject->consume($values);

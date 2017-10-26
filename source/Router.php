@@ -282,7 +282,7 @@ class Router
 			){
 				if($this->parent())
 				{
-					//throw $result;
+					throw $result;
 				}
 			}
 
