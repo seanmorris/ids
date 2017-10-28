@@ -138,6 +138,11 @@ class Request
 		return $this->post ?? [];
 	}
 
+	public function method()
+	{
+		return $_SERVER['REQUEST_METHOD'] ?? NULL;
+	}
+
 	public function files()
 	{
 		$files = [];

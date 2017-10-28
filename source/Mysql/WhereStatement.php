@@ -180,13 +180,11 @@ abstract class WhereStatement extends Statement
 					$column = $alias . '.' . $column;
 				}
 
-				if(!$required && !isset($namedArgs[$name]) || !preg_match('/\?/', $value))
+				if(!$required && !isset($namedArgs[$name]))
 				{
 					// var_dump($name, $namedArgs);
 					continue;
 				}
-
-				$this->valueWrappers[] = $wrapper;
 
 				$strings[] = sprintf(
 					'%s %s %s'
@@ -194,6 +192,13 @@ abstract class WhereStatement extends Statement
 					, $compare
 					, $value
 				);
+
+				if(!preg_match('/\?/', $value))
+				{
+					continue;
+				}
+
+				$this->valueWrappers[] = $wrapper;
 			}
 		}
 

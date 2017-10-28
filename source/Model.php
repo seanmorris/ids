@@ -1230,7 +1230,7 @@ class Model
 					}
 
 					$joinClass = static::$hasMany[$childProperty];
-					$defName      = 'loadByOwner';
+					$defName   = 'loadByOwner';
 					
 					array_unshift($args, $childProperty);
 					array_unshift($args, $joinBy);

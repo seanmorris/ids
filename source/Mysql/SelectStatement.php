@@ -122,7 +122,7 @@ class SelectStatement extends WhereStatement
 		);
 
 		$conditionString = '('
-			. ($conditionString
+			. (trim($conditionString)
 				? $conditionString
 				: 1
 			)
@@ -157,7 +157,7 @@ class SelectStatement extends WhereStatement
 			}
 
 			$joinConditionString = '('
-				. $joinConditionString
+				. trim($joinConditionString)
 					? $joinConditionString
 					: 1
 				. ')'
@@ -230,13 +230,13 @@ class SelectStatement extends WhereStatement
 	{
 		$columnString = implode(', ', $this->aliasColumns());
 
-		// \SeanMorris\Ids\Log::debug($this->conditions);
+		\SeanMorris\Ids\Log::debug($this->conditions);
 
 		$tableString = $this->table;
 
 		$conditionString = $this->conditionTree(
-			['AND' => $this->conditions]
-			, null
+			$this->conditions
+			, 'AND'
 			, $this->alias
 			, $args
 		);
@@ -272,6 +272,10 @@ class SelectStatement extends WhereStatement
 			// @TODO: Why is $subConditionString sometimes empty?
 			if($subConditionString)
 			{
+				if(!$conditionString)
+				{
+					$conditionString = 1;
+				}
 				$conditionString = sprintf('( %s ) AND ( %s )', $conditionString, $subConditionString);
 			}
 		}
