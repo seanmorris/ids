@@ -1010,6 +1010,8 @@ class Model
 
 				if(isset($skeleton[$subjectClass::$table]))
 				{
+					$model = NULL;
+
 					if(isset($subSkeleton['id'], static::$idCache[$subjectClass][$subSkeleton['id']]))
 					{
 						$model = static::$idCache[$subjectClass][$subSkeleton['id']];
@@ -1021,15 +1023,14 @@ class Model
 						\SeanMorris\Ids\Log::debug(
 							sprintf('Able to preload %s object', $subjectClass)
 							, $skeleton[$subjectClass::$table]
-							, array_filter($skeleton[$subjectClass::$table], 'array_filter')
 						);
 
 						$model = $subjectClass::instantiate($skeleton);
 
 						static::$idCache[$subjectClass][$subSkeleton['id']] = $model;
-
-						$this->{$property} = $model;
 					}
+
+					$this->{$property} = $model;
 				}
 			}
 		}
@@ -1202,7 +1203,6 @@ class Model
 				$defName = 'loadBy'.ucwords($join['by']);
 				$subSelect = $joinClass::selectStatement($defName, $select, $args, $table);
 
-				$select->subjugate($subSelect);
 				$select->join($subSelect, $join['on'], 'id');
 			}
 		}
@@ -1217,7 +1217,6 @@ class Model
 					$defName   = 'load'.ucwords($joinBy);
 					$subSelect = $joinClass::selectStatement($defName, $select, $args, $table);
 
-					$select->subjugate($subSelect);
 					$select->join($subSelect, $childProperty, 'id', 'LEFT');
 				}
 				else if(isset(static::$hasMany[$childProperty]))
@@ -1242,7 +1241,6 @@ class Model
 
 					\SeanMorris\Ids\Log::debug($subSelect);
 
-					$select->subjugate($subSelect);
 					$select->join($subSelect, 'id', 'ownerId');
 
 					\SeanMorris\Ids\Log::debug($subSelect);

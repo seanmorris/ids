@@ -112,7 +112,7 @@ class Relationship extends Model
 			$ownerClass = is_string($owner) ? $owner : get_class($owner);
 
 			// @TODO: Eliminate dirty hack.
-			$joinBy = NULL;
+			$joinBy = 'Null';
 			if($_args)
 			{
 				if(is_string($owner))
@@ -139,7 +139,6 @@ class Relationship extends Model
 				];
 				if(is_string($owner))
 				{
-					//$def['where']
 					$def['where'] = [
 						['ownerId'      => sprintf('%s.id', $parentSelect->tableAlias())]
 						, ['ownerClass' => sprintf('"%s"', addslashes($owner))]

@@ -141,6 +141,16 @@ class SelectStatement extends WhereStatement
 
 			list($subTableString, $subColString, $joinConditionString) = $sub->assembleJoin($type, $namedArgs, $superCol, $subCol);
 
+			if($this->tableAliases && $sub->tableAliases)
+			{
+				$this->tableAliases += $sub->tableAliases;
+			}
+
+			if($this->columnAliases && $sub->columnAliases)
+			{
+				$this->columnAliases += $sub->columnAliases;
+			}
+
 			//$subTableString .= "\t" . 'ON ' . '((' . $joinConditionString . '))';
 			//$subTableString .= "--";
 
@@ -290,6 +300,8 @@ class SelectStatement extends WhereStatement
 			throw new \Exception('Idiot.');
 		}
 
+		$this->subjugate($join);
+
 		if(!$type)
 		{
 			$type = 'INNER';
@@ -317,7 +329,7 @@ class SelectStatement extends WhereStatement
 		}
 	}
 
-	public function subjugate($join)
+	protected function subjugate($join)
 	{
 		$join->master = $this->master;
 		$join->superior = $this;
@@ -435,7 +447,12 @@ class SelectStatement extends WhereStatement
 
 			while($row = $queryObject->fetch())
 			{
-				\SeanMorris\Ids\Log::debug('Generating row...', $row);
+				\SeanMorris\Ids\Log::debug(
+					'Generating row...'
+					, $row
+					, $this->tableAliases
+					, $this->columnAliases
+				);
 
 				$result = [];
 
@@ -456,8 +473,6 @@ class SelectStatement extends WhereStatement
 						$result[$tableName] = array_reverse($result[$tableName]);
 					}
 				}
-
-				// \SeanMorris\Ids\Log::debug($this->tableAliases, $result);
 
 				yield $result;
 			}
