@@ -523,10 +523,17 @@ class Model
 		$cache =& self::$cache[$curClass][$cacheKey];
 		$idCache =& self::$idCache[$curClass];
 
+		$backtrace = debug_backtrace();
+
+		$x = array_shift($backtrace);
+
 		\SeanMorris\Ids\Log::debug(sprintf(
-			'Static call to %s::%s, Cache: %s%s'
+			'%s::%s, Called from %s:%d.'
+				. PHP_EOL . 'Cache "%s%s"'
 			, $curClass
 			, $name
+			, $x['file']
+			, $x['line']
 			, $cacheKey
 			, isset($cache) ? '*' : ''
 		), 'Args:', $args);
@@ -971,7 +978,21 @@ class Model
 		}
 	}
 
-	protected static function subSkeleton($skeleton)
+	protected static function subskeletonWithAlias($skeleton)
+	{
+		if(!static::$table
+			|| !isset($skeleton[static::$table])
+			//&& is_array($skeleton[static::$table])
+		){
+			return [NULL, []];
+		}
+
+		reset($skeleton[static::$table]);
+
+		return [key($skeleton[static::$table]), array_shift($skeleton[static::$table])];
+	}
+
+	protected static function subskeletons($skeleton)
 	{
 		if(!static::$table
 			|| !isset($skeleton[static::$table])
@@ -980,12 +1001,24 @@ class Model
 			return [];
 		}
 
-		return array_shift($skeleton[static::$table]);
+		return $skeleton[static::$table];
+	}
+
+	protected static function subSkeleton($skeleton)
+	{
+		list($alias, $subSkeleton) = static::subskeletonWithAlias($skeleton);
+
+		return $subSkeleton;
 	}
 
 	protected function consumeStatement($skeleton, $args = [], $rawArgs = [])
 	{
-		$subSkeleton = static::subSkeleton($skeleton);
+		list(
+			$subSkeletonAlias
+			, $subSkeleton
+		) = static::subskeletonWithAlias($skeleton);
+
+		//var_dump($subSkeletonAlias, $subSkeleton);
 
 		$baseClass = get_class();
 		$parentClass = get_parent_class(get_called_class());
@@ -1012,14 +1045,32 @@ class Model
 				{
 					$model = NULL;
 
-					if(isset($subSkeleton['id'], static::$idCache[$subjectClass][$subSkeleton['id']]))
-					{
-						$model = static::$idCache[$subjectClass][$subSkeleton['id']];
+					$subSkeletons = $subjectClass::subskeletons($skeleton);
+
+					$subSkeletonAliasChain = explode('__', $subSkeletonAlias);
+
+					$subSkeletonKey = array_pop($subSkeletonAliasChain)
+						. '_'
+						. $property
+						. '__'
+						. $subjectClass::$table
+						. '_0'
+					;
+
+					if(isset(
+						$subSkeletons[$subSkeletonKey]
+						, $subSkeletons[$subSkeletonKey]['id']
+						, static::$idCache[$subjectClass][ $subSkeletons[$subSkeletonKey]['id'] ]
+					)){
+						$model = static::$idCache[$subjectClass][ $subSkeletons[$subSkeletonKey]['id'] ];
 						
 						\SeanMorris\Ids\Log::debug('Already loaded...', $model);
 					}
-					else if(array_filter($skeleton[$subjectClass::$table], 'array_filter'))
-					{
+					else if(
+						isset( $subSkeletons[$subSkeletonKey] )
+						&& $subSkeletons[$subSkeletonKey]
+						&& array_filter($subSkeletons[$subSkeletonKey])
+					){
 						\SeanMorris\Ids\Log::debug(
 							sprintf('Able to preload %s object', $subjectClass)
 							, $skeleton[$subjectClass::$table]
@@ -1027,7 +1078,7 @@ class Model
 
 						$model = $subjectClass::instantiate($skeleton);
 
-						static::$idCache[$subjectClass][$subSkeleton['id']] = $model;
+						static::$idCache[$subjectClass][ $subSkeletons[$subSkeletonKey]['id'] ] = $model;
 					}
 
 					$this->{$property} = $model;
@@ -1217,7 +1268,12 @@ class Model
 					$defName   = 'load'.ucwords($joinBy);
 					$subSelect = $joinClass::selectStatement($defName, $select, $args, $table);
 
-					$select->join($subSelect, $childProperty, 'id', 'LEFT');
+					$select->join(
+						$subSelect
+						, $childProperty
+						, 'id'
+						, 'LEFT'
+					);
 				}
 				else if(isset(static::$hasMany[$childProperty]))
 				{
@@ -1241,7 +1297,11 @@ class Model
 
 					\SeanMorris\Ids\Log::debug($subSelect);
 
-					$select->join($subSelect, 'id', 'ownerId');
+					$select->join(
+						$subSelect
+						, 'id'
+						, 'ownerId'
+					);
 
 					\SeanMorris\Ids\Log::debug($subSelect);
 				}

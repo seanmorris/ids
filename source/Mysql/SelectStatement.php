@@ -293,7 +293,7 @@ class SelectStatement extends WhereStatement
 		return [$joinString, $columnString, $conditionString];
 	}
 
-	public function join(SelectStatement $join, $superCol, $subCol, $type = null, $operator = null, $superWrapper = null, $subWrapper = null)
+	public function join(SelectStatement $join, $superCol, $subCol, $type = null, $operator = null, $superWrapper = null, $subWrapper = null, $tag = null)
 	{
 		if($join === $this || $join === $this->master)
 		{
@@ -307,7 +307,25 @@ class SelectStatement extends WhereStatement
 			$type = 'INNER';
 		}
 
-		$join->alias = $join->master->aliasTableName($join->table, $join);
+		if(!$this->alias)
+		{
+			$this->alias = $this->master->aliasTableName($this->table, $this);
+		}
+
+		$parentAliases = NULL;
+		$current       = $this;
+		/*
+		while($parent = $current->superior)
+		{
+
+		}
+		*/
+
+		$join->alias = $join->master->aliasTableName(
+			$join->table
+			, $join
+			, $this->aliasColumnName($superCol, $this->alias)
+		);
 
 		$this->joins[] = [$join, $superCol, $subCol, $type, $operator, $superWrapper, $subWrapper];
 	}
@@ -335,7 +353,7 @@ class SelectStatement extends WhereStatement
 		$join->superior = $this;
 	}
 
-	protected function aliasTableName($tableName, $select = NULL)
+	protected function aliasTableName($tableName, $select = NULL, $tag = NULL)
 	{
 		$this->aliasedSelects = [];
 
@@ -354,6 +372,11 @@ class SelectStatement extends WhereStatement
 		}
 
 		$alias = $tableName . '_' . $this->aliases[$tableName];
+
+		if($tag)
+		{
+			$alias = $tag . '__' . $alias;
+		}
 
 		$this->tableAliases[$alias] = $tableName;
 
