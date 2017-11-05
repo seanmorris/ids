@@ -468,7 +468,7 @@ class SelectStatement extends WhereStatement
 				die;
 			}
 
-			while($row = $queryObject->fetch())
+			while($row = $queryObject->fetch(\PDO::FETCH_ASSOC))
 			{
 				\SeanMorris\Ids\Log::debug(
 					'Generating row...'
