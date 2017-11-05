@@ -87,12 +87,24 @@ class Model
 				else if(is_array($colVal)
 					&& isset($colVal['class'])
 					&& !is_a($colVal['class'], $columnClass, true)
-					|| (is_array($colVal) && !$colVal['class'])
+					|| (is_array($colVal)
+						&& isset($colVal['class'])
+						&& is_array($colVal)
+						&& !$colVal['class']
+					)
 				){
 					throw new \Exception(sprintf(
 						'Bad id and/or classname supplied for column %s.'
 						, $column
 					));
+				}
+
+				if(is_array($colVal)
+					&& is_numeric(key($colVal))
+					&& count($colVal) == 1
+					&& is_array(current($colVal))
+				){
+					$colVal = reset($colVal);
 				}
 
 				if(is_array($colVal) && isset($colVal['id']))
@@ -109,7 +121,7 @@ class Model
 				{
 					// $columnObject = new $columnClass;
 					// $columnObject->consume($colVal);
-					$columnObject = $columnObject::instantiate($colVal);
+					$columnObject = $columnClass::instantiate($colVal);
 					$columnObject->save();
 
 					\SeanMorris\Ids\Log::debug($columnObject);
@@ -553,7 +565,7 @@ class Model
 			$def['where'][] = ['id' => '?', '>'];
 		}
 
-		\SeanMorris\Ids\Log::debug($def);
+		//\SeanMorris\Ids\Log::debug($def);
 		$select = static::selectStatement($def, null, $args);
 
 		if($def['cursor'])
@@ -879,7 +891,13 @@ class Model
 
 		$instance = new $class();
 
+		$timelimit = ini_get("max_execution_time");
+
+		set_time_limit(30);
+
 		$instance->consumeStatement($skeleton, $args, $rawArgs);
+
+		set_time_limit($timelimit);
 
 		self::$instances[get_called_class()][$instance->id] = $instance;
 
@@ -1043,7 +1061,7 @@ class Model
 
 				if(isset($skeleton[$subjectClass::$table]))
 				{
-					$model = NULL;
+					$model = $value;
 
 					$subSkeletons = $subjectClass::subskeletons($skeleton);
 
@@ -1295,7 +1313,7 @@ class Model
 					
 					$subSelect = $relationshipClass::selectStatement($defName, $select, $args, $table);
 
-					\SeanMorris\Ids\Log::debug($subSelect);
+					//\SeanMorris\Ids\Log::debug($subSelect);
 
 					$select->join(
 						$subSelect
@@ -1303,7 +1321,7 @@ class Model
 						, 'ownerId'
 					);
 
-					\SeanMorris\Ids\Log::debug($subSelect);
+					//\SeanMorris\Ids\Log::debug($subSelect);
 				}
 				else
 				{
@@ -1782,6 +1800,8 @@ class Model
 		{
 			return false;
 		}
+
+		\SeanMorris\Ids\Log::debug($this);
 
 		$class = static::$hasOne[$column];
 

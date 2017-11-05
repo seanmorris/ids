@@ -240,7 +240,7 @@ class SelectStatement extends WhereStatement
 	{
 		$columnString = implode(', ', $this->aliasColumns());
 
-		\SeanMorris\Ids\Log::debug($this->conditions);
+		//\SeanMorris\Ids\Log::debug($this->conditions);
 
 		$tableString = $this->table;
 
@@ -472,9 +472,9 @@ class SelectStatement extends WhereStatement
 			{
 				\SeanMorris\Ids\Log::debug(
 					'Generating row...'
-					, $row
+					, $row/*
 					, $this->tableAliases
-					, $this->columnAliases
+					, $this->columnAliases*/
 				);
 
 				$result = [];

@@ -24,8 +24,12 @@ class Http303 extends HttpException
 
 			$params = $router->request()->get();
 
-			if($params && empty($parsedUrl['query']) && empty($parsedUrl['host']))
-			{
+			if(
+				$params
+				&& empty($parsedUrl['query'])
+				&& empty($parsedUrl['host'])
+				&& substr($url, -1, 1) !== '?'
+			){
 				$url = sprintf(
 					'/%s?%s'
 					, $parsedUrl['path']

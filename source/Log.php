@@ -501,18 +501,24 @@ class Log
 
 	public static function header($level = '')
 	{
+		static $start;
+		if(!$start)
+		{
+			$start = microtime(TRUE);
+		}
 		$mull = pow(10,static::SECOND_SIGNIFICANCE);
 		$mill = microtime(true);
 		$mill -= floor($mill);
 		$mill = round($mill*$mull);
 
 		return sprintf(
-			"[%s.%0" . static::SECOND_SIGNIFICANCE . "d]::[%d]"
+			"[%.0" . static::SECOND_SIGNIFICANCE . "f]::[%s.%0" . static::SECOND_SIGNIFICANCE . "d]::[%d]"
 			 . (
 				$level
-					? ('['. $level . static::color(']', static::HEAD_COLOR, static::HEAD_BACKGROUND, FALSE))
+					? ('::['. $level . static::color(']', static::HEAD_COLOR, static::HEAD_BACKGROUND, FALSE))
 					: NULL
 			)
+			, microtime(TRUE) - $start
 			, date('Y-m-d h:i:s')
 			, $mill
 			, getmypid()
