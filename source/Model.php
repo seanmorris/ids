@@ -247,6 +247,7 @@ class Model
 
 				if(isset($colVal['id'])
 					&& isset($colVal['class'])
+					&& $colVal['class']
 					&& (
 						is_subclass_of($colVal['class'], $columnClass)
 						|| $colVal['class'] == $columnClass
@@ -254,7 +255,7 @@ class Model
 				){
 					$columnClass = $colVal['class'];
 				}
-				else if(isset($colVal['class']))
+				else if(isset($colVal['class']) && $colVal['class'])
 				{
 					throw new \Exception(sprintf(
 						'Bad classname supplied for column %s (%s).'
