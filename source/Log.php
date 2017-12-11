@@ -587,7 +587,7 @@ class Log
 		$i = 0;
 		$lines = [];
 
-		while($line = static::positionString(++$i, "\n\t"))
+		while($line = static::positionString(++$i, "\n\n"))
 		{
 			$lines[] = count($lines) . ":" . $line;
 		}

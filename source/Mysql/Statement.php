@@ -110,4 +110,14 @@ abstract class Statement
 	{
 		return array_map($callback, $args);
 	}
+
+	public static function queryCount()
+	{
+		return static::$queryCount;
+	}
+
+	public static function queryTime()
+	{
+		return static::$queryTime;
+	}
 }

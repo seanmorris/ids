@@ -268,6 +268,8 @@ class Model
 
 				if(is_array($colVal) && isset($colVal['id']))
 				{
+					var_dump($columnClass, $colVal);
+
 					$columnObject = $columnClass::loadOneById($colVal['id']);
 
 					$columnObject->consume($colVal);
@@ -1310,7 +1312,7 @@ class Model
 					array_unshift($args, $joinBy);
 					array_unshift($args, get_called_class());
 
-					$select->assemble();
+					//$select->assemble();
 					
 					$subSelect = $relationshipClass::selectStatement($defName, $select, $args, $table);
 
@@ -1792,7 +1794,7 @@ class Model
 
 	public function getSubject($column = null)
 	{
-		if(is_object($this->$column))
+		if(!$this->$column || is_object($this->$column))
 		{
 			return $this->$column;
 		}

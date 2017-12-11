@@ -87,8 +87,13 @@ register_shutdown_function(function() {
 	\SeanMorris\Ids\Log::info(
 		'Response Complete.'
 		, [
-			'Space' => memory_get_peak_usage(true) / (1024*1024) . ' MB'
-			, 'Time' => number_format(microtime(true) - START, 2)  . ' sec'
+			'Space'        => memory_get_peak_usage(true) / (1024*1024) . ' MB'
+			, 'Time'       => number_format(microtime(true) - START, 4)  . ' sec'
+			, 'Queries'    => \SeanMorris\Ids\Mysql\Statement::queryCount()
+			, 'Query Time' => number_format(
+				\SeanMorris\Ids\Mysql\Statement::queryTime()
+				, 4
+			) . ' sec'
 		]
 		, PHP_EOL
 	);

@@ -12,7 +12,11 @@ abstract class WhereStatement extends Statement
 
 	public function execute(...$args)
 	{
+		$queryStartTime = microtime(TRUE);
+
 		$argsUsed = [];
+
+
 
 		if(isset($args[0]) && is_array($args[0]))
 		{
@@ -38,6 +42,7 @@ abstract class WhereStatement extends Statement
 		{
 			$queryObject = $this->prepare();
 		}
+				
 
 		$args = array_map(
 			function($value, $wrapper)
@@ -52,6 +57,7 @@ abstract class WhereStatement extends Statement
 			, $args
 			, $this->valueWrappers
 		);
+				
 
 		\SeanMorris\Ids\Log::debug('Args:', $args);
 		
@@ -62,8 +68,6 @@ abstract class WhereStatement extends Statement
 			\SeanMorris\Ids\Log::trace();
 			die;	
 		}
-
-		$queryStartTime = microtime(TRUE);
 
 		$queryObject->execute($args);
 
@@ -136,6 +140,8 @@ abstract class WhereStatement extends Statement
 
 		$strings = [];
 
+		//$this->valueWrappers = [];
+
 		foreach($tree as $key => $condition)
 		{
 			if(!is_array($condition))
@@ -167,13 +173,13 @@ abstract class WhereStatement extends Statement
 				$this->valueRequired[] = $required;
 				$this->valueNames[] = $name;
 
-				/*
+				\SeanMorris\Ids\Log::trace();
 				\SeanMorris\Ids\Log::debug(array(
 					'column' => $column
 					, 'value' => $value
+					, 'compare' => $compare
 					, 'name' => $name
 				));
-				*/
 
 				if($alias)
 				{

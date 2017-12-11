@@ -28,6 +28,10 @@ class SelectStatement extends WhereStatement
 
 	public function tableAlias()
 	{
+		if(!$this->alias && $this->master)
+		{
+			$this->alias = $this->master->aliasTableName($this->table, $this);
+		}
 		return $this->alias;
 	}
 
@@ -349,7 +353,7 @@ class SelectStatement extends WhereStatement
 
 	protected function subjugate($join)
 	{
-		$join->master = $this->master;
+		$join->master   = $this->master;
 		$join->superior = $this;
 	}
 
