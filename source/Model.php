@@ -268,17 +268,20 @@ class Model
 
 				if(is_array($colVal) && isset($colVal['id']))
 				{
-					var_dump($columnClass, $colVal);
+					if($columnObject = $columnClass::loadOneById($colVal['id']))
+					{
+						$columnObject->consume($colVal);
 
-					$columnObject = $columnClass::loadOneById($colVal['id']);
+						$columnObject->save();
 
-					$columnObject->consume($colVal);
+						\SeanMorris\Ids\Log::debug($columnObject);
 
-					$columnObject->save();
-
-					\SeanMorris\Ids\Log::debug($columnObject);
-
-					$colVal = $colVal['id'];
+						$colVal = $colVal['id'];
+					}
+					else
+					{
+						$colVal = NULL;
+					}
 				}
 				else
 				{
