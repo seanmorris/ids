@@ -720,6 +720,7 @@ class Model
 
 				if(!$model)
 				{
+					\SeanMorris\Ids\Log::debug('Read Failed', $skeleton);
 					$cache[0] = FALSE;
 					continue;
 				}
@@ -785,6 +786,7 @@ class Model
 
 				if(!$model)
 				{
+					\SeanMorris\Ids\Log::debug('Read Failed', $skeleton);
 					continue;
 				}
 
@@ -844,6 +846,11 @@ class Model
 					}
 
 					$model = static::instantiate($skeleton, $args, $rawArgs);
+
+					if(!$model)
+					{
+						\SeanMorris\Ids\Log::debug('Read Failed', $skeleton);
+					}
 
 					if(static::afterRead($model, $subSkeleton) === FALSE)
 					{

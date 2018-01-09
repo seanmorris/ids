@@ -49,6 +49,15 @@ abstract class WhereStatement extends Statement
 			{
 				if($wrapper)
 				{
+					if(is_array($value))
+					{
+						return array_map(
+							function($v) use($wrapper) {
+								return sprintf($wrapper, $v);
+							}
+							, $value
+						);
+					}
 					return sprintf($wrapper, $value);
 				}
 
@@ -61,15 +70,33 @@ abstract class WhereStatement extends Statement
 
 		\SeanMorris\Ids\Log::debug('Args:', $args);
 		
-		if($nonscalar = array_filter($args, function($a){return !is_scalar($a) && !is_null($a);}))
-		{
+		if($nonscalar = array_filter($args, function($a) {
+			return !is_scalar($a)
+				&& !is_null($a)
+				&& !is_array($a);
+		})) {
 			\SeanMorris\Ids\Log::debug('Nonscalar argument supplied.');
 			\SeanMorris\Ids\Log::debug($nonscalar);
 			\SeanMorris\Ids\Log::trace();
 			die;	
 		}
 
-		$queryObject->execute($args);
+		$finalArgs = [];
+
+		foreach($args as $arg)
+		{
+			if(is_array($arg))
+			{
+				foreach($arg as $a)
+				{
+					$finalArgs[] = $a;
+				}
+				continue;
+			}
+			$finalArgs[] = $arg;
+		}
+
+		$queryObject->execute($finalArgs);
 
 		$queryTime = microtime(TRUE) - $queryStartTime;
 
@@ -190,6 +217,14 @@ abstract class WhereStatement extends Statement
 				{
 					// var_dump($name, $namedArgs);
 					continue;
+				}
+
+				if(isset($namedArgs[$name]) && is_array($namedArgs[$name]))
+				{
+					$value = '(' . implode(
+						', '
+						, array_fill(0, count($namedArgs[$name]), $value)
+					) . ')';
 				}
 
 				$strings[] = sprintf(
