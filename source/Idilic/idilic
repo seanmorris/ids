@@ -64,7 +64,7 @@ if(isset($switches['domain']))
 
 $composer = require dirname(__FILE__) . '/../init.php';
 
-foreach ($requests as $req)
+foreach($requests as $req)
 {
 	$request = new \SeanMorris\Ids\Request([
 		'path' => $path = new Path(...$req->args)
@@ -75,7 +75,7 @@ foreach ($requests as $req)
 	$router = new Router($request, $routes);
 	$res = $router->route();
 
-	if(!is_scalar($res) && $res !==  null)
+	if(!is_scalar($res) && $res !== null)
 	{
 		print json_encode($res, JSON_PRETTY_PRINT);
 	}

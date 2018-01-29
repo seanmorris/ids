@@ -106,9 +106,9 @@ class Path
 	{
 		$args = [];
 		
-		while($node = $this->consumeNode())
+		while($this->counter <= count($this->nodes))
 		{
-			$args[] = $node;
+			$args[] = $this->consumeNode();
 		}
 
 		return $args;

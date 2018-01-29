@@ -78,7 +78,7 @@ class Router
 
 			if(isset($routes->alias[$node]))
 			{
-				if(!array_filter($path->nodes()))
+				if(!array_filter($path->nodes(), function($x){return isset($x);}))
 				{
 					$path->setAlias($routes->alias[$node]);
 				}

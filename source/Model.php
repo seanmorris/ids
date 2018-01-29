@@ -1104,10 +1104,20 @@ class Model
 					){
 						\SeanMorris\Ids\Log::debug(
 							sprintf('Able to preload %s object', $subjectClass)
+							, $subSkeletonKey
+							, $subSkeletons
 							, $skeleton[$subjectClass::$table]
 						);
 
-						$model = $subjectClass::instantiate($skeleton);
+						$subSkeletonClean = [];
+
+						$subSkeletonClean[$subjectClass::$table][] = $skeleton[$subjectClass::$table][$subSkeletonKey];
+
+						$skeleton[$subjectClass::$table][$subSkeletonKey];
+
+						$model = $subjectClass::instantiate($subSkeletonClean);
+
+						\SeanMorris\Ids\Log::debug('Preloaded', $model);
 
 						static::$idCache[$subjectClass][ $subSkeletons[$subSkeletonKey]['id'] ] = $model;
 					}
