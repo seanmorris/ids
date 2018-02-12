@@ -16,8 +16,6 @@ abstract class WhereStatement extends Statement
 
 		$argsUsed = [];
 
-
-
 		if(isset($args[0]) && is_array($args[0]))
 		{
 			$queryObject = $this->prepare($args[0]);
@@ -200,12 +198,12 @@ abstract class WhereStatement extends Statement
 				$this->valueRequired[] = $required;
 				$this->valueNames[] = $name;
 
-				\SeanMorris\Ids\Log::trace();
+				// \SeanMorris\Ids\Log::trace();
 				\SeanMorris\Ids\Log::debug(array(
-					'column' => $column
-					, 'value' => $value
+					'column'    => $column
+					, 'value'   => $value
 					, 'compare' => $compare
-					, 'name' => $name
+					, 'name'    => $name
 				));
 
 				if($alias)
