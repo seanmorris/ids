@@ -554,9 +554,17 @@ EOF
 		stream_set_blocking(STDIN, FALSE);
 		exec('stty -icanon min 0 time 0');
 		system('stty -echo');
+		register_shutdown_function(function(){
+			system('stty echo');
+		});
 		set_error_handler(function($errno, $errstr, $errfile, $errline)
 		{
 			printf("Error %d: %s\n%s:%s", $errno, $errstr, $errfile, $errline);
+		});
+		set_exception_handler(function($exception)
+		{
+			print \SeanMorris\Ids\Log::renderException($exception);
+			fwrite(STDERR, PHP_EOL . 'Goodbye.' . PHP_EOL);
 		});
 		print "Welcome to iREPL v0.1\n>";
 		$line = $input = NULL;
@@ -672,7 +680,7 @@ EOF
 				$input .= $line;
 			}
 			ob_start();
-			eval($input . ';');
+			eval($input . ';');			
 			$output = ob_get_contents();
 			ob_end_flush();
 			$input = $line = NULL;
@@ -710,5 +718,22 @@ EOF
 			$string .= str_repeat("\x1b\x5b\x44", abs($offset));
 		}
 		return $string;	
+	}
+
+	public function info()
+	{
+		return sprintf(
+"Domain:\t\t%s
+Root:\t\t%s
+Entrypoint:\t%s
+Log Level:\t%s
+Root Package:\t%s
+"
+			, $_SERVER['HTTP_HOST']
+			, IDS_ROOT
+			, \SeanMorris\Ids\Settings::read('entrypoint')
+			, \SeanMorris\Ids\Settings::read('logLevel')
+			, \SeanMorris\Ids\Package::getRoot()->packageSpace()
+		);
 	}
 }
