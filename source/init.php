@@ -51,6 +51,7 @@ if(!$autoloadPath)
 if($autoloadPath)
 {
 	define('IDS_VENDOR_ROOT', dirname($autoloadPath));
+	define('IDS_ROOT', dirname(IDS_VENDOR_ROOT));
 	$composer = require $autoloadPath;
 }
 else
