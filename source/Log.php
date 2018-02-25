@@ -504,7 +504,7 @@ class Log
 		static $start;
 		if(!$start)
 		{
-			$start = microtime(TRUE);
+			$start = START;
 		}
 		$mull = pow(10,static::SECOND_SIGNIFICANCE);
 		$mill = microtime(true);

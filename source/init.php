@@ -115,7 +115,9 @@ register_shutdown_function(function() {
 	\SeanMorris\Ids\Log::info(
 		'Response Complete.'
 		, [
-			'Space'        => memory_get_peak_usage(true) / (1024*1024) . ' MB'
+			'Space'        => number_format(
+				memory_get_peak_usage(true) / (1024*1024), 4
+			) . ' MB'
 			, 'Time'       => number_format(microtime(true) - START, 4)  . ' sec'
 			, 'Queries'    => \SeanMorris\Ids\Mysql\Statement::queryCount()
 			, 'Query Time' => number_format(
