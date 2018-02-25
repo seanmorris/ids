@@ -6,6 +6,7 @@ define('START', microtime(true));
 date_default_timezone_set('GMT+0');
 
 $dir = getcwd();
+$profileDir = $dir;
 
 while(TRUE)
 {
@@ -27,30 +28,57 @@ while(TRUE)
 	$dir = $nextDir;
 }
 
-if(!$autoloadPath)
+while(TRUE)
 {
-	$userFile = getenv("HOME") . '/.idilicProfile.json';
+	$userFile = $profileDir . '/.idilicProfile.json';
 
 	if(file_exists($userFile))
 	{
-		$userSettings = json_decode(file_get_contents($userFile));
-		$autoloadPath = $userSettings->root . '/vendor/autoload.php';
+		break;
 	}
-	else
+
+	$nextDir = dirname($profileDir);
+
+	if($nextDir === $profileDir)
 	{
-		throw new \ErrorException(
-			'Unable to locate autoloader. ' . (
-				(php_sapi_name() === 'cli')
-				 	? 'Run idilic inside the project directory or configure ~/.idilicProfile.json'
-				 	: 'Check your directory structure.'
-			 )
-		);
+		break;
 	}
+
+	$profileDir = $nextDir;
+}
+
+if(!file_exists($userFile))
+{
+	$userFile = getenv("HOME") . '/.idilicProfile.json';
+}
+
+if(file_exists($userFile))
+{
+	$userSettings = json_decode(file_get_contents($userFile));
+	
+	$autoloadPath = $userSettings->root . '/vendor/autoload.php';
+
+	if(!isset($_SERVER['HTTP_HOST']))
+	{
+		$_SERVER['HTTP_HOST'] =  $userSettings->domain;
+	}
+}
+
+if(!$autoloadPath)
+{
+	throw new \ErrorException(
+		'Unable to locate autoloader. ' . (
+			(php_sapi_name() === 'cli')
+			 	? 'Run idilic inside the project directory or configure ~/.idilicProfile.json'
+			 	: 'Check your directory structure.'
+		 )
+	);
 }
 
 if($autoloadPath)
 {
 	define('IDS_VENDOR_ROOT', dirname($autoloadPath));
+	define('IDS_ROOT', dirname(IDS_VENDOR_ROOT));
 	$composer = require $autoloadPath;
 }
 else
