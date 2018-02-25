@@ -665,7 +665,7 @@ class Log
 		return $lines;
 	}
 
-	public static function logException($e)
+	public static function renderException($e)
 	{
 		if($e instanceof \SeanMorris\Ids\Http\HttpException)
 		{
@@ -696,36 +696,39 @@ class Log
 		{
 			$renderedArgs = [];
 
-			foreach($frame['args'] as $a => $arg)
+			if(isset($frame['args']))
 			{
-				if(is_scalar($arg))
+				foreach($frame['args'] as $a => $arg)
 				{
-					if(is_string($arg))
+					if(is_scalar($arg))
 					{
-						$renderedArg = ' "' . $arg . '"';
+						if(is_string($arg))
+						{
+							$renderedArg = ' "' . $arg . '"';
+						}
+						else
+						{
+							$renderedArg = static::render($arg);
+						}
 					}
 					else
 					{
-						$renderedArg = static::render($arg);
+						$renderedArg = (is_object($arg)
+							? get_class($arg)
+							: 'Array'
+						) . '[]...';
 					}
-				}
-				else
-				{
-					$renderedArg = (is_object($arg)
-						? get_class($arg)
-						: 'Array'
-					) . '[]...';
-				}
 
-				$renderedArgs[] = 'Arg #' . $a . ' ' .$renderedArg;
+					$renderedArgs[] = 'Arg #' . $a . ' ' .$renderedArg;
+				}
 			}
 
 			$superTrace[] = sprintf(
 				"#%d %s:(%d)\n    %s::%s()%s\n"
 				, $level
-				, $frame['file']
-				, $frame['line']
-				, $frame['class']
+				, $frame['file'] ?? NULL
+				, $frame['line'] ?? NULL
+				, $frame['class'] ?? NULL
 				, $frame['function']
 				, $renderedArgs
 					? PHP_EOL . static::indent(
@@ -744,26 +747,31 @@ class Log
 
 		$superTrace = implode(PHP_EOL, $superTrace);
 
-		$line = static::color(
-			static::header()
-				, static::HEAD_COLOR
-				, static::HEAD_BACKGROUND
-			) . PHP_EOL . static::color(
-				sprintf(
-					"%s thrown from %s:%d"
-						. PHP_EOL
-						. '%s'
-						. PHP_EOL
-					, get_class($e)
-					, $e->getFile()
-					, $e->getLine()
-					, $e->getMessage()
-				)
-				, static::ERROR_COLOR
-				, static::ERROR_BACKGROUND
+		return static::color(
+		static::header()
+			, static::HEAD_COLOR
+			, static::HEAD_BACKGROUND
+		) . PHP_EOL . static::color(
+			sprintf(
+				"%s thrown from %s:%d"
+					. PHP_EOL
+					. '%s'
+					. PHP_EOL
+				, get_class($e)
+				, $e->getFile()
+				, $e->getLine()
+				, $e->getMessage()
 			)
-			//. PHP_EOL . $indentedTrace
-			. PHP_EOL . $superTrace . PHP_EOL;
+			, static::ERROR_COLOR
+			, static::ERROR_BACKGROUND
+		)
+		//. PHP_EOL . $indentedTrace
+		. PHP_EOL . $superTrace . PHP_EOL;
+	}
+
+	public static function logException($e)
+	{
+		$line = static::renderException($e);
 
 		static::startLog();
 
