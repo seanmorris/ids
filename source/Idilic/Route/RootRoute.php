@@ -736,4 +736,10 @@ Root Package:\t%s
 			, \SeanMorris\Ids\Package::getRoot()->packageSpace()
 		);
 	}
+
+	public function log()
+	{
+		ignore_user_abort(true);
+		popen('less -RSXMI +G /home/sean/letsvue/temporary/log.txt', 'w');
+	}
 }
