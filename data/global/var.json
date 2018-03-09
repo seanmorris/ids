@@ -1,7 +1,7 @@
 {
 	"idilic":{
 		"help":{
-			"summary": "Passing a package with no command will return the root directory of that package.\nSwitches:\n\t-d= or --domain=\n\t\tSet the domain for the current command."
+			"summary": "Application core library.\n\tPassing a package with no command will return the root directory of that package.\nSwitches:\n\t-d= or --domain=\n\t\tSet the domain for the current command."
 			, "switches":{
 				"-d= or --domain=":"Set the domain for the current command."
 			}
@@ -26,7 +26,7 @@
 					, "usage":"MODEL_CLASS [FILTER [FILTER_ARG...]]"
 					, "manual":"Export model records to CSV."
 				}
-				, "ImportModel": {
+				, "importModels": {
 					"description":"Import model records from CSV over STDIN."
 					, "usage":"MODEL_CLASS"
 					, "manual":"Import model records from CSV over STDIN"
@@ -40,7 +40,7 @@
 					"description":"This help message."
 				}
 				, "apacheConfig": {
-					"description":"Experimental. Exports a vhost config for a given domain (-d or --d option)."
+					"description":"Experimental. Exports a vhost config for a given domain (-d or --domain option)."
 				}
 				, "batch": {
 					"description":"Run a Multiota multitasker job."

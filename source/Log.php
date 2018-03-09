@@ -601,6 +601,19 @@ class Log
 			if(isset($backtrace[$depth + 2]['function']))
 			{
 				$function = $backtrace[$depth + 2]['function'];
+
+				if(in_array($function, [
+					'__callStatic'
+					, '__call'
+					, '__get'
+					, '__set'
+				])){
+					$function = sprintf(
+						'%s {%s}'
+						, $backtrace[$depth + 2]['args'][0]
+						, $function
+					);
+				}
 			}
 
 			$file = $backtrace[$depth + 1]['file'];
@@ -613,7 +626,7 @@ class Log
 			if($class && $function)
 			{
 				return sprintf(
-					"%s::%s in %s:%d%s"
+					"%s::%s\n%s:%d%s"
 					, $class
 					, $function
 					, $file
