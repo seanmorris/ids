@@ -25,7 +25,14 @@ class RouterTest extends \UnitTestCase
 
 			$routes = new \SeanMorris\Ids\Test\Route\RootRoute;
 			$router = new \SeanMorris\Ids\Router($request, $routes);
-			$response = $router->route();
+			try
+			{
+				$response = $router->route();				
+			}
+			catch(\SeanMorris\Ids\Http\HttpResponse $e)
+			{
+				echo "CAUGHT!";
+			}
 
 			$this->assertEqual(
 				$response

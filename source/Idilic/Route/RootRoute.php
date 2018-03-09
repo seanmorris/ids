@@ -70,25 +70,23 @@ class RootRoute implements \SeanMorris\Ids\Routable
 	{
 		$args = $router->path()->consumeNodes();
 
-		if(!$packageName = array_shift($args))
+		while($packageName = array_shift($args))
 		{
-			return 'No package specified.';
-		}
+			$packageName = str_replace('/', '\\', $packageName);
+			$package = $this->_getPackage($packageName);
+			$tests = $package->testDir();
 
-		$packageName = str_replace('/', '\\', $packageName);
-		$package = $this->_getPackage($packageName);
-		$tests = $package->testDir();
-
-		while($test = $tests->read())
-		{
-			if(!preg_match('/(\w+?Test)\.php/', $test->name(), $m))
+			while($test = $tests->read())
 			{
-				continue;
+				if(!preg_match('/(\w+?Test)\.php/', $test->name(), $m))
+				{
+					continue;
+				}
+				$testClass = $packageName . '\\Test\\' . $m[1];
+				$test = new $testClass;
+				$test->run(new \TextReporter());
+				echo PHP_EOL;
 			}
-			$testClass = $packageName . '\\Test\\' . $m[1];
-			$test = new $testClass;
-			$test->run(new \TextReporter());
-			echo PHP_EOL;
 		}
 	}
 
@@ -154,7 +152,14 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		$package = $this->_getPackage($packageName);
 
-		return $package->storeSchema();
+		$changes = $package->storeSchema();
+
+		if(!$changes)
+		{
+			return 'No changes detected.' . PHP_EOL;
+		}
+
+		return $changes;
 	}
 
 	public function _getPackageFromClass($class)

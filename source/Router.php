@@ -322,7 +322,7 @@ class Router
 				, get_class($e)
 			), $e);
 
-			\SeanMorris\Ids\Log::logException($e);
+			\SeanMorris\Ids\Log::logException($e, TRUE);
 
 			$result = $e->getMessage();
 

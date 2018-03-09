@@ -85,7 +85,15 @@ class Model
 					$columnClass = $colVal['class'];
 				}
 				else if(is_array($colVal)
+					&& (!isset($colVal['class'])
+					 	|| !$colVal['class']
+					)
+				){
+					$colVal['class'] = $columnClass;
+				}
+				else if(is_array($colVal)
 					&& isset($colVal['class'])
+					&& $colVal['class']
 					&& !is_a($colVal['class'], $columnClass, true)
 					|| (is_array($colVal)
 						&& isset($colVal['class'])
@@ -93,6 +101,8 @@ class Model
 						&& !$colVal['class']
 					)
 				){
+					\SeanMorris\Ids\Log::debug($colVal);
+
 					throw new \Exception(sprintf(
 						'Bad id and/or classname supplied for column %s.'
 						, $column
@@ -107,7 +117,7 @@ class Model
 					$colVal = reset($colVal);
 				}
 
-				if(is_array($colVal) && isset($colVal['id']))
+				if(is_array($colVal) && isset($colVal['id']) && $colVal['id'])
 				{
 					$columnObject = $columnClass::loadOneById($colVal['id']);
 					$columnObject->consume($colVal);
@@ -119,9 +129,14 @@ class Model
 				}
 				else if(is_array($colVal))
 				{
-					// $columnObject = new $columnClass;
-					// $columnObject->consume($colVal);
-					$columnObject = $columnClass::instantiate($colVal);
+					$columnObject = new $columnClass;
+					$columnObject->consume($colVal);
+					// $columnObject = $columnClass::instantiate($colVal);
+					\SeanMorris\Ids\Log::debug(
+						$columnClass
+						, $colVal
+						, $columnObject
+					);
 					$columnObject->save();
 
 					\SeanMorris\Ids\Log::debug($columnObject);
@@ -186,7 +201,54 @@ class Model
 				continue;
 			}
 
+			if(isset($curClass::$hasOne[$property]))
+			{
+				continue;
+			}
+
+			if(isset($curClass::$hasMany[$property]))
+			{
+				continue;
+			}
+
 			$value = $saved->$property;
+		}
+
+		$reflection = new \ReflectionClass($curClass);
+
+		foreach($this as $property => $value)
+		{
+			\SeanMorris\Ids\Log::debug(
+				$curClass, $property, $value
+			);
+			if(!$reflection->hasProperty($property))
+			{
+				continue;
+			}
+
+			$reflectionProperty = $reflection->getProperty($property);
+
+			if($reflectionProperty->class !== $curClass)
+			{
+				continue;
+			}
+
+			if(isset($curClass::$hasOne[$property]))
+			{
+				// var_dump($this->{$property});
+				//die;
+				//$this->storeRelationship($property, $this->{$property});
+			}
+
+			if(isset($curClass::$hasMany[$property]) && is_array($value))
+			{
+				\SeanMorris\Ids\Log::debug(
+					'Storing relationships for ' . $property
+					, $this->{$property}
+				);
+
+				$this->storeRelationships($property, $this->{$property});
+			}
 		}
 
 		if($id || $inserted)
@@ -347,10 +409,10 @@ class Model
 
 				if(isset($curClass::$hasMany[$property]) && is_array($this->{$property}))
 				{
-					\SeanMorris\Ids\Log::debug(
-						'Storing relationships for ' . $property
-						, $this->{$property}
-					);
+					// \SeanMorris\Ids\Log::debug(
+					// 	'Storing relationships for ' . $property
+					// 	, $this->{$property}
+					// );
 
 					$this->storeRelationships($property, $this->{$property});
 				}

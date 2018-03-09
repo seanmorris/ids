@@ -142,7 +142,7 @@ abstract class WhereStatement extends Statement
 				}
 				else
 				{
-					$this->conditions[$key] = [$condition];
+					$this->conditions[$key] = [$condition ?? NULL];
 				}
 			}
 		}
@@ -171,7 +171,15 @@ abstract class WhereStatement extends Statement
 		{
 			if(!is_array($condition))
 			{
-				throw new \Exception('Malformed condition.' . PHP_EOL . print_r($tree, 1));
+				\SeanMorris\Ids\Log::error(
+					'Malformed condition.'
+					, $key
+					, $condition
+					, $tree
+					, $namedArgs
+				);
+
+				throw new \Exception('Malformed condition.');
 			}
 
 			if($key === 'AND' || $key === 'OR')
