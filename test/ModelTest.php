@@ -64,7 +64,7 @@ class ModelTest extends \UnitTestCase
 				)
 			);
 
-			$modelGenerator = $modelClass::generateOneById($this->modelIds[$modelClass]);
+			$modelGenerator = $modelClass::generateById($this->modelIds[$modelClass]);
 
 			$this->assertIsa(
 				$modelGenerator

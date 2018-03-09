@@ -85,7 +85,15 @@ class Model
 					$columnClass = $colVal['class'];
 				}
 				else if(is_array($colVal)
+					&& (!isset($colVal['class'])
+					 	|| !$colVal['class']
+					)
+				){
+					$colVal['class'] = $columnClass;
+				}
+				else if(is_array($colVal)
 					&& isset($colVal['class'])
+					&& $colVal['class']
 					&& !is_a($colVal['class'], $columnClass, true)
 					|| (is_array($colVal)
 						&& isset($colVal['class'])
@@ -93,6 +101,8 @@ class Model
 						&& !$colVal['class']
 					)
 				){
+					\SeanMorris\Ids\Log::debug($colVal);
+
 					throw new \Exception(sprintf(
 						'Bad id and/or classname supplied for column %s.'
 						, $column
@@ -107,7 +117,7 @@ class Model
 					$colVal = reset($colVal);
 				}
 
-				if(is_array($colVal) && isset($colVal['id']))
+				if(is_array($colVal) && isset($colVal['id']) && $colVal['id'])
 				{
 					$columnObject = $columnClass::loadOneById($colVal['id']);
 					$columnObject->consume($colVal);
@@ -119,9 +129,14 @@ class Model
 				}
 				else if(is_array($colVal))
 				{
-					// $columnObject = new $columnClass;
-					// $columnObject->consume($colVal);
-					$columnObject = $columnClass::instantiate($colVal);
+					$columnObject = new $columnClass;
+					$columnObject->consume($colVal);
+					// $columnObject = $columnClass::instantiate($colVal);
+					\SeanMorris\Ids\Log::debug(
+						$columnClass
+						, $colVal
+						, $columnObject
+					);
 					$columnObject->save();
 
 					\SeanMorris\Ids\Log::debug($columnObject);
@@ -186,7 +201,54 @@ class Model
 				continue;
 			}
 
+			if(isset($curClass::$hasOne[$property]))
+			{
+				continue;
+			}
+
+			if(isset($curClass::$hasMany[$property]))
+			{
+				continue;
+			}
+
 			$value = $saved->$property;
+		}
+
+		$reflection = new \ReflectionClass($curClass);
+
+		foreach($this as $property => $value)
+		{
+			\SeanMorris\Ids\Log::debug(
+				$curClass, $property, $value
+			);
+			if(!$reflection->hasProperty($property))
+			{
+				continue;
+			}
+
+			$reflectionProperty = $reflection->getProperty($property);
+
+			if($reflectionProperty->class !== $curClass)
+			{
+				continue;
+			}
+
+			if(isset($curClass::$hasOne[$property]))
+			{
+				// var_dump($this->{$property});
+				//die;
+				//$this->storeRelationship($property, $this->{$property});
+			}
+
+			if(isset($curClass::$hasMany[$property]) && is_array($value))
+			{
+				\SeanMorris\Ids\Log::debug(
+					'Storing relationships for ' . $property
+					, $this->{$property}
+				);
+
+				$this->storeRelationships($property, $this->{$property});
+			}
 		}
 
 		if($id || $inserted)
@@ -236,57 +298,62 @@ class Model
 
 			if(is_array($colVal) && isset(static::$hasOne[$column]))
 			{
-				$columnClass = static::$hasOne[$column];
+				$colVal = $this->storeSubmodel($column, $colVal);
+				// $columnClass = static::$hasOne[$column];
 
-				\SeanMorris\Ids\Log::debug($columnClass, $colVal);
+				// \SeanMorris\Ids\Log::debug($columnClass, $colVal);
 
-				if(is_subclass_of($columnClass, $colVal['class']))
-				{
-					$colVal['class'] = $columnClass;
-				}
+				// if(is_subclass_of($columnClass, $colVal['class']))
+				// {
+				// 	$colVal['class'] = $columnClass;
+				// }
 
-				if(isset($colVal['id'])
-					&& isset($colVal['class'])
-					&& $colVal['class']
-					&& (
-						is_subclass_of($colVal['class'], $columnClass)
-						|| $colVal['class'] == $columnClass
-					)
-				){
-					$columnClass = $colVal['class'];
-				}
-				else if(isset($colVal['class']) && $colVal['class'])
-				{
-					throw new \Exception(sprintf(
-						'Bad classname supplied for column %s (%s).'
-						, $column
-						, isset($colVal['class'])
-							? print_r($colVal['class'], true)
-							: null
-					));
-				}
+				// if(isset($colVal['id'])
+				// 	&& isset($colVal['class'])
+				// 	&& $colVal['class']
+				// 	&& (
+				// 		is_subclass_of($colVal['class'], $columnClass)
+				// 		|| $colVal['class'] == $columnClass
+				// 	)
+				// ){
+				// 	$columnClass = $colVal['class'];
+				// }
+				// else if(isset($colVal['class']) && $colVal['class'])
+				// {
+				// 	throw new \Exception(sprintf(
+				// 		'Bad classname supplied for column %s (%s).'
+				// 		, $column
+				// 		, isset($colVal['class'])
+				// 			? print_r($colVal['class'], true)
+				// 			: null
+				// 	));
+				// }
 
-				if(is_array($colVal) && isset($colVal['id']))
-				{
-					if($columnObject = $columnClass::loadOneById($colVal['id']))
-					{
-						$columnObject->consume($colVal);
+				// if(is_array($colVal) && isset($colVal['id']))
+				// {
+				// 	if($columnObject = $columnClass::loadOneById($colVal['id']))
+				// 	{
+				// 		$columnObject->consume($colVal);
 
-						$columnObject->save();
+				// 		$columnObject->save();
 
-						\SeanMorris\Ids\Log::debug($columnObject);
+				// 		\SeanMorris\Ids\Log::debug($columnObject);
 
-						$colVal = $colVal['id'];
-					}
-					else
-					{
-						$colVal = NULL;
-					}
-				}
-				else
-				{
-					// @todo Create new model based on input/classDef
-				}
+				// 		$colVal = $colVal['id'];
+				// 	}
+				// 	else
+				// 	{
+				// 		$colVal = NULL;
+				// 	}
+				// }
+				// else
+				// {
+				// 	// @todo Create new model based on input/classDef
+				// }
+			}
+			else if(is_array($colVal) && isset(static::$hasMany[$column]))
+			{
+				$colVal = $this->storeSubmodel($column, $colVal);
 			}
 			else if(is_object($colVal) && isset($colVal->id))
 			{
@@ -342,10 +409,10 @@ class Model
 
 				if(isset($curClass::$hasMany[$property]) && is_array($this->{$property}))
 				{
-					\SeanMorris\Ids\Log::debug(
-						'Storing relationships for ' . $property
-						, $this->{$property}
-					);
+					// \SeanMorris\Ids\Log::debug(
+					// 	'Storing relationships for ' . $property
+					// 	, $this->{$property}
+					// );
 
 					$this->storeRelationships($property, $this->{$property});
 				}
@@ -465,6 +532,74 @@ class Model
 		return !$failed;
 	}
 
+	protected function storeSubmodel($column, $colVal)
+	{
+		if(isset(static::$hasOne[$column]))
+		{
+			$columnClass = static::$hasOne[$column];
+		}
+		else if(static::$hasMany[$column])
+		{
+			$columnClass = static::$hasMany[$column];
+		}
+		else
+		{
+			return;
+		}
+
+		\SeanMorris\Ids\Log::debug($columnClass, $colVal);
+
+		if(is_subclass_of($columnClass, $colVal['class']))
+		{
+			$colVal['class'] = $columnClass;
+		}
+
+		if(isset($colVal['id'])
+			&& isset($colVal['class'])
+			&& $colVal['class']
+			&& (
+				is_subclass_of($colVal['class'], $columnClass)
+				|| $colVal['class'] == $columnClass
+			)
+		){
+			$columnClass = $colVal['class'];
+		}
+		else if(isset($colVal['class']) && $colVal['class'])
+		{
+			throw new \Exception(sprintf(
+				'Bad classname supplied for column %s (%s).'
+				, $column
+				, isset($colVal['class'])
+					? print_r($colVal['class'], true)
+					: null
+			));
+		}
+
+		if(is_array($colVal) && isset($colVal['id']))
+		{
+			if($columnObject = $columnClass::loadOneById($colVal['id']))
+			{
+				$columnObject->consume($colVal);
+
+				$columnObject->save();
+
+				\SeanMorris\Ids\Log::debug($columnObject);
+
+				$colVal = $colVal['id'];
+			}
+			else
+			{
+				$colVal = NULL;
+			}
+		}
+		else
+		{
+			// @todo Create new model based on input/classDef
+		}
+
+		return $colVal;
+	}
+
 	public function save()
 	{
 		if(!$this->id)
@@ -582,7 +717,7 @@ class Model
 		if(isset($def['type']) && $def['type'] == 'count')
 		{
 			$countStatement = $select->countStatement('id');
-			
+
 			return (int) $countStatement->fetchColumn(...$args);
 		}
 
@@ -1094,7 +1229,7 @@ class Model
 						, static::$idCache[$subjectClass][ $subSkeletons[$subSkeletonKey]['id'] ]
 					)){
 						$model = static::$idCache[$subjectClass][ $subSkeletons[$subSkeletonKey]['id'] ];
-						
+
 						\SeanMorris\Ids\Log::debug('Already loaded...', $model);
 					}
 					else if(
@@ -1106,7 +1241,7 @@ class Model
 							sprintf('Able to preload %s object', $subjectClass)
 							, $subSkeletonKey
 							, $subSkeletons
-							, $skeleton[$subjectClass::$table]
+							// , $skeleton[$subjectClass::$table]
 						);
 
 						$subSkeletonClean = [];
@@ -1327,13 +1462,13 @@ class Model
 
 					$joinClass = static::$hasMany[$childProperty];
 					$defName   = 'loadByOwner';
-					
+
 					array_unshift($args, $childProperty);
 					array_unshift($args, $joinBy);
 					array_unshift($args, get_called_class());
 
 					//$select->assemble();
-					
+
 					$subSelect = $relationshipClass::selectStatement($defName, $select, $args, $table);
 
 					//\SeanMorris\Ids\Log::debug($subSelect);
@@ -1654,9 +1789,11 @@ class Model
 							continue;
 						}
 
+						\SeanMorris\Ids\Log::debug('Using existing model', $subject, $values);
+
 						$subject->consume($values);
 
-						// \SeanMorris\Ids\Log::debug('Using existing model', $subject, $values);
+						\SeanMorris\Ids\Log::debug('consumed', $subject, $values);
 
 						if($subject->save())
 						{
@@ -1665,8 +1802,13 @@ class Model
 
 						$subModelsSubmitted = TRUE;
 					}
-					else if(isset($values['class']) && $values['class'])
+					else
 					{
+						 if(!isset($values['class']) || !$values['class'])
+						 {
+						 	$values['class'] = $propertyClass;
+						 }
+
 						\SeanMorris\Ids\Log::debug(
 							'Trying to create new model'
 							, $values['class']
@@ -1767,7 +1909,7 @@ class Model
 		{
 			return;
 		}
-		
+
 		$subjectClass = get_class($subject);
 
 		if($subjectClass

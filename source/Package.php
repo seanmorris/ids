@@ -544,6 +544,8 @@ class Package
 			$db = Database::get($db);
 			foreach($tables as $table)
 			{
+				// print "Table " . $table . PHP_EOL;
+
 				if(!isset($storedSchema->$table))
 				{
 					$storedSchema->$table = new \StdClass;

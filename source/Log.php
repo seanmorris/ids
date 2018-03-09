@@ -726,10 +726,15 @@ class Log
 					}
 					else
 					{
-						$renderedArg = (is_object($arg)
-							? get_class($arg)
-							: 'Array'
-						) . '[]...';
+						$renderedArg = static::render($arg);
+						// $renderedArg = substr($renderedArg, 0, 1024);
+						if(strlen($renderedArg) > 1024)
+						{
+							$renderedArg = (is_object($arg)
+								? get_class($arg)
+								: 'Array'
+							) . '[]...';
+						}							
 					}
 
 					$renderedArgs[] = 'Arg #' . $a . ' ' .$renderedArg;
@@ -782,7 +787,7 @@ class Log
 		. PHP_EOL . $superTrace . PHP_EOL;
 	}
 
-	public static function logException($e)
+	public static function logException($e, $internal = false)
 	{
 		$line = static::renderException($e);
 
@@ -794,7 +799,7 @@ class Log
 			, ini_get('error_log')
 		);
 
-		if(php_sapi_name() == 'cli')
+		if(php_sapi_name() == 'cli' && !$internal)
 		{
 			fwrite(STDERR, $line);
 		}

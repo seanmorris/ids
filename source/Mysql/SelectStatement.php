@@ -351,7 +351,7 @@ class SelectStatement extends WhereStatement
 		}
 	}
 
-	protected function subjugate($join)
+	public function subjugate($join)
 	{
 		$join->master   = $this->master;
 		$join->superior = $this;
@@ -461,16 +461,16 @@ class SelectStatement extends WhereStatement
 	{
   		$closure = function(...$args)
 		{
-			try
-			{
-				$queryObject = $this->execute(...$args);
-			}
-			catch(\Exception $e)
-			{
-				\SeanMorris\Ids\Log::error($e);
-				\SeanMorris\Ids\Log::trace();
-				die;
-			}
+			$queryObject = $this->execute(...$args);
+			// try
+			// {
+			// }
+			// catch(\Exception $e)
+			// {
+			// 	\SeanMorris\Ids\Log::error($e);
+			// 	\SeanMorris\Ids\Log::trace();
+			// 	die;
+			// }
 
 			while($row = $queryObject->fetch(\PDO::FETCH_ASSOC))
 			{

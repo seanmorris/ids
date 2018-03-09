@@ -114,6 +114,7 @@ register_shutdown_function(function() {
     }
 	\SeanMorris\Ids\Log::info(
 		'Response Complete.'
+		, memory_get_peak_usage(true)
 		, [
 			'Space'        => number_format(
 				memory_get_peak_usage(true) / (1024*1024), 2
