@@ -194,8 +194,13 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		$header = false;
 		$out = \SeanMorris\Ids\Idilic\Cli::outHandle();
 
-		foreach($models as $model)
+		foreach($models() as $model)
 		{
+			if(!$model)
+			{
+				continue;
+			}
+
 			$arModel = $model->unconsume();
 
 			if(!$header)

@@ -1012,6 +1012,8 @@ class Package
 		$generator = $model::$function(...$args);
 		$models = [];
 
+		return $generator;
+
 		foreach($generator() as $model)
 		{
 			if(!$model)
@@ -1020,6 +1022,8 @@ class Package
 			}
 
 			$models[] = $model;
+
+			\SeanMorris\Ids\Model::clearCache(TRUE);
 		}
 
 		return $models;
