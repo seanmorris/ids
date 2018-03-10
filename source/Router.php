@@ -328,11 +328,9 @@ class Router
 
 			if(!$this->subRouted)
 			{
-				$result = $e->getMessage();
 				if(!\SeanMorris\Ids\Idilic\Cli::isCli())
 				{
 					$e->onCatch($this);
-					die;
 				}
 				else if($e instanceof \SeanMorris\Ids\Http\Http303)
 				{
