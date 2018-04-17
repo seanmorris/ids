@@ -14,7 +14,27 @@ $requests[] =& $requestProto;
 $requestProto->args = $args = [];
 $requestProto->switches = $switches = [];
 
-foreach($argv as $arg)
+$input = [];
+
+if($argv)
+{
+	$input = $argv;
+}
+else
+{
+	while($line = fgets(STDIN))
+	{
+		$line    = trim($line);
+		if(!$line)
+		{
+			continue;
+		}
+		$input[] = trim($line);
+		$input[] = '---';
+	}
+}
+
+foreach($input as $arg)
 {
 	if(preg_match('/^---$/', $arg))
 	{
@@ -52,6 +72,7 @@ foreach($argv as $arg)
 	$requestProto->args = $args;
 	$requestProto->switches = $switches;
 }
+
 if(isset($switches['d']))
 {
 	$_SERVER['HTTP_HOST'] = $switches['d'];
@@ -67,8 +88,8 @@ $composer = require dirname(__FILE__) . '/../init.php';
 foreach($requests as $req)
 {
 	$request = new \SeanMorris\Ids\Request([
-		'path' => $path = new Path(...$req->args)
-		, 'switches' => $req->switches
+		'path' => $path = new Path(...$req->args ?? [])
+		, 'switches' => $req->switches ?? NULL
 	]);
 
 	$routes = new RootRoute;

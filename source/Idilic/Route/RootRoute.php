@@ -48,7 +48,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			return;
 		}
 
-		if(!$args)
+		if(!$args || !class_exists($routes))
 		{
 			return $package->packageDir()->name();
 		}
@@ -269,10 +269,21 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 	public function listPackages($router)
 	{
-		return implode(
+		$switches = $router->request()->switches();
+
+		$packages = implode(
 			PHP_EOL
 			, \SeanMorris\Ids\Package::listPackages()
 		);
+
+		if($switches['s'] ?? FALSE)
+		{
+			return $packages;
+		}
+		else
+		{
+			return preg_replace('/\//', '\\', $packages);
+		}
 	}
 
 	public function link($router)

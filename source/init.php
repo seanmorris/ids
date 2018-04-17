@@ -118,7 +118,11 @@ register_shutdown_function(function() {
 		, [
 			'Space'        => number_format(
 				memory_get_peak_usage(true) / (1024*1024), 2
-			) . sprintf(' MB (%s bytes)', memory_get_peak_usage(true))
+			) . sprintf(
+				' MB (%s bytes, %s real)'
+				, memory_get_peak_usage()
+				, memory_get_peak_usage(TRUE)
+			)
 			, 'Time'       => number_format(microtime(true) - START, 4)  . ' sec'
 			, 'Queries'    => \SeanMorris\Ids\Mysql\Statement::queryCount()
 			, 'Query Time' => number_format(
