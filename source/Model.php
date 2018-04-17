@@ -247,7 +247,15 @@ class Model
 					, $this->{$property}
 				);
 
-				$this->storeRelationships($property, $this->{$property});
+				try
+				{
+					$this->storeRelationships($property, $this->{$property});
+				}
+				catch(\Exception $e)
+				{
+
+				}
+
 			}
 		}
 
@@ -670,7 +678,7 @@ class Model
 		$cacheKey = $curClass
 			. '::'
 			. $name
-			. '  '
+			. '--'
 			. md5(print_r(func_get_args(), 1));
 
 		$cache =& self::$cache[$curClass][$cacheKey];
@@ -681,14 +689,17 @@ class Model
 		$x = array_shift($backtrace);
 
 		\SeanMorris\Ids\Log::debug(sprintf(
-			'%s::%s, Called from %s:%d.'
-				. PHP_EOL . 'Cache "%s%s"'
+			'%s::%s(...)'
+				. PHP_EOL
+				. "\t" . 'Called from %s:%d.'
+				. PHP_EOL
+				. "\t" . 'Cache "%s%s"'
 			, $curClass
 			, $name
 			, $x['file']
 			, $x['line']
 			, $cacheKey
-			, isset($cache) ? '*' : ''
+			, isset($cache) ? PHP_EOL . "\t\t" . 'CACHE HIT!!!' : ''
 		), 'Args:', $args);
 
 		if(!$args)
@@ -696,9 +707,32 @@ class Model
 			$args = [];
 		}
 
+		$currentDefClass = $defClass = get_called_class();
+
+		while(TRUE)
+		{
+			// var_dump($currentDefClass);
+			$a = $args;
+			// var_dump($currentDefClass::resolveDef($name, $a));
+
+			$parentDefClass = get_parent_class($currentDefClass);
+
+			if(!$parentDefClass)
+			{
+				break;
+			}
+
+			if($parentDefClass == $currentDefClass)
+			{
+				break;
+			}
+
+			$currentDefClass = $parentDefClass;
+		}
+
 		$def = static::resolveDef($name, $args);
 
-		if($def['cursor'])
+		if(isset($def['cursor']) && $def['cursor'])
 		{
 			//$cursorValue = (int) array_pop($args);
 			$limit = (int) array_pop($args);
@@ -706,10 +740,11 @@ class Model
 			$def['where'][] = ['id' => '?', '>'];
 		}
 
-		//\SeanMorris\Ids\Log::debug($def);
+		\SeanMorris\Ids\Log::debug($def);
+
 		$select = static::selectStatement($def, null, $args);
 
-		if($def['cursor'])
+		if(isset($def['cursor']) && $def['cursor'])
 		{
 			$select->limit($limit);
 		}
@@ -721,7 +756,7 @@ class Model
 			return (int) $countStatement->fetchColumn(...$args);
 		}
 
-		if($def['paged'])
+		if(isset($def['paged']) && $def['paged'])
 		{
 			$limit = (int) array_pop($args);
 			$offset = (int) array_pop($args) * $limit;
@@ -798,7 +833,7 @@ class Model
 							\SeanMorris\Ids\Log::debug('Read Failed');
 
 							$cache[$i] = FALSE;
-							break;
+							continue;
 						}
 
 						if(static::afterRead($model, $subSkeleton) === FALSE)
@@ -1199,6 +1234,11 @@ class Model
 		foreach($subSkeleton as $column => $value)
 		{
 			$this->$column = $value;
+
+			if(is_numeric($this->$column) && $this->$column == (int) $this->$column)
+			{
+				$this->$column = (int) $this->$column;
+			}
 		}
 
 		foreach($this as $property => $value)
@@ -1289,7 +1329,9 @@ class Model
 		//$type = 'generate';
 		$cursor = $paged = FALSE;
 
-		if(preg_match('/^(loadOne|load|generate|get|count)((?:Page|Cursor)?)(By.+)/', $name, $match))
+		$originalName = $name;
+
+		if(preg_match('/^(?:(loadOne|load|generate|get|count)?)((?:Page|Cursor)?)([Bb]y.+)/', $name, $match))
 		{
 			if(isset($match[1]))
 			{
@@ -1311,8 +1353,21 @@ class Model
 				$name = lcfirst($match[3]);
 			}
 		}
+		else
+		{
+			throw new \Exception(sprintf(
+				'%s is not a valid selector for %s'
+				, $originalName
+				, get_called_class()
+			));
+		}
 
-		$def = ['type' => $type];
+		$def = [
+			'name'     => $name
+			, 'type'   => $type
+			, 'paged'  => $paged
+			, 'cursor' => $cursor
+		];
 
 		$class = get_called_class();
 
@@ -1338,6 +1393,7 @@ class Model
 			if($class::$table == $propertyClass::$table)
 			{
 				$def = $class::$$name;
+				$def['name'] = $name;
 				$def['type'] = $type;
 				$def['class'] = $class;
 				break;
@@ -1353,10 +1409,8 @@ class Model
 			$class = $parentClass;
 		}
 
-		$def['paged'] = $paged;
-		$def['cursor'] = $cursor;
-
 		// \SeanMorris\Ids\Log::debug( "MODEL RESOLVEDEF END\n" );
+		\SeanMorris\Ids\Log::debug($def);
 		return $def;
 	}
 
@@ -1509,12 +1563,16 @@ class Model
 
 		if($parentClass && $parentClass::$table)
 		{
+			$selectDefName = is_array($selectDefName)
+				? $selectDefName['name']
+				: $selectDefName;
+
 			$subSelect = $parentClass::selectStatement($selectDefName, $select, $args, $table);
 
-			$subSelect->subjugate($select);
-			$subSelect->join($select, 'id', 'id');
+			$select->subjugate($subSelect);
+			$select->join($subSelect, 'id', 'id');
 
-			$select = $subSelect;
+			// $select = $subSelect;
 		}
 
 		return $select;
@@ -1665,6 +1723,7 @@ class Model
 		{
 			return;
 		}
+
 		$this->$name = $value;
 	}
 
@@ -1718,7 +1777,13 @@ class Model
 				, $property
 			), $values);
 
-			if(isset($values['id']) && $values['id'])
+			if(is_object($values) && $values->id && is_subclass_of($values, $propertyClass))
+			{
+				\SeanMorris\Ids\Log::debug('Using existing model');
+
+				$this->{$property} = $values->id;
+			}
+			else if(is_array($values) && isset($values['id']) && $values['id'])
 			{
 				\SeanMorris\Ids\Log::debug('Using existing model');
 
@@ -1795,10 +1860,18 @@ class Model
 
 						\SeanMorris\Ids\Log::debug('consumed', $subject, $values);
 
-						if($subject->save())
+						try
 						{
-							$this->{$property}[$delta] = $subject->id;
+							if($subject->save())
+							{
+								$this->{$property}[$delta] = $subject->id;
+							}
 						}
+						catch(\SeanMorris\PressKit\Exception\ModelAccessException $exception)
+						{
+							\SeanMorris\Ids\Log::logException($exception);
+						}
+
 
 						$subModelsSubmitted = TRUE;
 					}
@@ -1827,9 +1900,16 @@ class Model
 
 							$subject->consume($values);
 
-							if($subject->save())
+							try
 							{
-								$this->{$property}[$delta] = $subject->id;
+								if($subject->save())
+								{
+									$this->{$property}[$delta] = $subject->id;
+								}
+							}
+							catch(\SeanMorris\PressKit\Exception\ModelAccessException $exception)
+							{
+								\SeanMorris\Ids\Log::logException($exception);
 							}
 						}
 

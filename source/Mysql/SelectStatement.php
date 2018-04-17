@@ -133,6 +133,8 @@ class SelectStatement extends WhereStatement
 			. ')'
 		;
 
+		$joinOrderStrings = [];
+
 		foreach($this->joins() as $join)
 		{
 			list($sub, $superCol, $subCol, $type) = $join;
@@ -188,6 +190,13 @@ class SelectStatement extends WhereStatement
 			}
 
 			$tableString .= ' ' . $subTableString;
+
+			foreach($sub->order as $column => $direction)
+			{
+				$columnName = $sub->aliasColumnName($column, $sub->alias);
+
+				$joinOrderStrings[] = $columnName . ' ' . $direction;
+			}
 		}
 
 		$orderStrings = [];
@@ -201,11 +210,13 @@ class SelectStatement extends WhereStatement
 
 				$orderStrings[] = $columnName . ' ' . $direction;
 			}
+		}
 
-			if($orderStrings)
-			{
-				$orderString = PHP_EOL . PHP_EOL . 'ORDER BY ' . implode(', ', $orderStrings);
-			}
+		$orderStrings = array_merge($orderStrings, $joinOrderStrings);
+
+		if($orderStrings)
+		{
+			$orderString = PHP_EOL . PHP_EOL . 'ORDER BY ' . implode(', ', $orderStrings);
 		}
 
 		$limitString = NULL;
@@ -404,23 +415,18 @@ class SelectStatement extends WhereStatement
 
 	public function fetchColumn(...$args)
 	{
-		static $queryObject;
-
-		if(!$queryObject)
+		try
 		{
-			try
-			{
-				$queryObject = $this->execute(...$args);
-			}
-			catch(\Exception $e)
-			{
-				\SeanMorris\Ids\Log::error($e);
-				\SeanMorris\Ids\Log::trace();
-				die;
-			}
+			$query = $this->execute(...$args);
+		}
+		catch(\Exception $e)
+		{
+			\SeanMorris\Ids\Log::error($e);
+			\SeanMorris\Ids\Log::trace();
+			die;
 		}
 
-		if($col = $queryObject->fetchColumn())
+		if($col = $query->fetchColumn())
 		{
 			\SeanMorris\Ids\Log::debug('Fetching column...', $col);
 			return $col;
@@ -431,23 +437,18 @@ class SelectStatement extends WhereStatement
 
 	public function fetch(...$args)
 	{
-		static $queryObject;
-
-		if(!$queryObject)
+		try
 		{
-			try
-			{
-				$queryObject = $this->execute(...$args);
-			}
-			catch(\Exception $e)
-			{
-				\SeanMorris\Ids\Log::error($e);
-				\SeanMorris\Ids\Log::trace();
-				die;
-			}
+			$query = $this->execute(...$args);
+		}
+		catch(\Exception $e)
+		{
+			\SeanMorris\Ids\Log::error($e);
+			\SeanMorris\Ids\Log::trace();
+			die;
 		}
 
-		if($row = $queryObject->fetch())
+		if($row = $query->fetch())
 		{
 			\SeanMorris\Ids\Log::debug('Fetching row...', $row);
 
