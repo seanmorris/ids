@@ -294,8 +294,7 @@ class Router
 				$result = $routes->_notFound($this);
 			}
 
-			if(is_callable([$routes, '_postRoute']))
-			{
+			if(is_callable([$routes, '_postRoute'])){
 				$result = $routes->_postRoute($this, $result, $preroutePath);
 			}
 		}
@@ -331,6 +330,8 @@ class Router
 				if(!\SeanMorris\Ids\Idilic\Cli::isCli())
 				{
 					$e->onCatch($this);
+
+					return $e;
 				}
 				else if($e instanceof \SeanMorris\Ids\Http\Http303)
 				{

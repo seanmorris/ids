@@ -2,7 +2,9 @@
 namespace SeanMorris\Ids;
 class HashToken
 {
-	const STD_EXPIRY = 300;
+	const STD_EXPIRY = 300
+		, SEPARATOR  = '::'
+		, HASH_COUNT = 2**16;
 	
 	public static function getToken($userKey, $secret, $life = self::STD_EXPIRY, $emergeTime = 0)
 	{
@@ -11,16 +13,23 @@ class HashToken
 		$expiry = $time + $life + $emergeTime;
 		$emerge = $time + $emergeTime;
 		
-		$source = implode('/',
-			array($emerge, $expiry, $time, $secret, $userKey)
+		$source = implode(
+			static::SEPARATOR
+			, array($emerge, $expiry, $secret, $userKey)
 		);
 		
-		$hash   = hash('sha256', $source);
+		$hash = hash('sha256', $source);
+		$hashCount = 0;
+
+		while(++$hashCount < static::HASH_COUNT)
+		{
+			$hash = hash('sha256', $hash);
+		}
 		
-		$token  = implode( '/',
-			array(
-				dechex($time)
-				, dechex($emerge)
+		$token  = implode(
+			static::SEPARATOR
+			, array(
+				dechex($emerge)
 				, $hash
 				, dechex($expiry)
 			)
@@ -32,33 +41,41 @@ class HashToken
 	public static function checkToken($token, $userKey, $secret)
 	{
 		$time = time();
-		list($baseTimeHintHex, $emgHintHex, $tokenHash, $expHintHex) = explode('/', $token);
+		$parts = explode(static::SEPARATOR, $token);
+
+		if(count($parts) !== 3)
+		{
+			return false;
+		}
+
+		list($emgHintHex, $tokenHash, $expHintHex) = $parts;
 		
-		$baseTimeHint = hexdec($baseTimeHintHex);
 		$emgHint      = hexdec($emgHintHex);
 		$expHint      = hexdec($expHintHex);
-		
+
 		$source   = implode(
-			'/', 
-			array(
+			static::SEPARATOR
+			, array(
 				$emgHint
 				, $expHint
-				, $baseTimeHint
 				, $secret
 				, $userKey
 			)
 		);
 		
-		$testHash = strtoupper(hash('sha256', $source));
+		$testHash = hash('sha256', $source);
+
+		$hashCount = 0;
+
+		while(++$hashCount < static::HASH_COUNT)
+		{
+			$testHash = hash('sha256', $testHash);
+		}
 
 		return(
-			($tokenHash == $testHash)
-			&&
-			(
-				($expHint >  $time || $expHint == $baseTimeHint)
-				&&
-				($emgHint <= $time || $emgHint == $baseTimeHint)
-			)
+			($tokenHash  ==  strtoupper($testHash))
+			&& ($emgHint <=  $time)
+			&& ($expHint >   $time)
 		);
 	}
 }

@@ -1235,8 +1235,12 @@ class Model
 		{
 			$this->$column = $value;
 
-			if(is_numeric($this->$column) && $this->$column == (int) $this->$column)
-			{
+			if(
+				is_string($this->$column)
+				&& is_numeric($this->$column)
+				&& $this->$column[0] !== '0'
+				&& $this->$column == (int) $this->$column
+			){
 				$this->$column = (int) $this->$column;
 			}
 		}
