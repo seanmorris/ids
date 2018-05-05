@@ -214,6 +214,8 @@ class Model
 			$value = $saved->$property;
 		}
 
+		unset($value);
+
 		$reflection = new \ReflectionClass($curClass);
 
 		foreach($this as $property => $value)
@@ -1418,8 +1420,13 @@ class Model
 		return $def;
 	}
 
-	protected static function selectStatement($selectDefName, $superior = null, $args = [], $table = NULL)
+	protected static function selectStatement($selectDefName, $superior = null, $args = [], $table = NULL, $topClass = NULL)
 	{
+		if(!$topClass)
+		{
+			$topClass = get_called_class();
+		}
+
 		$table = !empty(static::$table) ? static::$table : $table;
 
 		$select = new \SeanMorris\Ids\Mysql\SelectStatement($table);
@@ -1565,18 +1572,30 @@ class Model
 			$parentClass = get_parent_class($parentClass);
 		}
 
+		// var_dump($parentClass, PHP_EOL . PHP_EOL);
+
 		if($parentClass && $parentClass::$table)
 		{
+			// var_dump('!!!!');
 			$selectDefName = is_array($selectDefName)
 				? $selectDefName['name']
 				: $selectDefName;
 
-			$subSelect = $parentClass::selectStatement($selectDefName, $select, $args, $table);
+			$subSelect = $parentClass::selectStatement($selectDefName, $select, $args, $table, $topClass);
 
 			$select->subjugate($subSelect);
 			$select->join($subSelect, 'id', 'id');
+		}
+		else if(!in_array('class', static::$ignore))
+		{
+			$allClasses = Meta::classes($topClass);
 
-			// $select = $subSelect;
+			$classesString = sprintf(
+				'("%s")'
+				, implode('","', array_map('addslashes', $allClasses))
+			);
+
+			$select->conditions([['class' => $classesString, 'IN']]);
 		}
 
 		return $select;

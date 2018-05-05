@@ -102,9 +102,92 @@ class Meta
 		return false;
 	}
 
-	public function caller()
+	public static function classes($super = NULL)
 	{
-		// todo: Implement or remove
-		$objectStack = static::objectStack(1);
+		$path       = IDS_ROOT;
+		$classes    = [];
+		
+		static $allClasses = [];
+
+		if($allClasses)
+		{
+			foreach($allClasses as $class)
+			{
+				if(!$super || is_a($class, $super, TRUE))
+				{
+					$classes[] = $class;
+				}
+			}
+
+			return $classes;
+		}
+
+		$allFiles = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
+		$phpFiles = new \RegexIterator($allFiles, '/\.php$/');
+
+		foreach ($phpFiles as $phpFile)
+		{
+			$content = file_get_contents($phpFile->getRealPath());
+			$tokens = token_get_all($content);
+			$namespace = '';
+
+			for($index = 0; isset($tokens[$index]); $index++)
+			{
+				if(!isset($tokens[$index][0]))
+				{
+					continue;
+				}
+
+				if(T_NAMESPACE === $tokens[$index][0])
+				{
+					$index += 2; // Skip namespace keyword and whitespace
+					while (isset($tokens[$index]) && is_array($tokens[$index]))
+					{
+						$namespace .= $tokens[$index++][1];
+					}
+				}
+
+				if(T_CLASS === $tokens[$index][0])
+				{
+					$index += 2; // Skip class keyword and whitespace
+
+					if(!$namespace)
+					{
+						break;
+					}
+
+					$class = $namespace.'\\'.$tokens[$index][1];
+
+					if(in_array($class, $allClasses))
+					{
+						break;
+					}
+
+					$allClasses[] = $class;
+
+					try
+					{
+						if(!$super || is_a($class, $super, TRUE))
+						{
+							$classes[] = $class;
+						}
+					}
+					catch(\ParseError $e)
+					{
+
+					}
+					catch(\Exception $e)
+					{
+
+					}
+
+					# break if you have one class per file (psr-4 compliant)
+					# otherwise you'll need to handle class constants (Foo::class)
+					break;
+				}
+			}
+		}
+
+		return $classes;
 	}
 }
