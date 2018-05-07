@@ -7,6 +7,11 @@ class CountStatement extends SelectStatement
 		, $unique
 	;
 
+	protected static columnString($string)
+	{
+		return $string;
+	}
+
 	public function aliasColumns()
 	{
 		$this->order = [];

@@ -163,9 +163,12 @@ class SelectStatement extends WhereStatement
 			$this->valueRequired += array_merge($this->valueRequired, $sub->valueRequired);
 			$this->valueNames += array_merge($this->valueNames, $sub->valueNames);
 
-			$columnString .= ($columnString && trim($subColString))
-				? (', ' . $subColString)
-				: NULL;
+			if(!$this->master instanceOf CountStatement)
+			{
+				$columnString .= ($columnString && $subColString)
+					? (', ' . $subColString)
+					: NULL;				
+			}
 
 			if(!$conditionString)
 			{
@@ -245,10 +248,15 @@ class SelectStatement extends WhereStatement
 
 		return sprintf(
 			"SELECT\n%s\n\nFROM\n%s\n\nWHERE\n%s"
-			, $columnString
+			, static::columnString($columnString)
 			, $tableString
 			, $conditionString ?: 1
 		) . $orderString . $limitString;
+	}
+
+	protected static columnString($string)
+	{
+		return $string;
 	}
 
 	protected function assembleJoin($type = null, $args = null, $col, $joinCol)
