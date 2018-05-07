@@ -163,7 +163,7 @@ class SelectStatement extends WhereStatement
 			$this->valueRequired += array_merge($this->valueRequired, $sub->valueRequired);
 			$this->valueNames += array_merge($this->valueNames, $sub->valueNames);
 
-			$columnString .= ($columnString && $subColString)
+			$columnString .= ($columnString && trim($subColString))
 				? (', ' . $subColString)
 				: NULL;
 
