@@ -19,7 +19,7 @@ class CountStatement extends SelectStatement
 
 	public function joins()
 	{
-		$cleanJoin = function($join)
+		$cleanJoin = function($join) use(&$cleanJoin)
 		{
 			list($sub, $superCol, $subCol, $type) = $join;
 			
