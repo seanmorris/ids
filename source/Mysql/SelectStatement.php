@@ -303,11 +303,11 @@ class SelectStatement extends WhereStatement
 			// @TODO: Why is $subConditionString sometimes empty?
 			if($subConditionString)
 			{
-				if(!$conditionString)
-				{
-					$conditionString = 1;
-				}
-				$conditionString = sprintf('( %s ) AND ( %s )', $conditionString, $subConditionString);
+				// if(!$conditionString)
+				// {
+				// 	$conditionString = 1;
+				// }
+				$subJoinString = sprintf('( %s ) AND ( %s )', $subJoinString, $subConditionString);
 			}
 		}
 
