@@ -248,15 +248,10 @@ class SelectStatement extends WhereStatement
 
 		return sprintf(
 			"SELECT\n%s\n\nFROM\n%s\n\nWHERE\n%s"
-			, static::columnString($columnString)
+			, $columnString
 			, $tableString
 			, $conditionString ?: 1
 		) . $orderString . $limitString;
-	}
-
-	protected static function columnString($string)
-	{
-		return $string;
 	}
 
 	protected function assembleJoin($type = null, $args = null, $col, $joinCol)
@@ -301,7 +296,10 @@ class SelectStatement extends WhereStatement
 			$this->valueNames += array_merge($this->valueNames, $sub->valueNames);
 
 			$joinString .= ' ' . $subJoinString;
-			$columnString .= ', ' . $subColString;
+			if($subColString)
+			{
+				$columnString .= ', ' . $subColString;				
+			}
 			// @TODO: Why is $subConditionString sometimes empty?
 			if($subConditionString)
 			{
