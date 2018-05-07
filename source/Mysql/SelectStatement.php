@@ -254,7 +254,7 @@ class SelectStatement extends WhereStatement
 		) . $orderString . $limitString;
 	}
 
-	protected static columnString($string)
+	protected static function columnString($string)
 	{
 		return $string;
 	}
