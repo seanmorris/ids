@@ -26,7 +26,7 @@ class CountStatement extends SelectStatement
 				
 				$sub = clone $sub;
 
-				$sub->columns = [];
+				// $sub->columns = [];
 
 				return [$sub, $superCol, $subCol, $type];
 			}
