@@ -187,7 +187,7 @@ class Model
 			$inserted = $id = $insert->execute(...$values);
 		}
 
-		$saved = $curClass::loadOneById($id);cd
+		$saved = $curClass::loadOneById($id);
 
 		if(!$saved)
 		{
