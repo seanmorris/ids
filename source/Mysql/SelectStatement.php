@@ -308,7 +308,7 @@ class SelectStatement extends WhereStatement
 				// {
 				// 	$conditionString = 1;
 				// }
-				$subJoinString = sprintf('( %s ) AND ( %s )', $subJoinString, $subConditionString);
+				$subJoinString = sprintf('%s AND ( %s )', $subJoinString, $subConditionString);
 			}
 
 			$joinString .= ' ' . $subJoinString;
