@@ -182,17 +182,18 @@ class SelectStatement extends WhereStatement
 				. ')'
 			;
 
+			$tableString .= ' ' . $subTableString;
+
 			if($joinConditionString)
 			{
-				if($conditionString)
+				if($tableString)
 				{
-					$conditionString .= PHP_EOL . 'AND ';
+					$tableString .= PHP_EOL . 'AND ';
 				}
 
-				$conditionString .= $joinConditionString;
+				$tableString .= $joinConditionString;
 			}
 
-			$tableString .= ' ' . $subTableString;
 
 			foreach($sub->order as $column => $direction)
 			{
