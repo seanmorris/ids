@@ -295,11 +295,12 @@ class SelectStatement extends WhereStatement
 			$this->valueRequired += array_merge($this->valueRequired, $sub->valueRequired);
 			$this->valueNames += array_merge($this->valueNames, $sub->valueNames);
 
-			$joinString .= ' ' . $subJoinString;
+			
 			if($subColString)
 			{
 				$columnString .= ', ' . $subColString;				
 			}
+			
 			// @TODO: Why is $subConditionString sometimes empty?
 			if($subConditionString)
 			{
@@ -309,6 +310,8 @@ class SelectStatement extends WhereStatement
 				// }
 				$subJoinString = sprintf('( %s ) AND ( %s )', $subJoinString, $subConditionString);
 			}
+
+			$joinString .= ' ' . $subJoinString;
 		}
 
 		return [$joinString, $columnString, $conditionString];
