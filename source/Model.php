@@ -41,6 +41,11 @@ class Model
 			if($parentClass::$table && $parentClass::$table !== static::$table)
 			{
 				$parentModel = $this->_create($parentClass);
+				var_dump($parentModel);
+				if($parentModel->id)
+				{
+					$this->id = $parentModel->id;
+				}
 				break;
 			}
 
@@ -194,11 +199,11 @@ class Model
 			return;
 		}
 
-		foreach($this as $property => &$value)
+		foreach($this as $property => $value)
 		{
 			if(!property_exists($curClass, $property))
 			{
-				continue;
+				// continue;
 			}
 
 			if(isset($curClass::$hasOne[$property]))
@@ -211,10 +216,8 @@ class Model
 				continue;
 			}
 
-			$value = $saved->$property;
+			$this->$property = $saved->$property;
 		}
-
-		unset($value);
 
 		$reflection = new \ReflectionClass($curClass);
 
@@ -265,6 +268,11 @@ class Model
 		{
 			$curClass::afterUpdate($this, $values);
 			$curClass::afterCreate($this, $values);
+
+			if($id)
+			{
+				$this->id = $id;
+			}
 
 			return $this;
 		}
