@@ -41,11 +41,6 @@ class Model
 			if($parentClass::$table && $parentClass::$table !== static::$table)
 			{
 				$parentModel = $this->_create($parentClass);
-				var_dump($parentModel);
-				if($parentModel->id)
-				{
-					$this->id = $parentModel->id;
-				}
 				break;
 			}
 
@@ -192,7 +187,7 @@ class Model
 			$inserted = $id = $insert->execute(...$values);
 		}
 
-		$saved = $curClass::loadOneById($id);
+		$saved = $curClass::loadOneById($id);cd
 
 		if(!$saved)
 		{
