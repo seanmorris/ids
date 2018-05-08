@@ -107,7 +107,7 @@ class SelectStatement extends WhereStatement
 			$this->alias = $this->master->aliasTableName($this->table, $this);
 		}
 
-		$columnString = implode(', ', $this->aliasColumns());
+		$columnString = implode(PHP_EOL . ', ', $this->aliasColumns());
 
 		$tableString = $this->table;
 
@@ -166,7 +166,7 @@ class SelectStatement extends WhereStatement
 			if(!$this->master instanceOf CountStatement)
 			{
 				$columnString .= ($columnString && $subColString)
-					? (', ' . $subColString)
+					? (PHP_EOL . ', ' . $subColString)
 					: NULL;				
 			}
 
@@ -188,7 +188,7 @@ class SelectStatement extends WhereStatement
 			{
 				if($tableString)
 				{
-					$tableString .= PHP_EOL . 'AND ';
+					$tableString .= PHP_EOL . '    AND ';
 				}
 
 				$tableString .= $joinConditionString;
@@ -257,7 +257,7 @@ class SelectStatement extends WhereStatement
 
 	protected function assembleJoin($type = null, $args = null, $col, $joinCol)
 	{
-		$columnString = implode(', ', $this->aliasColumns());
+		$columnString = implode(PHP_EOL . ', ', $this->aliasColumns());
 
 		//\SeanMorris\Ids\Log::debug($this->conditions);
 
@@ -279,7 +279,12 @@ class SelectStatement extends WhereStatement
 			, $this->alias
 		);
 
-		$joinString .= sprintf(' ON (%s = %s.%s)', $col, $this->alias, $joinCol);
+		$joinString .= sprintf(
+			PHP_EOL . '  ON (%s = %s.%s)'
+			, $col
+			, $this->alias
+			, $joinCol
+		);
 
 		foreach($this->joins as $join)
 		{
@@ -299,7 +304,7 @@ class SelectStatement extends WhereStatement
 			
 			if($subColString)
 			{
-				$columnString .= ', ' . $subColString;				
+				$columnString .= PHP_EOL . ', ' . $subColString;				
 			}
 			
 			// @TODO: Why is $subConditionString sometimes empty?
@@ -309,7 +314,7 @@ class SelectStatement extends WhereStatement
 				// {
 				// 	$conditionString = 1;
 				// }
-				$subJoinString = sprintf('%s AND ( %s )', $subJoinString, $subConditionString);
+				$subJoinString = sprintf("%s\n    AND ( %s )", $subJoinString, $subConditionString);
 			}
 
 			$joinString .= ' ' . $subJoinString;

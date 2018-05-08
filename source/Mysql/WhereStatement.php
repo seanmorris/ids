@@ -250,7 +250,7 @@ abstract class WhereStatement extends Statement
 		}
 
 		return implode(
-			sprintf(' %s ', $operator)
+			sprintf("\n  %s ", $operator)
 			, $strings
 		);
 	}
