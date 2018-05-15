@@ -29,6 +29,11 @@ class Model
 		return $this->_create(get_called_class());
 	}
 
+	protected static function table()
+	{
+		return static::$table;
+	}
+
 	protected function _create($curClass)
 	{
 		$parentClass = get_parent_class($curClass);
@@ -38,7 +43,7 @@ class Model
 		{
 			$tableProperty = new \ReflectionProperty($parentClass, 'table');
 
-			if($parentClass::$table && $parentClass::$table !== static::$table)
+			if($parentClass::table() && $parentClass::table() !== static::table())
 			{
 				$parentModel = $this->_create($parentClass);
 				break;
@@ -63,7 +68,7 @@ class Model
 
 		$where = [];
 
-		$insert = new \SeanMorris\Ids\Mysql\InsertStatement($curClass::$table);
+		$insert = new \SeanMorris\Ids\Mysql\InsertStatement($curClass::table());
 
 		$values = [];
 
@@ -194,7 +199,7 @@ class Model
 			return;
 		}
 
-		foreach($this as $property => $value)
+		foreach($this->properties() as $property => $value)
 		{
 			if(!property_exists($curClass, $property))
 			{
@@ -211,52 +216,7 @@ class Model
 				continue;
 			}
 
-			$this->$property = $saved->$property;
-		}
-
-		$reflection = new \ReflectionClass($curClass);
-
-		foreach($this as $property => $value)
-		{
-			\SeanMorris\Ids\Log::debug(
-				$curClass, $property, $value
-			);
-			if(!$reflection->hasProperty($property))
-			{
-				continue;
-			}
-
-			$reflectionProperty = $reflection->getProperty($property);
-
-			if($reflectionProperty->class !== $curClass)
-			{
-				continue;
-			}
-
-			if(isset($curClass::$hasOne[$property]))
-			{
-				// var_dump($this->{$property});
-				//die;
-				//$this->storeRelationship($property, $this->{$property});
-			}
-
-			if(isset($curClass::$hasMany[$property]) && is_array($value))
-			{
-				\SeanMorris\Ids\Log::debug(
-					'Storing relationships for ' . $property
-					, $this->{$property}
-				);
-
-				try
-				{
-					$this->storeRelationships($property, $this->{$property});
-				}
-				catch(\Exception $e)
-				{
-
-				}
-
-			}
+			$this->{$property} = $saved->$property;
 		}
 
 		if($id || $inserted)
@@ -273,6 +233,18 @@ class Model
 		}
 
 		return false;
+	}
+
+	protected function properties()
+	{
+		$properties = [];
+
+		foreach($this as $property => &$value)
+		{
+			$properties[$property] =& $value;
+		}
+
+		return $properties;
 	}
 
 	public function update()
@@ -298,7 +270,7 @@ class Model
 
 		$where = [];
 
-		$update = new \SeanMorris\Ids\Mysql\UpdateStatement($curClass::$table);
+		$update = new \SeanMorris\Ids\Mysql\UpdateStatement($curClass::table());
 		$update->columns(...$columns)->wrappers($wrappers)
 			->conditions([['id' => '?']]);
 
@@ -399,7 +371,7 @@ class Model
 		{
 			$reflection = new \ReflectionClass($curClass);
 
-			foreach($this as $property => $value)
+			foreach($this->properties() as $property => $value)
 			{
 				if(!$reflection->hasProperty($property))
 				{
@@ -493,7 +465,7 @@ class Model
 				return FALSE;
 			}
 
-			foreach($this as $property => $value)
+			foreach($this->properties() as $property => $value)
 			{
 				if(isset($curClass::$hasMany[$property]))
 				{
@@ -523,7 +495,7 @@ class Model
 
 		while($class)
 		{
-			$tables[] = $class::$table;
+			$tables[] = $class::table();
 
 			$class = get_parent_class($class);
 		}
@@ -770,7 +742,7 @@ class Model
 		}
 
 		$gen = $select->generate();
-		/*
+		
 		\SeanMorris\Ids\Log::debug(
 			'Model Select Def'
 			, $name
@@ -778,7 +750,7 @@ class Model
 			, $curClass
 			, $def
 		);
-		*/
+		
 		$rawArgs = $args;
 
 		$args = array_map(
@@ -906,13 +878,15 @@ class Model
 					continue;
 				}
 
-				\SeanMorris\Ids\Log::debug('Loaded ', $model);
-
 				if(isset($idCache[$model->id]))
 				{
 					\SeanMorris\Ids\Log::debug('Already loaded...', $model);
 
 					$model = $idCache[$model->id];
+				}
+				else
+				{
+					\SeanMorris\Ids\Log::debug('Loaded ', $model);
 				}
 
 				$cache[0] = $idCache[$model->id] = $model;
@@ -1055,12 +1029,12 @@ class Model
 
 	protected static function instantiate($skeleton, $args = [], $rawArgs = [])
 	{
-		if(!isset($skeleton[static::$table]))
+		if(!isset($skeleton[static::table()]))
 		{
 			return;
 		}
 
-		$subSkeleton = current($skeleton[static::$table]);
+		$subSkeleton = current($skeleton[static::table()]);
 
 		$class = null;
 
@@ -1200,9 +1174,9 @@ class Model
 
 	protected static function subskeletons($skeleton)
 	{
-		if(!static::$table
-			|| !isset($skeleton[static::$table])
-			//&& is_array($skeleton[static::$table])
+		if(!static::table()
+			|| !isset($skeleton[static::table()])
+			//&& is_array($skeleton[static::table()])
 		){
 			return [];
 		}
@@ -1214,7 +1188,7 @@ class Model
 	{
 		list($alias, $subSkeleton) = static::subskeletonWithAlias($skeleton);
 
-		return $subSkeleton;
+		return array_shift($skeleton[static::table()]);
 	}
 
 	protected function consumeStatement($skeleton, $args = [], $rawArgs = [])
@@ -1256,9 +1230,13 @@ class Model
 			{
 				$subjectClass = static::$hasOne[$property];
 
-				if(isset($skeleton[$subjectClass::$table]))
+				if(isset($skeleton[$subjectClass::table()]))
 				{
 					$model = $value;
+					\SeanMorris\Ids\Log::debug(
+						sprintf('Able to preload %s object', $subjectClass)
+						, $skeleton[$subjectClass::table()]
+					);
 
 					$subSkeletons = $subjectClass::subskeletons($skeleton);
 
@@ -1339,8 +1317,7 @@ class Model
 		$cursor = $paged = FALSE;
 
 		$originalName = $name;
-
-		if(preg_match('/^(?:(loadOne|load|generate|get|count)?)((?:Page|Cursor)?)([Bb]y.+)/', $name, $match))
+		if(preg_match('/^(loadOne|load|generate|get|count)((?:Page)?)(?:(By.+)?)/', $name, $match))
 		{
 			if(isset($match[1]))
 			{
@@ -1399,7 +1376,7 @@ class Model
 
 			$propertyClass = $property->class;
 
-			if($class::$table == $propertyClass::$table)
+			if($class::table() == $propertyClass::table())
 			{
 				$def = $class::$$name;
 				$def['name'] = $name;
@@ -1410,7 +1387,7 @@ class Model
 
 			$parentClass = get_parent_class($class);
 
-			if($parentClass::$table && $parentClass::$table !== $class::$table)
+			if($parentClass::table() && $parentClass::table() !== $class::table())
 			{
 				break;
 			}
@@ -1430,7 +1407,7 @@ class Model
 			$topClass = get_called_class();
 		}
 
-		$table = !empty(static::$table) ? static::$table : $table;
+		$table = !empty(static::table()) ? static::table() : $table;
 
 		$select = new \SeanMorris\Ids\Mysql\SelectStatement($table);
 
@@ -1570,7 +1547,7 @@ class Model
 		$curClass = get_called_class();
 		$parentClass = get_parent_class($curClass);
 
-		while($parentClass && $parentClass::$table == $curClass::$table)
+		while($parentClass && $parentClass::$table == $curClass::table())
 		{
 			$parentClass = get_parent_class($parentClass);
 		}
@@ -1679,7 +1656,7 @@ class Model
 					|| $classTableProperty->class !== $class
 					|| $curClass == $class
 				){*/
-				if($class::$table === static::$table || !$class::$table)
+				if($class::table() === static::table() || !$class::table())
 				{
 					$nonTableClasses[] = $class;
 				}
@@ -1701,13 +1678,16 @@ class Model
 				continue;
 			}
 
-			$reflectionProperty = new \ReflectionProperty($curClass, $property);
-
-			//\SeanMorris\Ids\Log::debug($curClass, $property, $reflectionProperty);
-
-			if(!$all && !in_array($reflectionProperty->class, $nonTableClasses))
+			if(property_exists($curClass, $property))
 			{
-				continue;
+				$reflectionProperty = new \ReflectionProperty($curClass, $property);
+
+				//\SeanMorris\Ids\Log::debug($curClass, $property, $reflectionProperty);
+
+				if(!$all && !in_array($reflectionProperty->class, $nonTableClasses))
+				{
+					continue;
+				}
 			}
 
 			if(in_array($property, static::$ignore))

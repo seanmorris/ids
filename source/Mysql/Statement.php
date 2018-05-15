@@ -52,6 +52,14 @@ abstract class Statement
 
 		$queryStartTime = microtime(TRUE);
 
+		foreach($args as &$arg)
+		{
+			if(is_bool($arg))
+			{
+				$arg = (int) $arg;
+			}
+		}
+
 		$queryObject->execute($args);
 
 		$queryTime = microtime(TRUE) - $queryStartTime;
