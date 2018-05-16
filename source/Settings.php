@@ -38,7 +38,7 @@ class Settings
 			if(!$hostname)
 			{
 				$hostname = \SeanMorris\Ids\Idilic\Cli::option('domain', 'd');
-				
+
 				if(!$hostname)
 				{
 					if(file_exists(getenv("HOME") . '/.idilicProfile.json'))
@@ -53,7 +53,7 @@ class Settings
 			}
 
 			$rootPackage = Package::getRoot();
-			
+
 			$settingsFile = $rootPackage->localDir()
 				. 'sites/'
 				. $hostname

@@ -17,7 +17,7 @@ while(TRUE)
 		break;
 	}
 
-	$nextDir = dirname($dir);
+	$nextDir = dirname(realpath($dir));
 
 	if($nextDir === $dir)
 	{
@@ -28,39 +28,40 @@ while(TRUE)
 	$dir = $nextDir;
 }
 
-while(TRUE)
+if(!$autoloadPath)
 {
-	$userFile = $profileDir . '/.idilicProfile.json';
-
-	if(file_exists($userFile))
+	while(TRUE)
 	{
-		break;
+		$userFile = $profileDir . '/.idilicProfile.json';
+
+		if(file_exists($userFile))
+		{
+			break;
+		}
+
+		$nextDir = dirname($profileDir);
+
+		if($nextDir === $profileDir)
+		{
+			break;
+		}
+
+		$profileDir = $nextDir;
 	}
 
-	$nextDir = dirname($profileDir);
-
-	if($nextDir === $profileDir)
+	if(!file_exists($userFile))
 	{
-		break;
+		$userFile = getenv("HOME") . '/.idilicProfile.json';
 	}
 
-	$profileDir = $nextDir;
-}
-
-if(!file_exists($userFile))
-{
-	$userFile = getenv("HOME") . '/.idilicProfile.json';
-}
-
-if(file_exists($userFile))
-{
-	$userSettings = json_decode(file_get_contents($userFile));
-	
-	$autoloadPath = $userSettings->root . '/vendor/autoload.php';
-
-	if(!isset($_SERVER['HTTP_HOST']))
+	if(!isset($_SERVER['HTTP_HOST']) && file_exists($userFile))
 	{
+		$userSettings = json_decode(file_get_contents($userFile));
+		
+		$autoloadPath = $userSettings->root . '/vendor/autoload.php';
+
 		$_SERVER['HTTP_HOST'] =  $userSettings->domain;
+	
 	}
 }
 
