@@ -34,7 +34,6 @@ class		Database
 				static::$credentials[$name][0]
 				, static::$credentials[$name][1]
 				, static::$credentials[$name][2]
-				, [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]
 				/*
 				, isset(static::$credentials[$name][3])
 					? isset(static::$credentials[$name][3])
