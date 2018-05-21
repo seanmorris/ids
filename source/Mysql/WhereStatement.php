@@ -127,20 +127,20 @@ abstract class WhereStatement extends Statement
 		// 	return $this;
 		// }
 
-		\SeanMorris\Ids\Log::debug('CONDITIONS!', $conditions, $this->conditions);
+		// \SeanMorris\Ids\Log::debug('CONDITIONS!', $conditions, $this->conditions);
 
 		if(is_numeric(key($conditions)))
 		{
 			$conditions = ['AND' => $conditions];
 		}
 
-		\SeanMorris\Ids\Log::debug($conditions);
+		// \SeanMorris\Ids\Log::debug($conditions);
 
 		if($this->conditions)
 		{
 			foreach($conditions as $key => $subconditions)
 			{
-				\SeanMorris\Ids\Log::debug($subconditions);
+				// \SeanMorris\Ids\Log::debug($subconditions);
 
 				if(isset($this->conditions[$key]))
 				{
@@ -160,7 +160,7 @@ abstract class WhereStatement extends Statement
 			$this->conditions = $conditions;
 		}
 
-		\SeanMorris\Ids\Log::debug($this->conditions);
+		// \SeanMorris\Ids\Log::debug($this->conditions);
 
 		return $this;
 	}
@@ -219,12 +219,12 @@ abstract class WhereStatement extends Statement
 				$this->valueNames[] = $name;
 
 				// \SeanMorris\Ids\Log::trace();
-				\SeanMorris\Ids\Log::debug(array(
-					'column'    => $column
-					, 'value'   => $value
-					, 'compare' => $compare
-					, 'name'    => $name
-				));
+				// \SeanMorris\Ids\Log::debug(array(
+				// 	'column'    => $column
+				// 	, 'value'   => $value
+				// 	, 'compare' => $compare
+				// 	, 'name'    => $name
+				// ));
 
 				if($alias)
 				{

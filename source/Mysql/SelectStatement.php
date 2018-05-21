@@ -146,14 +146,14 @@ class SelectStatement extends WhereStatement
 
 			list($subTableString, $subColString, $joinConditionString) = $sub->assembleJoin($type, $namedArgs, $superCol, $subCol);
 
-			if($this->tableAliases && $sub->tableAliases)
+			if($sub->tableAliases)
 			{
-				$this->tableAliases += $sub->tableAliases;
+				$this->master->tableAliases += $sub->tableAliases;
 			}
 
-			if($this->columnAliases && $sub->columnAliases)
+			if($sub->columnAliases)
 			{
-				$this->columnAliases += $sub->columnAliases;
+				$this->master->columnAliases += $sub->columnAliases;
 			}
 
 			//$subTableString .= "\t" . 'ON ' . '((' . $joinConditionString . '))';
@@ -485,7 +485,7 @@ class SelectStatement extends WhereStatement
 
 	public function generate()
 	{
-  		$closure = function(...$args)
+		$closure = function(...$args)
 		{
 			$queryObject = $this->execute(...$args);
 			// try
@@ -502,9 +502,9 @@ class SelectStatement extends WhereStatement
 			{
 				\SeanMorris\Ids\Log::debug(
 					'Generating row...'
-					, $row/*
+					, $row
 					, $this->tableAliases
-					, $this->columnAliases*/
+					, $this->columnAliases
 				);
 
 				$result = [];

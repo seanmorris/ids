@@ -745,7 +745,7 @@ class Model
 			$def['where'][] = ['id' => '?', '>'];
 		}
 
-		\SeanMorris\Ids\Log::debug($def);
+		// \SeanMorris\Ids\Log::debug($def);
 
 		$select = static::selectStatement($def, null, $args);
 
@@ -1250,11 +1250,15 @@ class Model
 			}
 		}
 
+		\SeanMorris\Ids\Log::debug(get_called_class(), $skeleton);
+
 		foreach($this as $property => $value)
 		{
 			if(isset(static::$hasOne[$property]))
 			{
 				$subjectClass = static::$hasOne[$property];
+
+				\SeanMorris\Ids\Log::debug($subjectClass, $subjectClass::$table);
 
 				if(isset($skeleton[$subjectClass::$table]))
 				{
@@ -1271,6 +1275,8 @@ class Model
 						. $subjectClass::$table
 						. '_0'
 					;
+
+					\SeanMorris\Ids\Log::debug($subSkeletonAlias, $subSkeletonKey);
 
 					if(isset(
 						$subSkeletons[$subSkeletonKey]
@@ -1362,6 +1368,17 @@ class Model
 				$name = lcfirst($match[3]);
 			}
 		}
+		else if(preg_match('/^(?:(load|generate|get|count)?)/', $name, $match))
+		{
+			if(isset($match[1]))
+			{
+				$type = lcfirst($match[1]);
+			}
+
+			$paged  = FALSE;
+			$cursor = FALSE;
+			$name   = NULL;
+		}
 		else
 		{
 			throw new \Exception(sprintf(
@@ -1419,7 +1436,7 @@ class Model
 		}
 
 		// \SeanMorris\Ids\Log::debug( "MODEL RESOLVEDEF END\n" );
-		\SeanMorris\Ids\Log::debug($def);
+		// \SeanMorris\Ids\Log::debug($def);
 		return $def;
 	}
 
@@ -1496,7 +1513,7 @@ class Model
 			foreach($selectDef['join'] as $joinClass => $join)
 			{
 				$defName = 'loadBy'.ucwords($join['by']);
-				$subSelect = $joinClass::selectStatement($defName, $select, $args, $table);
+				$subSelect = $joinClass::selectStatement($defName, $select, $args, $table, $joinClass);
 
 				$select->join($subSelect, $join['on'], 'id');
 			}
@@ -1508,9 +1525,10 @@ class Model
 			{
 				if(isset(static::$hasOne[$childProperty]))
 				{
-					$joinClass = static::$hasOne[$childProperty];
+					$joinClass = $topClass::$hasOne[$childProperty];
+
 					$defName   = 'load'.ucwords($joinBy);
-					$subSelect = $joinClass::selectStatement($defName, $select, $args, $table);
+					$subSelect = $joinClass::selectStatement($defName, $select, $args, $table, $joinClass);
 
 					$select->join(
 						$subSelect
@@ -1551,7 +1569,7 @@ class Model
 				}
 				else
 				{
-					\SeanMorris\Ids\Log::warn(sprintf(
+					throw new \Exception(sprintf(
 						'Invalid property %s for %s::$selectDef["with"]'
 						, $childProperty
 						, get_called_class()
@@ -1591,14 +1609,16 @@ class Model
 		}
 		else if(!in_array('class', static::$ignore))
 		{
-			$allClasses = Meta::classes($topClass);
+			// $allClasses = Meta::classes($topClass);
 
-			$classesString = sprintf(
-				'("%s")'
-				, implode('","', array_map('addslashes', $allClasses))
-			);
+			// $classesString = sprintf(
+			// 	'("%s")'
+			// 	, implode('","', array_map('addslashes', $allClasses))
+			// );
 
-			$select->conditions([['class' => $classesString, 'IN']]);
+			$select->conditions([[
+				'class' => sprintf('"%s"', addslashes($topClass))
+			]]);
 		}
 
 		return $select;
@@ -2072,8 +2092,6 @@ class Model
 			return false;
 		}
 
-		\SeanMorris\Ids\Log::debug($this);
-
 		$class = static::$hasOne[$column];
 
 		return $this->$column = $class::loadOneById($this->$column);
@@ -2097,14 +2115,14 @@ class Model
 		return $class;
 	}
 
-	public function canHaveOne($property)
+	public static function canHaveOne($property)
 	{
 		return isset(static::$hasOne[$property])
 			? static::$hasOne[$property]
 			: FALSE;
 	}
 
-	public function canHaveMany($property)
+	public static function canHaveMany($property)
 	{
 		return isset(static::$hasMany[$property])
 			? static::$hasMany[$property]
