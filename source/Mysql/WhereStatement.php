@@ -122,17 +122,26 @@ abstract class WhereStatement extends Statement
 
 	public function conditions($conditions)
 	{
-		// \SeanMorris\Ids\Log::debug($this->conditions);
+		// if(!$conditions)
+		// {
+		// 	return $this;
+		// }
+
+		\SeanMorris\Ids\Log::debug('CONDITIONS!', $conditions, $this->conditions);
 
 		if(is_numeric(key($conditions)))
 		{
 			$conditions = ['AND' => $conditions];
 		}
 
+		\SeanMorris\Ids\Log::debug($conditions);
+
 		if($this->conditions)
 		{
 			foreach($conditions as $key => $subconditions)
 			{
+				\SeanMorris\Ids\Log::debug($subconditions);
+
 				if(isset($this->conditions[$key]))
 				{
 					foreach($subconditions as $subkey => $condition)
@@ -142,7 +151,7 @@ abstract class WhereStatement extends Statement
 				}
 				else
 				{
-					$this->conditions[$key] = [$condition ?? NULL];
+					$this->conditions[$key] = $subconditions;
 				}
 			}
 		}
@@ -151,7 +160,7 @@ abstract class WhereStatement extends Statement
 			$this->conditions = $conditions;
 		}
 
-		// \SeanMorris\Ids\Log::debug($this->conditions);
+		\SeanMorris\Ids\Log::debug($this->conditions);
 
 		return $this;
 	}
@@ -180,6 +189,7 @@ abstract class WhereStatement extends Statement
 				);
 
 				throw new \Exception('Malformed condition.');
+				// continue;
 			}
 
 			if($key === 'AND' || $key === 'OR')
@@ -189,10 +199,12 @@ abstract class WhereStatement extends Statement
 					$key = 'AND';
 				}
 
-				$strings[] = sprintf(
-					'%s'
-					, $this->conditionTree($condition, $key, $alias, $namedArgs)
-				);
+				$string = $this->conditionTree($condition, $key, $alias, $namedArgs);
+
+				if($string)
+				{
+					$strings[] = $string;
+				}
 			}
 			else
 			{

@@ -130,8 +130,7 @@ class SelectStatement extends WhereStatement
 				? $conditionString
 				: 1
 			)
-			. ')'
-		;
+			. ')';
 
 		$joinOrderStrings = [];
 
@@ -141,9 +140,9 @@ class SelectStatement extends WhereStatement
 
 			$superCol = $this->alias . '.' . $superCol;
 
-			$sub->conditions(['AND' => [
-				//[$subCol => $superCol]
-			]]);
+			// $sub->conditions(['AND' => [
+			// 	[$subCol => $superCol]
+			// ]]);
 
 			list($subTableString, $subColString, $joinConditionString) = $sub->assembleJoin($type, $namedArgs, $superCol, $subCol);
 
@@ -186,12 +185,19 @@ class SelectStatement extends WhereStatement
 
 			if($joinConditionString)
 			{
-				if($tableString)
+				// if($tableString)
+				// {
+				// 	$tableString .= PHP_EOL . '    AND ';
+				// }
+
+				// $tableString .= $joinConditionString;
+
+				if($conditionString)
 				{
-					$tableString .= PHP_EOL . '    AND ';
+					$conditionString .= PHP_EOL . '    AND ';
 				}
 
-				$tableString .= $joinConditionString;
+				$conditionString .= $joinConditionString;
 			}
 
 
@@ -292,9 +298,9 @@ class SelectStatement extends WhereStatement
 
 			$superCol = $this->alias . '.' . $superCol;
 
-			$sub->conditions(['AND' => [
-				//[$subCol => $superCol]
-			]]);
+			// $sub->conditions(['AND' => [
+			// 	[$subCol => $superCol]
+			// ]]);
 
 			list($subJoinString, $subColString, $subConditionString) = $sub->assembleJoin($subType, $args, $superCol, $subCol);
 
@@ -310,11 +316,15 @@ class SelectStatement extends WhereStatement
 			// @TODO: Why is $subConditionString sometimes empty?
 			if($subConditionString)
 			{
-				// if(!$conditionString)
-				// {
-				// 	$conditionString = 1;
-				// }
-				$subJoinString = sprintf("%s\n    AND ( %s )", $subJoinString, $subConditionString);
+				if(!$conditionString)
+				{
+					$conditionString = 1;
+				}
+				$conditionString = sprintf(
+					"(%s\n    AND ( %s ))"
+					, $conditionString
+					, $subConditionString
+				);
 			}
 
 			$joinString .= ' ' . $subJoinString;
