@@ -6,6 +6,7 @@ define('START', microtime(true));
 date_default_timezone_set('GMT+0');
 
 $dir = getcwd();
+$profileDir = $dir;
 
 while(TRUE)
 {
@@ -16,7 +17,7 @@ while(TRUE)
 		break;
 	}
 
-	$nextDir = dirname($dir);
+	$nextDir = dirname(realpath($dir));
 
 	if($nextDir === $dir)
 	{
@@ -29,28 +30,56 @@ while(TRUE)
 
 if(!$autoloadPath)
 {
-	$userFile = getenv("HOME") . '/.idilicProfile.json';
+	while(TRUE)
+	{
+		$userFile = $profileDir . '/.idilicProfile.json';
 
-	if(file_exists($userFile))
+		if(file_exists($userFile))
+		{
+			break;
+		}
+
+		$nextDir = dirname($profileDir);
+
+		if($nextDir === $profileDir)
+		{
+			break;
+		}
+
+		$profileDir = $nextDir;
+	}
+
+	if(!file_exists($userFile))
+	{
+		$userFile = getenv("HOME") . '/.idilicProfile.json';
+	}
+
+	if(!isset($_SERVER['HTTP_HOST']) && file_exists($userFile))
 	{
 		$userSettings = json_decode(file_get_contents($userFile));
+		
 		$autoloadPath = $userSettings->root . '/vendor/autoload.php';
+
+		$_SERVER['HTTP_HOST'] =  $userSettings->domain;
+	
 	}
-	else
-	{
-		throw new \ErrorException(
-			'Unable to locate autoloader. ' . (
-				(php_sapi_name() === 'cli')
-				 	? 'Run idilic inside the project directory or configure ~/.idilicProfile.json'
-				 	: 'Check your directory structure.'
-			 )
-		);
-	}
+}
+
+if(!$autoloadPath)
+{
+	throw new \ErrorException(
+		'Unable to locate autoloader. ' . (
+			(php_sapi_name() === 'cli')
+			 	? 'Run idilic inside the project directory or configure ~/.idilicProfile.json'
+			 	: 'Check your directory structure.'
+		 )
+	);
 }
 
 if($autoloadPath)
 {
 	define('IDS_VENDOR_ROOT', dirname($autoloadPath));
+	define('IDS_ROOT', dirname(IDS_VENDOR_ROOT));
 	$composer = require $autoloadPath;
 }
 else
@@ -86,8 +115,15 @@ register_shutdown_function(function() {
     }
 	\SeanMorris\Ids\Log::info(
 		'Response Complete.'
+		, memory_get_peak_usage(true)
 		, [
-			'Space'        => memory_get_peak_usage(true) / (1024*1024) . ' MB'
+			'Space'        => number_format(
+				memory_get_peak_usage(true) / (1024*1024), 2
+			) . sprintf(
+				' MB (%s bytes, %s real)'
+				, memory_get_peak_usage()
+				, memory_get_peak_usage(TRUE)
+			)
 			, 'Time'       => number_format(microtime(true) - START, 4)  . ' sec'
 			, 'Queries'    => \SeanMorris\Ids\Mysql\Statement::queryCount()
 			, 'Query Time' => number_format(

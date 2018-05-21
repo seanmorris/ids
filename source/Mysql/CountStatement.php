@@ -19,19 +19,21 @@ class CountStatement extends SelectStatement
 
 	public function joins()
 	{
-		return array_map(
-			function($join)
-			{
-				list($sub, $superCol, $subCol, $type) = $join;
-				
-				$sub = clone $sub;
+		$cleanJoin = function($join) use(&$cleanJoin)
+		{
+			list($sub, $superCol, $subCol, $type) = $join;
+			
+			$sub = clone $sub;
 
-				$sub->columns = [];
+			$sub->columns = [];
+			$sub->order   = [];
 
-				return [$sub, $superCol, $subCol, $type];
-			}
-			, $this->joins
-		);
+			$sub->joins   = array_map($cleanJoin, $sub->joins);
+
+			return [$sub, $superCol, $subCol, $type];
+		};
+
+		return array_map($cleanJoin, $this->joins);
 	}
 
 	public function generate()

@@ -294,8 +294,7 @@ class Router
 				$result = $routes->_notFound($this);
 			}
 
-			if(is_callable([$routes, '_postRoute']))
-			{
+			if(is_callable([$routes, '_postRoute'])){
 				$result = $routes->_postRoute($this, $result, $preroutePath);
 			}
 		}
@@ -322,17 +321,17 @@ class Router
 				, get_class($e)
 			), $e);
 
-			\SeanMorris\Ids\Log::logException($e);
+			\SeanMorris\Ids\Log::logException($e, TRUE);
 
 			$result = $e->getMessage();
 
 			if(!$this->subRouted)
 			{
-				$result = $e->getMessage();
 				if(!\SeanMorris\Ids\Idilic\Cli::isCli())
 				{
 					$e->onCatch($this);
-					die;
+
+					return $e;
 				}
 				else if($e instanceof \SeanMorris\Ids\Http\Http303)
 				{

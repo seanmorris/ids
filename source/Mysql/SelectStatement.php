@@ -107,7 +107,7 @@ class SelectStatement extends WhereStatement
 			$this->alias = $this->master->aliasTableName($this->table, $this);
 		}
 
-		$columnString = implode(', ', $this->aliasColumns());
+		$columnString = implode(PHP_EOL . ', ', $this->aliasColumns());
 
 		$tableString = $this->table;
 
@@ -130,8 +130,9 @@ class SelectStatement extends WhereStatement
 				? $conditionString
 				: 1
 			)
-			. ')'
-		;
+			. ')';
+
+		$joinOrderStrings = [];
 
 		foreach($this->joins() as $join)
 		{
@@ -139,20 +140,20 @@ class SelectStatement extends WhereStatement
 
 			$superCol = $this->alias . '.' . $superCol;
 
-			$sub->conditions(['AND' => [
-				//[$subCol => $superCol]
-			]]);
+			// $sub->conditions(['AND' => [
+			// 	[$subCol => $superCol]
+			// ]]);
 
 			list($subTableString, $subColString, $joinConditionString) = $sub->assembleJoin($type, $namedArgs, $superCol, $subCol);
 
-			if($this->tableAliases && $sub->tableAliases)
+			if($sub->tableAliases)
 			{
-				$this->tableAliases += $sub->tableAliases;
+				$this->master->tableAliases += $sub->tableAliases;
 			}
 
-			if($this->columnAliases && $sub->columnAliases)
+			if($sub->columnAliases)
 			{
-				$this->columnAliases += $sub->columnAliases;
+				$this->master->columnAliases += $sub->columnAliases;
 			}
 
 			//$subTableString .= "\t" . 'ON ' . '((' . $joinConditionString . '))';
@@ -161,9 +162,12 @@ class SelectStatement extends WhereStatement
 			$this->valueRequired += array_merge($this->valueRequired, $sub->valueRequired);
 			$this->valueNames += array_merge($this->valueNames, $sub->valueNames);
 
-			$columnString .= ($columnString && $subColString)
-				? (', ' . $subColString)
-				: NULL;
+			if(!$this->master instanceOf CountStatement)
+			{
+				$columnString .= ($columnString && $subColString)
+					? (PHP_EOL . ', ' . $subColString)
+					: NULL;				
+			}
 
 			if(!$conditionString)
 			{
@@ -177,17 +181,32 @@ class SelectStatement extends WhereStatement
 				. ')'
 			;
 
+			$tableString .= ' ' . $subTableString;
+
 			if($joinConditionString)
 			{
+				// if($tableString)
+				// {
+				// 	$tableString .= PHP_EOL . '    AND ';
+				// }
+
+				// $tableString .= $joinConditionString;
+
 				if($conditionString)
 				{
-					$conditionString .= PHP_EOL . 'AND ';
+					$conditionString .= PHP_EOL . '    AND ';
 				}
 
 				$conditionString .= $joinConditionString;
 			}
 
-			$tableString .= ' ' . $subTableString;
+
+			foreach($sub->order as $column => $direction)
+			{
+				$columnName = $sub->aliasColumnName($column, $sub->alias);
+
+				$joinOrderStrings[] = $columnName . ' ' . $direction;
+			}
 		}
 
 		$orderStrings = [];
@@ -201,11 +220,13 @@ class SelectStatement extends WhereStatement
 
 				$orderStrings[] = $columnName . ' ' . $direction;
 			}
+		}
 
-			if($orderStrings)
-			{
-				$orderString = PHP_EOL . PHP_EOL . 'ORDER BY ' . implode(', ', $orderStrings);
-			}
+		$orderStrings = array_merge($orderStrings, $joinOrderStrings);
+
+		if($orderStrings)
+		{
+			$orderString = PHP_EOL . PHP_EOL . 'ORDER BY ' . implode(', ', $orderStrings);
 		}
 
 		$limitString = NULL;
@@ -242,7 +263,7 @@ class SelectStatement extends WhereStatement
 
 	protected function assembleJoin($type = null, $args = null, $col, $joinCol)
 	{
-		$columnString = implode(', ', $this->aliasColumns());
+		$columnString = implode(PHP_EOL . ', ', $this->aliasColumns());
 
 		//\SeanMorris\Ids\Log::debug($this->conditions);
 
@@ -264,7 +285,12 @@ class SelectStatement extends WhereStatement
 			, $this->alias
 		);
 
-		$joinString .= sprintf(' ON (%s = %s.%s)', $col, $this->alias, $joinCol);
+		$joinString .= sprintf(
+			PHP_EOL . '  ON (%s = %s.%s)'
+			, $col
+			, $this->alias
+			, $joinCol
+		);
 
 		foreach($this->joins as $join)
 		{
@@ -272,17 +298,21 @@ class SelectStatement extends WhereStatement
 
 			$superCol = $this->alias . '.' . $superCol;
 
-			$sub->conditions(['AND' => [
-				//[$subCol => $superCol]
-			]]);
+			// $sub->conditions(['AND' => [
+			// 	[$subCol => $superCol]
+			// ]]);
 
 			list($subJoinString, $subColString, $subConditionString) = $sub->assembleJoin($subType, $args, $superCol, $subCol);
 
 			$this->valueRequired += array_merge($this->valueRequired, $sub->valueRequired);
 			$this->valueNames += array_merge($this->valueNames, $sub->valueNames);
 
-			$joinString .= ' ' . $subJoinString;
-			$columnString .= ', ' . $subColString;
+			
+			if($subColString)
+			{
+				$columnString .= PHP_EOL . ', ' . $subColString;				
+			}
+			
 			// @TODO: Why is $subConditionString sometimes empty?
 			if($subConditionString)
 			{
@@ -290,8 +320,14 @@ class SelectStatement extends WhereStatement
 				{
 					$conditionString = 1;
 				}
-				$conditionString = sprintf('( %s ) AND ( %s )', $conditionString, $subConditionString);
+				$conditionString = sprintf(
+					"(%s\n    AND ( %s ))"
+					, $conditionString
+					, $subConditionString
+				);
 			}
+
+			$joinString .= ' ' . $subJoinString;
 		}
 
 		return [$joinString, $columnString, $conditionString];
@@ -351,7 +387,7 @@ class SelectStatement extends WhereStatement
 		}
 	}
 
-	protected function subjugate($join)
+	public function subjugate($join)
 	{
 		$join->master   = $this->master;
 		$join->superior = $this;
@@ -404,23 +440,18 @@ class SelectStatement extends WhereStatement
 
 	public function fetchColumn(...$args)
 	{
-		static $queryObject;
-
-		if(!$queryObject)
+		try
 		{
-			try
-			{
-				$queryObject = $this->execute(...$args);
-			}
-			catch(\Exception $e)
-			{
-				\SeanMorris\Ids\Log::error($e);
-				\SeanMorris\Ids\Log::trace();
-				die;
-			}
+			$query = $this->execute(...$args);
+		}
+		catch(\Exception $e)
+		{
+			\SeanMorris\Ids\Log::error($e);
+			\SeanMorris\Ids\Log::trace();
+			die;
 		}
 
-		if($col = $queryObject->fetchColumn())
+		if($col = $query->fetchColumn())
 		{
 			\SeanMorris\Ids\Log::debug('Fetching column...', $col);
 			return $col;
@@ -431,23 +462,18 @@ class SelectStatement extends WhereStatement
 
 	public function fetch(...$args)
 	{
-		static $queryObject;
-
-		if(!$queryObject)
+		try
 		{
-			try
-			{
-				$queryObject = $this->execute(...$args);
-			}
-			catch(\Exception $e)
-			{
-				\SeanMorris\Ids\Log::error($e);
-				\SeanMorris\Ids\Log::trace();
-				die;
-			}
+			$query = $this->execute(...$args);
+		}
+		catch(\Exception $e)
+		{
+			\SeanMorris\Ids\Log::error($e);
+			\SeanMorris\Ids\Log::trace();
+			die;
 		}
 
-		if($row = $queryObject->fetch())
+		if($row = $query->fetch())
 		{
 			\SeanMorris\Ids\Log::debug('Fetching row...', $row);
 
@@ -459,26 +485,26 @@ class SelectStatement extends WhereStatement
 
 	public function generate()
 	{
-  		$closure = function(...$args)
+		$closure = function(...$args)
 		{
-			try
-			{
-				$queryObject = $this->execute(...$args);
-			}
-			catch(\Exception $e)
-			{
-				\SeanMorris\Ids\Log::error($e);
-				\SeanMorris\Ids\Log::trace();
-				die;
-			}
+			$queryObject = $this->execute(...$args);
+			// try
+			// {
+			// }
+			// catch(\Exception $e)
+			// {
+			// 	\SeanMorris\Ids\Log::error($e);
+			// 	\SeanMorris\Ids\Log::trace();
+			// 	die;
+			// }
 
 			while($row = $queryObject->fetch(\PDO::FETCH_ASSOC))
 			{
 				\SeanMorris\Ids\Log::debug(
 					'Generating row...'
-					, $row/*
+					, $row
 					, $this->tableAliases
-					, $this->columnAliases*/
+					, $this->columnAliases
 				);
 
 				$result = [];

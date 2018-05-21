@@ -197,7 +197,7 @@ class Log
 		$output = '';
 
 		$output .= static::color(
-			static::header($levelString) . ' ' . static::positionString(1)
+			static::header($levelString) . static::positionString(1)
 			, static::HEAD_COLOR
 			, static::HEAD_BACKGROUND
 		);
@@ -504,7 +504,7 @@ class Log
 		static $start;
 		if(!$start)
 		{
-			$start = microtime(TRUE);
+			$start = START;
 		}
 		$mull = pow(10,static::SECOND_SIGNIFICANCE);
 		$mill = microtime(true);
@@ -512,12 +512,26 @@ class Log
 		$mill = round($mill*$mull);
 
 		return sprintf(
-			"[%.0" . static::SECOND_SIGNIFICANCE . "f]::[%s.%0" . static::SECOND_SIGNIFICANCE . "d]::[%d]"
-			 . (
-				$level
-					? ('::['. $level . static::color(']', static::HEAD_COLOR, static::HEAD_BACKGROUND, FALSE))
-					: NULL
-			)
+			"[%.0"
+				. static::SECOND_SIGNIFICANCE
+				. "f]::[%s.%0"
+				. static::SECOND_SIGNIFICANCE
+				. "d]::[%d]"
+				. (
+					$level
+						? (
+							'::['
+								. $level
+								. static::color(
+									']'
+									, static::HEAD_COLOR
+									, static::HEAD_BACKGROUND
+									, FALSE
+								)
+						)
+						: NULL
+				)
+				. PHP_EOL
 			, microtime(TRUE) - $start
 			, date('Y-m-d h:i:s')
 			, $mill
@@ -565,16 +579,80 @@ class Log
 
 		$backtrace = debug_backtrace();
 
-		if(isset($backtrace[$depth + 1], $backtrace[$depth + 1]['file']))
-		{
-			return (isset($backtrace[$depth + 2]['class']) ? (
-					$backtrace[$depth + 2]['class'] . '::'
-				) : NULL)
-				. (isset($backtrace[$depth + 2]['function']) ? (
-					$backtrace[$depth + 2]['function']  . PHP_EOL
-				) : NULL)
-				. $backtrace[$depth + 1]['file']
-				. ':' . $backtrace[$depth + 1]['line'] . $glue;
+		if(isset(
+			$backtrace[$depth + 1]
+			, $backtrace[$depth + 1]['file']
+			, $backtrace[$depth + 2]
+			, $backtrace[$depth + 2]['class']
+		)){
+			$class = NULL;
+
+			if(isset($backtrace[$depth + 2]['object']))
+			{
+				$class = get_class($backtrace[$depth + 2]['object']);
+			}
+			else if(isset($backtrace[$depth + 2]['class']))
+			{
+				$class = $backtrace[$depth + 2]['class'];
+			}
+
+			$function = NULL;
+
+			if(isset($backtrace[$depth + 2]['function']))
+			{
+				$function = $backtrace[$depth + 2]['function'];
+
+				if(in_array($function, [
+					'__callStatic'
+					, '__call'
+					, '__get'
+					, '__set'
+				])){
+					$function = sprintf(
+						'%s {%s}'
+						, $backtrace[$depth + 2]['args'][0]
+						, $function
+					);
+				}
+			}
+
+			$file = $backtrace[$depth + 1]['file'];
+
+			if(substr($file, 0, strlen(IDS_ROOT)) == IDS_ROOT)
+			{
+				$file = '.' . substr($file, strlen(IDS_ROOT));
+			}
+
+			if($class && $function)
+			{
+				return sprintf(
+					"%s::%s\n%s:%d%s"
+					, $class
+					, $function
+					, $file
+					, $backtrace[$depth + 1]['line']
+					, $glue
+				);
+			}
+			else if($function)
+			{
+				return sprintf(
+					"%s\n%s:%d%s"
+					, $function
+					, $file
+					, $backtrace[$depth + 1]['line']
+					, $glue
+				);
+			}
+			else
+			{
+				return sprintf(
+					"%s:%d%s"
+					, $file
+					, $backtrace[$depth + 1]['line']
+					, $glue
+				);
+			}
 		}
 		else
 		{
@@ -600,7 +678,7 @@ class Log
 		return $lines;
 	}
 
-	public static function logException($e)
+	public static function renderException($e)
 	{
 		if($e instanceof \SeanMorris\Ids\Http\HttpException)
 		{
@@ -617,30 +695,101 @@ class Log
 				return;
 			}
 		}
+
 		$indentedTrace = preg_replace(
 			['/^/m', '/\:\s(.+)/']
 			, ["\t", "\n\t\t\$1\n"]
 			, $e->getTraceAsString()
 		);
 
-		$line = static::color(
-			static::header()
-				, static::HEAD_COLOR
-				, static::HEAD_BACKGROUND
-			) . PHP_EOL . static::color(
-				sprintf(
-					"%s thrown from %s:%d"
-						. PHP_EOL
-						. '%s'
-						. PHP_EOL
-					, get_class($e)
-					, $e->getFile()
-					, $e->getLine()
-					, $e->getMessage()
-				)
-				, static::ERROR_COLOR
-				, static::ERROR_BACKGROUND
-			). PHP_EOL . $indentedTrace . PHP_EOL;
+		$trace = $e->getTrace();
+		$superTrace = [];
+
+		foreach ($trace as $level => $frame)
+		{
+			$renderedArgs = [];
+
+			if(isset($frame['args']))
+			{
+				foreach($frame['args'] as $a => $arg)
+				{
+					if(is_scalar($arg))
+					{
+						if(is_string($arg))
+						{
+							$renderedArg = ' "' . $arg . '"';
+						}
+						else
+						{
+							$renderedArg = static::render($arg);
+						}
+					}
+					else
+					{
+						$renderedArg = static::render($arg);
+						// $renderedArg = substr($renderedArg, 0, 1024);
+						if(strlen($renderedArg) > 1024)
+						{
+							$renderedArg = (is_object($arg)
+								? get_class($arg)
+								: 'Array'
+							) . '[]...';
+						}							
+					}
+
+					$renderedArgs[] = 'Arg #' . $a . ' ' .$renderedArg;
+				}
+			}
+
+			$superTrace[] = sprintf(
+				"#%d %s:(%d)\n    %s::%s()%s\n"
+				, $level
+				, $frame['file'] ?? NULL
+				, $frame['line'] ?? NULL
+				, $frame['class'] ?? NULL
+				, $frame['function']
+				, $renderedArgs
+					? PHP_EOL . static::indent(
+						implode(PHP_EOL, $renderedArgs)
+						, 2
+						, '    '
+					)
+					: NULL
+			);
+		}
+
+		$superTrace[] = sprintf(
+			"#%s {main}"
+			, count($trace)
+		);
+
+		$superTrace = implode(PHP_EOL, $superTrace);
+
+		return static::color(
+		static::header()
+			, static::HEAD_COLOR
+			, static::HEAD_BACKGROUND
+		) . PHP_EOL . static::color(
+			sprintf(
+				"%s thrown from %s:%d"
+					. PHP_EOL
+					. '%s'
+					. PHP_EOL
+				, get_class($e)
+				, $e->getFile()
+				, $e->getLine()
+				, $e->getMessage()
+			)
+			, static::ERROR_COLOR
+			, static::ERROR_BACKGROUND
+		)
+		//. PHP_EOL . $indentedTrace
+		. PHP_EOL . $superTrace . PHP_EOL;
+	}
+
+	public static function logException($e, $internal = false)
+	{
+		$line = static::renderException($e);
 
 		static::startLog();
 
@@ -648,6 +797,20 @@ class Log
 			$line
 			, 3
 			, ini_get('error_log')
+		);
+
+		if(php_sapi_name() == 'cli' && !$internal)
+		{
+			fwrite(STDERR, $line);
+		}
+	}
+
+	protected static function indent($string, $level, $char = "\t")
+	{
+		return  ($indent = str_repeat($char, $level)) . preg_replace(
+			'/\n\s*/'
+			, PHP_EOL . $indent
+			, $string
 		);
 	}
 

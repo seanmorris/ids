@@ -16,8 +16,6 @@ abstract class WhereStatement extends Statement
 
 		$argsUsed = [];
 
-
-
 		if(isset($args[0]) && is_array($args[0]))
 		{
 			$queryObject = $this->prepare($args[0]);
@@ -124,17 +122,26 @@ abstract class WhereStatement extends Statement
 
 	public function conditions($conditions)
 	{
-		// \SeanMorris\Ids\Log::debug($this->conditions);
+		// if(!$conditions)
+		// {
+		// 	return $this;
+		// }
+
+		// \SeanMorris\Ids\Log::debug('CONDITIONS!', $conditions, $this->conditions);
 
 		if(is_numeric(key($conditions)))
 		{
 			$conditions = ['AND' => $conditions];
 		}
 
+		// \SeanMorris\Ids\Log::debug($conditions);
+
 		if($this->conditions)
 		{
 			foreach($conditions as $key => $subconditions)
 			{
+				// \SeanMorris\Ids\Log::debug($subconditions);
+
 				if(isset($this->conditions[$key]))
 				{
 					foreach($subconditions as $subkey => $condition)
@@ -144,7 +151,7 @@ abstract class WhereStatement extends Statement
 				}
 				else
 				{
-					$this->conditions[$key] = [$condition];
+					$this->conditions[$key] = $subconditions;
 				}
 			}
 		}
@@ -173,7 +180,16 @@ abstract class WhereStatement extends Statement
 		{
 			if(!is_array($condition))
 			{
-				throw new \Exception('Malformed condition.' . PHP_EOL . print_r($tree, 1));
+				\SeanMorris\Ids\Log::error(
+					'Malformed condition.'
+					, $key
+					, $condition
+					, $tree
+					, $namedArgs
+				);
+
+				throw new \Exception('Malformed condition.');
+				// continue;
 			}
 
 			if($key === 'AND' || $key === 'OR')
@@ -183,10 +199,12 @@ abstract class WhereStatement extends Statement
 					$key = 'AND';
 				}
 
-				$strings[] = sprintf(
-					'%s'
-					, $this->conditionTree($condition, $key, $alias, $namedArgs)
-				);
+				$string = $this->conditionTree($condition, $key, $alias, $namedArgs);
+
+				if($string)
+				{
+					$strings[] = $string;
+				}
 			}
 			else
 			{
@@ -200,13 +218,13 @@ abstract class WhereStatement extends Statement
 				$this->valueRequired[] = $required;
 				$this->valueNames[] = $name;
 
-				\SeanMorris\Ids\Log::trace();
-				\SeanMorris\Ids\Log::debug(array(
-					'column' => $column
-					, 'value' => $value
-					, 'compare' => $compare
-					, 'name' => $name
-				));
+				// \SeanMorris\Ids\Log::trace();
+				// \SeanMorris\Ids\Log::debug(array(
+				// 	'column'    => $column
+				// 	, 'value'   => $value
+				// 	, 'compare' => $compare
+				// 	, 'name'    => $name
+				// ));
 
 				if($alias)
 				{
@@ -244,7 +262,7 @@ abstract class WhereStatement extends Statement
 		}
 
 		return implode(
-			sprintf(' %s ', $operator)
+			sprintf("\n  %s ", $operator)
 			, $strings
 		);
 	}

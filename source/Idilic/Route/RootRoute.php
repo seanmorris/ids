@@ -48,7 +48,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			return;
 		}
 
-		if(!$args)
+		if(!$args || !class_exists($routes))
 		{
 			return $package->packageDir()->name();
 		}
@@ -70,25 +70,23 @@ class RootRoute implements \SeanMorris\Ids\Routable
 	{
 		$args = $router->path()->consumeNodes();
 
-		if(!$packageName = array_shift($args))
+		while($packageName = array_shift($args))
 		{
-			return 'No package specified.';
-		}
+			$packageName = str_replace('/', '\\', $packageName);
+			$package = $this->_getPackage($packageName);
+			$tests = $package->testDir();
 
-		$packageName = str_replace('/', '\\', $packageName);
-		$package = $this->_getPackage($packageName);
-		$tests = $package->testDir();
-
-		while($test = $tests->read())
-		{
-			if(!preg_match('/(\w+?Test)\.php/', $test->name(), $m))
+			while($test = $tests->read())
 			{
-				continue;
+				if(!preg_match('/(\w+?Test)\.php/', $test->name(), $m))
+				{
+					continue;
+				}
+				$testClass = $packageName . '\\Test\\' . $m[1];
+				$test = new $testClass;
+				$test->run(new \TextReporter());
+				echo PHP_EOL;
 			}
-			$testClass = $packageName . '\\Test\\' . $m[1];
-			$test = new $testClass;
-			$test->run(new \TextReporter());
-			echo PHP_EOL;
 		}
 	}
 
@@ -154,7 +152,14 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		$package = $this->_getPackage($packageName);
 
-		return $package->storeSchema();
+		$changes = $package->storeSchema();
+
+		if(!$changes)
+		{
+			return 'No changes detected.' . PHP_EOL;
+		}
+
+		return $changes;
 	}
 
 	public function _getPackageFromClass($class)
@@ -189,8 +194,13 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		$header = false;
 		$out = \SeanMorris\Ids\Idilic\Cli::outHandle();
 
-		foreach($models as $model)
+		foreach($models() as $model)
 		{
+			if(!$model)
+			{
+				continue;
+			}
+
 			$arModel = $model->unconsume();
 
 			if(!$header)
@@ -259,10 +269,21 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 	public function listPackages($router)
 	{
-		return implode(
+		$switches = $router->request()->switches();
+
+		$packages = implode(
 			PHP_EOL
 			, \SeanMorris\Ids\Package::listPackages()
 		);
+
+		if($switches['s'] ?? FALSE)
+		{
+			return $packages;
+		}
+		else
+		{
+			return preg_replace('/\//', '\\', $packages);
+		}
 	}
 
 	public function link($router)
@@ -554,9 +575,17 @@ EOF
 		stream_set_blocking(STDIN, FALSE);
 		exec('stty -icanon min 0 time 0');
 		system('stty -echo');
+		register_shutdown_function(function(){
+			system('stty echo');
+		});
 		set_error_handler(function($errno, $errstr, $errfile, $errline)
 		{
 			printf("Error %d: %s\n%s:%s", $errno, $errstr, $errfile, $errline);
+		});
+		set_exception_handler(function($exception)
+		{
+			print \SeanMorris\Ids\Log::renderException($exception);
+			fwrite(STDERR, PHP_EOL . 'Goodbye.' . PHP_EOL);
 		});
 		print "Welcome to iREPL v0.1\n>";
 		$line = $input = NULL;
@@ -672,7 +701,7 @@ EOF
 				$input .= $line;
 			}
 			ob_start();
-			eval($input . ';');
+			eval($input . ';');			
 			$output = ob_get_contents();
 			ob_end_flush();
 			$input = $line = NULL;
@@ -710,5 +739,28 @@ EOF
 			$string .= str_repeat("\x1b\x5b\x44", abs($offset));
 		}
 		return $string;	
+	}
+
+	public function info()
+	{
+		return sprintf(
+"Domain:\t\t%s
+Root:\t\t%s
+Entrypoint:\t%s
+Log Level:\t%s
+Root Package:\t%s
+"
+			, $_SERVER['HTTP_HOST']
+			, IDS_ROOT
+			, \SeanMorris\Ids\Settings::read('entrypoint')
+			, \SeanMorris\Ids\Settings::read('logLevel')
+			, \SeanMorris\Ids\Package::getRoot()->packageSpace()
+		);
+	}
+
+	public function log()
+	{
+		ignore_user_abort(true);
+		popen('less -RSXMI +G /home/sean/letsvue/temporary/log.txt', 'w');
 	}
 }
