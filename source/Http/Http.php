@@ -12,12 +12,16 @@ class Http
 			ob_start();
 			register_shutdown_function(function() use(&$disconnect){
 				\SeanMorris\Ids\Log::info('Post-Response Execution Starting.');
-				ignore_user_abort(TRUE);
-				session_write_close();
-				header('Content-Encoding: none');
-				header(sprintf('Content-Length: %s', ob_get_length()));
-				header('Connection: close');
+				if(php_sapi_name() !== 'cli')
+				{
+					ignore_user_abort(TRUE);
+					session_write_close();
+					header("Content-Encoding: none\r\n");
+					header("Connection: close\r\n");
+					header(sprintf("Content-Length: %s\r\n", ob_get_length()));	
+				}
 				ob_end_flush();
+				ob_flush();
 				flush();
 				foreach ($disconnect as $d)
 				{
