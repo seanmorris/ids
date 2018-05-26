@@ -1643,15 +1643,19 @@ class Model
 					'("%s")'
 					, implode('","', array_map('addslashes', $allClasses))
 				);
+
+				$select->conditions([[
+					'class' => sprintf('"%s"', $topClass)
+				]]);
 			}
 			else
 			{
 				$classesString = sprintf('("%s")', addslashes($topClass));
-			}
 
-			$select->conditions([[
-				'class' => $classesString, 'IN'
-			]]);
+				$select->conditions([[
+					'class' => $classesString, 'IN'
+				]]);
+			}
 		}
 
 		return $select;
