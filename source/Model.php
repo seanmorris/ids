@@ -1359,7 +1359,7 @@ class Model
 				$type = lcfirst($match[1]);
 			}
 
-			if(isset($match[2]))
+			if(isset($match[2]) && $match[2])
 			{
 				$subs = TRUE;
 			}
