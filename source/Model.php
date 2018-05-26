@@ -1513,6 +1513,7 @@ class Model
 
 		$where = [];
 		$order = [];
+		$index = [];
 
 		if(isset($selectDef['where']))
 		{
@@ -1524,9 +1525,15 @@ class Model
 			$order = $selectDef['order'];
 		}
 
+		if(isset($selectDef['index']))
+		{
+			$index = $selectDef['index'];
+		}
+
 		$select->columns(...$columns)
 			->wrappers($wrappers)
 			->order($order)
+			->index($index)
 			->conditions($where)
 		;
 

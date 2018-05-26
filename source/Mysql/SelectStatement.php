@@ -10,6 +10,7 @@ class SelectStatement extends WhereStatement
 		, $columnAliases = []
 		, $aliasedSelects = []
 		, $master
+		, $index = []
 		, $order = []
 		, $limit = NULL
 		, $offset = NULL
@@ -114,6 +115,14 @@ class SelectStatement extends WhereStatement
 		if($this->alias)
 		{
 			$tableString .= ' AS ' . $this->alias;
+		}
+
+		if($this->index)
+		{
+			$tableString .= sprintf(
+				"\n  FORCE INDEX(`%s`)"
+				, implode('`,`', $this->index)
+			);
 		}
 
 		//$tableString .= '--';
@@ -373,6 +382,13 @@ class SelectStatement extends WhereStatement
 	public function order($order)
 	{
 		$this->order = $order;
+
+		return $this;
+	}
+
+	public function index($index)
+	{
+		$this->index = $index;
 
 		return $this;
 	}
