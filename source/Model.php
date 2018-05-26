@@ -1645,15 +1645,13 @@ class Model
 				);
 
 				$select->conditions([[
-					'class' => sprintf('"%s"', $topClass)
+					'class' => $classesString, 'IN'
 				]]);
 			}
 			else
 			{
-				$classesString = sprintf('("%s")', addslashes($topClass));
-
 				$select->conditions([[
-					'class' => $classesString, 'IN'
+					'class' => sprintf('"%s"', addslashes($topClass))
 				]]);
 			}
 		}
