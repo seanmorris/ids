@@ -1342,44 +1342,56 @@ class Model
 		// \SeanMorris\Ids\Log::debug("MODEL RESOLVEDEF\n");
 		$type = NULL;
 		//$type = 'generate';
-		$cursor = $paged = FALSE;
+		$subs = $cursor = $paged = FALSE;
 
 		$originalName = $name;
 
-		if(preg_match('/^(?:(loadOne|load|generate|get|count)?)((?:Page|Cursor)?)([Bb]y.+)/', $name, $match))
-		{
+		if(preg_match(
+			'/^(?:(loadOne|load|generate|get|count)?)
+				((?:Submodel[s])?)
+				((?:Page|Cursor)?)
+				([Bb]y.+)/x'
+			, $originalName
+			, $match)
+		){
 			if(isset($match[1]))
 			{
 				$type = lcfirst($match[1]);
 			}
 
-			if(isset($match[2]) && $match[2] == 'Page')
+			if(isset($match[2]))
+			{
+				$subs = TRUE;
+			}
+
+			if(isset($match[3]) && $match[3] == 'Page')
 			{
 				$paged = TRUE;
 			}
 
-			if(isset($match[2]) && $match[2] == 'Cursor')
+			if(isset($match[3]) && $match[3] == 'Cursor')
 			{
 				$cursor = TRUE;
 			}
 
-			if(isset($match[3]))
+			if(isset($match[4]))
 			{
-				$name = lcfirst($match[3]);
+				$name = lcfirst($match[4]);
 			}
 		}
-		else if(preg_match('/^(?:(load|generate|get|count)?)/', $name, $match))
+		else if(preg_match('/^(?:(loadOne|load|generate|get|count)?)$/', $originalName, $matchB))
 		{
 			if(isset($match[1]))
 			{
-				$type = lcfirst($match[1]);
+				$type = lcfirst($matchB[1]);
 			}
 
 			$paged  = FALSE;
 			$cursor = FALSE;
 			$name   = NULL;
 		}
-		else
+
+		if(!isset($match[4])|| !$name)
 		{
 			throw new \Exception(sprintf(
 				'%s is not a valid selector for %s'
@@ -1393,9 +1405,12 @@ class Model
 			, 'type'   => $type
 			, 'paged'  => $paged
 			, 'cursor' => $cursor
+			, 'subs'   => $subs
 		];
 
 		$class = get_called_class();
+
+		$defFound = FALSE;
 
 		while($class)
 		{
@@ -1419,9 +1434,11 @@ class Model
 			if($class::$table == $propertyClass::$table)
 			{
 				$def = $class::$$name;
-				$def['name'] = $name;
-				$def['type'] = $type;
+				$def['name']  = $name;
+				$def['type']  = $type;
 				$def['class'] = $class;
+				$def['subs']  = $subs;
+				$defFound     = TRUE;
 				break;
 			}
 
@@ -1433,6 +1450,15 @@ class Model
 			}
 
 			$class = $parentClass;
+		}
+
+		if(!isset(static::$$name) && $def['name'] !== 'byNull')
+		{
+			throw new \Exception(sprintf(
+				'%s is not a valid selector for %s'
+				, $originalName
+				, get_called_class()
+			));
 		}
 
 		// \SeanMorris\Ids\Log::debug( "MODEL RESOLVEDEF END\n" );
@@ -1609,15 +1635,22 @@ class Model
 		}
 		else if(!in_array('class', static::$ignore))
 		{
-			// $allClasses = Meta::classes($topClass);
+			if($selectDef['subs'])
+			{
+				$allClasses = Meta::classes($topClass);
 
-			// $classesString = sprintf(
-			// 	'("%s")'
-			// 	, implode('","', array_map('addslashes', $allClasses))
-			// );
+				$classesString = sprintf(
+					'("%s")'
+					, implode('","', array_map('addslashes', $allClasses))
+				);
+			}
+			else
+			{
+				$classesString = sprintf('("%s")', addslashes($topClass));
+			}
 
 			$select->conditions([[
-				'class' => sprintf('"%s"', addslashes($topClass))
+				'class' => $classesString, 'IN'
 			]]);
 		}
 
