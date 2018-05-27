@@ -44,7 +44,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		}
 
 		$candidatePackages = array_filter(
-			\SeanMorris\Ids\Meta::classes('SeanMorris\Ids\Routable')
+			\SeanMorris\Ids\Meta::classes()
 			, function($class) use($command){
 				if(!preg_match('/Idilic\\\Route\\\RootRoute$/', $class))
 				{
