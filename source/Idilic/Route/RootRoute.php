@@ -43,7 +43,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			$command = $packageName;
 		}
 
-		$candidatePackages = array_filter(
+		$candidatePackages = array_values(array_filter(
 			\SeanMorris\Ids\Meta::classes()
 			, function($class) use($command){
 				if(!preg_match('/Idilic\\\Route\\\RootRoute$/', $class))
@@ -62,12 +62,15 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 				return TRUE;
 			}
-		);
+		));
 
 		if($candidatePackages)
 		{
 			$answer = \SeanMorris\Ids\Idilic\Cli::multiQuestion(
-				'Multiple packages supply %s, which one should run?'
+				sprintf(
+					'These packages supply %s, which one should run?'
+					, $command
+				)
 				, $candidatePackages
 			);
 
