@@ -68,7 +68,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		{
 			$answer = \SeanMorris\Ids\Idilic\Cli::multiQuestion(
 				sprintf(
-					'These packages supply %s, which one should run?'
+					'These packages supply "%s", which one should run?'
 					, $command
 				)
 				, $candidatePackages
