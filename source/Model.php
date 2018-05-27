@@ -31,6 +31,8 @@ class Model
 
 	protected function _create($curClass)
 	{
+		\SeanMorris\Ids\Log::debug($curClass, $this);
+
 		$parentClass = get_parent_class($curClass);
 		$parentModel = NULL;
 
@@ -38,7 +40,7 @@ class Model
 		{
 			$tableProperty = new \ReflectionProperty($parentClass, 'table');
 
-			if($parentClass::$table && $parentClass::$table !== static::$table)
+			if($parentClass::$table && $parentClass == $tableProperty->class)
 			{
 				$parentModel = $this->_create($parentClass);
 				break;
@@ -174,32 +176,61 @@ class Model
 			return false;
 		}
 
-		if(isset($parentModel, $parentModel->id))
+		$id = $this->id;
+
+		\SeanMorris\Ids\Log::debug($this, $parentModel, $values);
+
+		if(!$parentClass || $parentClass::$table !== static::$table)
 		{
-			$columns[] = 'id';
-			$values[] = $id = $parentModel->id;
-			$insert->columns(...$columns)->wrappers($wrappers);
-			$inserted = $insert->execute(...$values);
+			if($parentModel && $parentModel->id)
+			{
+				$columns[] = 'id';
+				$values[] = $id = $parentModel->id;
+				$insert->columns(...$columns)->wrappers($wrappers);
+				$inserted = $insert->execute(...$values);
+			}
+			else
+			{
+				$insert->columns(...$columns)->wrappers($wrappers);
+				$inserted = $insert->execute(...$values);
+				if(!is_bool($inserted))
+				{
+					$id = $inserted;
+				}
+			}
+
+			$saved = $curClass::loadOneFlatSubmodelById($id);
+
+			if(!$saved)
+			{
+				return;
+			}
 		}
 		else
 		{
-			$insert->columns(...$columns)->wrappers($wrappers);
-			$inserted = $id = $insert->execute(...$values);
+			$saved = $parentModel;
 		}
 
-		$saved = $curClass::loadOneById($id);
+		$reflection = new \ReflectionClass($curClass);
 
-		if(!$saved)
-		{
-			return;
-		}
+		\SeanMorris\Ids\Log::debug($curClass, $this);
 
 		foreach($this as $property => $value)
 		{
-			if(!property_exists($curClass, $property))
-			{
-				// continue;
-			}
+			// \SeanMorris\Ids\Log::debug(
+			// 	$curClass, $property, $value
+			// );
+			// if(!$reflection->hasProperty($property))
+			// {
+			// 	continue;
+			// }
+
+			// $reflectionProperty = $reflection->getProperty($property);
+
+			// if($reflectionProperty->class !== $curClass)
+			// {
+			// 	continue;
+			// }
 
 			if(isset($curClass::$hasOne[$property]))
 			{
@@ -211,10 +242,10 @@ class Model
 				continue;
 			}
 
+			\SeanMorris\Ids\Log::debug([$property => $saved->$property]);
+
 			$this->$property = $saved->$property;
 		}
-
-		$reflection = new \ReflectionClass($curClass);
 
 		foreach($this as $property => $value)
 		{
@@ -1342,13 +1373,14 @@ class Model
 		// \SeanMorris\Ids\Log::debug("MODEL RESOLVEDEF\n");
 		$type = NULL;
 		//$type = 'generate';
-		$subs = $cursor = $paged = FALSE;
+		$flat = $subs = $cursor = $paged = FALSE;
 
 		$originalName = $name;
 
 		if(preg_match(
 			'/^(?:(loadOne|load|generate|get|count)?)
-				((?:Submodel[s])?)
+				((?:Flat)?)
+				((?:Submodels?)?)
 				((?:Page|Cursor)?)
 				([Bb]y.+)/x'
 			, $originalName
@@ -1361,22 +1393,27 @@ class Model
 
 			if(isset($match[2]) && $match[2])
 			{
+				$flat = TRUE;
+			}
+
+			if(isset($match[3]) && $match[3])
+			{
 				$subs = TRUE;
 			}
 
-			if(isset($match[3]) && $match[3] == 'Page')
+			if(isset($match[4]) && $match[4] == 'Page')
 			{
 				$paged = TRUE;
 			}
 
-			if(isset($match[3]) && $match[3] == 'Cursor')
+			if(isset($match[4]) && $match[4] == 'Cursor')
 			{
 				$cursor = TRUE;
 			}
 
-			if(isset($match[4]))
+			if(isset($match[5]))
 			{
-				$name = lcfirst($match[4]);
+				$name = lcfirst($match[5]);
 			}
 		}
 		else if(preg_match('/^(?:(loadOne|load|generate|get|count)?)$/', $originalName, $matchB))
@@ -1434,6 +1471,10 @@ class Model
 			if($class::$table == $propertyClass::$table)
 			{
 				$def = $class::$$name;
+				if($flat)
+				{
+					unset($def['with']);
+				}
 				$def['name']  = $name;
 				$def['type']  = $type;
 				$def['class'] = $class;
@@ -1497,19 +1538,20 @@ class Model
 		$selectDef = !is_array($selectDefName)
 			? $called::resolveDef($selectDefName, $args, $superior)
 			: $selectDefName;
-		/*
-		\SeanMorris\Ids\Log::debug(
-			'Resolved def'
-			, $selectDefName
-			, $selectDef
-			, 'for'
-			, get_called_class()
-			, 'of type'
-			, isset($def['type'])
-				? $def['type']
-				: 'generate'
-		);
-		*/
+
+		// \SeanMorris\Ids\Log::debug(
+		// 	'Resolved select def'
+		// 	, $selectDefName
+		// 	, $selectDef
+		// 	, 'for'
+		// 	, get_called_class()
+		// 	, 'of type'
+		// 	, isset($def['type'])
+		// 		? $def['type']
+		// 		: 'generate'
+		// 	, 'Superior def:'
+		// 	, $superior
+		// );
 
 		$where = [];
 		$order = [];
@@ -2297,6 +2339,11 @@ class Model
 		}
 
 		return $owners;
+	}
+
+	public static function table()
+	{
+		return static::$table;
 	}
 
 	protected static function beforeConsume($instance, &$skeleton)

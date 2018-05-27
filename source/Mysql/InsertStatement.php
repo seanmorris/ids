@@ -55,9 +55,9 @@ class InsertStatement extends Statement
 				return $insertId;
 			}
 
-			return $result;
+			return TRUE;
 		}
 
-		return false;
+		return FALSE;
 	}
 }
