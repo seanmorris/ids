@@ -29,12 +29,58 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			if(isset($commands->$packageName))
 			{
 				$router->path()->reset();
-				$args = $router->path()->consumeNodes();
+				// $args = $router->path()->consumeNodes();
 
 				$packageName = $commands->$packageName;
 				$packageName = str_replace('/', '\\', $packageName);
 
 				$routes = $packageName . '\Idilic\Route\RootRoute';
+			}
+		}
+
+		if($packageName)
+		{
+			$command = $packageName;
+		}
+
+		$candidatePackages = array_filter(
+			\SeanMorris\Ids\Meta::classes('SeanMorris\Ids\Routable')
+			, function($class) use($command){
+				if(!preg_match('/Idilic\\\Route\\\RootRoute$/', $class))
+				{
+					return FALSE;
+				}
+
+				$methods = get_class_methods($class);
+
+				// var_dump($command, $methods);
+
+				if(!in_array($command, $methods))
+				{
+					return FALSE;
+				}
+
+				return TRUE;
+			}
+		);
+
+		if($candidatePackages)
+		{
+			$answer = \SeanMorris\Ids\Idilic\Cli::multiQuestion(
+				'Multiple packages supply %s, which one should run?'
+				, $candidatePackages
+			);
+
+			if(!isset($candidatePackages[$answer]))
+			{
+				return;
+			}
+
+			if($routes = $candidatePackages[$answer])
+			{
+				$routeParts  = explode('\\', $routes);
+				$packageName = sprintf('%s/%s', ...$routeParts);
+				array_unshift($args, $command);
 			}
 		}
 
