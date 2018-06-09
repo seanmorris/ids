@@ -140,7 +140,7 @@ class Meta
 
 				if(T_NAMESPACE === $tokens[$index][0])
 				{
-					$index += 2; // Skip namespace keyword and whitespace
+					$index += 2;
 					while (isset($tokens[$index]) && is_array($tokens[$index]))
 					{
 						$namespace .= $tokens[$index++][1];
@@ -149,14 +149,59 @@ class Meta
 
 				if(T_CLASS === $tokens[$index][0])
 				{
-					$index += 2; // Skip class keyword and whitespace
-
-					if(!$namespace)
+					if(preg_match('/(\\\|_)Test(sCase)?/', $namespace))
 					{
 						break;
 					}
 
+					if(T_IMPLEMENTS === $tokens[$index + 4][0]
+						|| T_EXTENDS === $tokens[$index + 4][0]
+					){
+						$subIndex = 6;
+						$subNamespace = '';
+
+						while($tokens[$index + $subIndex][0] == T_NAMESPACE
+							|| $tokens[$index + $subIndex][0] == T_NS_SEPARATOR
+							|| $tokens[$index + $subIndex][0] == T_STRING
+							|| $tokens[$index + $subIndex][0] == T_CLASS
+						){
+							$subNamespace .= $tokens[$subIndex + $index][1];
+							$subIndex++;
+						}
+
+						if(!class_exists($subNamespace))
+						{
+							break;
+						}
+					}
+
+					$index += 2;
+
+					if(!$namespace)
+					{
+						$class = $tokens[$index][1];
+
+						if(in_array($class, $allClasses))
+						{
+							break;
+						}
+
+						$allClasses[] = $class;
+
+						if(!$super || is_a($class, $super, TRUE))
+						{
+							$classes[] = $class;
+						}
+
+						break;
+					}
+
 					$class = $namespace.'\\'.$tokens[$index][1];
+
+					if(!class_exists($class))
+					{
+						break;
+					}
 
 					if(in_array($class, $allClasses))
 					{
@@ -180,9 +225,7 @@ class Meta
 					{
 
 					}
-
-					# break if you have one class per file (psr-4 compliant)
-					# otherwise you'll need to handle class constants (Foo::class)
+					
 					break;
 				}
 			}

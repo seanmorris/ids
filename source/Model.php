@@ -215,7 +215,7 @@ class Model
 
 		\SeanMorris\Ids\Log::debug($curClass, $this);
 
-		foreach($this as $property => $value)
+		foreach($saved as $property => $value)
 		{
 			// \SeanMorris\Ids\Log::debug(
 			// 	$curClass, $property, $value
@@ -243,6 +243,11 @@ class Model
 			}
 
 			\SeanMorris\Ids\Log::debug([$property => $saved->$property]);
+
+			if($saved->$property == NULL && $curClass !== get_called_class())
+			{
+				continue;
+			}
 
 			$this->$property = $saved->$property;
 		}
