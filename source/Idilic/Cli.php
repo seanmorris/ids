@@ -138,6 +138,8 @@ class Cli
 	{
 		$in = static::inHandle();
 
+		stream_set_blocking ($in, true);
+
 		return trim(fgets($in));
 	}
 
