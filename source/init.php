@@ -76,6 +76,8 @@ if(!$autoloadPath)
 	);
 }
 
+$composer = FALSE;
+
 if($autoloadPath)
 {
 	define('IDS_VENDOR_ROOT', dirname($autoloadPath));

@@ -104,6 +104,8 @@ class Meta
 
 	public static function classes($super = NULL)
 	{
+		global $composer;
+
 		$path       = IDS_ROOT;
 		$classes    = [];
 		
@@ -169,7 +171,7 @@ class Meta
 							$subIndex++;
 						}
 
-						if(!class_exists($subNamespace))
+						if(!static::classExists($subNamespace))
 						{
 							break;
 						}
@@ -181,12 +183,22 @@ class Meta
 					{
 						$class = $tokens[$index][1];
 
+						$allClasses[] = $class;
+
+						if(!static::classExists($class))
+						{
+							break;
+						}
+
 						if(in_array($class, $allClasses))
 						{
 							break;
 						}
 
-						$allClasses[] = $class;
+						if(!static::classExists($super))
+						{
+							break;
+						}
 
 						if(!$super || is_a($class, $super, TRUE))
 						{
@@ -232,5 +244,23 @@ class Meta
 		}
 
 		return $classes;
+	}
+
+	public static function classExists($class)
+	{
+		global $composer;
+
+		$classFile = $composer->findFile($class);
+
+		if(!$classFile)
+		{
+			return FALSE;
+		}
+
+		$escapedClassFile = escapeshellarg($classFile);
+
+		exec(sprintf("php -l %s", $escapedClassFile), $statusCode);
+
+		return $statusCode === 0;
 	}
 }
