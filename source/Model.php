@@ -201,7 +201,7 @@ class Model
 				}
 			}
 
-			$saved = $curClass::loadOneFlatSubmodelById($id);
+			$saved = $curClass::loadOneFlatRecordById($id);
 
 			if(!$saved)
 			{
