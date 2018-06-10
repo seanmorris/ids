@@ -1396,7 +1396,6 @@ class Model
 			, $originalName
 			, $match)
 		){
-			var_dump($match);
 			if(isset($match[1]))
 			{
 				$type = lcfirst($match[1]);
@@ -1703,8 +1702,6 @@ class Model
 		}
 		else if(!in_array('class', static::$ignore))
 		{
-			var_dump($selectDef);
-
 			if($selectDef['subs'] && !$selectDef['recs'])
 			{
 				$allClasses = Meta::classes($topClass);
