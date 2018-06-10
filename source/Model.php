@@ -757,7 +757,7 @@ class Model
 
 		while(TRUE)
 		{
-			// var_dump($currentDefClass);
+			// var_=($currentDefClass);
 			$a = $args;
 			// var_dump($currentDefClass::resolveDef($name, $a));
 
@@ -1497,6 +1497,7 @@ class Model
 				$def['type']  = $type;
 				$def['class'] = $class;
 				$def['subs']  = $subs;
+				$def['recs']  = $recs;
 				$defFound     = TRUE;
 				break;
 			}
