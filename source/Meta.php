@@ -117,6 +117,16 @@ class Meta
 			{
 				if(!$super || is_a($class, $super, TRUE))
 				{
+					if(!static::classExists($class))
+					{
+						continue;
+					}
+
+					if(!static::classExists($super))
+					{
+						continue;
+					}
+
 					$classes[] = $class;
 				}
 			}
@@ -250,6 +260,13 @@ class Meta
 	{
 		global $composer;
 
+		static $results = [];
+
+		if(isset($results[$class]))
+		{
+			return $results[$class];
+		}
+
 		$classFile = $composer->findFile($class);
 
 		if(!$classFile)
@@ -261,6 +278,6 @@ class Meta
 
 		exec(sprintf("php -l %s", $escapedClassFile), $statusCode);
 
-		return $statusCode === 0;
+		return $results[$class] = $statusCode === 0;
 	}
 }
