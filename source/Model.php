@@ -1383,19 +1383,20 @@ class Model
 		// \SeanMorris\Ids\Log::debug("MODEL RESOLVEDEF\n");
 		$type = NULL;
 		//$type = 'generate';
-		$flat = $subs = $cursor = $paged = FALSE;
+		$flat = $subs = $recs = $cursor = $paged = FALSE;
 
 		$originalName = $name;
 
 		if(preg_match(
 			'/^(?:(loadOne|load|generate|get|count)?)
 				((?:Flat)?)
-				((?:Submodels?)?)
+				((?:Submodel|Record)?s?)
 				((?:Page|Cursor)?)
 				([Bb]y.+)/x'
 			, $originalName
 			, $match)
 		){
+			var_dump($match);
 			if(isset($match[1]))
 			{
 				$type = lcfirst($match[1]);
@@ -1408,7 +1409,14 @@ class Model
 
 			if(isset($match[3]) && $match[3])
 			{
-				$subs = TRUE;
+				if(strtolower($match[3]) == 'submodel' || strtolower($match[3]) == 'submodels')
+				{
+					$subs = TRUE;
+				}
+				if(strtolower($match[3]) == 'record' || strtolower($match[3]) == 'records')
+				{
+					$recs = TRUE;
+				}
 			}
 
 			if(isset($match[4]) && $match[4] == 'Page')
@@ -1453,6 +1461,7 @@ class Model
 			, 'paged'  => $paged
 			, 'cursor' => $cursor
 			, 'subs'   => $subs
+			, 'recs'   => $recs
 		];
 
 		$class = get_called_class();
@@ -1694,7 +1703,9 @@ class Model
 		}
 		else if(!in_array('class', static::$ignore))
 		{
-			if($selectDef['subs'])
+			var_dump($selectDef);
+
+			if($selectDef['subs'] && !$selectDef['recs'])
 			{
 				$allClasses = Meta::classes($topClass);
 
@@ -1707,7 +1718,7 @@ class Model
 					'class' => $classesString, 'IN'
 				]]);
 			}
-			else
+			else if(!$selectDef['recs'])
 			{
 				$select->conditions([[
 					'class' => sprintf('"%s"', addslashes($topClass))
