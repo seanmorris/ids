@@ -20,9 +20,16 @@ class Http
 					header("Connection: close\r\n");
 					header(sprintf("Content-Length: %s\r\n", ob_get_length()));	
 				}
-				ob_end_flush();
-				ob_flush();
-				flush();
+				try
+				{
+					ob_end_flush();
+					ob_flush();
+					flush();					
+				}
+				catch (\ErrorException $e)
+				{
+					
+				}
 				foreach ($disconnect as $d)
 				{
 					$d();

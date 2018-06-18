@@ -44,7 +44,7 @@ class Meta
 			elseif(isset($level['class']))
 			{
 				$next = $level['class'];
-			}			
+			}
 
 			if($next === $last)
 			{
@@ -104,18 +104,37 @@ class Meta
 
 	public static function classes($super = NULL)
 	{
+		global $composer;
+
 		$path       = IDS_ROOT;
 		$classes    = [];
-		
+
 		static $allClasses = [];
 
 		if($allClasses)
 		{
 			foreach($allClasses as $class)
 			{
-				if(!$super || is_a($class, $super, TRUE))
+				if(!static::classExists($class))
 				{
-					$classes[] = $class;
+					continue;
+				}
+
+				if(!static::classExists($super))
+				{
+					continue;
+				}
+
+				try
+				{
+					if(!$super || is_a($class, $super, TRUE))
+					{
+						$classes[] = $class;
+					}
+				}
+				catch(\Exception $e)
+				{
+					// Log::logException($e);
 				}
 			}
 
@@ -127,6 +146,11 @@ class Meta
 
 		foreach ($phpFiles as $phpFile)
 		{
+			if(preg_match('/(simple)?[Tt]est(s)?/', $phpFile->getRealPath()))
+			{
+				continue;
+			}
+
 			$content = file_get_contents($phpFile->getRealPath());
 			$tokens = token_get_all($content);
 			$namespace = '';
@@ -140,7 +164,7 @@ class Meta
 
 				if(T_NAMESPACE === $tokens[$index][0])
 				{
-					$index += 2; // Skip namespace keyword and whitespace
+					$index += 2;
 					while (isset($tokens[$index]) && is_array($tokens[$index]))
 					{
 						$namespace .= $tokens[$index++][1];
@@ -149,14 +173,64 @@ class Meta
 
 				if(T_CLASS === $tokens[$index][0])
 				{
-					$index += 2; // Skip class keyword and whitespace
+					if(T_IMPLEMENTS === $tokens[$index + 4][0]
+						|| T_EXTENDS === $tokens[$index + 4][0]
+					){
+						$subIndex = 6;
+						$subNamespace = '';
+
+						while($tokens[$index + $subIndex][0] == T_NAMESPACE
+							|| $tokens[$index + $subIndex][0] == T_NS_SEPARATOR
+							|| $tokens[$index + $subIndex][0] == T_STRING
+							|| $tokens[$index + $subIndex][0] == T_CLASS
+						){
+							$subNamespace .= $tokens[$subIndex + $index][1];
+							$subIndex++;
+						}
+
+						if(!static::classExists($subNamespace))
+						{
+							break;
+						}
+					}
+
+					$index += 2;
 
 					if(!$namespace)
 					{
+						$class = $tokens[$index][1];
+
+						$allClasses[] = $class;
+
+						if(!static::classExists($class))
+						{
+							break;
+						}
+
+						if(in_array($class, $allClasses))
+						{
+							break;
+						}
+
+						if(!static::classExists($super))
+						{
+							break;
+						}
+
+						if(!$super || is_a($class, $super, TRUE))
+						{
+							$classes[] = $class;
+						}
+
 						break;
 					}
 
 					$class = $namespace.'\\'.$tokens[$index][1];
+
+					if(!class_exists($class))
+					{
+						break;
+					}
 
 					if(in_array($class, $allClasses))
 					{
@@ -181,13 +255,36 @@ class Meta
 
 					}
 
-					# break if you have one class per file (psr-4 compliant)
-					# otherwise you'll need to handle class constants (Foo::class)
 					break;
 				}
 			}
 		}
 
 		return $classes;
+	}
+
+	public static function classExists($class)
+	{
+		global $composer;
+
+		static $results = [];
+
+		if(isset($results[$class]))
+		{
+			return $results[$class];
+		}
+
+		$classFile = $composer->findFile($class);
+
+		if(!$classFile)
+		{
+			return FALSE;
+		}
+
+		$escapedClassFile = escapeshellarg($classFile);
+
+		exec(sprintf("php -l %s", $escapedClassFile), $out, $statusCode);
+
+		return $results[$class] = ($statusCode === 0);
 	}
 }

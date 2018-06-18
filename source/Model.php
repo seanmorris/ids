@@ -180,6 +180,8 @@ class Model
 
 		\SeanMorris\Ids\Log::debug($this, $parentModel, $values);
 
+		$inserted = NULL;
+
 		if(!$parentClass || $parentClass::$table !== static::$table)
 		{
 			if($parentModel && $parentModel->id)
@@ -215,41 +217,44 @@ class Model
 
 		\SeanMorris\Ids\Log::debug($curClass, $this);
 
-		foreach($saved as $property => $value)
+		if($saved)
 		{
-			// \SeanMorris\Ids\Log::debug(
-			// 	$curClass, $property, $value
-			// );
-			// if(!$reflection->hasProperty($property))
-			// {
-			// 	continue;
-			// }
-
-			// $reflectionProperty = $reflection->getProperty($property);
-
-			// if($reflectionProperty->class !== $curClass)
-			// {
-			// 	continue;
-			// }
-
-			if(isset($curClass::$hasOne[$property]))
+			foreach($saved as $property => $value)
 			{
-				continue;
+				// \SeanMorris\Ids\Log::debug(
+				// 	$curClass, $property, $value
+				// );
+				// if(!$reflection->hasProperty($property))
+				// {
+				// 	continue;
+				// }
+
+				// $reflectionProperty = $reflection->getProperty($property);
+
+				// if($reflectionProperty->class !== $curClass)
+				// {
+				// 	continue;
+				// }
+
+				if(isset($curClass::$hasOne[$property]))
+				{
+					continue;
+				}
+
+				if(isset($curClass::$hasMany[$property]))
+				{
+					continue;
+				}
+
+				\SeanMorris\Ids\Log::debug([$property => $saved->$property]);
+
+				if($saved->$property == NULL && $curClass !== get_called_class())
+				{
+					continue;
+				}
+
+				$this->$property = $saved->$property;
 			}
-
-			if(isset($curClass::$hasMany[$property]))
-			{
-				continue;
-			}
-
-			\SeanMorris\Ids\Log::debug([$property => $saved->$property]);
-
-			if($saved->$property == NULL && $curClass !== get_called_class())
-			{
-				continue;
-			}
-
-			$this->$property = $saved->$property;
 		}
 
 		foreach($this as $property => $value)

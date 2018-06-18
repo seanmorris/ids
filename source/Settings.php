@@ -3,15 +3,19 @@ namespace SeanMorris\Ids;
 class Settings
 {
 	protected static
-		$currentSite
-		, $settings
+		$settings
+		, $currentSite
+		, $currentPort
 	;
 
 	protected function __construct(){}
 
 	public static function read(...$names)
 	{
-		$settings = static::load(static::$currentSite);
+		$settings = static::load(
+			static::$currentSite
+			, static::$currentPort
+		);
 
 		while($name = array_shift($names))
 		{
@@ -26,13 +30,18 @@ class Settings
 		return $settings;
 	}
 
-	public static function load($hostname = NULL)
+	public static function load($hostname = NULL, $port = NULL)
 	{
 		if(!static::$currentSite || static::$currentSite != $hostname)
 		{
 			if(isset($_SERVER['HTTP_HOST']))
 			{	
 				$hostname = $_SERVER['HTTP_HOST'];
+			}
+
+			if(isset($_SERVER['SERVER_PORT']))
+			{
+				$port = $_SERVER['SERVER_PORT'];
 			}
 
 			if(!$hostname)
@@ -54,18 +63,46 @@ class Settings
 
 			$rootPackage = Package::getRoot();
 
-			$settingsFile = $rootPackage->localDir()
-				. 'sites/'
-				. $hostname
-				. '.json';
+			$settingsFile = static::findSettingsFile($hostname, $port);
 
 			if(file_exists($settingsFile))
 			{
 				static::$currentSite = $hostname;
+				static::$currentPort = $port;
+
 				static::$settings = json_decode(file_get_contents($settingsFile));
 			}
 		}
 
 		return static::$settings;
+	}
+
+	public static function findSettingsFile($hostname, $port)
+	{
+		$rootPackage = Package::getRoot();
+
+		$settingsFileFormat = $rootPackage->localDir() . 'sites/%s.json';
+
+		$filenames = [
+			sprintf('%s:%d', $hostname, $port)
+			, sprintf('%s;%d', $hostname, $port)
+			, $hostname
+			, sprintf(':%d', $port)
+			, sprintf(';%d', $port)
+			, ':'
+			, ';'
+		];
+
+		foreach ($filenames as $filename)
+		{
+			$filepath = sprintf($settingsFileFormat, $filename);
+
+			if(file_exists($filepath))
+			{
+				return $filepath;
+			}
+		}
+
+		return FALSE;
 	}
 }
