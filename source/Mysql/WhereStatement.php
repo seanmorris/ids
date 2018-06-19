@@ -246,7 +246,6 @@ abstract class WhereStatement extends Statement
 
 				if(preg_match('/\?/', $value))
 				{
-					\SeanMorris\Ids\Log::trace();
 					$this->valueWrappers[] = $wrapper;
 				}
 
