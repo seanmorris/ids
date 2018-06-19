@@ -40,7 +40,6 @@ abstract class WhereStatement extends Statement
 		{
 			$queryObject = $this->prepare();
 		}
-				
 
 		$args = array_map(
 			function($value, $wrapper)
@@ -214,6 +213,8 @@ abstract class WhereStatement extends Statement
 				$wrapper  = isset($condition[1]) ? $condition[1] : '%s';
 				$name     = isset($condition[2]) ? $condition[2] : $column;
 				$required = isset($condition[3]) ? $condition[3] : TRUE;
+
+				\SeanMorris\Ids\Log::debug($condition);
 
 				$this->valueRequired[] = $required;
 				$this->valueNames[] = $name;

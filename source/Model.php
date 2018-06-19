@@ -778,6 +778,12 @@ class Model
 
 		$def = static::resolveDef($name, $args);
 
+		\SeanMorris\Ids\Log::debug(
+			$name
+			, $def
+			, $args
+		);
+
 		if(isset($def['cursor']) && $def['cursor'])
 		{
 			//$cursorValue = (int) array_pop($args);
@@ -1581,6 +1587,8 @@ class Model
 		{
 			$index = $selectDef['index'];
 		}
+
+		\SeanMorris\Ids\Log::debug($selectDef);
 
 		$select->columns(...$columns)
 			->wrappers($wrappers)
