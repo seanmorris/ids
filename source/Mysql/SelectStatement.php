@@ -314,9 +314,8 @@ class SelectStatement extends WhereStatement
 			list($subJoinString, $subColString, $subConditionString) = $sub->assembleJoin($subType, $args, $superCol, $subCol);
 
 			$this->valueRequired += array_merge($this->valueRequired, $sub->valueRequired);
-			$this->valueWrappers += array_merge($this->valueWrappers, $sub->valueWrappers);
 			$this->valueNames += array_merge($this->valueNames, $sub->valueNames);
-			
+
 			if($subColString)
 			{
 				$columnString .= PHP_EOL . ', ' . $subColString;				
@@ -452,6 +451,20 @@ class SelectStatement extends WhereStatement
 		}
 
 		return $this->columnAliases[$tableAlias][$columnName];
+	}
+
+	public function execute(...$args)
+	{
+		foreach($this->joins as $join)
+		{
+			list($sub, $superCol, $subCol, $subType) = $join;
+
+			$this->valueWrappers += array_merge($this->valueWrappers, $sub->valueWrappers);
+		}
+
+		// var_dump($this->joins);
+
+		return parent::execute(...$args);
 	}
 
 	public function fetchColumn(...$args)

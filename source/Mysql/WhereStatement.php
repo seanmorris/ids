@@ -3,10 +3,11 @@ namespace SeanMorris\Ids\Mysql;
 abstract class WhereStatement extends Statement
 {
 	protected
-		$namedParams = false
-		, $conditions = []
+		$namedParams     = false
+		, $conditions    = []
+		, $joins         = []
 		, $valueWrappers = []
-		, $valueNames = []
+		, $valueNames    = []
 		, $valueRequired = []
 	;
 
@@ -30,7 +31,7 @@ abstract class WhereStatement extends Statement
 				}
 
 				$argsUsed[] = $argName;
-				
+
 				$argsDist[] = $args[0][$argName];
 			}
 
@@ -39,6 +40,13 @@ abstract class WhereStatement extends Statement
 		else
 		{
 			$queryObject = $this->prepare();
+		}
+
+		foreach($this->joins as $join)
+		{
+			list($sub, $superCol, $subCol, $subType) = $join;
+
+			$this->valueWrappers += array_merge($this->valueWrappers, $sub->valueWrappers);
 		}
 
 		$args = array_map(
@@ -63,10 +71,10 @@ abstract class WhereStatement extends Statement
 			, $args
 			, $this->valueWrappers
 		);
-				
+
 
 		\SeanMorris\Ids\Log::debug('Args:', $args);
-		
+
 		if($nonscalar = array_filter($args, function($a) {
 			return !is_scalar($a)
 				&& !is_null($a)
@@ -75,7 +83,7 @@ abstract class WhereStatement extends Statement
 			\SeanMorris\Ids\Log::debug('Nonscalar argument supplied.');
 			\SeanMorris\Ids\Log::debug($nonscalar);
 			\SeanMorris\Ids\Log::trace();
-			die;	
+			die;
 		}
 
 		$finalArgs = [];
@@ -98,7 +106,7 @@ abstract class WhereStatement extends Statement
 		$queryTime = microtime(TRUE) - $queryStartTime;
 
 		static::$queryCount++;
-		
+
 		static::$queryTime += $queryTime;
 
 		\SeanMorris\Ids\Log::debug(
@@ -106,7 +114,7 @@ abstract class WhereStatement extends Statement
 			, sprintf('Query ran in %f seconds.', $queryTime)
 			, sprintf('Total time waiting on database: %f seconds.', parent::$queryTime)
 		);
-		
+
 		$errorCode = $queryObject->errorCode();
 
 		if($errorCode !== '00000')
@@ -115,7 +123,7 @@ abstract class WhereStatement extends Statement
 			\SeanMorris\Ids\Log::trace();
 			die;
 		}
-		
+
 		return $queryObject;
 	}
 
@@ -238,6 +246,12 @@ abstract class WhereStatement extends Statement
 					continue;
 				}
 
+				if(preg_match('/\?/', $value))
+				{
+					\SeanMorris\Ids\Log::trace();
+					$this->valueWrappers[] = $wrapper;
+				}
+
 				if(isset($namedArgs[$name]) && is_array($namedArgs[$name]))
 				{
 					$value = '(' . implode(
@@ -252,13 +266,6 @@ abstract class WhereStatement extends Statement
 					, $compare
 					, $value
 				);
-
-				if(!preg_match('/\?/', $value))
-				{
-					continue;
-				}
-
-				$this->valueWrappers[] = $wrapper;
 			}
 		}
 
