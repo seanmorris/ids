@@ -35,6 +35,20 @@ class Path
 		return $newPath;
 	}
 
+	public function unshift(...$nodes)
+	{
+		$newPath = clone $this;
+		
+		foreach($nodes as $node)
+		{
+			array_unshift($newPath->nodes, $node);
+		}
+
+		$newPath->counter = -1;
+
+		return $newPath;
+	}
+
 	public function pop(&$node = null)
 	{
 		$newPath = clone $this;
@@ -106,9 +120,9 @@ class Path
 	{
 		$args = [];
 		
-		while($this->counter <= count($this->nodes))
+		while($arg = $this->consumeNode())
 		{
-			$args[] = $this->consumeNode();
+			$args[] = $arg;
 		}
 
 		return $args;
