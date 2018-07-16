@@ -64,7 +64,21 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			}
 		));
 
-		if($candidatePackages)
+		if(count($candidatePackages) == 1)
+		{
+			\SeanMorris\Ids\Idilic\Cli::error(
+				'Using package '
+					. current($candidatePackages)
+					. PHP_EOL
+			);
+			if($routes = current($candidatePackages))
+			{
+				$routeParts  = explode('\\', $routes);
+				$packageName = sprintf('%s/%s', ...$routeParts);
+				array_unshift($args, $command);
+			}
+		}
+		else
 		{
 			$answer = \SeanMorris\Ids\Idilic\Cli::multiQuestion(
 				sprintf(

@@ -28,7 +28,7 @@ class Cli
 	);
 
 	protected static
-		$in, $out;
+		$in, $out, $error;
 		
 	public static function option(...$names)
 	{
@@ -134,7 +134,7 @@ class Cli
 		return static::$in;
 	}
 
-	public static function in()
+	public static function in($label = NULL)
 	{
 		$in = static::inHandle();
 
@@ -156,7 +156,23 @@ class Cli
 	public static function out($line)
 	{
 		$out = static::outHandle();
-		fwrite(static::$out, $line);
+		fwrite($out, $line);
+	}
+
+	public static function errorHandle()
+	{
+		if(!static::$error)
+		{
+			static::$error = fopen('php://stderr', 'w');
+		}
+
+		return static::$error;
+	}
+
+	public static function error($line)
+	{
+		$error = static::errorHandle();
+		fwrite($error, $line);
 	}
 
 	public static function color($string, $foreground = NULL, $background = NULL, $terminate = TRUE)

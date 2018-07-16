@@ -1305,7 +1305,11 @@ class Model
 			{
 				$subjectClass = static::$hasOne[$property];
 
-				\SeanMorris\Ids\Log::debug($subjectClass, $subjectClass::$table);
+				\SeanMorris\Ids\Log::debug(
+					$property
+					, $subjectClass
+					, $subjectClass::$table
+				);
 
 				if(isset($skeleton[$subjectClass::$table]))
 				{
@@ -1444,7 +1448,7 @@ class Model
 			$name   = NULL;
 		}
 
-		if(!isset($match[4])|| !$name)
+		if(!isset($match[5])|| !$name)
 		{
 			throw new \Exception(sprintf(
 				'%s is not a valid selector for %s'
@@ -1454,11 +1458,12 @@ class Model
 		}
 
 		$def = [
-			'name'     => $name
-			, 'type'   => $type
-			, 'paged'  => $paged
-			, 'cursor' => $cursor
-			, 'subs'   => $subs
+			'name'        => $name
+			, 'wholeName' => $originalName
+			, 'type'      => $type
+			, 'paged'     => $paged
+			, 'cursor'    => $cursor
+			, 'subs'      => $subs
 		];
 
 		$class = get_called_class();
@@ -1491,11 +1496,14 @@ class Model
 				{
 					unset($def['with']);
 				}
-				$def['name']  = $name;
-				$def['type']  = $type;
-				$def['class'] = $class;
-				$def['subs']  = $subs;
-				$defFound     = TRUE;
+				$def['name']       = $name;
+				$def['wholeName']  = $originalName;
+				$def['type']       = $type;
+				$def['paged']      = $paged;
+				$def['cursor']     = $cursor;
+				$def['class']      = $class;
+				$def['subs']       = $subs;
+				$defFound          = TRUE;
 				break;
 			}
 
@@ -1588,7 +1596,7 @@ class Model
 			$index = $selectDef['index'];
 		}
 
-		\SeanMorris\Ids\Log::debug($selectDef);
+		// \SeanMorris\Ids\Log::debug($selectDef);
 
 		$select->columns(...$columns)
 			->wrappers($wrappers)
@@ -2196,7 +2204,12 @@ class Model
 
 		$class = static::$hasOne[$column];
 
-		return $this->$column = $class::loadOneById($this->$column);
+		if($loaded = $class::loadOneById($this->$column))
+		{
+			$this->$column = $loaded;
+		}
+
+		return $loaded;
 	}
 
 	public static function getSubjectClass($column)
