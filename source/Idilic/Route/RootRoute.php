@@ -352,6 +352,13 @@ class RootRoute implements \SeanMorris\Ids\Routable
 	public function link($router)
 	{
 		\SeanMorris\Ids\Linker::link();
+		$inheritance = (object)\SeanMorris\Ids\Linker::inheritance();
+
+		$rootPackage = \SeanMorris\Ids\Package::getRoot();
+
+		$rootPackage->setVar('linker:inheritance', $inheritance);
+
+		print json_encode($inheritance, JSON_PRETTY_PRINT);
 	}
 
 	public function buildAssets($router)

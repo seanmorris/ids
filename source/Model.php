@@ -753,6 +753,11 @@ class Model
 			$args = [];
 		}
 
+		if(!$cache)
+		{
+			// $cache = [];
+		}
+
 		$currentDefClass = $defClass = get_called_class();
 
 		while(TRUE)
@@ -778,11 +783,11 @@ class Model
 
 		$def = static::resolveDef($name, $args);
 
-		\SeanMorris\Ids\Log::debug(
-			$name
-			, $def
-			, $args
-		);
+		// \SeanMorris\Ids\Log::debug(
+		// 	$name
+		// 	, $def
+		// 	, $args
+		// );
 
 		if(isset($def['cursor']) && $def['cursor'])
 		{
@@ -921,7 +926,7 @@ class Model
 				'Loading one %s', get_called_class()
 			));
 
-			if(isset($cache[0]) && $cache[0])
+			if(isset($cache) && array_key_exists(0, $cache))
 			{
 				\SeanMorris\Ids\Log::debug('From cache...');
 
@@ -1712,6 +1717,7 @@ class Model
 		{
 			if($selectDef['subs'])
 			{
+				// TODO use linker inheritance
 				$allClasses = Meta::classes($topClass);
 
 				$classesString = sprintf(

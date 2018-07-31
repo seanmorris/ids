@@ -92,4 +92,36 @@ class Linker
 	{
 		static::$exposeVars[$key] = $value;
 	}
+
+	public static function inheritance()
+	{
+		$classes     = \SeanMorris\Ids\Meta::classes();
+		$subClasses  = [];
+		$baseClasses = [];
+		$classTree   = [];
+
+		foreach($classes as $class)
+		{
+			if(get_parent_class($class))
+			{
+				$subClasses[$class] = $class;
+				continue;
+			}
+
+			$baseClasses[$class] = $class;
+		}
+
+		foreach($subClasses as $subClass)
+		{
+			foreach($classes as $class)
+			{
+				if(is_subclass_of($subClass, $class, TRUE))
+				{
+					$classTree[$class][] = $subClass;
+				}
+			}
+		}
+
+		return $classTree;
+	}
 }
