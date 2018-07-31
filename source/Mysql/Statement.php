@@ -56,6 +56,21 @@ abstract class Statement
 
 		$queryTime = microtime(TRUE) - $queryStartTime;
 
+		$slowQuery = \SeanMorris\Ids\Settings::read('slowQuery');
+
+		if($slowQuery && $slowQuery <= $queryTime)
+		{
+			\SeanMorris\Ids\Log::warn(
+				sprintf(
+					'Following query took %f seconds (slow query cutoff: %f)'
+					, $queryTime
+					, $slowQuery
+				)
+				, ''
+				, $queryObject->queryString
+			);
+		}
+
 		static::$queryCount++;
 
 		static::$queryTime += $queryTime;
@@ -65,6 +80,7 @@ abstract class Statement
 			, sprintf('Query ran in %f seconds.', $queryTime)
 			, sprintf('Total time waiting on database: %f seconds.', static::$queryTime)
 		);
+
 
 		$errorCode = $queryObject->errorCode();
 

@@ -105,6 +105,21 @@ abstract class WhereStatement extends Statement
 
 		$queryTime = microtime(TRUE) - $queryStartTime;
 
+		$slowQuery = \SeanMorris\Ids\Settings::read('slowQuery');
+
+		if($slowQuery && $slowQuery <= $queryTime)
+		{
+			\SeanMorris\Ids\Log::warn(
+				sprintf(
+					'Following query took %f seconds (slow query cutoff: %f)'
+					, $queryTime
+					, $slowQuery
+				)
+				, ''
+				, $queryObject->queryString
+			);
+		}
+
 		static::$queryCount++;
 
 		static::$queryTime += $queryTime;
