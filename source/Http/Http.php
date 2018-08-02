@@ -21,7 +21,6 @@ class Http
 				if(php_sapi_name() !== 'cli')
 				{
 					ignore_user_abort(TRUE);
-					session_write_close();
 					header("Content-Encoding: none\r\n");
 					header("Connection: close\r\n");
 					header(sprintf("Content-Length: %s\r\n", $contentLength));
@@ -40,6 +39,7 @@ class Http
 				{
 
 				}
+				session_write_close();
 				static::$disconnected = TRUE;
 				foreach ($disconnect as $d)
 				{

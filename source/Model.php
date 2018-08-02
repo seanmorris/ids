@@ -1718,11 +1718,14 @@ class Model
 			if($selectDef['subs'])
 			{
 				// TODO use linker inheritance
-				$allClasses = Meta::classes($topClass);
+				$rootPackage = \SeanMorris\Ids\Package::getRoot();
+				$allClasses  =  $rootPackage->getVar('linker:inheritance', []);
+
+				$subClasses  = $allClasses[$topClass] ?? [];
 
 				$classesString = sprintf(
 					'("%s")'
-					, implode('","', array_map('addslashes', $allClasses))
+					, implode('","', array_map('addslashes', $subClasses))
 				);
 
 				$select->conditions([[
