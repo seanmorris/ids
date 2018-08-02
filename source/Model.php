@@ -1721,7 +1721,7 @@ class Model
 				$rootPackage = \SeanMorris\Ids\Package::getRoot();
 				$allClasses  =  $rootPackage->getVar('linker:inheritance', []);
 
-				$subClasses  = $allClasses[$topClass] ?? [];
+				$subClasses  = $allClasses->{$topClass} ?? [];
 
 				$classesString = sprintf(
 					'("%s")'
