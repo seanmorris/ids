@@ -44,7 +44,6 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		}
 		else
 		{
-
 			$candidatePackages = array_values(array_filter(
 				\SeanMorris\Ids\Meta::classes()
 				, function($class) use($command){

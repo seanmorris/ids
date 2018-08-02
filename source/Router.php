@@ -361,6 +361,12 @@ class Router
 		return $this->context;
 	}
 
+	public function setContext(&$context)
+	{
+		// \SeanMorris\Ids\Log::info(__FUNCTION__ . ' deprecated');
+		$this->context =& $context;
+	}
+
 	public function contextGet($name, $default = NULL)
 	{
 		// \SeanMorris\Ids\Log::info(__FUNCTION__ . ' deprecated');

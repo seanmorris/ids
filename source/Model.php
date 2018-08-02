@@ -201,7 +201,7 @@ class Model
 				}
 			}
 
-			$saved = $curClass::loadOneFlatSubmodelById($id);
+			$saved = $curClass::loadOneFlatRecordById($id);
 
 			if(!$saved)
 			{
@@ -762,7 +762,7 @@ class Model
 
 		while(TRUE)
 		{
-			// var_dump($currentDefClass);
+			// var_=($currentDefClass);
 			$a = $args;
 			// var_dump($currentDefClass::resolveDef($name, $a));
 
@@ -1398,14 +1398,14 @@ class Model
 		// \SeanMorris\Ids\Log::debug("MODEL RESOLVEDEF\n");
 		$type = NULL;
 		//$type = 'generate';
-		$flat = $subs = $cursor = $paged = FALSE;
+		$flat = $subs = $recs = $cursor = $paged = FALSE;
 
 		$originalName = $name;
 
 		if(preg_match(
 			'/^(?:(loadOne|load|generate|get|count)?)
 				((?:Flat)?)
-				((?:Submodels?)?)
+				((?:Submodel|Record)?s?)
 				((?:Page|Cursor)?)
 				([Bb]y.+)/x'
 			, $originalName
@@ -1423,7 +1423,14 @@ class Model
 
 			if(isset($match[3]) && $match[3])
 			{
-				$subs = TRUE;
+				if(strtolower($match[3]) == 'submodel' || strtolower($match[3]) == 'submodels')
+				{
+					$subs = TRUE;
+				}
+				if(strtolower($match[3]) == 'record' || strtolower($match[3]) == 'records')
+				{
+					$recs = TRUE;
+				}
 			}
 
 			if(isset($match[4]) && $match[4] == 'Page')
@@ -1469,6 +1476,7 @@ class Model
 			, 'paged'     => $paged
 			, 'cursor'    => $cursor
 			, 'subs'      => $subs
+			, 'recs'   => $recs
 		];
 
 		$class = get_called_class();
@@ -1501,6 +1509,7 @@ class Model
 				{
 					unset($def['with']);
 				}
+
 				$def['name']       = $name;
 				$def['wholeName']  = $originalName;
 				$def['type']       = $type;
@@ -1508,6 +1517,8 @@ class Model
 				$def['cursor']     = $cursor;
 				$def['class']      = $class;
 				$def['subs']       = $subs;
+				$def['recs']       = $recs;
+
 				$defFound          = TRUE;
 				break;
 			}
@@ -1715,7 +1726,7 @@ class Model
 		}
 		else if(!in_array('class', static::$ignore))
 		{
-			if($selectDef['subs'])
+			if($selectDef['subs'] && !$selectDef['recs'])
 			{
 				// TODO use linker inheritance
 				$rootPackage = \SeanMorris\Ids\Package::getRoot();
@@ -1732,7 +1743,7 @@ class Model
 					'class' => $classesString, 'IN'
 				]]);
 			}
-			else
+			else if(!$selectDef['recs'])
 			{
 				$select->conditions([[
 					'class' => sprintf('"%s"', addslashes($topClass))

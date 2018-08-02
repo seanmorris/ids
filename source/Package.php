@@ -661,138 +661,147 @@ class Package
 
 			foreach($tables as $table)
 			{
-				$queryString = 'SHOW FULL COLUMNS FROM ' . $table;
-				\SeanMorris\Ids\Log::query($queryString);
-				$query = $db->prepare($queryString);
-				$query->execute();
+				$tableCheckString = 'SHOW TABLES LIKE "' . $table . '"';
+
+				$tableCheck = $db->prepare($tableCheckString);
+
+				$tableCheck->execute();
 
 				$tableFound = false;
 
-				while($column = $query->fetchObject())
+				if($tableCheck->fetchObject())
 				{
-					\SeanMorris\Ids\Log::query('Loaded', $column);
-					if(!isset($exportTables->$table->fields->{$column->Field}))
+					$queryString = 'SHOW FULL COLUMNS FROM ' . $table;
+					\SeanMorris\Ids\Log::query($queryString);
+					$query = $db->prepare($queryString);
+					$query->execute();
+
+					while($column = $query->fetchObject())
 					{
+						\SeanMorris\Ids\Log::query('Loaded', $column);
+						if(!isset($exportTables->$table->fields->{$column->Field}))
+						{
+							$queries[] = sprintf(
+								"ALTER TABLE `%s` DROP COLUMN `%s`;"
+								, $table
+								, $column->Field
+							);
+
+							continue;
+						}
+
+						$tableFound = true;
+
+						unset($column->Privileges);
+
+						if($column == $exportTables->$table->fields->{$column->Field})
+						{
+							unset($exportTables->$table->fields->{$column->Field});
+							continue;
+						}
+
 						$queries[] = sprintf(
-							"ALTER TABLE `%s` DROP COLUMN `%s`;"
+							"ALTER TABLE %s MODIFY %s %s %s %s %s COMMENT '%s'"
 							, $table
-							, $column->Field
+							, $exportTables->$table->fields->{$column->Field}->Field
+							, $exportTables->$table->fields->{$column->Field}->Type
+							, $exportTables->$table->fields->{$column->Field}->Null == 'YES'
+								? 'NULL'
+								: 'NOT NULL'
+							, $exportTables->$table->fields->{$column->Field}->Extra == 'auto_increment'
+								? 'auto_increment'
+								: NULL
+							, $exportTables->$table->fields->{$column->Field}->Collation
+								? 'COLLATE ' . $exportTables->$table->fields->{$column->Field}->Collation
+								: NULL
+							, $exportTables->$table->fields->{$column->Field}->Comment
 						);
 
-						continue;
-					}
-
-					$tableFound = true;
-
-					unset($column->Privileges);
-
-					if($column == $exportTables->$table->fields->{$column->Field})
-					{
 						unset($exportTables->$table->fields->{$column->Field});
-						continue;
 					}
 
-					$queries[] = sprintf(
-						"ALTER TABLE %s MODIFY %s %s %s %s %s COMMENT '%s'"
-						, $table
-						, $exportTables->$table->fields->{$column->Field}->Field
-						, $exportTables->$table->fields->{$column->Field}->Type
-						, $exportTables->$table->fields->{$column->Field}->Null == 'YES'
-							? 'NULL'
-							: 'NOT NULL'
-						, $exportTables->$table->fields->{$column->Field}->Extra == 'auto_increment'
-							? 'auto_increment'
-							: NULL
-						, $exportTables->$table->fields->{$column->Field}->Collation
-							? 'COLLATE ' . $exportTables->$table->fields->{$column->Field}->Collation
-							: NULL
-						, $exportTables->$table->fields->{$column->Field}->Comment
-					);
+					$queryString = 'SHOW INDEXES FROM ' . $table;
+					\SeanMorris\Ids\Log::query($queryString);
+					$query = $db->prepare($queryString);
+					$query->execute();
 
-					unset($exportTables->$table->fields->{$column->Field});
-				}
-
-				$queryString = 'SHOW INDEXES FROM ' . $table;
-				\SeanMorris\Ids\Log::query($queryString);
-				$query = $db->prepare($queryString);
-				$query->execute();
-
-				while($index = $query->fetchObject())
-				{
-					\SeanMorris\Ids\Log::query('Loaded', $index);
-					if(!isset($exportTables->$table->keys->{$index->Key_name}))
+					while($index = $query->fetchObject())
 					{
-						continue;
-					}
+						\SeanMorris\Ids\Log::query('Loaded', $index);
+						if(!isset($exportTables->$table->keys->{$index->Key_name}))
+						{
+							continue;
+						}
 
-					$_arKey = (array)$exportTables->$table->keys->{$index->Key_name};
+						$_arKey = (array)$exportTables->$table->keys->{$index->Key_name};
 
-					$arKey = [];
+						$arKey = [];
 
-					foreach($_arKey as $key=>$val)
-					{
-						$arKey[(int)$key] = $val;
-					}
+						foreach($_arKey as $key=>$val)
+						{
+							$arKey[(int)$key] = $val;
+						}
 
-					unset($index->Cardinality, $arKey[$index->Seq_in_index]->Cardinality);
+						unset($index->Cardinality, $arKey[$index->Seq_in_index]->Cardinality);
 
-					if(!isset($arKey[$index->Seq_in_index]))
-					{
-						continue;
-					}
+						if(!isset($arKey[$index->Seq_in_index]))
+						{
+							continue;
+						}
 
-					if($index == $arKey[$index->Seq_in_index])
-					{
+						if($index == $arKey[$index->Seq_in_index])
+						{
+							unset($exportTables->$table->keys->{$index->Key_name});
+							continue;
+						}
+
+						$columns = static::latestColumns($exportTables->$table->keys->{$index->Key_name});
+
+						if($index->Key_name == 'PRIMARY')
+						{
+							$queries[] = sprintf(
+								"ALTER TABLE `%s` DROP PRIMARY KEY;"
+								, $table
+							);
+							$queries[] = sprintf(
+								"ALTER TABLE `%s` ADD PRIMARY KEY (`%s`) COMMENT '%s';"
+								, $table
+								, $columns
+								, $arKey[$index->Seq_in_index]->Index_comment
+							);
+						}
+						elseif($index->Non_unique == 0)
+						{
+							$queries[] = sprintf(
+								"ALTER TABLE `%s` DROP KEY %s;"
+								, $table
+								, $index->Key_name
+							);
+							$queries[] = sprintf(
+								"ALTER TABLE `%s` ADD UNIQUE KEY `%s` (`%s`) COMMENT '%s';"
+								, $table
+								, $index->Key_name
+								, $columns
+								, $arKey[$index->Seq_in_index]->Index_comment
+							);
+						}
+						else
+						{
+							$queries[] = sprintf(
+								"ALTER TABLE `%s` DROP INDEX;"
+								, $table
+							);
+							$queries[] = sprintf(
+								"ALTER TABLE `%s` ADD INDEX `%s` (`%s`) COMMENT '%s';"
+								, $table
+								, $index->Key_name
+								, $columns
+								, $arKey[$index->Seq_in_index]->Index_comment
+							);
+						}
+
 						unset($exportTables->$table->keys->{$index->Key_name});
-						continue;
 					}
-
-					$columns = static::latestColumns($exportTables->$table->keys->{$index->Key_name});
-
-					if($index->Key_name == 'PRIMARY')
-					{
-						$queries[] = sprintf(
-							"ALTER TABLE `%s` DROP PRIMARY KEY;"
-							, $table
-						);
-						$queries[] = sprintf(
-							"ALTER TABLE `%s` ADD PRIMARY KEY (`%s`) COMMENT '%s';"
-							, $table
-							, $columns
-							, $arKey[$index->Seq_in_index]->Index_comment
-						);
-					}
-					elseif($index->Non_unique == 0)
-					{
-						$queries[] = sprintf(
-							"ALTER TABLE `%s` DROP KEY %s;"
-							, $table
-							, $index->Key_name
-						);
-						$queries[] = sprintf(
-							"ALTER TABLE `%s` ADD UNIQUE KEY `%s` (`%s`) COMMENT '%s';"
-							, $table
-							, $index->Key_name
-							, $columns
-							, $arKey[$index->Seq_in_index]->Index_comment
-						);
-					}
-					else
-					{
-						$queries[] = sprintf(
-							"ALTER TABLE `%s` DROP INDEX;"
-							, $table
-						);
-						$queries[] = sprintf(
-							"ALTER TABLE `%s` ADD INDEX `%s` (`%s`) COMMENT '%s';"
-							, $table
-							, $index->Key_name
-							, $columns
-							, $arKey[$index->Seq_in_index]->Index_comment
-						);
-					}
-
-					unset($exportTables->$table->keys->{$index->Key_name});
 				}
 
 				if(!$tableFound)
