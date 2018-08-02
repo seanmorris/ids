@@ -42,74 +42,78 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		{
 			$command = $packageName;
 		}
-
-		$candidatePackages = array_values(array_filter(
-			\SeanMorris\Ids\Meta::classes()
-			, function($class) use($command){
-				if(!preg_match('/Idilic\\\Route\\\RootRoute$/', $class))
-				{
-					return FALSE;
-				}
-
-				$methods = get_class_methods($class);
-
-				// var_dump($command, $methods);
-
-				if(!in_array($command, $methods))
-				{
-					return FALSE;
-				}
-
-				return TRUE;
-			}
-		));
-
-		if(count($candidatePackages) == 1)
-		{
-			\SeanMorris\Ids\Idilic\Cli::error(
-				'Using package '
-					. current($candidatePackages)
-					. PHP_EOL
-			);
-			if($routes = current($candidatePackages))
-			{
-				$routeParts  = explode('\\', $routes);
-				$packageName = sprintf('%s/%s', ...$routeParts);
-				array_unshift($args, $command);
-			}
-		}
 		else
 		{
-			$answer = \SeanMorris\Ids\Idilic\Cli::multiQuestion(
-				sprintf(
-					'These packages supply "%s", which one should run?'
-					, $command
-				)
-				, $candidatePackages
-			);
+			
+			$candidatePackages = array_values(array_filter(
+				\SeanMorris\Ids\Meta::classes()
+				, function($class) use($command){
+					if(!preg_match('/Idilic\\\Route\\\RootRoute$/', $class))
+					{
+						return FALSE;
+					}
 
-			if(!isset($candidatePackages[$answer]))
+					$methods = get_class_methods($class);
+
+					// var_dump($command, $methods);
+
+					if(!in_array($command, $methods))
+					{
+						return FALSE;
+					}
+
+					return TRUE;
+				}
+			));
+
+			if(count($candidatePackages) == 1)
 			{
+				\SeanMorris\Ids\Idilic\Cli::error(
+					'Using package '
+						. current($candidatePackages)
+						. PHP_EOL
+				);
+				if($routes = current($candidatePackages))
+				{
+					$routeParts  = explode('\\', $routes);
+					$packageName = sprintf('%s/%s', ...$routeParts);
+					array_unshift($args, $command);
+				}
+			}
+			else
+			{
+				$answer = \SeanMorris\Ids\Idilic\Cli::multiQuestion(
+					sprintf(
+						'These packages supply "%s", which one should run?'
+						, $command
+					)
+					, $candidatePackages
+				);
+
+				if(!isset($candidatePackages[$answer]))
+				{
+					return;
+				}
+
+				if($routes = $candidatePackages[$answer])
+				{
+					$routeParts  = explode('\\', $routes);
+					$packageName = sprintf('%s/%s', ...$routeParts);
+					array_unshift($args, $command);
+				}
+			}
+
+			try
+			{
+				$package = \SeanMorris\Ids\Package::get($packageName);
+			}
+			catch(\Exception $e)
+			{
+				printf("Error: Cannot find package/command '%s'\n", $packageName);
 				return;
 			}
-
-			if($routes = $candidatePackages[$answer])
-			{
-				$routeParts  = explode('\\', $routes);
-				$packageName = sprintf('%s/%s', ...$routeParts);
-				array_unshift($args, $command);
-			}
 		}
 
-		try
-		{
-			$package = \SeanMorris\Ids\Package::get($packageName);
-		}
-		catch(\Exception $e)
-		{
-			printf("Error: Cannot find package/command '%s'\n", $packageName);
-			return;
-		}
 
 		if(!$args || !class_exists($routes))
 		{
