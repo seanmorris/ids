@@ -42,7 +42,12 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		{
 			$command = $packageName;
 		}
-		else
+
+		try
+		{
+			$package = \SeanMorris\Ids\Package::get($packageName);
+		}
+		catch(\Exception $e)
 		{
 			$candidatePackages = array_values(array_filter(
 				\SeanMorris\Ids\Meta::classes()
@@ -101,16 +106,13 @@ class RootRoute implements \SeanMorris\Ids\Routable
 					array_unshift($args, $command);
 				}
 			}
-		}
 
-		try
-		{
-			$package = \SeanMorris\Ids\Package::get($packageName);
-		}
-		catch(\Exception $e)
-		{
-			printf("Error: Cannot find package/command '%s'\n", $packageName);
-			return;
+			try
+			{
+				$package = \SeanMorris\Ids\Package::get($packageName);
+			}
+			catch(\Exception $e)
+			{}
 		}
 
 		if(!$args || !class_exists($routes))
