@@ -1148,8 +1148,8 @@ class Model
 	{
 		if(!$newSubjects)
 		{
-			//$newSubjects = [];
-			return;
+			$newSubjects = [];
+			// return;
 		}
 
 		\SeanMorris\Ids\Log::debug(sprintf(
