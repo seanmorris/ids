@@ -28,7 +28,7 @@ while(TRUE)
 	$dir = $nextDir;
 }
 
-if(!$autoloadPath)
+if(1 || !$autoloadPath)
 {
 	while(TRUE)
 	{

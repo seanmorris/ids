@@ -1,7 +1,15 @@
 <?php
 namespace SeanMorris\Ids\Idilic\Route;
+/**
+ * Application core library.
+ * 	Passing a package with no command will return the root directory of that package.
+ * Switches:
+ * 	-d= or --domain=
+ * 		Set the domain for the current command.
+ */
 class RootRoute implements \SeanMorris\Ids\Routable
 {
+
 	function _dynamic($router)
 	{
 		$args = $router->path()->consumeNodes();
@@ -36,14 +44,9 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 				$routes = $packageName . '\Idilic\Route\RootRoute';
 			}
-		}
 
-		if($packageName)
-		{
 			$command = $packageName;
-		}
-		else
-		{
+
 			$candidatePackages = array_values(array_filter(
 				\SeanMorris\Ids\Meta::classes()
 				, function($class) use($command){
@@ -67,10 +70,18 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 			if(count($candidatePackages) == 1)
 			{
+				$candidatePackage = \SeanMorris\Ids\Package::fromClass(
+					current($candidatePackages)
+				);
+
 				\SeanMorris\Ids\Idilic\Cli::error(
-					'Using package '
-						. current($candidatePackages)
-						. PHP_EOL
+					\SeanMorris\Ids\Idilic\Cli::color(
+						'Using package '
+							. $candidatePackage->cliName()
+						, 'black'
+						, 'lightGrey'
+					)
+					. PHP_EOL
 				);
 				if($routes = current($candidatePackages))
 				{
@@ -130,6 +141,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		return $subRouter->route();
 	}
+
+	/** Execute tests for given package. */
 
 	public function runTests($router)
 	{
@@ -239,6 +252,125 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		return $packageName;
 	}
 
+	public function listModels()
+	{
+		$classes = \SeanMorris\Ids\Meta::classes('SeanMorris\Ids\Model');
+
+		$classes = array_map(
+			function($class)
+			{
+				return str_replace('\\', '/', $class);
+			}
+			, $classes
+		);
+
+		print implode(PHP_EOL, $classes) . PHP_EOL;
+	}
+
+	/** Stores models to site-specific directory. */
+
+	public function storeModels($router)
+	{
+		$rootPackage = \SeanMorris\Ids\Package::getRoot();
+		$siteDir     = $rootPackage->localSiteDir();
+		$modelDir    = $siteDir->dir('models');
+
+		if(!$modelDir->check())
+		{
+			$modelDir = $siteDir->create('models', 0777, TRUE);
+		}
+
+		$classes = \SeanMorris\Ids\Meta::classes('SeanMorris\Ids\Model');
+
+		print "Exporting models...\n";
+
+		$files = [];
+
+		foreach($classes as $class)
+		{
+			if(!$class::table() || $class == 'SeanMorris\PressKit\Cache')
+			{
+				continue;
+			}
+
+			$filename = sprintf(
+				'%s.csv'
+				, preg_replace('/\\\\/', '___', $class)
+			);
+
+			$file = $modelDir->file($filename);
+
+			try
+			{
+				$models = $class::generateByNull();
+			}
+			catch(\Exception $e)
+			{
+				continue;
+			}
+
+			$header = false;
+
+			$out = fopen($file->name(), 'w');
+
+			$written = false;
+
+			foreach($models() as $model)
+			{
+				if(!$model)
+				{
+					continue;
+				}
+
+				$arModel = $model->unconsume(0);
+
+				if(!$header)
+				{
+					fputcsv($out, array_keys($arModel));
+					$header = true;
+				}
+
+				foreach($arModel as &$value)
+				{
+					if(is_object($value))
+					{
+						$value = $value->id;
+					}
+				}
+
+				fputcsv($out, array_values($arModel));
+
+				$written = true;
+			}
+
+			if(!$written)
+			{
+				unlink($file->name());
+			}
+			else
+			{
+				printf("\t%s\n", $file->name());
+
+				$files[] = $file->name();
+			}
+		}
+
+		proc_open(
+			sprintf(
+				'tar -zcvf %s/models.tar.gz %s'
+				, escapeshellarg($siteDir)
+				// , date('Y-m-d-h-i-s')
+				, escapeshellarg($modelDir)
+			)
+			, [
+				['pipe', 'r']
+				, ['pipe', 'w']
+				, ['pipe', 'w']
+			]
+			, $pipes
+		);
+	}
+
 	public function exportModels($router)
 	{
 		$args = $router->path()->consumeNodes();
@@ -257,6 +389,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		$models = $package->exportModels($modelClass, $generator, $args);
 		$header = false;
+
 		$out = \SeanMorris\Ids\Idilic\Cli::outHandle();
 
 		foreach($models() as $model)
@@ -387,6 +520,82 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 	public function help($router)
 	{
+		$classes = \SeanMorris\Ids\Meta::classes();
+
+		$classes = array_filter($classes, function($class) {
+			return preg_match('/\\\\Idilic\\\\Route\\\\RootRoute$/', $class);
+		});
+
+		foreach($classes as $className)
+		{
+
+			$package = \SeanMorris\Ids\Package::fromClass($className);
+
+			print \SeanMorris\Ids\Idilic\Cli::color('Package: ', 'white')
+				. \SeanMorris\Ids\Idilic\Cli::color($package->cliName(), 'yellow') . PHP_EOL;
+
+			$reflection = new \ReflectionClass($className);
+			$methods = $reflection->getMethods();
+
+			$methods = array_filter($methods, function($method) {
+				if($method->isStatic())
+				{
+					return FALSE;
+				}
+
+				if(!$method->isPublic())
+				{
+					return FALSE;
+				}
+
+				return TRUE;
+			});
+
+			if($summary = $reflection->getDocComment())
+			{
+				print "\t" . $summary;
+				print PHP_EOL;
+				print PHP_EOL;
+			}
+
+			if(!$methods)
+			{
+				print PHP_EOL;
+				continue;
+			}
+
+			print \SeanMorris\Ids\Idilic\Cli::color('Commands: ', 'white') . PHP_EOL;
+
+			
+			foreach($methods as $method)
+			{
+				if($method->name[0] == '_')
+				{
+					continue;
+				}
+
+				if($doc = $method->getDocComment())
+				{
+					printf(
+						"\t%s - %s\n"
+						, \SeanMorris\Ids\Idilic\Cli::color($method->name, 'green')
+						, $doc
+					);
+				}
+				else
+				{
+					printf(
+						"\t%s\n"
+						, \SeanMorris\Ids\Idilic\Cli::color($method->name, 'green')
+					);
+				}
+				
+			}
+
+			print PHP_EOL;
+		}
+		die;
+
 		$packages = \SeanMorris\Ids\Package::listPackages($router->contextGet('composer'));
 		$idsPackage = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
 
@@ -846,5 +1055,10 @@ Root Package:\t%s
 	{
 		ignore_user_abort(true);
 		popen('less -RSXMI +G /home/sean/letsvue/temporary/log.txt', 'w');
+	}
+
+	public static function parseDoc()
+	{
+
 	}
 }

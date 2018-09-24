@@ -258,6 +258,33 @@ class Package
 		);
 	}
 
+	public function dataDir()
+	{
+		return new \SeanMorris\Ids\Disk\Directory(
+			$this->packageDir() . 'data/'
+		);
+	}
+
+	public function localSiteDir()
+	{
+		return new \SeanMorris\Ids\Disk\Directory(
+			$this->localDir()
+				. 'sites/'
+				. $_SERVER['HTTP_HOST']
+				. '/'
+		);
+	}
+
+	public function globalSiteDir()
+	{
+		return new \SeanMorris\Ids\Disk\Directory(
+			$this->globalDir()
+				. 'sites/'
+				. $_SERVER['HTTP_HOST']
+				. '/'
+		);
+	}
+
 	public function assetManager()
 	{
 		$assetManager = static::$assetManager;
@@ -281,7 +308,7 @@ class Package
 
 		if($type == 'local')
 		{
-			$dir = $this->localDir();
+			$dir = $this->localSiteDir();
 		}
 		else
 		{
@@ -338,7 +365,7 @@ class Package
 
 		if($type == 'local')
 		{
-			$dir = $this->localDir();
+			$dir = $this->localSiteDir();
 		}
 		else
 		{
@@ -375,7 +402,7 @@ class Package
 
 		if($type == 'local')
 		{
-			$dir = $this->localDir();
+			$dir = $this->localSiteDir();
 		}
 		else
 		{
@@ -1074,5 +1101,22 @@ class Package
 	public static function setTables($tables)
 	{
 		static::$tables = $tables;
+	}
+
+	public static function fromClass($class)
+	{
+		$splitClass = preg_split('/\\\\/', $class);
+
+		if(!count($splitClass) >= 2)
+		{
+			return FALSE;
+		}
+
+		return static::get($splitClass[0] . '/' . $splitClass[1]);
+	}
+
+	public function cliName()
+	{
+		return preg_replace('/\\\\/', '/', $this->packageName);
 	}
 }
