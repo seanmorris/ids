@@ -172,6 +172,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		}
 	}
 
+	/** Applies the stored schema for a package. */
 	public function applySchema($router)
 	{
 		$args = $router->path()->consumeNodes();
@@ -223,6 +224,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		}
 	}
 
+	/** Stores the current schema for a package to JSON. */
 	public function storeSchema($router)
 	{
 		$args = $router->path()->consumeNodes();
@@ -256,6 +258,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		return $packageName;
 	}
 
+	/** Output a list of all model types within a project, including dependencies. */
 	public function listModels()
 	{
 		$classes = \SeanMorris\Ids\Meta::classes('SeanMorris\Ids\Model');
@@ -375,6 +378,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		);
 	}
 
+	/** Export models to CSV. */
+
 	public function exportModels($router)
 	{
 		$args = $router->path()->consumeNodes();
@@ -423,6 +428,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		}
 	}
 
+	/** Import models from CSV via STDIN. */
+
 	public function importModels($router)
 	{
 		$args = $router->path()->consumeNodes();
@@ -469,6 +476,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		return \SeanMorris\Ids\Package::get($packageName);
 	}
 
+	/** List all installed packages. */
+
 	public function listPackages($router)
 	{
 		$switches = $router->request()->switches();
@@ -488,6 +497,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		}
 	}
 
+	/** Link static information from all packages to main project. */
+
 	public function link($router)
 	{
 		\SeanMorris\Ids\Linker::link();
@@ -499,6 +510,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		print json_encode($inheritance, JSON_PRETTY_PRINT);
 	}
+
+	/** Compile CSS, JS and anything else that AssetManager can handle. */
 
 	public function buildAssets($router)
 	{
@@ -522,6 +535,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		$assetManager::buildAssets($package);
 	}
 
+	/** Print this help text. */
+
 	public function help($router)
 	{
 		$classes = \SeanMorris\Ids\Meta::classes();
@@ -536,7 +551,9 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			$package = \SeanMorris\Ids\Package::fromClass($className);
 
 			print \SeanMorris\Ids\Idilic\Cli::color('Package: ', 'white')
-				. \SeanMorris\Ids\Idilic\Cli::color($package->cliName(), 'yellow') . PHP_EOL;
+				. \SeanMorris\Ids\Idilic\Cli::color($package->cliName(), 'yellow')
+				. PHP_EOL
+				. PHP_EOL;
 
 			$reflection = new \ReflectionClass($className);
 			$methods = $reflection->getMethods();
@@ -557,9 +574,9 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 			if($summary = $reflection->getDocComment())
 			{
-				print "\t" . $summary;
-				print PHP_EOL;
-				print PHP_EOL;
+				// print "\t" . $summary;
+				// print PHP_EOL;
+				// print PHP_EOL;
 			}
 
 			if(!$methods)
@@ -580,10 +597,12 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 				if($doc = $method->getDocComment())
 				{
+					preg_match('/\/\*\*\s+(.+?)\s*?\*\//is', $doc, $groups);
+
 					printf(
-						"\t%s - %s\n"
+						"\t%s -\t%s\n"
 						, \SeanMorris\Ids\Idilic\Cli::color($method->name, 'green')
-						, $doc
+						, $groups[1]
 					);
 				}
 				else
@@ -677,6 +696,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		}
 	}
 
+	/** Set a variable in a given package. */
+
 	public function set($router)
 	{
 		$args = $router->path()->consumeNodes();
@@ -701,6 +722,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		return $package->setVar($var, $val);
 	}
 
+	/** Read a variable from a given package. */
+
 	public function get($router)
 	{
 		$args = $router->path()->consumeNodes();
@@ -720,6 +743,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		return $package->getVar($var);
 	}
 
+	/** Remove a variable from a given package. */
+
 	public function delete($router)
 	{
 		$args = $router->path()->consumeNodes();
@@ -738,6 +763,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		return $package->deleteVar($var);
 	}
+
+	/** Print a minimal apache config for a given domain. */
 
 	public function apacheConfig($router)
 	{
@@ -780,6 +807,8 @@ EOF
 		);
 	}
 
+	/** Multiota specific. */
+
 	public function batch($router)
 	{
 		$job = new \SeanMorris\Multiota\Test\Count\CountJob;
@@ -795,6 +824,8 @@ EOF
 		exit;
 	}
 
+	/** Multiota specific. */
+
 	public function batchProcess($router)
 	{
 
@@ -808,6 +839,8 @@ EOF
 		$processor->spin();
 	}
 
+	/** Multiota specific. */
+
 	public function countJob()
 	{
 		$job = new \SeanMorris\Multiota\Test\Count\CountJob(
@@ -818,6 +851,8 @@ EOF
 		);
 		$job->start();
 	}
+
+	/** Multiota specific. */
 
 	public function capitalizeJob()
 	{
@@ -831,6 +866,8 @@ EOF
 		$job->start();
 	}
 
+	/** Multiota specific. */
+
 	public function letterCountMap()
 	{
 		$job = new \SeanMorris\Multiota\Job(
@@ -843,6 +880,8 @@ EOF
 		$job->start();
 	}
 
+	/** Multiota specific. */
+
 	public function letterCountReduce()
 	{
 		$job = new \SeanMorris\Multiota\Job(
@@ -854,6 +893,8 @@ EOF
 		);
 		$job->start();
 	}
+
+	/** Start a RePL. */
 
 	public function repl()
 	{
@@ -995,6 +1036,8 @@ EOF
 		}
 	}
 
+	/** Execute PHP with the project initialized. */
+
 	public function run($router)
 	{
 		$args = $router->path()->consumeNodes();
@@ -1038,6 +1081,8 @@ EOF
 		return $string;	
 	}
 
+	/** Print project info. */
+
 	public function info()
 	{
 		return sprintf(
@@ -1054,6 +1099,8 @@ Root Package:\t%s
 			, \SeanMorris\Ids\Package::getRoot()->packageSpace()
 		);
 	}
+
+	/** Watch project logs. Ctrl+c to exit. */
 
 	public function log()
 	{

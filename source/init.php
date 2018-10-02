@@ -28,7 +28,7 @@ while(TRUE)
 	$dir = $nextDir;
 }
 
-if(1 || !$autoloadPath)
+if(php_sapi_name() === 'cli')
 {
 	while(TRUE)
 	{
@@ -56,7 +56,15 @@ if(1 || !$autoloadPath)
 
 	if(!isset($_SERVER['HTTP_HOST']) && file_exists($userFile))
 	{
+		var_dump($userSettings->root);
+
 		$userSettings = json_decode(file_get_contents($userFile));
+
+
+		if($userSettings->root == '.')
+		{
+			$userSettings->root = dirname($userFile);
+		}
 		
 		$autoloadPath = $userSettings->root . '/vendor/autoload.php';
 
