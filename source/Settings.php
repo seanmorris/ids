@@ -84,7 +84,15 @@ class Settings
 		$settingsFileFormat = $rootPackage->localDir() . 'sites/%s.json';
 
 		$filenames = [
-			sprintf('%s:%d', $hostname, $port)
+			sprintf('%s:%d/settings', $hostname, $port)
+			, sprintf('%s;%d/settings', $hostname, $port)
+			, $hostname . '/settings'
+			, sprintf(':%d/settings', $port)
+			, sprintf(';%d/settings', $port)
+			, ':/settings'
+			, ';/settings'
+
+			, sprintf('%s:%d', $hostname, $port)
 			, sprintf('%s;%d', $hostname, $port)
 			, $hostname
 			, sprintf(':%d', $port)

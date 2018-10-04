@@ -87,6 +87,13 @@ class Directory extends File
 		);
 	}
 
+	public function dir($name)
+	{
+		return new \SeanMorris\Ids\Disk\Directory(
+			$this->name . $name
+		);
+	}
+
 	public function delete()
 	{
 		rmdir($this->name);

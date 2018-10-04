@@ -145,8 +145,13 @@ class Model
 
 					$colVal = $columnObject->id;
 				}
-				else if(is_object($colVal) && is_a($colVal, $columnClass) && isset($colVal->id))
+				else if(is_object($colVal) && is_a($colVal, $columnClass))
 				{
+					if(!isset($colVal->id))
+					{
+						$colVal->save();
+					}
+
 					$colVal = $colVal->id;
 				}
 			}
@@ -1167,8 +1172,8 @@ class Model
 	{
 		if(!$newSubjects)
 		{
-			//$newSubjects = [];
-			return;
+			$newSubjects = [];
+			// return;
 		}
 
 		\SeanMorris\Ids\Log::debug(sprintf(
@@ -1552,7 +1557,7 @@ class Model
 			$class = $parentClass;
 		}
 
-		if(!isset(static::$$name) && $def['name'] !== 'byNull')
+		if(!static::hasSelector($name))
 		{
 			throw new \Exception(sprintf(
 				'%s is not a valid selector for %s'
@@ -1564,6 +1569,18 @@ class Model
 		// \SeanMorris\Ids\Log::debug( "MODEL RESOLVEDEF END\n" );
 		// \SeanMorris\Ids\Log::debug($def);
 		return $def;
+	}
+
+	public static function hasSelector($name)
+	{
+		$name = lcfirst($name);
+
+		if(isset(static::$$name) || $name == 'byNull')
+		{
+			return TRUE;
+		}
+
+		return FALSE;
 	}
 
 	protected static function selectStatement($selectDefName, $superior = null, $args = [], $table = NULL, $topClass = NULL)
@@ -1752,6 +1769,8 @@ class Model
 				$allClasses  =  $rootPackage->getVar('linker:inheritance', []);
 
 				$subClasses  = $allClasses->{$topClass} ?? [];
+
+				$subClasses[] = $topClass;
 
 				$classesString = sprintf(
 					'("%s")'
@@ -2133,6 +2152,7 @@ class Model
 		{
 			if($this->$property instanceof Model)
 			{
+				$skeleton[$property] = $this->$property->id;
 				continue;
 			}
 

@@ -746,7 +746,9 @@ class Log
 				, $level
 				, $frame['file'] ?? NULL
 				, $frame['line'] ?? NULL
-				, $frame['class'] ?? NULL
+				, isset($frame['object'])
+					? get_class($frame['object'])
+					: $frame['class'] ?? NULL
 				, $frame['function']
 				, $renderedArgs
 					? PHP_EOL . static::indent(

@@ -17,6 +17,9 @@ abstract class Queue
 		, CHANNEL_WAIT      = FALSE
 		, BATCH_ACKS        = FALSE
 
+		, PREFETCH_COUNT    = 1
+		, PREFETCH_SIZE     = 0
+
 		, BROADCAST_QUEUE   = '::broadcast'
 		, SEND_QUEUE        = '::send';
 	protected static $channel;
@@ -95,6 +98,11 @@ abstract class Queue
 				, $servers->{static::RABBIT_MQ_SERVER}->{'pass'}
 			);
 			$channel = $connection->channel();
+			$channel->basic_qos(
+				static::PREFETCH_SIZE
+				, static::PREFETCH_COUNT
+				, FALSE
+			);
 			$channel->queue_declare(
 				get_called_class() . static::SEND_QUEUE
 				, static::QUEUE_PASSIVE
