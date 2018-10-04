@@ -727,8 +727,25 @@ class Model
 			. '--'
 			. md5(print_r(func_get_args(), 1));
 
-		$cache =& self::$cache[$curClass][$cacheKey];
-		$idCache =& self::$idCache[$curClass];
+		// \SeanMorris\Ids\Log::debug(self::$cacheKey);
+
+		$classCache =& self::$cache[$curClass];
+
+		if(!$classCache)
+		{
+			$classCache = [];
+		}
+
+		\SeanMorris\Ids\Log::debug($classCache);
+
+		if(array_key_exists($cacheKey, $classCache)
+			&& $classCache[$cacheKey] === NULL
+		){
+			$classCache[$cacheKey] = FALSE;	
+		}
+
+		$cache      =& $classCache[$cacheKey];
+		$idCache    =& self::$idCache[$curClass];
 
 		$backtrace = debug_backtrace();
 
@@ -745,7 +762,7 @@ class Model
 			, $x['file']
 			, $x['line']
 			, $cacheKey
-			, isset($cache) ? PHP_EOL . "\t\t" . 'CACHE HIT!!!' : ''
+			, array_key_exists($cacheKey, $classCache) ? PHP_EOL . "\t\t" . 'CACHE HIT!!!' : ''
 		), 'Args:', $args);
 
 		if(!$args)
@@ -857,9 +874,11 @@ class Model
 				$overArgs = [];
 				$i = 0;
 
-				if(isset($cache[$i]))
+				\SeanMorris\Ids\Log::debug($cache);
+
+				if(isset($cache) && array_key_exists($i, $cache))
 				{
-					while(isset($cache[$i]))
+					while(array_key_exists($i, $cache))
 					{
 						\SeanMorris\Ids\Log::debug('From cache...');
 

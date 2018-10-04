@@ -28,7 +28,9 @@ while(TRUE)
 	$dir = $nextDir;
 }
 
-if(!$autoloadPath)
+$userFile = NULL;
+
+if(1||!$autoloadPath)
 {
 	while(TRUE)
 	{
@@ -57,7 +59,10 @@ if(!$autoloadPath)
 	if(!isset($_SERVER['HTTP_HOST']) && file_exists($userFile))
 	{
 		$userSettings = json_decode(file_get_contents($userFile));
-		
+
+		var_dump($userFile);
+	
+
 		$autoloadPath = $userSettings->root . '/vendor/autoload.php';
 
 		$_SERVER['HTTP_HOST'] =  $userSettings->domain;

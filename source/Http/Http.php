@@ -46,10 +46,22 @@ class Http
 					$d();
 				}
 				\SeanMorris\Ids\Log::info(
-					'Post-Response Execution Complete.'
+					'Response Complete.'
+					, memory_get_peak_usage(true)
 					, [
-						'Space' => memory_get_peak_usage(true) / (1024*1024) . ' MB'
-						, 'Time' => number_format(microtime(true) - START, 2)  . ' sec'
+						'Space'        => number_format(
+							memory_get_peak_usage(true) / (1024*1024), 2
+						) . sprintf(
+							' MB (%s bytes, %s real)'
+							, memory_get_peak_usage()
+							, memory_get_peak_usage(TRUE)
+						)
+						, 'Time'       => number_format(microtime(true) - START, 4)  . ' sec'
+						, 'Queries'    => \SeanMorris\Ids\Mysql\Statement::queryCount()
+						, 'Query Time' => number_format(
+							\SeanMorris\Ids\Mysql\Statement::queryTime()
+							, 4
+						) . ' sec'
 					]
 					, PHP_EOL
 				);
