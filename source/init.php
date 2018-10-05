@@ -62,18 +62,11 @@ if(php_sapi_name() === 'cli')
 
 		$userSettings = json_decode(file_get_contents($userFile));
 
-<<<<<<< HEAD
-		var_dump($userFile);
-	
-
-=======
-
 		if($userSettings->root == '.')
 		{
 			$userSettings->root = dirname($userFile);
 		}
-		
->>>>>>> a6f14b82fa6ec3c2d49330b9cdd784842b87f75a
+
 		$autoloadPath = $userSettings->root . '/vendor/autoload.php';
 
 		$_SERVER['HTTP_HOST'] =  $userSettings->domain;

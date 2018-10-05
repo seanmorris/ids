@@ -206,7 +206,9 @@ class Model
 				}
 			}
 
-			$saved = $curClass::loadOneFlatRecordById($id);
+			$saved = $curClass::loadOneFlatRecord($id);
+
+			\SeanMorris\Ids\Log::debug($saved);
 
 			if(!$saved)
 			{
@@ -741,16 +743,13 @@ class Model
 			$classCache = [];
 		}
 
-		\SeanMorris\Ids\Log::debug($classCache);
+		// \SeanMorris\Ids\Log::debug($classCache);
 
 		if(array_key_exists($cacheKey, $classCache)
 			&& $classCache[$cacheKey] === NULL
 		){
-			$classCache[$cacheKey] = FALSE;	
+			// $classCache[$cacheKey] = FALSE;	
 		}
-
-		$cache      =& $classCache[$cacheKey];
-		$idCache    =& self::$idCache[$curClass];
 
 		$backtrace = debug_backtrace();
 
@@ -769,6 +768,9 @@ class Model
 			, $cacheKey
 			, array_key_exists($cacheKey, $classCache) ? PHP_EOL . "\t\t" . 'CACHE HIT!!!' : ''
 		), 'Args:', $args);
+
+		$cache      =& $classCache[$cacheKey];
+		$idCache    =& self::$idCache[$curClass];
 
 		if(!$args)
 		{
@@ -803,13 +805,16 @@ class Model
 			$currentDefClass = $parentDefClass;
 		}
 
+		\SeanMorris\Ids\Log::debug(
+			$name
+			, $args
+		);
+
 		$def = static::resolveDef($name, $args);
 
-		// \SeanMorris\Ids\Log::debug(
-		// 	$name
-		// 	, $def
-		// 	, $args
-		// );
+		\SeanMorris\Ids\Log::debug(
+			$def
+		);
 
 		if(isset($def['cursor']) && $def['cursor'])
 		{
@@ -828,12 +833,12 @@ class Model
 			$select->limit($limit);
 		}
 
-		if(isset($def['type']) && $def['type'] == 'count')
-		{
-			$countStatement = $select->countStatement('id');
+		// if(isset($def['type']) && $def['type'] == 'count')
+		// {
+		// 	$countStatement = $select->countStatement('id');
 
-			return (int) $countStatement->fetchColumn(...$args);
-		}
+		// 	return (int) $countStatement->fetchColumn(...$args);
+		// }
 
 		if(isset($def['paged']) && $def['paged'])
 		{
@@ -879,10 +884,10 @@ class Model
 				$overArgs = [];
 				$i = 0;
 
-				\SeanMorris\Ids\Log::debug($cache);
-
-				if(isset($cache) && array_key_exists($i, $cache))
-				{
+				if($cache
+						&& isset($cache)
+						&& array_key_exists($i, $cache)
+				){
 					while(array_key_exists($i, $cache))
 					{
 						\SeanMorris\Ids\Log::debug('From cache...');
@@ -1062,10 +1067,25 @@ class Model
 				'Counting %s', get_called_class()
 			));
 
-			$count = $select->countStatement('id');
-			$countResult = $count->execute(...$args);
+			if(isset($cache) && array_key_exists(0, $cache))
+			{
+				\SeanMorris\Ids\Log::debug('From cache...');
 
-			return (int) $countResult->fetchColumn();
+				return $cache[0];
+			}
+
+			$countQuery = $select->countStatement('id');
+			$countResult = $countQuery->execute(...$args);
+
+			$count = (int) $countResult->fetchColumn();
+
+			\SeanMorris\Ids\Log::debug(sprintf(
+				'Caching count %s', get_called_class()
+			));
+
+			$cache[0] = $count;
+
+			return $count;
 		}
 
 		if(isset($def['type']) && $def['type'] == 'load')
@@ -1472,11 +1492,33 @@ class Model
 				$name = lcfirst($match[5]);
 			}
 		}
-		else if(preg_match('/^(?:(loadOne|load|generate|get|count)?)$/', $originalName, $matchB))
-		{
-			if(isset($match[1]))
+		else if(preg_match(
+			'/^(?:(loadOne|load|generate|get|count)?)
+				((?:Flat)?)
+				((?:Submodel|Record)?s?)$/x'
+			, $originalName
+			, $matchB)
+		){
+			if(isset($matchB[1]))
 			{
 				$type = lcfirst($matchB[1]);
+			}
+
+			if(isset($matchB[2]) && $matchB[2])
+			{
+				$flat = TRUE;
+			}
+
+			if(isset($matchB[3]) && $matchB[3])
+			{
+				if(strtolower($matchB[3]) == 'submodel' || strtolower($matchB[3]) == 'submodels')
+				{
+					$subs = TRUE;
+				}
+				if(strtolower($matchB[3]) == 'record' || strtolower($matchB[3]) == 'records')
+				{
+					$recs = TRUE;
+				}
 			}
 
 			$paged  = FALSE;
@@ -1484,12 +1526,16 @@ class Model
 			$name   = NULL;
 		}
 
-		if(!isset($match[5])|| !$name)
+		if((!$name && !$recs) || ($name && $recs))
 		{
 			throw new \Exception(sprintf(
-				'%s is not a valid selector for %s'
+				"'%s' is not a valid selector for '%s'.
+\"%s\"\t%d\t%d"
 				, $originalName
 				, get_called_class()
+				, $name
+				, (bool)$name
+				, $recs
 			));
 		}
 
@@ -1500,7 +1546,7 @@ class Model
 			, 'paged'     => $paged
 			, 'cursor'    => $cursor
 			, 'subs'      => $subs
-			, 'recs'   => $recs
+			, 'recs'      => $recs
 		];
 
 		$class = get_called_class();
@@ -1529,7 +1575,8 @@ class Model
 			if($class::$table == $propertyClass::$table)
 			{
 				$def = $class::$$name;
-				if($flat)
+
+				if($flat && isset($def['with']))
 				{
 					unset($def['with']);
 				}
@@ -1559,11 +1606,11 @@ class Model
 
 		if(!static::hasSelector($name))
 		{
-			throw new \Exception(sprintf(
-				'%s is not a valid selector for %s'
-				, $originalName
-				, get_called_class()
-			));
+			// throw new \Exception(sprintf(
+			// 	'%s is not a valid selector for %s'
+			// 	, $originalName
+			// 	, get_called_class()
+			// ));
 		}
 
 		// \SeanMorris\Ids\Log::debug( "MODEL RESOLVEDEF END\n" );
@@ -1636,6 +1683,11 @@ class Model
 		if(isset($selectDef['where']))
 		{
 			$where = $selectDef['where'];
+		}
+
+		if(isset($selectDef['recs']) && $selectDef['recs'] && !$superior)
+		{
+			$where = [['id' => '?']];
 		}
 
 		if(isset($selectDef['order']))
@@ -1752,7 +1804,7 @@ class Model
 		{
 			// var_dump('!!!!');
 			$selectDefName = is_array($selectDefName)
-				? $selectDefName['name']
+				? ($selectDefName['name'] ?? $selectDefName)
 				: $selectDefName;
 
 			$subSelect = $parentClass::selectStatement($selectDefName, $select, $args, $table, $topClass);
