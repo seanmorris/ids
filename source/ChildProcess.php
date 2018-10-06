@@ -26,7 +26,8 @@ class ChildProcess
 
 		list($this->stdIn, $this->stdOut, $this->stdErr) = $pipes;
 
-		stream_set_blocking($this->stdIn,  !$async);
+		// stream_set_blocking($this->stdIn,  !$async);
+		stream_set_blocking($this->stdIn,  TRUE);
 		stream_set_blocking($this->stdOut, !$async);
 		stream_set_blocking($this->stdErr, !$async);
 	}
@@ -34,6 +35,11 @@ class ChildProcess
 	public function write($record)
 	{
 		fwrite($this->stdIn, $record);
+	}
+
+	public function get($bytes)
+	{
+		return fread($this->stdOut, $bytes);
 	}
 
 	public function read()
