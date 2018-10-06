@@ -64,6 +64,17 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 					$methods = get_class_methods($class);
 
+					$methods = array_filter(
+						$methods
+						, function($method) use($class)
+						{
+							$method = new \ReflectionMethod(
+								$class, $method
+							);
+							return $method->isPublic();
+						}
+					);
+
 					// var_dump($command, $methods);
 
 					if(!in_array($command, $methods))
