@@ -42,6 +42,11 @@ class Relationship extends Model
 		{
 			$ownerClass = $this->ownerClass;
 
+			if(!class_exists($ownerClass))
+			{
+				return FALSE;
+			}
+
 			$this->ownerObject = $ownerClass::loadOneById($this->ownerId);
 		}
 
@@ -50,10 +55,21 @@ class Relationship extends Model
 
 	public function subject()
 	{
+		$ownerClass = $this->ownerClass;
+
+		if(!class_exists($ownerClass))
+		{
+			return FALSE;
+		}
+
 		if(!$this->subjectObject)
 		{
-			$ownerClass = $this->ownerClass;
 			$subjectClass = $ownerClass::getSubjectClass($this->property);
+
+			if(!class_exists($subjectClass))
+			{
+				return FALSE;
+			}
 
 			$this->subjectObject = $subjectClass::loadOneById($this->subjectId);
 		}

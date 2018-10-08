@@ -1165,11 +1165,13 @@ class Model
 			$class = $subSkeleton['class'];
 		}
 
-		if($class == NULL || (
-			!is_subclass_of($class, get_called_class())
-			&& !is_subclass_of(get_called_class(), $class)
-		))
-		{
+		if($class == NULL
+			|| !class_exists($class)
+			|| (
+				!is_subclass_of($class, get_called_class())
+				&& !is_subclass_of(get_called_class(), $class)
+			)
+		){
 			$class = get_called_class();
 		}
 
@@ -1526,18 +1528,18 @@ class Model
 			$name   = NULL;
 		}
 
-		if((!$name && !$recs) || ($name && $recs))
-		{
-			throw new \Exception(sprintf(
-				"'%s' is not a valid selector for '%s'.
-\"%s\"\t%d\t%d"
-				, $originalName
-				, get_called_class()
-				, $name
-				, (bool)$name
-				, $recs
-			));
-		}
+// 		if($name && $recs)
+// 		{
+// 			throw new \Exception(sprintf(
+// 				"'%s' is not a valid selector for '%s'.
+// \"%s\"\t%d\t%d"
+// 				, $originalName
+// 				, get_called_class()
+// 				, $name
+// 				, (bool)$name
+// 				, $recs
+// 			));
+// 		}
 
 		$def = [
 			'name'        => $name
@@ -1546,6 +1548,7 @@ class Model
 			, 'paged'     => $paged
 			, 'cursor'    => $cursor
 			, 'subs'      => $subs
+			, 'flat'      => $flat
 			, 'recs'      => $recs
 		];
 
@@ -1588,6 +1591,7 @@ class Model
 				$def['cursor']     = $cursor;
 				$def['class']      = $class;
 				$def['subs']       = $subs;
+				$def['flat']       = $flat;
 				$def['recs']       = $recs;
 
 				$defFound          = TRUE;
@@ -1630,7 +1634,7 @@ class Model
 		return FALSE;
 	}
 
-	protected static function selectStatement($selectDefName, $superior = null, $args = [], $table = NULL, $topClass = NULL)
+	protected static function selectStatement($selectDefName, $superior = null, $args = [], $table = NULL, $topClass = NULL, $flat = FALSE)
 	{
 		if(!$topClass)
 		{
@@ -1662,6 +1666,15 @@ class Model
 			? $called::resolveDef($selectDefName, $args, $superior)
 			: $selectDefName;
 
+		if(isset($selectDef['flat']) && $selectDef['flat'])
+		{
+			$flat = $selectDef['flat'];
+		}
+		else
+		{
+			$selectDef['flat'] = $flat;
+		}
+
 		// \SeanMorris\Ids\Log::debug(
 		// 	'Resolved select def'
 		// 	, $selectDefName
@@ -1685,8 +1698,11 @@ class Model
 			$where = $selectDef['where'];
 		}
 
-		if(isset($selectDef['recs']) && $selectDef['recs'] && !$superior)
-		{
+		if(isset($selectDef['recs'])
+			&& $selectDef['recs']
+			&& !$superior
+			&& (!isset($selectDef['name']) || !$selectDef['name'])
+		){
 			$where = [['id' => '?']];
 		}
 
@@ -1709,9 +1725,9 @@ class Model
 			->conditions($where)
 		;
 
-		//\SeanMorris\Ids\Log::debug($called, $selectDefName, $selectDef, isset($selectDef['join']));
+		\SeanMorris\Ids\Log::debug($selectDef);
 
-		if(isset($selectDef['join']) && is_array($selectDef['join']))
+		if(!$selectDef['flat'] && isset($selectDef['join']) && is_array($selectDef['join']))
 		{
 			// \SeanMorris\Ids\Log::debug($called, $selectDef['join']);
 
@@ -1724,7 +1740,7 @@ class Model
 			}
 		}
 
-		if(isset($selectDef['with']) && is_array($selectDef['with']))
+		if(!$selectDef['flat'] && isset($selectDef['with']) && is_array($selectDef['with']))
 		{
 			foreach($selectDef['with'] as $childProperty => $joinBy)
 			{
@@ -1782,7 +1798,7 @@ class Model
 				}
 			}
 		}
-		else if(isset($selectDef['with']) && !is_array($selectDef['with']))
+		else if(!$selectDef['flat'] && isset($selectDef['with']) && !is_array($selectDef['with']))
 		{
 			\SeanMorris\Ids\Log::warn(sprintf(
 				'Invalid value for %s::$selectDef["with"]'
@@ -1807,7 +1823,7 @@ class Model
 				? ($selectDefName['name'] ?? $selectDefName)
 				: $selectDefName;
 
-			$subSelect = $parentClass::selectStatement($selectDefName, $select, $args, $table, $topClass);
+			$subSelect = $parentClass::selectStatement($selectDefName, $select, $args, $table, $topClass, $selectDef['flat']);
 
 			$select->subjugate($subSelect);
 			$select->join($subSelect, 'id', 'id');

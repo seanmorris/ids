@@ -720,6 +720,8 @@ class Package
 						$tableFound = true;
 
 						unset($column->Privileges);
+						unset($column->Key);
+						unset($exportTables->$table->fields->{$column->Field}->Key);
 
 						if($column == $exportTables->$table->fields->{$column->Field})
 						{
@@ -954,21 +956,20 @@ class Package
 
 							if($keyName == 'PRIMARY')
 							{
-								/*
 								$queries[] = sprintf(
 									"ALTER TABLE `%s` ADD PRIMARY KEY (`%s`)"
 									, $table
 									, $columns
 								);
-								*/
 
 								continue;
 							}
 							else if($arKey[$arKey["1"]->Seq_in_index]->Non_unique == 0)
 							{
 								$queries[] = sprintf(
-									"ALTER TABLE `%s` ADD UNIQUE KEY (`%s`)"
+									"ALTER TABLE `%s` ADD UNIQUE KEY `%s` (`%s`)"
 									, $table
+									, $_arKey[1]->Key_name
 									, $columns
 								);
 
@@ -977,8 +978,9 @@ class Package
 							else
 							{
 								$queries[] = sprintf(
-									"ALTER TABLE `%s` ADD KEY (`%s`)"
+									"ALTER TABLE `%s` ADD KEY `%s` (`%s`)"
 									, $table
+									, $_arKey[1]->Key_name
 									, $columns
 								);
 							}

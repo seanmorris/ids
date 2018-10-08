@@ -74,9 +74,9 @@ abstract class Queue
 			}
 		}
 	}
-	protected static function getChannel()
+	protected static function getChannel($reset = FALSE)
 	{
-		if(!static::$channel)
+		if(!static::$channel || $reset)
 		{
 			$servers = \SeanMorris\Ids\Settings::read('rabbitMq');
 			
