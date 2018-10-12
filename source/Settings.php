@@ -36,7 +36,7 @@ class Settings
 		{
 			if(isset($_SERVER['HTTP_HOST']))
 			{	
-				$hostname = $_SERVER['HTTP_HOST'];
+				$hostname = parse_url($_SERVER['HTTP_HOST'], PHP_URL_HOST);
 			}
 
 			if(isset($_SERVER['SERVER_PORT']))
@@ -86,6 +86,8 @@ class Settings
 		$filenames = [
 			sprintf('%s:%d/settings', $hostname, $port)
 			, sprintf('%s;%d/settings', $hostname, $port)
+			, sprintf('%s:/settings', $hostname, $port)
+			, sprintf('%s;/settings', $hostname, $port)
 			, $hostname . '/settings'
 			, sprintf(':%d/settings', $port)
 			, sprintf(';%d/settings', $port)
@@ -94,6 +96,8 @@ class Settings
 
 			, sprintf('%s:%d', $hostname, $port)
 			, sprintf('%s;%d', $hostname, $port)
+			, sprintf('%s:', $hostname, $port)
+			, sprintf('%s;', $hostname, $port)
 			, $hostname
 			, sprintf(':%d', $port)
 			, sprintf(';%d', $port)

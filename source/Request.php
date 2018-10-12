@@ -76,8 +76,9 @@ class Request
 		{
 			if(!$this->path)
 			{
-				$this->uri = $_SERVER['REQUEST_URI'];
+				return $_SERVER['REQUEST_URI'];
 			}
+
 			$this->uri = $this->path()->pathString();
 		}
 

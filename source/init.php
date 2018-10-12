@@ -97,14 +97,10 @@ else
 	exit(1);
 }
 
-$idsPackage = \SeanMorris\Ids\Package::get('SeanMorris/Ids');
-
-if(!isset($_SERVER['HTTP_HOST']))
+if(!$errorPath = \SeanMorris\Ids\Settings::read('log'))
 {
-	$_SERVER['HTTP_HOST'] =  $idsPackage->getVar('idilic:defaultDomain', NULL);
+	$errorPath = IDS_VENDOR_ROOT . '/../temporary/log.txt';
 }
-
-$errorPath = IDS_VENDOR_ROOT . '/../temporary/log.txt';
 
 if(!file_exists($errorPath))
 {

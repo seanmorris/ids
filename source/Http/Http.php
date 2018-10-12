@@ -37,7 +37,7 @@ class Http
 				}
 				catch (\ErrorException $e)
 				{
-
+					\SeanMorris\Ids\Log::error($e);
 				}
 				session_write_close();
 				static::$disconnected = TRUE;

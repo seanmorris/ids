@@ -267,6 +267,11 @@ class Package
 
 	public function localSiteDir()
 	{
+		if(!isset($_SERVER['HTTP_HOST']))
+		{
+			throw new \Exception('$_SERVER["HTTP_HOST"] is not defined. Please set a site with the "-d" switch or use .idilicProfile.json');
+		}
+
 		return new \SeanMorris\Ids\Disk\Directory(
 			$this->localDir()
 				. 'sites/'
@@ -277,6 +282,11 @@ class Package
 
 	public function globalSiteDir()
 	{
+		if(!isset($_SERVER['HTTP_HOST']))
+		{
+			throw new \Exception('$_SERVER["HTTP_HOST"] is not defined. Please set a site with the "-d" switch or use .idilicProfile.json');
+		}
+
 		return new \SeanMorris\Ids\Disk\Directory(
 			$this->globalDir()
 				. 'sites/'
