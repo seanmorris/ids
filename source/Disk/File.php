@@ -155,4 +155,10 @@ class File
 		}
 		return time()-filectime($this->name);
 	}
+
+	public function handle()
+	{
+		$this->read(0,0);
+		return $this->readHandle;
+	}
 }

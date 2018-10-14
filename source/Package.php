@@ -535,7 +535,7 @@ class Package
 			file_put_contents($schemaFilename, '{}');
 		}
 
-		$schema = $this->getStoredSchema();
+		$schema  = $this->getStoredSchema();
 		$changes = $this->getSchemaChanges();
 
 		$revisionCount = count((array)$schema->revisions);
@@ -557,6 +557,8 @@ class Package
 			file_put_contents($schemaFilename, json_encode(
 				$schema, JSON_PRETTY_PRINT
 			));
+
+			return $changes;
 		}
 	}
 

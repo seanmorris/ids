@@ -139,7 +139,13 @@ register_shutdown_function(function() {
 		, PHP_EOL
 	);
 });
-set_exception_handler(['\SeanMorris\Ids\Log', 'logException']);
+
+set_exception_handler(function($exception)
+{
+	\SeanMorris\Ids\Log::logException($exception);
+	exit(1);
+});
+
 $existingErrorHandler = set_error_handler(
 	function($errorNumber, $errorString, $errorFile, $errorLine, $errorContext) use(&$existingErrorHandler)
 	{

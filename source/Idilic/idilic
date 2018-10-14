@@ -22,16 +22,16 @@ if($argv)
 }
 else
 {
-	while($line = fgets(STDIN))
-	{
-		$line    = trim($line);
-		if(!$line)
-		{
-			continue;
-		}
-		$input[] = trim($line);
-		$input[] = '---';
-	}
+	// while($line = fgets(STDIN))
+	// {
+	// 	$line    = trim($line);
+	// 	if(!$line)
+	// 	{
+	// 		continue;
+	// 	}
+	// 	$input[] = trim($line);
+	// 	$input[] = '---';
+	// }
 }
 
 foreach($input as $arg)

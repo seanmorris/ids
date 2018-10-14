@@ -183,6 +183,62 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		}
 	}
 
+	public function applySchemas($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		$packages = \SeanMorris\Ids\Package::listPackages();
+
+		$real = array_shift($args);
+
+		foreach($packages as $packageName)
+		{
+			$package = $this->_getPackage($packageName);
+
+			$result = $package->applySchema($real);
+
+			if(!$result)
+			{
+				printf(
+					'No schema changes detected for "%s".' . PHP_EOL
+					, $packageName
+				);
+			}
+
+			if(!$real && $result)
+			{
+				while(1)
+				{
+					printf(
+						'Changes  for "%s" have not yet been applied.' . PHP_EOL
+						, $packageName
+					);
+
+					foreach($result as $query)
+					{
+						print $query;
+						print PHP_EOL;
+					}
+
+					$answer = \SeanMorris\Ids\Idilic\Cli::question(
+						'Apply the above changes to the schema? (y/n)'
+					);
+
+					if($answer === 'y')
+					{
+						$package->applySchema(true);
+						break;
+					}
+
+					if($answer === 'n')
+					{
+						break;
+					}
+				}
+			}
+		}
+	}
+
 	/** Applies the stored schema for a package. */
 	public function applySchema($router)
 	{
@@ -253,8 +309,10 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		{
 			return 'No changes detected.' . PHP_EOL;
 		}
-
-		return $changes;
+		else
+		{
+			return 'Changes stored.' . PHP_EOL;
+		}
 	}
 
 	public function _getPackageFromClass($class)
@@ -476,7 +534,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 			$line = array_combine($header, $line);
 
-
+			var_dump($line);
 		}
 	}
 
