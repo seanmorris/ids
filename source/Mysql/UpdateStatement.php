@@ -45,4 +45,9 @@ class UpdateStatement extends WhereStatement
 
 		return $queryString;
 	}
+
+	public function joins()
+	{
+		return [];
+	}
 }

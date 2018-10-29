@@ -15,7 +15,8 @@ class SelectStatement extends WhereStatement
 		, $limit = NULL
 		, $offset = NULL
 		, $conditions = []
-		, $joins = []
+		, $groups = []
+		, $joins  = []
 		, $superior
 		, $preArgs = []
 	;
@@ -262,12 +263,36 @@ class SelectStatement extends WhereStatement
 			}
 		}
 
+		$groupCols = [];
+
+		if($this->groups)
+		{
+			foreach($this->groups as $group)
+			{
+				$groupCols[] = sprintf(
+					'%s.%s'
+					, $this->alias
+					, $group
+				);
+			}
+		}
+
+		$groupString = NULL;
+
+		if($groupCols)
+		{
+			$groupString = PHP_EOL . PHP_EOL . ' GROUP BY '
+				. implode(',', $groupCols)
+				. ' ';
+		}
+
+
 		return sprintf(
 			"SELECT\n%s\n\nFROM\n%s\n\nWHERE\n%s"
 			, $columnString
 			, $tableString
 			, $conditionString ?: 1
-		) . $orderString . $limitString;
+		) . $groupString . $orderString . $limitString;
 	}
 
 	protected function assembleJoin($type = null, $args = null, $col, $joinCol)
@@ -278,12 +303,7 @@ class SelectStatement extends WhereStatement
 
 		$tableString = $this->table;
 
-		$conditionString = $this->conditionTree(
-			$this->conditions
-			, 'AND'
-			, $this->alias
-			, $args
-		);
+		$conditionString = NULL;
 
 		$joinString = sprintf(
 			PHP_EOL . '%sJOIN %s as %s'
@@ -301,7 +321,7 @@ class SelectStatement extends WhereStatement
 			, $joinCol
 		);
 
-		foreach($this->joins as $join)
+		foreach($this->joins() as $join)
 		{
 			list($sub, $superCol, $subCol, $subType) = $join;
 
@@ -324,18 +344,53 @@ class SelectStatement extends WhereStatement
 			// @TODO: Why is $subConditionString sometimes empty?
 			if($subConditionString)
 			{
-				if(!$conditionString)
+				if(trim($conditionString))
 				{
-					$conditionString = 1;
+					if($subConditionString)
+					{
+						$conditionString = sprintf(
+							"(%s\n    AND ( %s ))"
+							, $conditionString
+							, $subConditionString
+						);
+					}
 				}
-				$conditionString = sprintf(
-					"(%s\n    AND ( %s ))"
-					, $conditionString
-					, $subConditionString
-				);
+				else
+				{
+					$conditionString = $subConditionString;
+				}
 			}
 
 			$joinString .= ' ' . $subJoinString;
+		}
+
+		$localConditionString = $this->conditionTree(
+			$this->conditions
+			, 'AND'
+			, $this->alias
+			, $args
+		);
+
+		if(trim($conditionString))
+		{
+			if($localConditionString)
+			{
+				$conditionString = sprintf(
+					"(%s\n    AND ( %s ))"
+					, $conditionString
+					, $localConditionString
+				);
+				
+			}
+		}
+		else
+		{
+			$conditionString = $localConditionString;
+		}
+
+		if(!trim($conditionString))
+		{
+			$conditionString = 1;
 		}
 
 		return [$joinString, $columnString, $conditionString];
@@ -455,14 +510,12 @@ class SelectStatement extends WhereStatement
 
 	public function execute(...$args)
 	{
-		foreach($this->joins as $join)
+		foreach($this->joins() as $join)
 		{
 			list($sub, $superCol, $subCol, $subType) = $join;
 
 			$this->valueWrappers += array_merge($this->valueWrappers, $sub->valueWrappers);
 		}
-
-		// var_dump($this->joins);
 
 		return parent::execute(...$args);
 	}
@@ -563,5 +616,13 @@ class SelectStatement extends WhereStatement
 		};
 
 		return $closure;
+	}
+
+	public function group(...$groups)
+	{
+		foreach ($groups as $group)
+		{
+			$this->groups[] = $group;
+		}
 	}
 }

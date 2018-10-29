@@ -183,6 +183,13 @@ $existingErrorHandler = set_error_handler(
 if($db = \SeanMorris\Ids\Settings::read('databases'))
 {
 	\SeanMorris\Ids\Database::registerMulti($db);
+	$dbHandle = \SeanMorris\Ids\Database::get('main');
+
+	$query = $dbHandle->prepare("SET sql_mode=(
+		SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY','')
+	)");
+
+	$query->execute();
 }
 
 if(!\SeanMorris\Ids\Settings::read('devmode'))

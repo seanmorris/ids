@@ -42,7 +42,7 @@ abstract class WhereStatement extends Statement
 			$queryObject = $this->prepare();
 		}
 
-		foreach($this->joins as $join)
+		foreach($this->joins() as $join)
 		{
 			list($sub, $superCol, $subCol, $subType) = $join;
 
@@ -237,10 +237,8 @@ abstract class WhereStatement extends Statement
 				$name     = isset($condition[2]) ? $condition[2] : $column;
 				$required = isset($condition[3]) ? $condition[3] : TRUE;
 
-				// \SeanMorris\Ids\Log::debug($condition);
-
 				$this->valueRequired[] = $required;
-				$this->valueNames[] = $name;
+				$this->valueNames[]    = $name;
 
 				// \SeanMorris\Ids\Log::trace();
 				// \SeanMorris\Ids\Log::debug(array(
@@ -281,6 +279,15 @@ abstract class WhereStatement extends Statement
 					, $value
 				);
 			}
+		}
+
+		foreach($this->joins() as $join)
+		{
+			list($sub, $superCol, $subCol, $subType) = $join;
+
+			$this->valueWrappers += array_merge($this->valueWrappers, $sub->valueWrappers);
+
+			$sub->valueWrappers = [];
 		}
 
 		return implode(

@@ -812,9 +812,9 @@ class Model
 
 		$def = static::resolveDef($name, $args);
 
-		\SeanMorris\Ids\Log::debug(
-			$def
-		);
+		// \SeanMorris\Ids\Log::debug(
+		// 	$def
+		// );
 
 		if(isset($def['cursor']) && $def['cursor'])
 		{
@@ -1725,7 +1725,12 @@ class Model
 			->conditions($where)
 		;
 
-		\SeanMorris\Ids\Log::debug($selectDef);
+		if(!$superior)
+		{
+			$select->group('id');
+		}
+
+		// \SeanMorris\Ids\Log::debug($selectDef);
 
 		if(!$selectDef['flat'] && isset($selectDef['join']) && is_array($selectDef['join']))
 		{
