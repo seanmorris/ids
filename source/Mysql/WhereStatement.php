@@ -259,6 +259,14 @@ abstract class WhereStatement extends Statement
 					continue;
 				}
 
+				if(is_array($value))
+				{
+					if(count($value) == 2)
+					{
+						$value = call_user_func($value);
+					}
+				}
+
 				if(preg_match('/\?/', $value))
 				{
 					$this->valueWrappers[] = $wrapper;

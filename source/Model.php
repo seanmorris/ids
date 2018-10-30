@@ -328,7 +328,12 @@ class Model
 		return $this->_update(get_called_class());
 	}
 
-	protected function _update($curClass)
+	protected function postUpdate()
+	{
+		return $this->_update(get_called_class(), TRUE);
+	}
+
+	protected function _update($curClass, $postUpdate = false)
 	{
 		\SeanMorris\Ids\Log::debug(get_called_class());
 
@@ -435,11 +440,15 @@ class Model
 
 		$values[] = $this->id;
 
-		if(($curClass::beforeUpdate($this, $namedValues) === FALSE)
-			| ($curClass::beforeWrite($this, $namedValues) === FALSE)
-		){
-			return FALSE;
+		if(!$postUpdate)
+		{
+			if(($curClass::beforeUpdate($this, $namedValues) === FALSE)
+				| ($curClass::beforeWrite($this, $namedValues) === FALSE)
+			){
+				return FALSE;
+			}
 		}
+
 
 		$update->execute(...$values);
 
@@ -528,10 +537,13 @@ class Model
 
 			$saved = static::loadOneById($this->id);
 
-			if($curClass::afterUpdate($saved, $namedValues) === FALSE
-				|| $curClass::afterWrite($saved, $namedValues) === FALSE
-			){
-				return FALSE;
+			if(!$postUpdate)
+			{
+				if($curClass::afterUpdate($saved, $namedValues) === FALSE
+					|| $curClass::afterWrite($saved, $namedValues) === FALSE
+				){
+					return FALSE;
+				}
 			}
 
 			if(!$saved)
