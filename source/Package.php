@@ -981,7 +981,7 @@ class Package
 								$queries[] = sprintf(
 									"ALTER TABLE `%s` ADD UNIQUE KEY `%s` (`%s`)"
 									, $table
-									, $_arKey["1"]->Key_name
+									, $arKey[1]->Key_name
 									, $columns
 								);
 
@@ -992,7 +992,7 @@ class Package
 								$queries[] = sprintf(
 									"ALTER TABLE `%s` ADD KEY `%s` (`%s`)"
 									, $table
-									, $_arKey[1]->Key_name
+									, $arKey[1]->Key_name
 									, $columns
 								);
 							}
