@@ -805,10 +805,10 @@ class Model
 			$currentDefClass = $parentDefClass;
 		}
 
-		\SeanMorris\Ids\Log::debug(
-			$name
-			, $args
-		);
+		// \SeanMorris\Ids\Log::debug(
+		// 	$name
+		// 	, $args
+		// );
 
 		$def = static::resolveDef($name, $args);
 

@@ -27,7 +27,6 @@ class CountStatement extends SelectStatement
 
 			$sub->columns = [];
 			$sub->order   = [];
-
 			$sub->joins   = array_map($cleanJoin, $sub->joins);
 
 			return [$sub, $superCol, $subCol, $type];

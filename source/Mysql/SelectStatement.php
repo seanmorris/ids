@@ -279,7 +279,7 @@ class SelectStatement extends WhereStatement
 
 		$groupString = NULL;
 
-		if($groupCols)
+		if($groupCols && !($this instanceOf CountStatement))
 		{
 			$groupString = PHP_EOL . PHP_EOL . ' GROUP BY '
 				. implode(',', $groupCols)
