@@ -26,4 +26,9 @@ class DeleteStatement extends WhereStatement
 			, $conditionString ?: 1
 		);
 	}
+
+	public function joins()
+	{
+		return [];
+	}
 }
