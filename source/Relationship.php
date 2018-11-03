@@ -59,19 +59,38 @@ class Relationship extends Model
 
 		if(!class_exists($ownerClass))
 		{
-			return FALSE;
+			throw new \Exception(sprintf(
+				'Unabled to find referenced class %s.'
+				, $ownerClass
+			));
 		}
+
+		// $subjectClass = $ownerClass::getSubjectClass($this->property);
+		$subjectClass = $this->subjectClass;
 
 		if(!$this->subjectObject)
 		{
-			$subjectClass = $ownerClass::getSubjectClass($this->property);
-
 			if(!class_exists($subjectClass))
 			{
 				return FALSE;
 			}
+			else
+			{
+				throw new \Exception(sprintf(
+					'Unabled to find referenced class %s.'
+					, $subjectClass
+				));
+			}
 
 			$this->subjectObject = $subjectClass::loadOneById($this->subjectId);
+		}
+		else
+		{
+			Log::warn(sprintf(
+				'Unabled to find referenced %s[%s].'
+				, $subjectClass
+				, $this->subjectId
+			));
 		}
 
 		return $this->subjectObject;
@@ -88,12 +107,14 @@ class Relationship extends Model
 		if($owner && $column)
 		{
 			// \SeanMorris\Ids\Log::debug([$owner, $column, $owner->getSubjectClass($column)]);
-			$subjectClass = $owner->getSubjectClass($column);
-			$subject = $subjectClass::instantiate($skeleton);
+			// $subjectClass = $owner->getSubjectClass($column);
 
 			$instance = parent::instantiate($skeleton, $args);
-			
-			$instance->ownerObject = $owner;
+
+			$subjectClass = $instance->subjectClass;
+			$subject      = $subjectClass::instantiate($skeleton);
+
+			$instance->ownerObject   = $owner;
 			$instance->subjectObject = $subject;
 
 		}
