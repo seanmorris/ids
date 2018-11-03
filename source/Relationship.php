@@ -72,10 +72,6 @@ class Relationship extends Model
 		{
 			if(!class_exists($subjectClass))
 			{
-				return FALSE;
-			}
-			else
-			{
 				throw new \Exception(sprintf(
 					'Unabled to find referenced class %s.'
 					, $subjectClass

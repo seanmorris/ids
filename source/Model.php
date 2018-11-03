@@ -1241,7 +1241,7 @@ class Model
 			{
 				$subjectClass = static::$hasMany[$column];
 
-				if(is_object($subject))
+				if(isset($subject) && is_object($subject))
 				{
 					$subjectId = $subject->id;
 				}
@@ -2183,6 +2183,14 @@ class Model
 						, $propertyClass
 						, $property
 					), $values);
+
+					if(is_object($values) && isset($values->id))
+					{
+						$values = [
+							'class' => get_class($values)
+							, 'id'  => $values->id
+						];
+					}
 
 					if(isset($values['id']) && $values['id'])
 					{
