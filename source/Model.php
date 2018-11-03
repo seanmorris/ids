@@ -1233,6 +1233,7 @@ class Model
 		{
 			if(is_object($subjectId))
 			{
+				$subject   = $subjectId;
 				$subjectId = $subjectId->id;
 			}
 
@@ -1240,10 +1241,37 @@ class Model
 			{
 				$subjectClass = static::$hasMany[$column];
 
-				$subject = $subjectClass::loadOneById($subjectId);
+				if(is_object($subject))
+				{
+					$subjectId = $subject->id;
+				}
+				else
+				{
+					$subject = $subjectClass::loadOneById($subjectId);
+				}
 
 				if($subject)
 				{
+					if($subject::$table !== $subjectClass::$table)
+					{
+						continue;
+					}
+
+					// var_dump($subject);
+
+					// if(get_class($subject) !== $subjectClass)
+					// {
+					// 	throw new \Exception(sprintf(
+					// 		'%s::%s can store %s, but value at index %d is a %s.'
+					// 		, get_class($this)
+					// 		, $column
+					// 		, $subjectClass
+					// 		, $delta
+					// 		, get_class($subject)
+					// 	));
+					// 	continue;
+					// }
+
 					$relationshipClass = '\SeanMorris\Ids\Relationship';
 
 					if(static::$relationshipClass)
@@ -1258,7 +1286,7 @@ class Model
 							, 'ownerClass'    => get_called_class()
 							, 'property'      => $column
 							, 'subjectId'     => $subjectId
-							, 'subjectClass'  => $subjectClass
+							, 'subjectClass'  => get_class($subject)
 							, 'delta'         => $delta
 						]
 						, []
@@ -1847,16 +1875,15 @@ class Model
 		}
 		else if(!in_array('class', static::$ignore))
 		{
+			$rootPackage = \SeanMorris\Ids\Package::getRoot();
+			$allClasses  =  $rootPackage->getVar('linker:inheritance', []);
+
+			$subClasses  = $allClasses->{$topClass} ?? [];
+
+			$subClasses[] = $topClass;
+
 			if($selectDef['subs'] && !$selectDef['recs'])
 			{
-				// TODO use linker inheritance
-				$rootPackage = \SeanMorris\Ids\Package::getRoot();
-				$allClasses  =  $rootPackage->getVar('linker:inheritance', []);
-
-				$subClasses  = $allClasses->{$topClass} ?? [];
-
-				$subClasses[] = $topClass;
-
 				$classesString = sprintf(
 					'("%s")'
 					, implode('","', array_map('addslashes', $subClasses))
@@ -1868,9 +1895,28 @@ class Model
 			}
 			else if(!$selectDef['recs'])
 			{
+				$subClasses = array_filter(
+					$subClasses
+					, function($subClass)
+					{
+						return $subClass::$table == static::$table;
+					}
+				);
+
+				$subClasses[] = $topClass;
+
+				$classesString = sprintf(
+					'("%s")'
+					, implode('","', array_map('addslashes', $subClasses))
+				);
+
 				$select->conditions([[
-					'class' => sprintf('"%s"', addslashes($topClass))
+					'class' => $classesString, 'IN'
 				]]);
+
+				// $select->conditions([[
+				// 	'class' => sprintf('"%s"', addslashes($topClass))
+				// ]]);
 			}
 		}
 
