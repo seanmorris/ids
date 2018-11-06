@@ -266,9 +266,6 @@ class Model
 
 		foreach($this as $property => $value)
 		{
-			\SeanMorris\Ids\Log::debug(
-				$curClass, $property, $value
-			);
 			if(!$reflection->hasProperty($property))
 			{
 				continue;
@@ -1241,16 +1238,7 @@ class Model
 			{
 				$subjectClass = static::$hasMany[$column];
 
-				if(isset($subject) && is_object($subject))
-				{
-					$subjectId = $subject->id;
-				}
-				else
-				{
-					$subject = $subjectClass::loadOneById($subjectId);
-				}
-
-				if($subject)
+				if($subject = $subjectClass::loadOneById($subjectId))
 				{
 					if($subject::$table !== $subjectClass::$table)
 					{
@@ -1882,16 +1870,31 @@ class Model
 
 			$subClasses[] = $topClass;
 
+			$subClasses = array_unique($subClasses);
+
+			Log::debug($subClasses);
+
 			if($selectDef['subs'] && !$selectDef['recs'])
 			{
-				$classesString = sprintf(
-					'("%s")'
-					, implode('","', array_map('addslashes', $subClasses))
-				);
+				if(count($subClasses) == 1)
+				{
+					$select->conditions([[
+						'class' => sprintf('"%s"', 
+							addslashes(current($subClasses))
+						)
+					]]);
+				}
+				else
+				{
+					$classesString = sprintf(
+						'("%s")'
+						, implode('", "', array_map('addslashes', $subClasses))
+					);
 
-				$select->conditions([[
-					'class' => $classesString, 'IN'
-				]]);
+					$select->conditions([[
+						'class' => $classesString, 'IN'
+					]]);
+				}
 			}
 			else if(!$selectDef['recs'])
 			{
@@ -1905,18 +1908,31 @@ class Model
 
 				$subClasses[] = $topClass;
 
-				$classesString = sprintf(
-					'("%s")'
-					, implode('","', array_map('addslashes', $subClasses))
-				);
+				$subClasses = array_unique($subClasses);
 
-				$select->conditions([[
-					'class' => $classesString, 'IN'
-				]]);
+				if(count($subClasses) == 1)
+				{
+					$select->conditions([[
+						'class' => sprintf('"%s"', 
+							addslashes(current($subClasses))
+						)
+					]]);
+				}
+				else
+				{
+					$classesString = sprintf(
+						'("%s")'
+						, implode('","', array_map('addslashes', $subClasses))
+					);
 
-				// $select->conditions([[
-				// 	'class' => sprintf('"%s"', addslashes($topClass))
-				// ]]);
+					$select->conditions([[
+						'class' => $classesString, 'IN'
+					]]);
+
+					// $select->conditions([[
+					// 	'class' => sprintf('"%s"', addslashes($topClass))
+					// ]]);
+				}
 			}
 		}
 
