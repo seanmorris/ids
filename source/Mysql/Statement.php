@@ -57,6 +57,7 @@ abstract class Statement
 		$queryTime = microtime(TRUE) - $queryStartTime;
 
 		$slowQuery = \SeanMorris\Ids\Settings::read('slowQuery');
+		$queryLimit = \SeanMorris\Ids\Settings::read('queryLimit');
 
 		if($slowQuery && $slowQuery <= $queryTime)
 		{
@@ -69,6 +70,14 @@ abstract class Statement
 				, ''
 				, $queryObject->queryString
 			);
+		}
+
+		if($queryLimit > 0 && static::$queryCount == $queryLimit)
+		{
+			throw new \Exception(sprintf(
+				'Query limit of %d reached!'
+				, $queryLimit
+			));
 		}
 
 		static::$queryCount++;
