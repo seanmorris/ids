@@ -306,7 +306,7 @@ class Model
 
 		if($id || $inserted)
 		{
-			$curClass::afterUpdate($this, $values);
+			$curClass::afterWrite($this, $values);
 			$curClass::afterCreate($this, $values);
 
 			if($id)
@@ -1369,7 +1369,7 @@ class Model
 			if(
 				is_string($this->$column)
 				&& is_numeric($this->$column)
-				&& $this->$column[0] !== '0'
+				&& ($this->$column[0] !== '0' || $this->$column === '0')
 				&& $this->$column == (int) $this->$column
 			){
 				$this->$column = (int) $this->$column;
@@ -2355,6 +2355,12 @@ class Model
 
 	public function addSubject($property, $subject)
 	{
+		\SeanMorris\Ids\Log::debug(sprintf(
+			'Trying to add %s to %s.'
+			, get_class($subject)
+			, $property
+		));
+
 		if($subject->onSubjugate($this, $property) === FALSE)
 		{
 			return;
@@ -2397,6 +2403,11 @@ class Model
 				|| is_subclass_of($subjectClass, $this->canHaveOne($property))
 			)
 		){
+			\SeanMorris\Ids\Log::debug(
+				'Adding to ' . $property
+				, $subject
+			);
+
 			$this->{$property} = $subject->id;
 			return true;
 		}
