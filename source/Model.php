@@ -734,14 +734,25 @@ class Model
 		}
 	}
 
-	public static function __callStatic($name, $args = null)
+	public static function __callStatic($name, $args = [])
 	{
+		$hashableArgs = array_map(
+			function($arg)
+			{
+				if(is_a($arg, get_class()) && $arg->id)
+				{
+					return $arg->id;
+				}
+				return $arg;
+			}
+			, $args
+		);
 		$curClass = get_called_class();
 		$cacheKey = $curClass
 			. '::'
 			. $name
 			. '--'
-			. md5(print_r(func_get_args(), 1));
+			. md5(print_r($hashableArgs, 1));
 
 		// \SeanMorris\Ids\Log::debug(self::$cacheKey);
 
@@ -964,6 +975,18 @@ class Model
 				'Loading one %s', get_called_class()
 			));
 
+			if($name === 'loadOneById')
+			{
+				if(isset($idCache[$args[0]]))
+				{
+					$model = $idCache[$args[0]];
+
+					\SeanMorris\Ids\Log::debug('Already loaded...', $model);
+
+					return $model;
+				}
+			}
+
 			if(isset($cache) && array_key_exists(0, $cache))
 			{
 				\SeanMorris\Ids\Log::debug('From cache...');
@@ -1061,6 +1084,7 @@ class Model
 				}
 
 				$cache[count($models)] = $model;
+				$idCache[$model->id] = $model;
 
 				$models[] = $model;
 
@@ -1186,13 +1210,13 @@ class Model
 
 		$instance = new $class();
 
-		$timelimit = ini_get("max_execution_time");
+		// $timelimit = ini_get("max_execution_time");
 
-		set_time_limit(30);
+		// set_time_limit(30);
 
 		$instance->consumeStatement($skeleton, $args, $rawArgs);
 
-		set_time_limit($timelimit);
+		// set_time_limit($timelimit);
 
 		self::$instances[get_called_class()][$instance->id] = $instance;
 
@@ -1872,7 +1896,7 @@ class Model
 
 			$subClasses = array_unique($subClasses);
 
-			Log::debug($subClasses);
+			// Log::debug($subClasses);
 
 			if($selectDef['subs'] && !$selectDef['recs'])
 			{
