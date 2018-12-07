@@ -27,13 +27,23 @@ class Mail
 		$this->body = $body;
 	}
 
-	public function send()
+	public function send($real = FALSE)
 	{
-		$real = FALSE;
-
 		if($real)
 		{
+			\SeanMorris\Ids\Log::debug(
+				'SENDING REAL MAIL...'
+				, sprintf('To:      [%s]', implode(', ', $this->recipients))
+				, sprintf('Subject: %s', $this->subject)
+				, sprintf("Body:\n%s", $this->body)
+				, '----'
+			);
 
+			mail(
+				$this->recipients[0]
+				, $this->subject
+				, $this->body
+			);
 		}
 		else
 		{
