@@ -42,6 +42,11 @@ class ChildProcess
 		return fread($this->stdOut, $bytes);
 	}
 
+	public function getError($bytes)
+	{
+		return fread($this->stdErr, $bytes);
+	}
+
 	public function read()
 	{
 		return trim(fgets($this->stdOut));
