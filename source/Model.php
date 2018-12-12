@@ -792,7 +792,7 @@ class Model
 			, $cacheHit
 				? PHP_EOL . "\t\t" . 'CACHE HIT!!!'
 				: ''
-		), 'Args:', $args);
+		));
 
 		$cache      =& $classCache[$cacheKey];
 		$idCache    =& self::$idCache[$curClass];
@@ -986,7 +986,7 @@ class Model
 				}
 			}
 
-			if(isset($cache) && array_key_exists(0, $cache))
+			if($cacheHit && array_key_exists(0, $cache))
 			{
 				\SeanMorris\Ids\Log::debug('From cache...');
 
