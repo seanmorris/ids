@@ -2399,7 +2399,7 @@ class Model
 		){
 			if(!$this->{$property})
 			{
-				$this->{$property} = $this->getSubjects($property);
+				$this->{$property} = $this->getSubjects($property, TRUE);
 			}
 
 			foreach($this->{$property} as $existingSubject)
@@ -2417,7 +2417,8 @@ class Model
 			);
 
 			$this->{$property}[] = $subject;
-			return true;
+
+			return TRUE;
 		}
 
 		if($subjectClass
@@ -2432,10 +2433,11 @@ class Model
 			);
 
 			$this->{$property} = $subject->id;
-			return true;
+
+			return TRUE;
 		}
 
-		return false;
+		return FALSE;
 	}
 
 	public function getSubject($column = null)
