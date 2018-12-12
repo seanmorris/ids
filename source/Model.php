@@ -31,6 +31,8 @@ class Model
 
 	protected function _create($curClass)
 	{
+		static::clearCache();
+
 		\SeanMorris\Ids\Log::debug($curClass, $this);
 
 		$parentClass = get_parent_class($curClass);
@@ -332,6 +334,8 @@ class Model
 
 	protected function _update($curClass, $postUpdate = false)
 	{
+		static::clearCache();
+
 		\SeanMorris\Ids\Log::debug(get_called_class());
 
 		$columnsToWrappers = $curClass::getColumns('update', FALSE);
@@ -763,12 +767,11 @@ class Model
 			$classCache = [];
 		}
 
-		// \SeanMorris\Ids\Log::debug($classCache);
+		$cacheHit = FALSE;
 
-		if(array_key_exists($cacheKey, $classCache)
-			&& $classCache[$cacheKey] === NULL
-		){
-			// $classCache[$cacheKey] = FALSE;	
+		if(array_key_exists($cacheKey, $classCache))
+		{
+			$cacheHit = TRUE;
 		}
 
 		$backtrace = debug_backtrace();
@@ -786,7 +789,9 @@ class Model
 			, $x['file']
 			, $x['line']
 			, $cacheKey
-			, array_key_exists($cacheKey, $classCache) ? PHP_EOL . "\t\t" . 'CACHE HIT!!!' : ''
+			, $cacheHit
+				? PHP_EOL . "\t\t" . 'CACHE HIT!!!'
+				: ''
 		), 'Args:', $args);
 
 		$cache      =& $classCache[$cacheKey];
@@ -795,11 +800,6 @@ class Model
 		if(!$args)
 		{
 			$args = [];
-		}
-
-		if(!$cache)
-		{
-			// $cache = [];
 		}
 
 		$currentDefClass = $defClass = get_called_class();
@@ -869,15 +869,7 @@ class Model
 		}
 
 		$gen = $select->generate();
-		/*
-		\SeanMorris\Ids\Log::debug(
-			'Model Select Def'
-			, $name
-			, $args
-			, $curClass
-			, $def
-		);
-		*/
+
 		$rawArgs = $args;
 
 		$args = array_map(
@@ -899,12 +891,12 @@ class Model
 				'Generating %s', $curClass
 			));
 
-			return function(...$overArgs) use($gen, $args, $rawArgs, $curClass, &$cache, &$idCache)
+			return function(...$overArgs) use($gen, $args, $rawArgs, $curClass, &$cache, &$idCache, $cacheHit)
 			{
 				$overArgs = [];
 				$i = 0;
 
-				if($cache
+				if($cacheHit
 						&& isset($cache)
 						&& array_key_exists($i, $cache)
 				){
@@ -916,7 +908,7 @@ class Model
 						$i++;
 					}
 				}
-				else
+				else if(!$cacheHit)
 				{
 					$args = $overArgs + $args;
 
@@ -965,6 +957,13 @@ class Model
 
 						$i++;
 					}
+				}
+				if($cacheHit && isset($cache))
+				{
+					\SeanMorris\Ids\Log::debug(sprintf(
+						'Empty cache hit on generate %s.'
+						, get_called_class()
+					));
 				}
 			};
 		}
@@ -2441,6 +2440,12 @@ class Model
 
 	public function getSubject($column = null)
 	{
+		Log::debug(sprintf(
+			'Gettings subject %s for %s.'
+			, $column
+			, get_called_class()
+		));
+
 		if(!$this->$column || is_object($this->$column))
 		{
 			return $this->$column;
