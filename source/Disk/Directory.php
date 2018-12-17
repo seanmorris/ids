@@ -20,6 +20,18 @@ class Directory extends File
 		}
 	}
 
+	public function check()
+	{
+		$this->exists = parent::check();
+
+		if($this->exists)
+		{
+			$this->name .= '/';
+		}
+
+		return $this->exists;
+	}
+
 	public function eof()
 	{
 		return $this->eod;

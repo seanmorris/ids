@@ -14,7 +14,7 @@ class CountStatement extends SelectStatement
 
 		$countAlias = $this->aliasColumnName('count', $this->alias);
 
-		return [sprintf('COUNT(%s.%s) AS %s', $this->alias, $this->column, $countAlias)];
+		return [sprintf('COUNT(DISTINCT %s.%s) AS %s', $this->alias, $this->column, $countAlias)];
 	}
 
 	public function joins()
@@ -27,13 +27,12 @@ class CountStatement extends SelectStatement
 
 			$sub->columns = [];
 			$sub->order   = [];
-
 			$sub->joins   = array_map($cleanJoin, $sub->joins);
 
 			return [$sub, $superCol, $subCol, $type];
 		};
 
-		return array_map($cleanJoin, $this->joins);
+		return $this->joins = array_map($cleanJoin, $this->joins);
 	}
 
 	public function generate()

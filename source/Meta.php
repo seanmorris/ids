@@ -190,7 +190,7 @@ class Meta
 							$subIndex++;
 						}
 
-						if(!static::classExists($subNamespace))
+						if(!static::classExists($subNamespace, $phpFile->getRealPath()))
 						{
 							break;
 						}
@@ -250,11 +250,11 @@ class Meta
 					}
 					catch(\ParseError $e)
 					{
-
+						print $e->getMessage();
 					}
 					catch(\Exception $e)
 					{
-
+						print $e->getMessage();
 					}
 
 					break;
@@ -265,7 +265,7 @@ class Meta
 		return $classes;
 	}
 
-	public static function classExists($class)
+	public static function classExists($class, $classFile = NULL)
 	{
 		global $composer;
 
@@ -276,11 +276,14 @@ class Meta
 			return $results[$class];
 		}
 
-		$classFile = $composer->findFile($class);
-
 		if(!$classFile)
 		{
-			return FALSE;
+			$classFile = $composer->findFile($class);
+
+			if(!$classFile)
+			{
+				return FALSE;
+			}
 		}
 
 		$escapedClassFile = escapeshellarg($classFile);

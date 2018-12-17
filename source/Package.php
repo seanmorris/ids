@@ -267,17 +267,52 @@ class Package
 
 	public function localSiteDir()
 	{
-		if(!isset($_SERVER['HTTP_HOST']))
+		if(!isset($_SERVER['HTTP_HOST']) && php_sapi_name() == 'cli')
 		{
-			throw new \Exception('$_SERVER["HTTP_HOST"] is not defined. Please set a site with the "-d" switch or use .idilicProfile.json');
+			throw new \Exception('Please set a site with the "-d" switch or use .idilicProfile.json');
 		}
 
-		return new \SeanMorris\Ids\Disk\Directory(
-			$this->localDir()
-				. 'sites/'
-				. $_SERVER['HTTP_HOST']
-				. '/'
-		);
+		$hostname = NULL;
+
+		if(isset($_SERVER['HTTP_HOST']))
+		{
+			$hostname = parse_url('//' . $_SERVER['HTTP_HOST'], PHP_URL_HOST);
+		}
+
+		$port = NULL;
+
+		if(isset($_SERVER['SERVER_PORT']))
+		{
+			$port = $_SERVER['SERVER_PORT'];
+		}
+
+		$fileNames = [
+			sprintf('%s:%d/', $hostname, $port)
+			, sprintf('%s;%d/', $hostname, $port)
+			, sprintf('%s:/', $hostname)
+			, sprintf('%s;/', $hostname)
+			, $hostname . '/'
+			, sprintf(':%d/', $port)
+			, sprintf(';%d/', $port)
+			, ':/settings'
+			, ';/settings'
+		];
+
+		foreach($fileNames as $fileName)
+		{
+			$dirPath = sprintf(
+				'%ssites/%s/'
+				, $this->localDir()
+				, $fileName
+			);
+
+			$dir = new \SeanMorris\Ids\Disk\Directory($dirPath);
+
+			if($dir->check())
+			{
+				return $dir;
+			}
+		}
 	}
 
 	public function globalSiteDir()
@@ -981,7 +1016,7 @@ class Package
 								$queries[] = sprintf(
 									"ALTER TABLE `%s` ADD UNIQUE KEY `%s` (`%s`)"
 									, $table
-									, $_arKey[1]->Key_name
+									, $arKey[1]->Key_name
 									, $columns
 								);
 
@@ -992,7 +1027,7 @@ class Package
 								$queries[] = sprintf(
 									"ALTER TABLE `%s` ADD KEY `%s` (`%s`)"
 									, $table
-									, $_arKey[1]->Key_name
+									, $arKey[1]->Key_name
 									, $columns
 								);
 							}

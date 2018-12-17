@@ -18,7 +18,14 @@ class File
 
 	public function check()
 	{
-		return $this->exists = file_exists($this->name);
+		$this->exists = file_exists($this->name);
+
+		if($this->exists)
+		{
+			$this->name = realpath($this->name);
+		}
+
+		return $this->exists;
 	}
 
 	public function name()

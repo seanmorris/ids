@@ -120,7 +120,7 @@ class Path
 	{
 		$args = [];
 		
-		while($arg = $this->consumeNode())
+		while(($arg = $this->consumeNode()) !== NULL)
 		{
 			$args[] = $arg;
 		}

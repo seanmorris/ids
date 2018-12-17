@@ -31,6 +31,8 @@ class Model
 
 	protected function _create($curClass)
 	{
+		static::clearCache();
+
 		\SeanMorris\Ids\Log::debug($curClass, $this);
 
 		$parentClass = get_parent_class($curClass);
@@ -266,9 +268,6 @@ class Model
 
 		foreach($this as $property => $value)
 		{
-			\SeanMorris\Ids\Log::debug(
-				$curClass, $property, $value
-			);
 			if(!$reflection->hasProperty($property))
 			{
 				continue;
@@ -309,7 +308,7 @@ class Model
 
 		if($id || $inserted)
 		{
-			$curClass::afterUpdate($this, $values);
+			$curClass::afterWrite($this, $values);
 			$curClass::afterCreate($this, $values);
 
 			if($id)
@@ -328,8 +327,15 @@ class Model
 		return $this->_update(get_called_class());
 	}
 
-	protected function _update($curClass)
+	protected function postUpdate()
 	{
+		return $this->_update(get_called_class(), TRUE);
+	}
+
+	protected function _update($curClass, $postUpdate = false)
+	{
+		static::clearCache();
+
 		\SeanMorris\Ids\Log::debug(get_called_class());
 
 		$columnsToWrappers = $curClass::getColumns('update', FALSE);
@@ -435,11 +441,15 @@ class Model
 
 		$values[] = $this->id;
 
-		if(($curClass::beforeUpdate($this, $namedValues) === FALSE)
-			| ($curClass::beforeWrite($this, $namedValues) === FALSE)
-		){
-			return FALSE;
+		if(!$postUpdate)
+		{
+			if(($curClass::beforeUpdate($this, $namedValues) === FALSE)
+				| ($curClass::beforeWrite($this, $namedValues) === FALSE)
+			){
+				return FALSE;
+			}
 		}
+
 
 		$update->execute(...$values);
 
@@ -528,10 +538,13 @@ class Model
 
 			$saved = static::loadOneById($this->id);
 
-			if($curClass::afterUpdate($saved, $namedValues) === FALSE
-				|| $curClass::afterWrite($saved, $namedValues) === FALSE
-			){
-				return FALSE;
+			if(!$postUpdate)
+			{
+				if($curClass::afterUpdate($saved, $namedValues) === FALSE
+					|| $curClass::afterWrite($saved, $namedValues) === FALSE
+				){
+					return FALSE;
+				}
 			}
 
 			if(!$saved)
@@ -725,14 +738,25 @@ class Model
 		}
 	}
 
-	public static function __callStatic($name, $args = null)
+	public static function __callStatic($name, $args = [])
 	{
+		$hashableArgs = array_map(
+			function($arg)
+			{
+				if(is_a($arg, get_class()) && $arg->id)
+				{
+					return $arg->id;
+				}
+				return $arg;
+			}
+			, $args
+		);
 		$curClass = get_called_class();
 		$cacheKey = $curClass
 			. '::'
 			. $name
 			. '--'
-			. md5(print_r(func_get_args(), 1));
+			. md5(print_r($hashableArgs, 1));
 
 		// \SeanMorris\Ids\Log::debug(self::$cacheKey);
 
@@ -743,12 +767,11 @@ class Model
 			$classCache = [];
 		}
 
-		// \SeanMorris\Ids\Log::debug($classCache);
+		$cacheHit = FALSE;
 
-		if(array_key_exists($cacheKey, $classCache)
-			&& $classCache[$cacheKey] === NULL
-		){
-			// $classCache[$cacheKey] = FALSE;	
+		if(array_key_exists($cacheKey, $classCache))
+		{
+			$cacheHit = TRUE;
 		}
 
 		$backtrace = debug_backtrace();
@@ -766,8 +789,10 @@ class Model
 			, $x['file']
 			, $x['line']
 			, $cacheKey
-			, array_key_exists($cacheKey, $classCache) ? PHP_EOL . "\t\t" . 'CACHE HIT!!!' : ''
-		), 'Args:', $args);
+			, $cacheHit
+				? PHP_EOL . "\t\t" . 'CACHE HIT!!!'
+				: ''
+		));
 
 		$cache      =& $classCache[$cacheKey];
 		$idCache    =& self::$idCache[$curClass];
@@ -775,11 +800,6 @@ class Model
 		if(!$args)
 		{
 			$args = [];
-		}
-
-		if(!$cache)
-		{
-			// $cache = [];
 		}
 
 		$currentDefClass = $defClass = get_called_class();
@@ -805,16 +825,16 @@ class Model
 			$currentDefClass = $parentDefClass;
 		}
 
-		\SeanMorris\Ids\Log::debug(
-			$name
-			, $args
-		);
+		// \SeanMorris\Ids\Log::debug(
+		// 	$name
+		// 	, $args
+		// );
 
 		$def = static::resolveDef($name, $args);
 
-		\SeanMorris\Ids\Log::debug(
-			$def
-		);
+		// \SeanMorris\Ids\Log::debug(
+		// 	$def
+		// );
 
 		if(isset($def['cursor']) && $def['cursor'])
 		{
@@ -849,15 +869,7 @@ class Model
 		}
 
 		$gen = $select->generate();
-		/*
-		\SeanMorris\Ids\Log::debug(
-			'Model Select Def'
-			, $name
-			, $args
-			, $curClass
-			, $def
-		);
-		*/
+
 		$rawArgs = $args;
 
 		$args = array_map(
@@ -879,12 +891,12 @@ class Model
 				'Generating %s', $curClass
 			));
 
-			return function(...$overArgs) use($gen, $args, $rawArgs, $curClass, &$cache, &$idCache)
+			return function(...$overArgs) use($gen, $args, $rawArgs, $curClass, &$cache, &$idCache, $cacheHit)
 			{
 				$overArgs = [];
 				$i = 0;
 
-				if($cache
+				if($cacheHit
 						&& isset($cache)
 						&& array_key_exists($i, $cache)
 				){
@@ -896,7 +908,7 @@ class Model
 						$i++;
 					}
 				}
-				else
+				else if(!$cacheHit)
 				{
 					$args = $overArgs + $args;
 
@@ -946,6 +958,13 @@ class Model
 						$i++;
 					}
 				}
+				if($cacheHit && isset($cache))
+				{
+					\SeanMorris\Ids\Log::debug(sprintf(
+						'Empty cache hit on generate %s.'
+						, get_called_class()
+					));
+				}
 			};
 		}
 
@@ -955,7 +974,19 @@ class Model
 				'Loading one %s', get_called_class()
 			));
 
-			if(isset($cache) && array_key_exists(0, $cache))
+			if($name === 'loadOneById')
+			{
+				if(isset($idCache[$args[0]]))
+				{
+					$model = $idCache[$args[0]];
+
+					\SeanMorris\Ids\Log::debug('Already loaded...', $model);
+
+					return $model;
+				}
+			}
+
+			if($cacheHit && array_key_exists(0, $cache))
 			{
 				\SeanMorris\Ids\Log::debug('From cache...');
 
@@ -1052,6 +1083,7 @@ class Model
 				}
 
 				$cache[count($models)] = $model;
+				$idCache[$model->id] = $model;
 
 				$models[] = $model;
 
@@ -1177,13 +1209,13 @@ class Model
 
 		$instance = new $class();
 
-		$timelimit = ini_get("max_execution_time");
+		// $timelimit = ini_get("max_execution_time");
 
-		set_time_limit(30);
+		// set_time_limit(30);
 
 		$instance->consumeStatement($skeleton, $args, $rawArgs);
 
-		set_time_limit($timelimit);
+		// set_time_limit($timelimit);
 
 		self::$instances[get_called_class()][$instance->id] = $instance;
 
@@ -1221,6 +1253,7 @@ class Model
 		{
 			if(is_object($subjectId))
 			{
+				$subject   = $subjectId;
 				$subjectId = $subjectId->id;
 			}
 
@@ -1228,10 +1261,28 @@ class Model
 			{
 				$subjectClass = static::$hasMany[$column];
 
-				$subject = $subjectClass::loadOneById($subjectId);
-
-				if($subject)
+				if($subject = $subjectClass::loadOneById($subjectId))
 				{
+					if($subject::$table !== $subjectClass::$table)
+					{
+						continue;
+					}
+
+					// var_dump($subject);
+
+					// if(get_class($subject) !== $subjectClass)
+					// {
+					// 	throw new \Exception(sprintf(
+					// 		'%s::%s can store %s, but value at index %d is a %s.'
+					// 		, get_class($this)
+					// 		, $column
+					// 		, $subjectClass
+					// 		, $delta
+					// 		, get_class($subject)
+					// 	));
+					// 	continue;
+					// }
+
 					$relationshipClass = '\SeanMorris\Ids\Relationship';
 
 					if(static::$relationshipClass)
@@ -1246,7 +1297,7 @@ class Model
 							, 'ownerClass'    => get_called_class()
 							, 'property'      => $column
 							, 'subjectId'     => $subjectId
-							, 'subjectClass'  => $subjectClass
+							, 'subjectClass'  => get_class($subject)
 							, 'delta'         => $delta
 						]
 						, []
@@ -1341,7 +1392,7 @@ class Model
 			if(
 				is_string($this->$column)
 				&& is_numeric($this->$column)
-				&& $this->$column[0] !== '0'
+				&& ($this->$column[0] !== '0' || $this->$column === '0')
 				&& $this->$column == (int) $this->$column
 			){
 				$this->$column = (int) $this->$column;
@@ -1725,7 +1776,12 @@ class Model
 			->conditions($where)
 		;
 
-		\SeanMorris\Ids\Log::debug($selectDef);
+		if(!$superior)
+		{
+			$select->group('id');
+		}
+
+		// \SeanMorris\Ids\Log::debug($selectDef);
 
 		if(!$selectDef['flat'] && isset($selectDef['join']) && is_array($selectDef['join']))
 		{
@@ -1830,30 +1886,76 @@ class Model
 		}
 		else if(!in_array('class', static::$ignore))
 		{
+			$rootPackage = \SeanMorris\Ids\Package::getRoot();
+			$allClasses  =  $rootPackage->getVar('linker:inheritance', []);
+
+			$subClasses  = $allClasses->{$topClass} ?? [];
+
+			$subClasses[] = $topClass;
+
+			$subClasses = array_unique($subClasses);
+
+			// Log::debug($subClasses);
+
 			if($selectDef['subs'] && !$selectDef['recs'])
 			{
-				// TODO use linker inheritance
-				$rootPackage = \SeanMorris\Ids\Package::getRoot();
-				$allClasses  =  $rootPackage->getVar('linker:inheritance', []);
+				if(count($subClasses) == 1)
+				{
+					$select->conditions([[
+						'class' => sprintf('"%s"', 
+							addslashes(current($subClasses))
+						)
+					]]);
+				}
+				else
+				{
+					$classesString = sprintf(
+						'("%s")'
+						, implode('", "', array_map('addslashes', $subClasses))
+					);
 
-				$subClasses  = $allClasses->{$topClass} ?? [];
-
-				$subClasses[] = $topClass;
-
-				$classesString = sprintf(
-					'("%s")'
-					, implode('","', array_map('addslashes', $subClasses))
-				);
-
-				$select->conditions([[
-					'class' => $classesString, 'IN'
-				]]);
+					$select->conditions([[
+						'class' => $classesString, 'IN'
+					]]);
+				}
 			}
 			else if(!$selectDef['recs'])
 			{
-				$select->conditions([[
-					'class' => sprintf('"%s"', addslashes($topClass))
-				]]);
+				$subClasses = array_filter(
+					$subClasses
+					, function($subClass)
+					{
+						return $subClass::$table == static::$table;
+					}
+				);
+
+				$subClasses[] = $topClass;
+
+				$subClasses = array_unique($subClasses);
+
+				if(count($subClasses) == 1)
+				{
+					$select->conditions([[
+						'class' => sprintf('"%s"', 
+							addslashes(current($subClasses))
+						)
+					]]);
+				}
+				else
+				{
+					$classesString = sprintf(
+						'("%s")'
+						, implode('","', array_map('addslashes', $subClasses))
+					);
+
+					$select->conditions([[
+						'class' => $classesString, 'IN'
+					]]);
+
+					// $select->conditions([[
+					// 	'class' => sprintf('"%s"', addslashes($topClass))
+					// ]]);
+				}
 			}
 		}
 
@@ -2121,6 +2223,14 @@ class Model
 						, $property
 					), $values);
 
+					if(is_object($values) && isset($values->id))
+					{
+						$values = [
+							'class' => get_class($values)
+							, 'id'  => $values->id
+						];
+					}
+
 					if(isset($values['id']) && $values['id'])
 					{
 						if(isset($values['class']) && $values['class']
@@ -2268,6 +2378,12 @@ class Model
 
 	public function addSubject($property, $subject)
 	{
+		\SeanMorris\Ids\Log::debug(sprintf(
+			'Trying to add %s to %s.'
+			, get_class($subject)
+			, $property
+		));
+
 		if($subject->onSubjugate($this, $property) === FALSE)
 		{
 			return;
@@ -2283,7 +2399,7 @@ class Model
 		){
 			if(!$this->{$property})
 			{
-				$this->{$property} = $this->getSubjects($property);
+				$this->{$property} = $this->getSubjects($property, TRUE);
 			}
 
 			foreach($this->{$property} as $existingSubject)
@@ -2301,7 +2417,8 @@ class Model
 			);
 
 			$this->{$property}[] = $subject;
-			return true;
+
+			return TRUE;
 		}
 
 		if($subjectClass
@@ -2310,15 +2427,27 @@ class Model
 				|| is_subclass_of($subjectClass, $this->canHaveOne($property))
 			)
 		){
+			\SeanMorris\Ids\Log::debug(
+				'Adding to ' . $property
+				, $subject
+			);
+
 			$this->{$property} = $subject->id;
-			return true;
+
+			return TRUE;
 		}
 
-		return false;
+		return FALSE;
 	}
 
 	public function getSubject($column = null)
 	{
+		Log::debug(sprintf(
+			'Gettings subject %s for %s.'
+			, $column
+			, get_called_class()
+		));
+
 		if(!$this->$column || is_object($this->$column))
 		{
 			return $this->$column;
