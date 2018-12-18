@@ -1895,7 +1895,7 @@ class Model
 
 			$subClasses = array_unique($subClasses);
 
-			// Log::debug($subClasses);
+			Log::debug('Subclasses found:', $subClasses);
 
 			if($selectDef['subs'] && !$selectDef['recs'])
 			{
