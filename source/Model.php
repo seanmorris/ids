@@ -986,7 +986,7 @@ class Model
 				}
 			}
 
-			if($cacheHit && array_key_exists(0, $cache))
+			if($cacheHit && isset($cache) && array_key_exists(0, $cache))
 			{
 				\SeanMorris\Ids\Log::debug('From cache...');
 
@@ -2442,12 +2442,6 @@ class Model
 
 	public function getSubject($column = null)
 	{
-		Log::debug(sprintf(
-			'Gettings subject %s for %s.'
-			, $column
-			, get_called_class()
-		));
-
 		if(!$this->$column || is_object($this->$column))
 		{
 			return $this->$column;
@@ -2460,7 +2454,7 @@ class Model
 
 		$class = static::$hasOne[$column];
 
-		if($loaded = $class::loadOneById($this->$column))
+		if($loaded = $class::loadOneById($this->{$column}))
 		{
 			$this->$column = $loaded;
 		}
