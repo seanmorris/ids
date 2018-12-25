@@ -516,7 +516,7 @@ class Log
 				. static::SECOND_SIGNIFICANCE
 				. "f]::[%s.%0"
 				. static::SECOND_SIGNIFICANCE
-				. "d]::[%d]"
+				. "d]::[%d]::[%s]"
 				. (
 					$level
 						? (
@@ -536,6 +536,7 @@ class Log
 			, date('Y-m-d h:i:s')
 			, $mill
 			, getmypid()
+			, number_format(memory_get_usage())
 		);
 
 		
