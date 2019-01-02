@@ -148,6 +148,8 @@ class Meta
 
 		foreach ($phpFiles as $phpFile)
 		{
+			$aliases = [];
+
 			if(preg_match('/(simple)?[Tt]est(s)?/', $phpFile->getRealPath()))
 			{
 				continue;
@@ -173,6 +175,31 @@ class Meta
 					}
 				}
 
+				// @TODO: Account for use aliases when doing class lookups.
+
+				if(T_USE === $tokens[$index][0])
+				{
+					$aliased = null;
+					// $alias[ $tokens[$index+2][1] ] = $tokens[$index+2][1];
+
+					$index     += 2;
+					$lastToken = null;
+
+					while (isset($tokens[$index]) && is_array($tokens[$index]))
+					{
+						$lastToken = $tokens[$index];
+
+						if(is_array($lastToken))
+						{
+							$lastToken = $lastToken[1];
+						}
+
+						$aliased .= $tokens[$index++][1];
+					}
+
+					$aliases[$lastToken] = $aliased;
+				}
+
 				if(T_CLASS === $tokens[$index][0])
 				{
 					if(T_IMPLEMENTS === $tokens[$index + 4][0]
@@ -190,10 +217,20 @@ class Meta
 							$subIndex++;
 						}
 
-						if(!static::classExists($subNamespace, $phpFile->getRealPath()))
+						if(isset($aliases[$subNamespace]))
+						{
+							$subNamespace = $aliases[$subNamespace];
+						}
+
+						if(!static::classExists($subNamespace))
 						{
 							break;
 						}
+
+						// if(!static::classExists($subNamespace, $phpFile->getRealPath()))
+						// {
+						// 	break;
+						// }
 					}
 
 					$index += 2;
@@ -229,10 +266,18 @@ class Meta
 
 					$class = $namespace.'\\'.$tokens[$index][1];
 
-					if(!class_exists($class))
+					try
+					{
+						if(!class_exists($class))
+						{
+							break;
+						}
+					}
+					catch (\Exception $e)
 					{
 						break;
 					}
+
 
 					if(in_array($class, $allClasses))
 					{
@@ -278,6 +323,11 @@ class Meta
 
 		if(!$classFile)
 		{
+			if($class[0] == '\\')
+			{
+				$class = substr($class, 1);
+			}
+
 			$classFile = $composer->findFile($class);
 
 			if(!$classFile)

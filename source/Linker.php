@@ -122,6 +122,8 @@ class Linker
 			}
 		}
 
+		$classTree[''] = $classes;
+
 		return $classTree;
 	}
 }

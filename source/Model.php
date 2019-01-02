@@ -31,6 +31,25 @@ class Model
 
 	protected function _create($curClass)
 	{
+
+		$backtrace = debug_backtrace();
+
+		$trace = [];
+
+		foreach($backtrace as $frame)
+		{
+			$trace[] = sprintf('%s:%d', $frame['file'] ?? '--', $frame['line'] ?? 0);
+		}
+
+		\SeanMorris\Ids\Log::debug(sprintf(
+			'%s::_create(...)'
+				. PHP_EOL
+				. "\t" . "Called from\n\t\t%s."
+				. PHP_EOL
+			, get_called_class()
+			, implode(PHP_EOL . "\t\t", $trace)
+		));
+
 		static::clearCache();
 
 		\SeanMorris\Ids\Log::debug($curClass, $this);
@@ -336,7 +355,23 @@ class Model
 	{
 		static::clearCache();
 
-		\SeanMorris\Ids\Log::debug(get_called_class());
+		$backtrace = debug_backtrace();
+
+		$trace = [];
+
+		foreach($backtrace as $frame)
+		{
+			$trace[] = sprintf('%s:%d', $frame['file'] ?? '--', $frame['line'] ?? 0);
+		}
+
+		\SeanMorris\Ids\Log::debug(sprintf(
+			'%s::_update(...)'
+				. PHP_EOL
+				. "\t" . "Called from\n\t\t%s."
+				. PHP_EOL
+			, get_called_class()
+			, implode(PHP_EOL . "\t\t", $trace)
+		));
 
 		$columnsToWrappers = $curClass::getColumns('update', FALSE);
 
@@ -776,18 +811,24 @@ class Model
 
 		$backtrace = debug_backtrace();
 
+		$trace = [];
+
+		foreach($backtrace as $frame)
+		{
+			$trace[] = sprintf('%s:%d', $frame['file'] ?? '--', $frame['line'] ?? 0);
+		}
+
 		$x = array_shift($backtrace);
 
 		\SeanMorris\Ids\Log::debug(sprintf(
 			'%s::%s(...)'
 				. PHP_EOL
-				. "\t" . 'Called from %s:%d.'
+				. "\t" . "Called from\n\t\t%s."
 				. PHP_EOL
 				. "\t" . 'Cache "%s%s"'
 			, $curClass
 			, $name
-			, $x['file']
-			, $x['line']
+			, implode(PHP_EOL . "\t\t", $trace)
 			, $cacheKey
 			, $cacheHit
 				? PHP_EOL . "\t\t" . 'CACHE HIT!!!'
@@ -2331,6 +2372,22 @@ class Model
 			if($this->$property instanceof Model)
 			{
 				$skeleton[$property] = $this->$property->id;
+				continue;
+			}
+
+			if(is_array($this->$property))
+			{
+				$loadedChildren = $this->$property;
+
+				$skeletons = [];
+
+				foreach($loadedChildren as $index => $child)
+				{
+					$skeletons[] = $child->unconsume(0);
+				}
+
+				$skeleton[$property] = $skeletons;
+
 				continue;
 			}
 
