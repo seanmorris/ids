@@ -2383,7 +2383,14 @@ class Model
 
 				foreach($loadedChildren as $index => $child)
 				{
-					$skeletons[] = $child->unconsume(0);
+					if($child instanceof Model)
+					{
+						$skeletons[$index] = $child->unconsume(0);
+					}
+					else
+					{
+						$skeletons[$index] = $child;
+					}
 				}
 
 				$skeleton[$property] = $skeletons;
