@@ -15,7 +15,7 @@ class ChildProcess
 		)
 	;
 
-	public function __construct($command, $async = FALSE)
+	public function __construct($command, $asyncOut = FALSE, $asyncIn = FALSE)
 	{
 		$this->command = $command;
 		$this->process = proc_open(
@@ -26,10 +26,10 @@ class ChildProcess
 
 		list($this->stdIn, $this->stdOut, $this->stdErr) = $pipes;
 
-		// stream_set_blocking($this->stdIn,  !$async);
-		stream_set_blocking($this->stdIn,  TRUE);
-		stream_set_blocking($this->stdOut, !$async);
-		stream_set_blocking($this->stdErr, !$async);
+		stream_set_blocking($this->stdIn,  !$asyncIn);
+		// stream_set_blocking($this->stdIn,  TRUE);
+		stream_set_blocking($this->stdOut, !$asyncOut);
+		stream_set_blocking($this->stdErr, !$asyncOut);
 	}
 
 	public function write($record)

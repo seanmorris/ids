@@ -619,6 +619,11 @@ class Model
 
 		while($class)
 		{
+			if($class::beforeDelete($this) === FALSE)
+			{
+				return FALSE;
+			}
+
 			$tables[] = $class::$table;
 
 			$class = get_parent_class($class);
@@ -636,6 +641,18 @@ class Model
 			{
 				$failed = true;
 			}
+		}
+
+		$class = get_called_class();
+
+		while($class)
+		{
+			if($class::afterDelete($this) === FALSE)
+			{
+				return FALSE;
+			}
+
+			$class = get_parent_class($class);
 		}
 
 		return !$failed;
@@ -775,6 +792,48 @@ class Model
 
 	public static function __callStatic($name, $args = [])
 	{
+		if(preg_match('/^map([Bb]y.+)?$/', $name, $match))
+		{
+			$methodName = sprintf('getCursor%s', $match[1] ?? 'ByNull');
+
+			$position = 0;
+			$pageSize = 25;
+			$max      = FALSE;
+
+			$_args = $args;
+
+			if(!is_callable($_args[count($_args)-1]))
+			{
+				$position = array_pop($_args);
+			}
+
+			if(!is_callable($_args[count($_args)-1]))
+			{
+				$pageSize = array_pop($_args);
+			}
+
+			$callback = array_pop($_args);
+			
+			$models = static::$methodName(...array_merge($_args, [$position, $pageSize]));
+
+			while($models)
+			{
+				foreach($models as $model)
+				{
+					if($callback($model) === 0)
+					{
+						break 2;
+					}
+				}
+
+				$models = static::$methodName(...array_merge(
+					$_args, [$model->id, $pageSize]
+				));
+			}
+
+			return;
+		}
+
 		$hashableArgs = array_map(
 			function($arg)
 			{
@@ -835,8 +894,8 @@ class Model
 				: ''
 		));
 
-		$cache      =& $classCache[$cacheKey];
-		$idCache    =& self::$idCache[$curClass];
+		$cache   =& $classCache[$cacheKey];
+		$idCache =& self::$idCache[$curClass];
 
 		if(!$args)
 		{
