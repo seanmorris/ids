@@ -701,7 +701,7 @@ class Model
 			));
 		}
 
-		if(is_array($colVal) && isset($colVal['id']))
+		if(is_array($colVal) && isset($colVal['id']) && $colVal['id'])
 		{
 			if($columnObject = $columnClass::loadOneById($colVal['id']))
 			{
@@ -718,9 +718,20 @@ class Model
 				$colVal = NULL;
 			}
 		}
-		else
+		else if(is_array($colVal) && (!isset($colVal['id']) || !$colVal['id']))
 		{
-			// @todo Create new model based on input/classDef
+			$columnObject = new $columnClass;
+			$columnObject->consume($colVal);
+
+			\SeanMorris\Ids\Log::debug($columnObject);
+			if($columnObject->save())
+			{
+				$colVal = $columnObject->id;
+			}
+			else
+			{
+				$colVal = NULL;
+			}			
 		}
 
 		return $colVal;
@@ -2267,30 +2278,70 @@ class Model
 
 				$this->{$property} = $values->id;
 			}
-			else if(is_array($values) && isset($values['id']) && $values['id'])
+			else if(is_array($values))
 			{
-				\SeanMorris\Ids\Log::debug('Using existing model');
-
-				if(isset($values['class']) && $values['class']
-					&& is_subclass_of($values['class'], $propertyClass)
-				){
-					$propertyClass = $values['class'];
-				}
-
-				$subject = $propertyClass::loadOneById($values['id']);
-
-				if(!$subject)
+				if(isset($values['id']) && $values['id'])
 				{
-					continue;
+					\SeanMorris\Ids\Log::debug('Using existing model');
+
+					if(isset($values['class']) && $values['class']
+						&& is_subclass_of($values['class'], $propertyClass)
+					){
+						$propertyClass = $values['class'];
+					}
+
+					$subject = $propertyClass::loadOneById($values['id']);
+
+					if(!$subject)
+					{
+						continue;
+					}
+
+					$subject->consume($values);
+
+					if($subject->save())
+					{
+						$this->{$property} = $subject->id;
+					}
 				}
-
-				$subject->consume($values);
-
-				if($subject->save())
+				else if($values)
 				{
-					$this->{$property} = $subject->id;
-				}
+					 if(!isset($values['class']) || !$values['class'])
+					 {
+					 	$values['class'] = $propertyClass;
+					 }
 
+					\SeanMorris\Ids\Log::debug(
+						'Trying to create new model'
+						, $values['class']
+						, $propertyClass
+					);
+
+					if(is_a($values['class'], $propertyClass, TRUE))
+					{
+						\SeanMorris\Ids\Log::debug(
+							'Creating new model'
+							, $values['class']
+							, $propertyClass
+						);
+
+						$subject = new $values['class'];
+
+						$subject->consume($values);
+
+						try
+						{
+							if($subject->save())
+							{
+								$this->{$property} = $subject->id;
+							}
+						}
+						catch(\SeanMorris\PressKit\Exception\ModelAccessException $exception)
+						{
+							\SeanMorris\Ids\Log::logException($exception);
+						}
+					}
+				}
 			}
 		}
 
@@ -2431,11 +2482,22 @@ class Model
 			if($this->$property instanceof Model)
 			{
 				$skeleton[$property] = $this->$property->id;
+				if($children !== FALSE)
+				{
+					$skeleton[$property] = $this->$property->unconsume(FALSE);
+				}
 				continue;
 			}
 
 			if(is_array($this->$property))
 			{
+				if($this->canHaveOne($property) && $children === FALSE)
+				{
+					$skeleton[$property] = $this->$property['id'] ?? NULL;
+
+					continue;
+				}
+
 				$loadedChildren = $this->$property;
 
 				$skeletons = [];
@@ -2444,7 +2506,7 @@ class Model
 				{
 					if($child instanceof Model)
 					{
-						$skeletons[$index] = $child->unconsume(0);
+						$skeletons[$index] = $child->unconsume(FALSE);
 					}
 					else
 					{
@@ -2495,6 +2557,9 @@ class Model
 				$skeleton[$property] = $subject->unconsume($children -1);
 			}
 		}
+
+		// \SeanMorris\Ids\Log::debug($skeleton);
+		// \SeanMorris\Ids\Log::trace($skeleton);
 
 		return $skeleton;
 	}
