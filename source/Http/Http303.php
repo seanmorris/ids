@@ -17,7 +17,7 @@ class Http303 extends HttpException
 
 			$parsedUrl = parse_url($url);
 
-			if(!isset($parsedUrl['host']) && $url[0] !== '/')
+			if(!isset($parsedUrl['host']) && $url && $url[0] !== '/')
 			{
 				$url = '/' . $url;
 			}
