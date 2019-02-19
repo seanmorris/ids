@@ -2815,6 +2815,24 @@ class Model
 		return static::$table;
 	}
 
+	protected static function startTransaction()
+	{
+		$database = \SeanMorris\Ids\Database::get('main');
+		$database->prepare('START TRANSACTION')->execute();
+	}
+
+	protected static function commitTransaction()
+	{
+		$database = \SeanMorris\Ids\Database::get('main');
+		$database->prepare('COMMIT')->execute();
+	}
+
+	protected static function rollbackTransaction()
+	{
+		$database = \SeanMorris\Ids\Database::get('main');
+		$database->prepare('ROLLBACK')->execute();
+	}
+
 	protected static function beforeConsume($instance, &$skeleton)
 	{
 
