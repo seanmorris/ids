@@ -892,6 +892,12 @@ class Model
 
 		\SeanMorris\Ids\Log::debug(sprintf(
 			'%s::%s(...)'
+			, $curClass
+			, $name
+		), $args);
+
+		\SeanMorris\Ids\Log::debug(sprintf(
+			'%s::%s(...)'
 				. PHP_EOL
 				. "\t" . "Called from\n\t\t%s."
 				. PHP_EOL
