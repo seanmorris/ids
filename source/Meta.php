@@ -68,6 +68,13 @@ class Meta
 			&& php_sapi_name() !== 'cli'
 			&& !\SeanMorris\Ids\Http\Http::disconnected()
 		){
+			session_set_cookie_params(
+				\SeanMorris\Ids\Settings::read('session', 'lifetime')
+				, \SeanMorris\Ids\Settings::read('session', 'path')
+				, \SeanMorris\Ids\Settings::read('session', 'domain')
+				, ($_SERVER['https'] ?? FALSE) === 'on'
+				, TRUE
+			);
 			session_start();
 		}
 
