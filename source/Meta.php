@@ -72,7 +72,7 @@ class Meta
 				\SeanMorris\Ids\Settings::read('session', 'lifetime')
 				, \SeanMorris\Ids\Settings::read('session', 'path')
 				, \SeanMorris\Ids\Settings::read('session', 'domain')
-				, ($_SERVER['https'] ?? FALSE) === 'on'
+				, ($_SERVER['HTTPS'] ?? FALSE) === 'on'
 				, TRUE
 			);
 			session_start();
