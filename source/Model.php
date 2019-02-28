@@ -1461,6 +1461,8 @@ class Model
 
 		reset($skeleton[static::$table]);
 
+		Log::debug($skeleton);
+
 		return [key($skeleton[static::$table]), array_shift($skeleton[static::$table])];
 	}
 
@@ -1489,8 +1491,6 @@ class Model
 			$subSkeletonAlias
 			, $subSkeleton
 		) = static::subskeletonWithAlias($skeleton);
-
-		//var_dump($subSkeletonAlias, $subSkeleton);
 
 		$baseClass = get_class();
 		$parentClass = get_parent_class(get_called_class());
@@ -1532,11 +1532,40 @@ class Model
 
 				if(isset($skeleton[$subjectClass::$table]))
 				{
+					\SeanMorris\Ids\Log::debug(sprintf(
+						'Trying to preload %s for %s::%s'
+						, $subjectClass
+						, get_called_class()
+						, $property
+					));
+
 					$model = $value;
 
 					$subSkeletons = $subjectClass::subskeletons($skeleton);
 
-					$subSkeletonAliasChain = explode('__', $subSkeletonAlias);
+					$_subSkeletonAlias = $subSkeletonAlias;
+					$parentClass       = get_parent_class(get_called_class());
+
+					if($parentClass
+						&& isset($parentClass::$hasOne[$property])
+						&& $_subjectClass = $parentClass::$hasOne[$property]
+					){
+						Log::debug(
+							$parentClass
+							, $_subjectClass::$table
+							, $subjectClass::$table
+						);
+
+						if($_subjectClass::$table === $subjectClass::$table)
+						{
+							list(
+								$_subSkeletonAlias
+								, $_subSkeleton
+							) = $parentClass::subskeletonWithAlias($skeleton);
+						}
+					}
+
+					$subSkeletonAliasChain = explode('__', $_subSkeletonAlias);
 
 					$subSkeletonKey = array_pop($subSkeletonAliasChain)
 						. '_'
@@ -1546,7 +1575,7 @@ class Model
 						. '_0'
 					;
 
-					\SeanMorris\Ids\Log::debug($subSkeletonAlias, $subSkeletonKey);
+					\SeanMorris\Ids\Log::debug($_subSkeletonAlias, $subSkeletonKey, $subSkeletons);
 
 					if(isset(
 						$subSkeletons[$subSkeletonKey]
