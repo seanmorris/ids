@@ -20,28 +20,48 @@ abstract class Queue
 		, PREFETCH_COUNT    = 1
 		, PREFETCH_SIZE     = 0
 
+		, ASYNC             = FALSE
+
 		, BROADCAST_QUEUE   = '::broadcast'
-		, SEND_QUEUE        = '::send';
-	protected static $channel;
-	abstract protected static function recieve($message);
+		, TOPIC_QUEUE       = '::topic'
+		, SEND_QUEUE        = '::send'
+	;
+
+	protected static $channel, $broadcastQueue, $topicQueues = [];
+
 	public static function init(){}
-	public static function send($message)
+
+	protected static function recieve($message){}
+
+	public static function send($message, $topic = NULL)
 	{
-		$channel = static::getChannel(get_called_class());
+		$channel = static::getChannel();
+
+		$exchange = get_called_class() . static::TOPIC_QUEUE;
+		
+		if($topic === NULL)
+		{
+			$exchange = '';
+			$topic    = get_called_class() . static::SEND_QUEUE;
+		}
+
 		$channel->basic_publish(
 			new AMQPMessage(serialize($message))
-			, ''
-			, get_called_class() . static::SEND_QUEUE
+			, $exchange
+			, $topic
 		);
 	}
+
 	public static function broadcast($message)
 	{
-		$channel = static::getChannel(get_called_class());
+		$channel = static::getChannel();
+
 		$channel->basic_publish(
 			new AMQPMessage(serialize($message))
 			, get_called_class() . static::BROADCAST_QUEUE
 		);
 	}
+
 	public static function manageReciept($message)
 	{
 		$result = static::recieve(unserialize($message->body), $message);
@@ -74,6 +94,7 @@ abstract class Queue
 			}
 		}
 	}
+
 	protected static function getChannel($reset = FALSE)
 	{
 		if(!static::$channel || $reset)
@@ -84,6 +105,7 @@ abstract class Queue
 			{
 				throw new \Exception('No RabbitMQ servers specified.');
 			}
+
 			if(!isset($servers->{static::RABBIT_MQ_SERVER}))
 			{
 				throw new \Exception(sprintf(
@@ -91,18 +113,22 @@ abstract class Queue
 					, static::RABBIT_MQ_SERVER
 				));
 			}
+
 			$connection = new AMQPStreamConnection(
 				$servers->{static::RABBIT_MQ_SERVER}->{'server'}
 				, $servers->{static::RABBIT_MQ_SERVER}->{'port'}
 				, $servers->{static::RABBIT_MQ_SERVER}->{'user'}
 				, $servers->{static::RABBIT_MQ_SERVER}->{'pass'}
 			);
+
 			$channel = $connection->channel();
+
 			$channel->basic_qos(
 				static::PREFETCH_SIZE
 				, static::PREFETCH_COUNT
 				, FALSE
 			);
+
 			$channel->queue_declare(
 				get_called_class() . static::SEND_QUEUE
 				, static::QUEUE_PASSIVE
@@ -110,6 +136,33 @@ abstract class Queue
 				, static::QUEUE_EXCLUSIVE
 				, static::QUEUE_AUTO_DELETE
 			);
+
+			register_shutdown_function(function() use($connection, $channel){
+				if(static::$broadcastQueue)
+				{
+					$channel->queue_delete(static::$broadcastQueue);
+				}
+
+				foreach(static::$topicQueues as $topicQueue)
+				{
+					$channel->queue_delete($topicQueue);
+				}
+
+				$channel->close();
+				$connection->close();
+			});
+
+			static::$channel = $channel;
+		}
+		return static::$channel;
+	}
+
+	protected static function getBroadcastQueue()
+	{
+		if(!static::$broadcastQueue)
+		{
+			$channel = static::getChannel();
+
 			$channel->exchange_declare(
 				get_called_class() . static::BROADCAST_QUEUE
 				, 'fanout'
@@ -117,42 +170,165 @@ abstract class Queue
 				, FALSE
 				, FALSE
 			);
-			register_shutdown_function(function() use($connection, $channel){
-				$channel->close();
-				$connection->close();
-			});
-			static::$channel = $channel;
+
+			list(static::$broadcastQueue, ,) = $channel->queue_declare("");
+
+			$channel->queue_bind(
+				static::$broadcastQueue
+				, get_called_class() . static::BROADCAST_QUEUE
+			);
 		}
-		return static::$channel;
+
+		return static::$broadcastQueue;
 	}
-	public static function listen()
+
+	protected static function getTopicQueue($topic)
 	{
-		$callback = [get_called_class(), 'manageReciept'];
-		static::init();
-		$channel = static::getChannel(get_called_class());
-		$channel->basic_consume(
-			get_called_class() . static::SEND_QUEUE
-			, ''
-			, static::CHANNEL_LOCAL
-			, static::CHANNEL_NO_ACK
-			, static::CHANNEL_EXCLUSIVE
-			, static::CHANNEL_WAIT
-			, $callback
-		);
-		list($queue_name, ,) = $channel->queue_declare("");
-		$channel->queue_bind($queue_name, get_called_class() . static::BROADCAST_QUEUE);
-		$channel->basic_consume(
-			$queue_name
-			, ''
-			, static::CHANNEL_LOCAL
-			, static::CHANNEL_NO_ACK
-			, static::CHANNEL_EXCLUSIVE
-			, static::CHANNEL_WAIT
-			, $callback
-		);
-		while(count($channel->callbacks))
+		$topicQueueName = get_called_class() . static::TOPIC_QUEUE;
+
+		if(!static::$topicQueues[$topic])
 		{
-			$channel->wait();
+			$channel = static::getChannel();
+
+			$channel->exchange_declare(
+				$topicQueueName
+				, 'topic'
+				, FALSE
+				, FALSE
+				, FALSE
+			);
+
+			list(static::$topicQueues[$topic], ,) = $channel->queue_declare("");
+
+			$channel->queue_bind(
+				static::$topicQueues[$topic]
+				, $topicQueueName
+				, $topic
+			);
 		}
+
+		return static::$topicQueues[$topic];
+	}
+
+	public static function check($callback, $topic = NULL)
+	{
+		if(!static::ASYNC)
+		{
+			throw new \Exception('Only available on Aync Queues.');
+		}
+
+		$channel = static::getChannel();
+
+		if($topic === NULL)
+		{
+			$broadcastQueueName = static::getBroadcastQueue();
+
+			while($message = $channel->basic_get(get_called_class() . static::SEND_QUEUE))
+			{
+				$result = call_user_func_array($callback, [
+					unserialize($message->body)
+					, $message
+				]);
+
+				if($result !== FALSE)
+				{
+					$channel->basic_ack($message->delivery_info['delivery_tag']);
+				}
+			}
+
+			while($message = $channel->basic_get($broadcastQueueName))
+			{
+				$result = call_user_func_array($callback, [
+					unserialize($message->body)
+					, $message
+				]);
+
+				if($result !== FALSE)
+				{
+					$channel->basic_ack($message->delivery_info['delivery_tag']);
+				}
+			}
+		}
+		else
+		{
+			$topicQueueName = static::getTopicQueue($topic);
+
+			while($message = $channel->basic_get($topicQueueName))
+			{
+				$result = call_user_func_array($callback, [
+					unserialize($message->body)
+					, $message
+				]);
+
+				if($result !== FALSE)
+				{
+					$channel->basic_ack($message->delivery_info['delivery_tag']);
+				}
+			}
+		}
+	}
+
+	public static function listen($topic = NULL)
+	{
+		static::init();
+
+		$callback = [get_called_class(), 'manageReciept'];
+
+		if(static::ASYNC)
+		{
+			while(TRUE)
+			{
+				static::check($callback, $topic);
+			}
+		}
+		else
+		{
+			$channel = static::getChannel();
+
+			if(!$topic)
+			{
+				$channel->basic_consume(
+					get_called_class() . static::SEND_QUEUE
+					, ''
+					, static::CHANNEL_LOCAL
+					, static::CHANNEL_NO_ACK
+					, static::CHANNEL_EXCLUSIVE
+					, static::CHANNEL_WAIT
+					, $callback
+				);
+
+				$broadcastQueueName = static::getBroadcastQueue();
+
+				$channel->basic_consume(
+					$broadcastQueueName
+					, ''
+					, static::CHANNEL_LOCAL
+					, static::CHANNEL_NO_ACK
+					, TRUE
+					, static::CHANNEL_WAIT
+					, $callback
+				);
+			}
+			else
+			{
+				$topicQueueName = static::getTopicQueue($topic);
+
+				$channel->basic_consume(
+					$topicQueueName
+					, ''
+					, static::CHANNEL_LOCAL
+					, static::CHANNEL_NO_ACK
+					, TRUE
+					, static::CHANNEL_WAIT
+					, $callback
+				);
+			}
+
+			while(count($channel->callbacks))
+			{
+				$channel->wait();
+			}
+		}
+
 	}
 }
