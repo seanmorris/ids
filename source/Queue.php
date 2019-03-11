@@ -7,10 +7,10 @@ use PhpAmqpLib\Message\AMQPMessage,
 abstract class Queue
 {
 	const RABBIT_MQ_SERVER   = 'default'
-		, QUEUE_PASSIVE      = FALSE
+		// , QUEUE_PASSIVE      = FALSE
 		, QUEUE_DURABLE      = FALSE
-		, QUEUE_EXCLUSIVE    = FALSE
-		, QUEUE_AUTO_DELETE  = FALSE
+		// , QUEUE_EXCLUSIVE    = FALSE
+		// , QUEUE_AUTO_DELETE  = FALSE
 		, CHANNEL_LOCAL      = FALSE
 		, CHANNEL_NO_ACK     = TRUE
 		, CHANNEL_EXCLUSIVE  = FALSE
@@ -21,25 +21,33 @@ abstract class Queue
 		, PREFETCH_SIZE      = 0
 
 		, SEND               = TRUE // not implemented
-		, BROADCACT          = TRUE // not implemented
+		, BROADCAST          = TRUE // not implemented
 		, RPC                = FALSE
 
 		, ASYNC              = FALSE
+		
+		, BROADCAST_EXCHANGE = '::broadcast'
+		, RPC_TOPIC_EXCHANGE = '::rpcTopic'
+		, TOPIC_EXCHANGE     = '::topic'
 
-		, BROADCAST_QUEUE    = '::broadcast'
-		, TOPIC_QUEUE        = '::topic'
-		, SEND_QUEUE         = '::send'
-		, RPC_RESPONSE_QUEUE = '::rpcResponse'
+		// , RPC_RESPONSE_QUEUE = '::rpcResponse'
 		, RPC_SEND_QUEUE     = '::rpcSend'
+		, SEND_QUEUE         = '::send'
+
+		, RPC_SEND_TOPIC_QUEUE    = '::rpcTopicSend'
+		// , RPC_RESPOND_TOPIC_QUEUE = '::rpcTopicRespond'
 	;
 
 	protected static
 		$channel
+		, $sendQueue
 		, $broadcastQueue
 		, $rpcSendQueue
 		, $rpcResponseQueue
-		, $topicQueues = []
-		, $rpcDone     = [];
+		, $topicQueues           = []
+		, $rpcDone               = []
+		, $rpcSendTopicQueue     = []
+		, $rpcResponseTopicQueue = [];
 
 	public static function init(){}
 
@@ -49,18 +57,10 @@ abstract class Queue
 	{
 		$channel = static::getChannel();
 
-		$exchange = get_called_class() . static::TOPIC_QUEUE;
-
-		if($topic === NULL)
-		{
-			$exchange = '';
-			$topic    = get_called_class() . static::SEND_QUEUE;
-		}
-
-		$channel->basic_publish(
+		return $channel->basic_publish(
 			new AMQPMessage(serialize($message))
-			, $exchange
-			, $topic
+			, ''
+			, static::getSendQueue()
 		);
 	}
 
@@ -68,20 +68,23 @@ abstract class Queue
 	{
 		$channel = static::getChannel();
 
-		$exchange = get_called_class() . static::TOPIC_QUEUE;
+		$exchange = get_called_class() . static::BROADCAST_EXCHANGE;
 
-		$exchange = get_called_class() . static::TOPIC_QUEUE;
-
-		if($topic === NULL)
+		if($topic !== NULL)
 		{
-			$exchange = get_called_class() . static::BROADCAST_QUEUE;
-			$topic    = NULL;
+			static::getTopicQueue($topic);
+
+			$exchange = get_called_class() . static::TOPIC_EXCHANGE;
+		}
+		else
+		{
+			static::getBroadcastQueue();
 		}
 
 		$channel->basic_publish(
 			new AMQPMessage(serialize($message))
 			, $exchange
-			, $topic
+			, $topic ?? static::$broadcastQueue
 		);
 	}
 
@@ -159,34 +162,26 @@ abstract class Queue
 				, FALSE
 			);
 
-			$channel->queue_declare(
-				get_called_class() . static::SEND_QUEUE
-				, static::QUEUE_PASSIVE
-				, static::QUEUE_DURABLE
-				, static::QUEUE_EXCLUSIVE
-				, static::QUEUE_AUTO_DELETE
-			);
-
 			register_shutdown_function(function() use($connection, $channel){
-				if(static::$broadcastQueue)
-				{
-					$channel->queue_delete(static::$broadcastQueue);
-				}
+				// if(static::$broadcastQueue)
+				// {
+				// 	$channel->queue_delete(static::$broadcastQueue);
+				// }
 
 				// if(static::$rpcSendQueue)
 				// {
 				// 	$channel->queue_delete(static::$rpcSendQueue);
 				// }
 
-				if(static::$rpcResponseQueue)
-				{
-					$channel->queue_delete(static::$rpcResponseQueue);
-				}
+				// if(static::$rpcResponseQueue)
+				// {
+				// 	$channel->queue_delete(static::$rpcResponseQueue);
+				// }
 
-				foreach(static::$topicQueues as $topicQueue)
-				{
-					$channel->queue_delete($topicQueue);
-				}
+				// foreach(static::$topicQueues as $topicQueue)
+				// {
+				// 	$channel->queue_delete($topicQueue);
+				// }
 
 				$channel->close();
 				$connection->close();
@@ -198,21 +193,29 @@ abstract class Queue
 	}
 
 
-	public static function rpc($message)
+	public static function rpc($message, $topic = NULL)
 	{
 		$correlationId = uniqid();
 
 		static::$rpcDone[$correlationId] = FALSE;
 
-		$channel = static::getChannel();
+		$channel       = static::getChannel();
+		$sendQueue     = static::getRpcSendQueue($topic);
+		$responseQueue = static::getRpcResponseQueue($topic);
+		$exchange      = '';
+
+		if($topic)
+		{
+			$exchange = static::getRpcSendExchange($topic);
+		}
 
 		$channel->basic_publish(
 			new AMQPMessage(serialize($message), [
 				'correlation_id' => $correlationId
-				, 'reply_to'     => static::getRpcResponseQueue()
+				, 'reply_to'     => $responseQueue
 			])
-			, ''
-			, static::getRpcSendQueue()
+			, $exchange
+			, $topic ?? $sendQueue
 		);
 
 		if(!static::ASYNC)
@@ -230,16 +233,12 @@ abstract class Queue
 		}
 		else
 		{
-			return function() use($channel) {
+			return function() use($channel, $responseQueue) {
 				$result = null;
 
-				$responseQueueName = static::getRpcResponseQueue();
-
-				while(($response = $channel->basic_get($responseQueueName)) !== NULL)
+				while(($response = $channel->basic_get($responseQueue)) !== NULL)
 				{
 					$result = unserialize($response->body);
-
-					var_dump($result);
 
 					if($result !== FALSE)
 					{
@@ -252,58 +251,140 @@ abstract class Queue
 		}
 	}
 
-	protected static function getRpcSendQueue()
+	protected static function getSendQueue()
 	{
-		if(!static::$rpcSendQueue)
+		if(!static::$sendQueue)
 		{
 			$channel = static::getChannel();
 
-			list(static::$rpcSendQueue, ,) = $channel->queue_declare(
-				get_called_class() . static::RPC_SEND_QUEUE
+			list(static::$sendQueue, ,) = $channel->queue_declare(
+				get_called_class() . static::SEND_QUEUE
+				, FALSE // static::QUEUE_PASSIVE
+				, static::QUEUE_DURABLE
+				, FALSE // static::QUEUE_EXCLUSIVE
+				, TRUE  // static::QUEUE_AUTO_DELETE
 			);
 		}
 
-		return static::$rpcSendQueue;
+		return static::$sendQueue;
 	}
 
-	protected static function getRpcResponseQueue()
+	protected static function getRpcSendExchange($topic = NULL)
 	{
-		if(!static::$rpcResponseQueue)
+		$channel = static::getChannel();
+
+		$exchange = get_called_class() . static::RPC_TOPIC_EXCHANGE;
+
+		$channel->exchange_declare(
+			$exchange
+			, 'topic'
+			, FALSE
+			, FALSE
+			, TRUE
+		);
+
+		return $exchange;
+	}
+
+	protected static function getRpcSendQueue($topic = NULL)
+	{
+		$channel = static::getChannel();
+
+		if($topic === NULL)
 		{
-			$channel = static::getChannel();
-
-			list(static::$rpcResponseQueue, , ) = $channel->queue_declare('');
-
-			if(!static::ASYNC)
+			$queue     =& static::$rpcSendQueue;
+			$queueName =  get_called_class() . static::RPC_SEND_QUEUE;
+		}
+		else
+		{
+			if(!isset(static::$rpcSendTopicQueue[$topic]))
 			{
-				$channel->basic_consume(
-					static::$rpcResponseQueue
-					, ''
-					, FALSE
-					, TRUE
-					, FALSE
-					, TRUE
-					, function($response){
-						if(!$correlationId = $response->get('correlation_id'))
-						{
-							return FALSE;
-						}
+				static::$rpcSendTopicQueue[$topic] = NULL;
+			}
 
-						if(
-							!isset(static::$rpcDone[$correlationId])
-								|| static::$rpcDone[$correlationId] !== FALSE
-								|| isset(static::$rpcResult[$correlationId])
-						){
-							return FALSE;
-						}
+			$queue     =& static::$rpcSendTopicQueue[$topic];
+			$queueName = '';
+		}
 
-						static::$rpcDone[$correlationId] = $response;
-					}
-				);
+		if(!$queue)
+		{
+			list($queue, ,) = $channel->queue_declare(
+				$queueName
+				, FALSE // static::QUEUE_PASSIVE
+				, static::QUEUE_DURABLE
+				, !!$topic // static::QUEUE_EXCLUSIVE
+				, TRUE  // static::QUEUE_AUTO_DELETE
+			);
+
+			if($topic)
+			{			
+				$exchange = static::getRpcSendExchange($topic);
+
+				$channel->queue_bind($queue, $exchange, $topic);
 			}
 		}
 
-		return static::$rpcResponseQueue;
+		return $queue;
+	}
+
+	protected static function getRpcResponseQueue($topic = NULL)
+	{
+		if($topic === NULL)
+		{
+			$queue =& static::$rpcResponseQueue;
+		}
+		else
+		{
+			if(!isset(static::$rpcResponseTopicQueue[$topic]))
+			{
+				static::$rpcResponseTopicQueue[$topic] = NULL;
+			}
+
+			$queue =& static::$rpcResponseTopicQueue[$topic];
+		}
+
+		if(!$queue)
+		{
+			$channel = static::getChannel();
+
+			list($queue, , ) = $channel->queue_declare(
+				''
+				, FALSE // static::QUEUE_PASSIVE
+				, FALSE // static::QUEUE_DURABLE
+				, TRUE  // static::QUEUE_EXCLUSIVE
+				, TRUE  // static::QUEUE_AUTO_DELETE
+			);
+		}
+
+		if(!static::ASYNC)
+		{
+			$channel->basic_consume(
+				$queue
+				, ''
+				, FALSE
+				, TRUE
+				, FALSE
+				, TRUE
+				, function($response){
+					if(!$correlationId = $response->get('correlation_id'))
+					{
+						return FALSE;
+					}
+
+					if(
+						!isset(static::$rpcDone[$correlationId])
+							|| static::$rpcDone[$correlationId] !== FALSE
+							|| isset(static::$rpcResult[$correlationId])
+					){
+						return FALSE;
+					}
+
+					static::$rpcDone[$correlationId] = $response;
+				}
+			);
+		}
+
+		return $queue;
 	}
 
 	protected static function getBroadcastQueue()
@@ -313,18 +394,24 @@ abstract class Queue
 			$channel = static::getChannel();
 
 			$channel->exchange_declare(
-				get_called_class() . static::BROADCAST_QUEUE
+				get_called_class() . static::BROADCAST_EXCHANGE
 				, 'fanout'
 				, FALSE
 				, FALSE
-				, FALSE
+				, TRUE
 			);
 
-			list(static::$broadcastQueue, ,) = $channel->queue_declare("");
+			list(static::$broadcastQueue, ,) = $channel->queue_declare(
+				''
+				, FALSE // static::QUEUE_PASSIVE
+				, FALSE // static::QUEUE_DURABLE
+				, TRUE  // static::QUEUE_EXCLUSIVE
+				, TRUE  // static::QUEUE_AUTO_DELETE
+			);
 
 			$channel->queue_bind(
 				static::$broadcastQueue
-				, get_called_class() . static::BROADCAST_QUEUE
+				, get_called_class() . static::BROADCAST_EXCHANGE
 			);
 		}
 
@@ -333,25 +420,31 @@ abstract class Queue
 
 	protected static function getTopicQueue($topic)
 	{
-		$topicQueueName = get_called_class() . static::TOPIC_QUEUE;
+		$topicExchangeName = get_called_class() . static::TOPIC_EXCHANGE;
 
-		if(!static::$topicQueues[$topic])
+		if(!isset(static::$topicQueues[$topic]))
 		{
 			$channel = static::getChannel();
 
 			$channel->exchange_declare(
-				$topicQueueName
+				$topicExchangeName
 				, 'topic'
 				, FALSE
 				, FALSE
-				, FALSE
+				, TRUE
 			);
 
-			list(static::$topicQueues[$topic], ,) = $channel->queue_declare("");
+			list(static::$topicQueues[$topic], ,) = $channel->queue_declare(
+				''
+				, FALSE // static::QUEUE_PASSIVE
+				, FALSE // static::QUEUE_DURABLE
+				, TRUE  // static::QUEUE_EXCLUSIVE
+				, TRUE  // static::QUEUE_AUTO_DELETE
+			);
 
 			$channel->queue_bind(
 				static::$topicQueues[$topic]
-				, $topicQueueName
+				, $topicExchangeName
 				, $topic
 			);
 		}
@@ -370,7 +463,9 @@ abstract class Queue
 
 		if($topic === NULL)
 		{
-			while($message = $channel->basic_get(get_called_class() . static::SEND_QUEUE))
+			$sendQueueName = static::getSendQueue();
+
+			while($message = $channel->basic_get($sendQueueName))
 			{
 				$result = call_user_func_array($callback, [
 					unserialize($message->body)
@@ -418,7 +513,7 @@ abstract class Queue
 
 		if(static::RPC)
 		{
-			$sendQueueName = static::getRpcSendQueue();
+			$sendQueueName = static::getRpcSendQueue($topic);
 
 			while($request = $channel->basic_get($sendQueueName))
 			{
@@ -465,8 +560,10 @@ abstract class Queue
 
 			if(!$topic)
 			{
+				$sendQueueName = static::getSendQueue();
+
 				$channel->basic_consume(
-					get_called_class() . static::SEND_QUEUE
+					$sendQueueName
 					, ''
 					, static::CHANNEL_LOCAL
 					, static::CHANNEL_NO_ACK
