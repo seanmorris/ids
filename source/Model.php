@@ -319,7 +319,7 @@ class Model
 				}
 				catch(\Exception $e)
 				{
-
+					\SeanMorris\Ids\Log::logException($e);
 				}
 
 			}
@@ -2449,7 +2449,6 @@ class Model
 						{
 							\SeanMorris\Ids\Log::logException($exception);
 						}
-
 
 						$subModelsSubmitted = TRUE;
 					}

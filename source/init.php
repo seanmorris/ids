@@ -1,5 +1,6 @@
 <?php
 error_reporting(-1);
+ini_set('display_errors', FALSE);
 
 define('START', microtime(true));
 
@@ -111,13 +112,23 @@ ini_set("error_log", $errorPath);
 
 register_shutdown_function(function() {
 	$error = error_get_last();
+
+    if ($error['type'] === E_COMPILE_ERROR)
+    {
+		\SeanMorris\Ids\Log::error(
+			\SeanMorris\Ids\Log::color('COMPILER ERROR OCCURRED.', 'black', 'red')
+			, $error
+		);
+    }
+
     if ($error['type'] === E_ERROR)
     {
-    	\SeanMorris\Ids\Log::error(
-    		'FATAL ERROR OCCURRED.'
-    		, $error
-    	);
+		\SeanMorris\Ids\Log::error(
+			'FATAL ERROR OCCURRED.'
+			, $error
+		);
     }
+
 	\SeanMorris\Ids\Log::info(
 		'Response Complete.'
 		, memory_get_peak_usage(true)
