@@ -571,7 +571,7 @@ class Model
 				}
 			}
 
-			$saved = static::loadOneById($this->id);
+			$saved = static::loadOneRecord($this->id);
 
 			if(!$postUpdate)
 			{
@@ -947,7 +947,13 @@ class Model
 		// 	, $args
 		// );
 
-		$def = static::resolveDef($name, $args);
+		$def  = static::resolveDef($name, $args);
+		$recs = FALSE;
+
+		if(isset($def['recs']))
+		{
+			$recs = $def['recs'];
+		}
 
 		// \SeanMorris\Ids\Log::debug(
 		// 	$def
@@ -1008,7 +1014,7 @@ class Model
 				'Generating %s', $curClass
 			));
 
-			return function(...$overArgs) use($gen, $args, $rawArgs, $curClass, &$cache, &$idCache, $cacheHit)
+			return function(...$overArgs) use($gen, $args, $rawArgs, $curClass, &$cache, &$idCache, $cacheHit, $def, $recs)
 			{
 				$overArgs = [];
 				$i = 0;
@@ -1033,7 +1039,7 @@ class Model
 					{
 						$subSkeleton = static::subSkeleton($skeleton);
 
-						if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+						if(!$recs && static::beforeRead(NULL, $subSkeleton) === FALSE)
 						{
 							\SeanMorris\Ids\Log::debug('beforeRead Failed');
 
@@ -1051,7 +1057,7 @@ class Model
 							continue;
 						}
 
-						if(static::afterRead($model, $subSkeleton) === FALSE)
+						if(!$recs && static::afterRead($model, $subSkeleton) === FALSE)
 						{
 							\SeanMorris\Ids\Log::debug('afterRead Failed');
 
@@ -1114,7 +1120,7 @@ class Model
 			{
 				$subSkeleton = static::subSkeleton($skeleton);
 
-				if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+				if(!$recs && static::beforeRead(NULL, $subSkeleton) === FALSE)
 				{
 					$cache[0] = FALSE;
 					continue;
@@ -1129,7 +1135,7 @@ class Model
 					continue;
 				}
 
-				if(static::afterRead($model, $subSkeleton) === FALSE)
+				if(!$recs && static::afterRead($model, $subSkeleton) === FALSE)
 				{
 					$cache[0] = FALSE;
 					continue;
@@ -1181,7 +1187,7 @@ class Model
 			{
 				$subSkeleton = static::subSkeleton($skeleton);
 
-				if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+				if(!$recs && static::beforeRead(NULL, $subSkeleton) === FALSE)
 				{
 					continue;
 				}
@@ -1194,7 +1200,7 @@ class Model
 					continue;
 				}
 
-				if(static::afterRead($model, $subSkeleton) === FALSE)
+				if(!$recs && static::afterRead($model, $subSkeleton) === FALSE)
 				{
 					continue;
 				}
@@ -1239,7 +1245,7 @@ class Model
 
 		if(isset($def['type']) && $def['type'] == 'load')
 		{
-			return function(...$overArgs) use($gen, $args, $rawArgs, &$cache, &$idCache)
+			return function(...$overArgs) use($gen, $args, $rawArgs, &$cache, &$idCache, $recs)
 			{
 				\SeanMorris\Ids\Log::debug(sprintf(
 					'Loading %s', get_called_class()
@@ -1260,7 +1266,7 @@ class Model
 				{
 					$subSkeleton = static::subSkeleton($skeleton);
 
-					if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+					if(!$recs && static::beforeRead(NULL, $subSkeleton) === FALSE)
 					{
 						continue;
 					}
@@ -1272,7 +1278,7 @@ class Model
 						\SeanMorris\Ids\Log::debug('Read Failed', $skeleton);
 					}
 
-					if(static::afterRead($model, $subSkeleton) === FALSE)
+					if(!$recs && static::afterRead($model, $subSkeleton) === FALSE)
 					{
 						continue;
 					}
