@@ -296,12 +296,14 @@ class Package
 			, sprintf(';%d/', $port)
 			, ':/settings'
 			, ';/settings'
+			, ':/'
+			, ';/'
 		];
 
 		foreach($fileNames as $fileName)
 		{
 			$dirPath = sprintf(
-				'%ssites/%s/'
+				'%ssites/%s'
 				, $this->localDir()
 				, $fileName
 			);

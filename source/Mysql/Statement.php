@@ -34,13 +34,27 @@ abstract class Statement
 		return false;
 	}
 
+	protected function databaseTier()
+	{
+		if(\SeanMorris\Ids\Database::get('main'))
+		{
+			return 'main';
+		}
+	}
+
+	protected function database()
+	{
+		return \SeanMorris\Ids\Database::get($this->databaseTier());
+	}
+
 	public function prepare()
 	{
 		$queryString = $this->assemble(...(func_get_args()));
 
+		\SeanMorris\Ids\Log::query('Tier', $this->databaseTier());
 		\SeanMorris\Ids\Log::query($queryString);
 
-		$database = \SeanMorris\Ids\Database::get('main');
+		$database = $this->database();
 
 		return $database->prepare($queryString);
 	}
