@@ -739,6 +739,8 @@ class Model
 
 	public function save()
 	{
+		static::startTransaction();
+
 		if(!$this->id)
 		{
 			return $this->create();
@@ -747,6 +749,8 @@ class Model
 		{
 			return $this->update();
 		}
+
+		static::commitTransaction();
 	}
 
 	public static function clearCache($descentants = TRUE)
