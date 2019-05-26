@@ -134,11 +134,19 @@ class Cli
 		return static::$in;
 	}
 
-	public static function in($label = NULL)
+	public static function in($label = NULL, $block = TRUE)
 	{
+
 		$in = static::inHandle();
 
-		stream_set_blocking ($in, true);
+		if(!$block)
+		{
+			stream_set_blocking(STDIN, FALSE);
+		}
+		else
+		{
+			stream_set_blocking ($in, true);
+		}
 
 		return trim(fgets($in));
 	}

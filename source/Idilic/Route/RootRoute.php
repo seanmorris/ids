@@ -136,7 +136,10 @@ class RootRoute implements \SeanMorris\Ids\Routable
 				$package = \SeanMorris\Ids\Package::get($packageName);
 			}
 			catch(\Exception $e)
-			{}
+			{
+				var_dump($e);
+				\SeanMorris\Ids\Log::logException($e);
+			}
 		}
 
 		if(!$args || !class_exists($routes))
@@ -193,6 +196,10 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		foreach($packages as $packageName)
 		{
+			printf(
+				'Checking "%s"...' . PHP_EOL
+				, $packageName
+			);
 			$package = $this->_getPackage($packageName);
 
 			$result = $package->applySchema($real);
@@ -200,7 +207,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			if(!$result)
 			{
 				printf(
-					'No schema changes detected for "%s".' . PHP_EOL
+				"\t"
+				. 'No schema changes detected for "%s".' . PHP_EOL
 					, $packageName
 				);
 			}
