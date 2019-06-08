@@ -121,6 +121,7 @@ class Log
 
 	protected static function log($levelString, ...$data)
 	{
+		global $switches;
 		$output = null;
 
 		$logPackages = (array)Settings::read('logPackages');
@@ -133,9 +134,19 @@ class Log
 			$level = static::$levels[$levelString];
 		}
 
-		if($level <= static::$levels['warn'] && php_sapi_name() == 'cli')
-		{
-			print_r($data);
+		if($level <= static::$levels['warn']
+			&& php_sapi_name() == 'cli'
+			&& ($switches['verbose'] ?? $switches['v'] ?? FALSE)
+		){
+			foreach($data as $d)
+			{
+				if(is_scalar($d))
+				{
+					print $d . PHP_EOL;
+					continue;
+				}
+				print_r($data);
+			}
 		}
 
 		$maxLevel = NULL;
@@ -802,7 +813,7 @@ class Log
 			, ini_get('error_log')
 		);
 
-		if(php_sapi_name() == 'cli' && !$internal)
+		if(php_sapi_name() == 'cli' && !$internal && 0)
 		{
 			fwrite(STDERR, $line);
 		}

@@ -136,14 +136,18 @@ abstract class Queue
 
 			if(!$servers)
 			{
-				throw new \Exception('No RabbitMQ servers specified.');
+				throw new \Exception(sprintf(
+					'No RabbitMQ servers specified %s.'
+					, $_SERVER['HTTP_HOST']
+				 ));
 			}
 
 			if(!isset($servers->{static::RABBIT_MQ_SERVER}))
 			{
 				throw new \Exception(sprintf(
-					'No RabbitMQ server "%s" specified.'
+					'No RabbitMQ server "%s" specified for %s.'
 					, static::RABBIT_MQ_SERVER
+					 , $_SERVER['HTTP_HOST']
 				));
 			}
 

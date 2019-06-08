@@ -23,8 +23,9 @@ class		Database
 		if(!isset(static::$credentials[$name][0]))
 		{
 			throw new \Exception(sprintf(
-				'No Database "%s" regsitered.'
+				'No Database "%s" regsitered for %s.'
 				, $name
+				, $_SERVER['HTTP_HOST']
 			));
 		}
 

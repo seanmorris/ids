@@ -825,7 +825,7 @@ class Model
 
 			$callback = array_pop($_args);
 			
-			$models = static::$methodName(...array_merge($_args, [$position, $pageSize]));
+			$models = static::$methodName(...array_merge([$position], $_args, [$pageSize]));
 
 			while($models)
 			{
@@ -838,7 +838,7 @@ class Model
 				}
 
 				$models = static::$methodName(...array_merge(
-					$_args, [$model->id, $pageSize]
+					[$model->id], $_args, [$pageSize]
 				));
 			}
 
@@ -964,7 +964,7 @@ class Model
 			//$cursorValue = (int) array_pop($args);
 			$limit = (int) array_pop($args);
 
-			$def['where'][] = ['id' => '?', '>'];
+			// $def['where'][] = ['id' => '?', '>'];
 		}
 
 		// \SeanMorris\Ids\Log::debug($def);
@@ -974,6 +974,7 @@ class Model
 		if(isset($def['cursor']) && $def['cursor'])
 		{
 			$select->limit($limit);
+			$select->conditions([['id' => '?', '>']]);
 		}
 
 		// if(isset($def['type']) && $def['type'] == 'count')
