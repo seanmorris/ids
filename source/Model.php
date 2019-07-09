@@ -2,10 +2,9 @@
 namespace SeanMorris\Ids;
 class Model
 {
-	protected
-		$id
-		, $class
-	;
+	protected $id, $class;
+
+	private $_changed = [];
 
 	protected static
 		$table
@@ -2130,7 +2129,7 @@ class Model
 			{
 				$propClass = $property->class;
 
-				if($property->isStatic())
+				if($property->isStatic() || $property->isPrivate())
 				{
 					continue;
 				}
@@ -2292,6 +2291,10 @@ class Model
 
 			if(array_key_exists($property, $skeleton))
 			{
+				if($this->{$property} !== $skeleton[$property])
+				{
+					$this->_changed[$property] = true;
+				}
 				$this->{$property} = $skeleton[$property];
 			}
 		}
@@ -2848,6 +2851,16 @@ class Model
 		}
 
 		return $owners;
+	}
+
+	public function changed($property = NULL)
+	{
+		if($property === NULL)
+		{
+			return $this->_changed;
+		}
+
+		return $this->changed[$property] ?? FALSE;
 	}
 
 	public static function table()
