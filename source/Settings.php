@@ -72,6 +72,14 @@ class Settings
 				static::$currentPort = $port;
 
 				static::$settings = json_decode(file_get_contents($settingsFile));
+
+				if(!static::$settings)
+				{
+					throw new \Exception(sprintf(
+						'Settings file at %s is invalid.'
+						, static::$settings
+					));
+				}
 			}
 		}
 
