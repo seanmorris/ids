@@ -40,7 +40,7 @@ class Mail
 			);
 
 			mail(
-				$this->recipients
+				implode(", ", $this->recipients)
 				, $this->subject
 				, $this->body
 			);
