@@ -2526,19 +2526,26 @@ class Model
 			if($this->$property instanceof Model)
 			{
 				$skeleton[$property] = $this->$property->id;
-				if($children !== FALSE)
+
+				if($children && $children < 0)
 				{
 					$skeleton[$property] = $this->$property->unconsume(FALSE);
 				}
+
 				continue;
 			}
 
 			if(is_array($this->$property))
 			{
-				if($this->canHaveOne($property) && $children === FALSE)
+				if($this->canHaveOne($property) && !$children)
 				{
 					$skeleton[$property] = $this->$property['id'] ?? NULL;
 
+					continue;
+				}
+
+				if(!$children || $children < 0)
+				{
 					continue;
 				}
 
@@ -2568,7 +2575,7 @@ class Model
 
 		//\SeanMorris\Ids\Log::debug($children);
 
-		if($children)
+		if($children && $children > 0)
 		{
 			//\SeanMorris\Ids\Log::debug(static::$hasMany);
 
@@ -2581,7 +2588,7 @@ class Model
 				$skeleton[$property] = array_map(
 					function($subject) use($children)
 					{
-						return $subject->unconsume($children -1);
+						return $subject->unconsume($children - 1);
 					}
 					, $subjects
 				);

@@ -51,7 +51,7 @@ abstract class Statement
 	{
 		$queryString = $this->assemble(...(func_get_args()));
 
-		\SeanMorris\Ids\Log::query('Tier', $this->databaseTier());
+		\SeanMorris\Ids\Log::debug('Tier', $this->databaseTier());
 		\SeanMorris\Ids\Log::query($queryString);
 
 		$database = $this->database();
@@ -61,10 +61,10 @@ abstract class Statement
 
 	public function execute(...$args)
 	{
+		$queryStartTime = microtime(TRUE);
+
 		$queryObject = $this->prepare();
 		\SeanMorris\Ids\Log::debug($args);
-
-		$queryStartTime = microtime(TRUE);
 
 		$queryObject->execute($args);
 
