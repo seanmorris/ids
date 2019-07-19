@@ -2544,9 +2544,9 @@ class Model
 					continue;
 				}
 
-				if(!$children || $children < 0)
+				if(!($this->stub ?? FALSE) && (!$children || $children < 0))
 				{
-					// continue;
+					continue;
 				}
 
 				$loadedChildren = $this->$property;
