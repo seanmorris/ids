@@ -2544,7 +2544,7 @@ class Model
 					continue;
 				}
 
-				if(!($this->stub ?? FALSE) && (!$children || $children < 0))
+				if(!$this->_stub && (!$children || $children < 0))
 				{
 					continue;
 				}
