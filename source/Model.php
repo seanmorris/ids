@@ -2546,7 +2546,7 @@ class Model
 
 				if(!$children || $children < 0)
 				{
-					continue;
+					// continue;
 				}
 
 				$loadedChildren = $this->$property;
