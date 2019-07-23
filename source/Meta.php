@@ -207,8 +207,9 @@ class Meta
 					$aliases[$lastToken] = $aliased;
 				}
 
-				if(T_CLASS === $tokens[$index][0])
-				{
+				if(T_CLASS === $tokens[$index][0]
+					&& T_PAAMAYIM_NEKUDOTAYIM !== $tokens[$index-1][0]
+				){
 					if(T_IMPLEMENTS === $tokens[$index + 4][0]
 						|| T_EXTENDS === $tokens[$index + 4][0]
 					){
@@ -271,7 +272,7 @@ class Meta
 						break;
 					}
 
-					$class = $namespace.'\\'.$tokens[$index][1];
+					$class = $namespace . '\\' . $tokens[$index][1];
 
 					try
 					{
