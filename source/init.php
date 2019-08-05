@@ -88,6 +88,18 @@ $composer = FALSE;
 
 if($autoloadPath)
 {
+	if(!file_exists($autoloadPath))
+	{
+		$error = sprintf(
+			'Cannot find autoloader specified at path: %s'
+			, $autoloadPath
+		);
+		if(php_sapi_name() == 'cli')
+		{
+			print $error . PHP_EOL;
+		}
+		throw new Exception($error);
+	}
 	define('IDS_VENDOR_ROOT', dirname($autoloadPath));
 	define('IDS_ROOT', dirname(IDS_VENDOR_ROOT));
 	$composer = require $autoloadPath;
@@ -191,17 +203,28 @@ $existingErrorHandler = set_error_handler(
 	}
 );
 
-if($db = \SeanMorris\Ids\Settings::read('databases'))
+if($dbs = \SeanMorris\Ids\Settings::read('databases'))
 {
-	\SeanMorris\Ids\Log::debug('Turning off MYSQLs ONLY_FULL_GROUP_BY...');
-	\SeanMorris\Ids\Database::registerMulti($db);
-	$dbHandle = \SeanMorris\Ids\Database::get('main');
+	\SeanMorris\Ids\Database::registerMulti($dbs);
 
-	$query = $dbHandle->prepare("SET sql_mode=(
-		SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY','')
-	)");
+	foreach($dbs as $name => $creds)
+	{
+		\SeanMorris\Ids\Log::debug(
+			sprintf('Setting SQL mode for %s...', $name)
+		);
+	
+		$dbHandle = \SeanMorris\Ids\Database::get($name);
 
-	$query->execute();
+		$query = $dbHandle->prepare("SET SESSION sql_mode=(
+			SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY','')
+		)");
+
+		$query = $dbHandle->prepare("SET SESSION sql_mode=(
+			SELECT REPLACE(@@sql_mode,'NO_ZERO_DATE','')
+		)");
+
+		$query->execute();
+	}
 }
 
 if(!\SeanMorris\Ids\Settings::read('devmode'))
