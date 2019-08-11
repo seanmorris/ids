@@ -866,8 +866,9 @@ class Package
 						else
 						{
 							$queries[] = sprintf(
-								"ALTER TABLE `%s` DROP INDEX;"
+								"ALTER TABLE `%s` DROP KEY %s;"
 								, $table
+								, $index->Key_name
 							);
 							$queries[] = sprintf(
 								"ALTER TABLE `%s` ADD INDEX `%s` (`%s`) COMMENT '%s';"
