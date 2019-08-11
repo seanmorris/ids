@@ -68,13 +68,17 @@ abstract class Queue
 	{
 		$channel = static::getChannel();
 
-		$exchange = get_called_class() . static::BROADCAST_EXCHANGE;
+		$exchange = $_SERVER['HTTP_HOST'] . '::'
+			. get_called_class()
+			. static::BROADCAST_EXCHANGE;
 
 		if($topic !== NULL)
 		{
 			static::getTopicQueue($topic);
 
-			$exchange = get_called_class() . static::TOPIC_EXCHANGE;
+			$exchange = $_SERVER['HTTP_HOST'] . '::'
+				. get_called_class()
+				. static::TOPIC_EXCHANGE;
 		}
 		else
 		{
@@ -262,7 +266,9 @@ abstract class Queue
 			$channel = static::getChannel();
 
 			list(static::$sendQueue, ,) = $channel->queue_declare(
-				get_called_class() . static::SEND_QUEUE
+				$_SERVER['HTTP_HOST'] . '::'
+					. get_called_class()
+					. static::SEND_QUEUE
 				, FALSE // static::QUEUE_PASSIVE
 				, static::QUEUE_DURABLE
 				, FALSE // static::QUEUE_EXCLUSIVE
@@ -277,7 +283,9 @@ abstract class Queue
 	{
 		$channel = static::getChannel();
 
-		$exchange = get_called_class() . static::RPC_TOPIC_EXCHANGE;
+		$exchange = $_SERVER['HTTP_HOST'] . '::'
+			. get_called_class()
+			. static::RPC_TOPIC_EXCHANGE;
 
 		$channel->exchange_declare(
 			$exchange
@@ -297,7 +305,9 @@ abstract class Queue
 		if($topic === NULL)
 		{
 			$queue     =& static::$rpcSendQueue;
-			$queueName =  get_called_class() . static::RPC_SEND_QUEUE;
+			$queueName =  $_SERVER['HTTP_HOST'] . '::'
+				. get_called_class()
+				. static::RPC_SEND_QUEUE;
 		}
 		else
 		{
@@ -398,7 +408,9 @@ abstract class Queue
 			$channel = static::getChannel();
 
 			$channel->exchange_declare(
-				get_called_class() . static::BROADCAST_EXCHANGE
+				$_SERVER['HTTP_HOST'] . '::'
+					. get_called_class()
+					.  static::BROADCAST_EXCHANGE
 				, 'fanout'
 				, FALSE
 				, FALSE
@@ -415,7 +427,9 @@ abstract class Queue
 
 			$channel->queue_bind(
 				static::$broadcastQueue
-				, get_called_class() . static::BROADCAST_EXCHANGE
+				, $_SERVER['HTTP_HOST'] . '::'
+					. get_called_class()
+					.  static::BROADCAST_EXCHANGE
 			);
 		}
 
@@ -424,7 +438,9 @@ abstract class Queue
 
 	protected static function getTopicQueue($topic)
 	{
-		$topicExchangeName = get_called_class() . static::TOPIC_EXCHANGE;
+		$topicExchangeName = $_SERVER['HTTP_HOST'] . '::'
+			. get_called_class()
+			.  static::TOPIC_EXCHANGE;
 
 		if(!isset(static::$topicQueues[$topic]))
 		{
