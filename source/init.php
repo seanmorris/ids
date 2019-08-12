@@ -68,8 +68,7 @@ if(php_sapi_name() === 'cli')
 
 		$autoloadPath = $userSettings->root . '/vendor/autoload.php';
 
-		$_SERVER['HTTP_HOST'] =  $userSettings->domain;
-	
+		$_SERVER['HTTP_HOST'] = $userSettings->domain;
 	}
 }
 
@@ -100,8 +99,10 @@ if($autoloadPath)
 		}
 		throw new Exception($error);
 	}
+
 	define('IDS_VENDOR_ROOT', dirname($autoloadPath));
-	define('IDS_ROOT', dirname(IDS_VENDOR_ROOT));
+	define('IDS_ROOT'       , dirname(IDS_VENDOR_ROOT));
+
 	$composer = require $autoloadPath;
 }
 else

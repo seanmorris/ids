@@ -68,7 +68,7 @@ abstract class Queue
 	{
 		$channel = static::getChannel();
 
-		$exchange = $_SERVER['HTTP_HOST'] . '::'
+		$exchange = static::queueDomain() . '::'
 			. get_called_class()
 			. static::BROADCAST_EXCHANGE;
 
@@ -76,7 +76,7 @@ abstract class Queue
 		{
 			static::getTopicQueue($topic);
 
-			$exchange = $_SERVER['HTTP_HOST'] . '::'
+			$exchange = static::queueDomain() . '::'
 				. get_called_class()
 				. static::TOPIC_EXCHANGE;
 		}
@@ -142,7 +142,7 @@ abstract class Queue
 			{
 				throw new \Exception(sprintf(
 					'No RabbitMQ servers specified %s.'
-					, $_SERVER['HTTP_HOST']
+					, static::queueDomain()
 				 ));
 			}
 
@@ -151,7 +151,7 @@ abstract class Queue
 				throw new \Exception(sprintf(
 					'No RabbitMQ server "%s" specified for %s.'
 					, static::RABBIT_MQ_SERVER
-					 , $_SERVER['HTTP_HOST']
+					 , static::queueDomain()
 				));
 			}
 
@@ -266,7 +266,7 @@ abstract class Queue
 			$channel = static::getChannel();
 
 			list(static::$sendQueue, ,) = $channel->queue_declare(
-				$_SERVER['HTTP_HOST'] . '::'
+				static::queueDomain() . '::'
 					. get_called_class()
 					. static::SEND_QUEUE
 				, FALSE // static::QUEUE_PASSIVE
@@ -283,7 +283,7 @@ abstract class Queue
 	{
 		$channel = static::getChannel();
 
-		$exchange = $_SERVER['HTTP_HOST'] . '::'
+		$exchange = static::queueDomain() . '::'
 			. get_called_class()
 			. static::RPC_TOPIC_EXCHANGE;
 
@@ -305,7 +305,7 @@ abstract class Queue
 		if($topic === NULL)
 		{
 			$queue     =& static::$rpcSendQueue;
-			$queueName =  $_SERVER['HTTP_HOST'] . '::'
+			$queueName =  static::queueDomain() . '::'
 				. get_called_class()
 				. static::RPC_SEND_QUEUE;
 		}
@@ -408,7 +408,7 @@ abstract class Queue
 			$channel = static::getChannel();
 
 			$channel->exchange_declare(
-				$_SERVER['HTTP_HOST'] . '::'
+				static::queueDomain() . '::'
 					. get_called_class()
 					.  static::BROADCAST_EXCHANGE
 				, 'fanout'
@@ -427,7 +427,7 @@ abstract class Queue
 
 			$channel->queue_bind(
 				static::$broadcastQueue
-				, $_SERVER['HTTP_HOST'] . '::'
+				, static::queueDomain() . '::'
 					. get_called_class()
 					.  static::BROADCAST_EXCHANGE
 			);
@@ -438,7 +438,7 @@ abstract class Queue
 
 	protected static function getTopicQueue($topic)
 	{
-		$topicExchangeName = $_SERVER['HTTP_HOST'] . '::'
+		$topicExchangeName = static::queueDomain() . '::'
 			. get_called_class()
 			.  static::TOPIC_EXCHANGE;
 
@@ -639,6 +639,15 @@ abstract class Queue
 				$channel->wait();
 			}
 		}
+	}
 
+	public static function queueDomain()
+	{
+		if($canonical = \SeanMorris\Ids\Settings::read('canonical'))
+		{
+			return $canonical;
+		}
+
+		return $_SERVER['HTTP_HOST'];
 	}
 }
