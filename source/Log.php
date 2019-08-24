@@ -134,10 +134,12 @@ class Log
 			$level = static::$levels[$levelString];
 		}
 
-		if($level <= static::$levels['warn']
+		if(($level <= static::$levels['warn']
 			&& php_sapi_name() == 'cli'
 			&& ($switches['verbose'] ?? $switches['v'] ?? FALSE)
-		){
+		) || (php_sapi_name() == 'cli'
+			&& ($switches['vv'] ?? FALSE)
+		)){
 			foreach($data as $d)
 			{
 				if(is_scalar($d))
@@ -813,7 +815,7 @@ class Log
 			, ini_get('error_log')
 		);
 
-		if(php_sapi_name() == 'cli' && !$internal && 0)
+		if(php_sapi_name() == 'cli' && !$internal)
 		{
 			fwrite(STDERR, $line);
 		}
