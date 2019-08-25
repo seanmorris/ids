@@ -805,6 +805,8 @@ class Log
 
 	public static function logException($e, $internal = false)
 	{
+		global $switches;
+
 		$line = static::renderException($e);
 
 		static::startLog();
@@ -815,7 +817,7 @@ class Log
 			, ini_get('error_log')
 		);
 
-		if(php_sapi_name() == 'cli' && !$internal)
+		if(php_sapi_name() == 'cli' && !$internal && ($switches['vv'] ?? FALSE))
 		{
 			fwrite(STDERR, $line);
 		}
