@@ -571,7 +571,7 @@ abstract class Queue
 		{
 			while(TRUE)
 			{
-				static::check($callback, $topic);
+				static::check($callback ?? $wrapper, $topic);
 			}
 		}
 		else
