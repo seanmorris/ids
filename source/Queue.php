@@ -569,9 +569,16 @@ abstract class Queue
 
 		if(static::ASYNC)
 		{
+			if(!$callback)
+			{
+				$callback = function($message) {
+					return static::recieve($message);
+				};
+			}
+
 			while(TRUE)
 			{
-				static::check($callback ?? $wrapper, $topic);
+				static::check($callback, $topic);
 			}
 		}
 		else
