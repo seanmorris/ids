@@ -115,8 +115,12 @@ class Relationship extends Model
 				return;
 			}
 
-			if($subject->id !== $instance->subjectId
-				|| get_class($subject) !== $instance->subjectClass
+			if($subject
+				&& $instance
+				&& (
+					$subject->id !== $instance->subjectId
+					|| get_class($subject) !== $instance->subjectClass
+				)
 			){
 				$subject = $instance->subject();
 			}
