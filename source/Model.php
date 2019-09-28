@@ -2,10 +2,9 @@
 namespace SeanMorris\Ids;
 class Model
 {
-	protected
-		$id
-		, $class
-	;
+	protected $id, $class;
+
+	private $_changed = [];
 
 	protected static
 		$table
@@ -319,7 +318,7 @@ class Model
 				}
 				catch(\Exception $e)
 				{
-
+					\SeanMorris\Ids\Log::logException($e);
 				}
 
 			}
@@ -571,7 +570,7 @@ class Model
 				}
 			}
 
-			$saved = static::loadOneById($this->id);
+			$saved = static::loadOneRecord($this->id);
 
 			if(!$postUpdate)
 			{
@@ -619,6 +618,11 @@ class Model
 
 		while($class)
 		{
+			if($class::beforeDelete($this) === FALSE)
+			{
+				return FALSE;
+			}
+
 			$tables[] = $class::$table;
 
 			$class = get_parent_class($class);
@@ -636,6 +640,18 @@ class Model
 			{
 				$failed = true;
 			}
+		}
+
+		$class = get_called_class();
+
+		while($class)
+		{
+			if($class::afterDelete($this) === FALSE)
+			{
+				return FALSE;
+			}
+
+			$class = get_parent_class($class);
 		}
 
 		return !$failed;
@@ -684,7 +700,7 @@ class Model
 			));
 		}
 
-		if(is_array($colVal) && isset($colVal['id']))
+		if(is_array($colVal) && isset($colVal['id']) && $colVal['id'])
 		{
 			if($columnObject = $columnClass::loadOneById($colVal['id']))
 			{
@@ -701,9 +717,20 @@ class Model
 				$colVal = NULL;
 			}
 		}
-		else
+		else if(is_array($colVal) && (!isset($colVal['id']) || !$colVal['id']))
 		{
-			// @todo Create new model based on input/classDef
+			$columnObject = new $columnClass;
+			$columnObject->consume($colVal);
+
+			\SeanMorris\Ids\Log::debug($columnObject);
+			if($columnObject->save())
+			{
+				$colVal = $columnObject->id;
+			}
+			else
+			{
+				$colVal = NULL;
+			}			
 		}
 
 		return $colVal;
@@ -775,6 +802,48 @@ class Model
 
 	public static function __callStatic($name, $args = [])
 	{
+		if(preg_match('/^map([Bb]y.+)?$/', $name, $match))
+		{
+			$methodName = sprintf('getCursor%s', $match[1] ?? 'ByNull');
+
+			$position = 0;
+			$pageSize = 25;
+			$max      = FALSE;
+
+			$_args = $args;
+
+			if(!is_callable($_args[count($_args)-1]))
+			{
+				$position = array_pop($_args);
+			}
+
+			if(!is_callable($_args[count($_args)-1]))
+			{
+				$pageSize = array_pop($_args);
+			}
+
+			$callback = array_pop($_args);
+			
+			$models = static::$methodName(...array_merge([$position], $_args, [$pageSize]));
+
+			while($models)
+			{
+				foreach($models as $model)
+				{
+					if($callback($model) === 0)
+					{
+						break 2;
+					}
+				}
+
+				$models = static::$methodName(...array_merge(
+					[$model->id], $_args, [$pageSize]
+				));
+			}
+
+			return;
+		}
+
 		$hashableArgs = array_map(
 			function($arg)
 			{
@@ -822,6 +891,12 @@ class Model
 
 		\SeanMorris\Ids\Log::debug(sprintf(
 			'%s::%s(...)'
+			, $curClass
+			, $name
+		), $args);
+
+		\SeanMorris\Ids\Log::debug(sprintf(
+			'%s::%s(...)'
 				. PHP_EOL
 				. "\t" . "Called from\n\t\t%s."
 				. PHP_EOL
@@ -835,8 +910,8 @@ class Model
 				: ''
 		));
 
-		$cache      =& $classCache[$cacheKey];
-		$idCache    =& self::$idCache[$curClass];
+		$cache   =& $classCache[$cacheKey];
+		$idCache =& self::$idCache[$curClass];
 
 		if(!$args)
 		{
@@ -871,7 +946,13 @@ class Model
 		// 	, $args
 		// );
 
-		$def = static::resolveDef($name, $args);
+		$def  = static::resolveDef($name, $args);
+		$recs = FALSE;
+
+		if(isset($def['recs']))
+		{
+			$recs = $def['recs'];
+		}
 
 		// \SeanMorris\Ids\Log::debug(
 		// 	$def
@@ -882,7 +963,7 @@ class Model
 			//$cursorValue = (int) array_pop($args);
 			$limit = (int) array_pop($args);
 
-			$def['where'][] = ['id' => '?', '>'];
+			// $def['where'][] = ['id' => '?', '>'];
 		}
 
 		// \SeanMorris\Ids\Log::debug($def);
@@ -892,6 +973,7 @@ class Model
 		if(isset($def['cursor']) && $def['cursor'])
 		{
 			$select->limit($limit);
+			$select->conditions([['id' => '?', '>']]);
 		}
 
 		// if(isset($def['type']) && $def['type'] == 'count')
@@ -932,7 +1014,7 @@ class Model
 				'Generating %s', $curClass
 			));
 
-			return function(...$overArgs) use($gen, $args, $rawArgs, $curClass, &$cache, &$idCache, $cacheHit)
+			return function(...$overArgs) use($gen, $args, $rawArgs, $curClass, &$cache, &$idCache, $cacheHit, $def, $recs)
 			{
 				$overArgs = [];
 				$i = 0;
@@ -957,7 +1039,7 @@ class Model
 					{
 						$subSkeleton = static::subSkeleton($skeleton);
 
-						if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+						if(!$recs && static::beforeRead(NULL, $subSkeleton) === FALSE)
 						{
 							\SeanMorris\Ids\Log::debug('beforeRead Failed');
 
@@ -975,7 +1057,7 @@ class Model
 							continue;
 						}
 
-						if(static::afterRead($model, $subSkeleton) === FALSE)
+						if(!$recs && static::afterRead($model, $subSkeleton) === FALSE)
 						{
 							\SeanMorris\Ids\Log::debug('afterRead Failed');
 
@@ -1038,7 +1120,7 @@ class Model
 			{
 				$subSkeleton = static::subSkeleton($skeleton);
 
-				if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+				if(!$recs && static::beforeRead(NULL, $subSkeleton) === FALSE)
 				{
 					$cache[0] = FALSE;
 					continue;
@@ -1053,7 +1135,7 @@ class Model
 					continue;
 				}
 
-				if(static::afterRead($model, $subSkeleton) === FALSE)
+				if(!$recs && static::afterRead($model, $subSkeleton) === FALSE)
 				{
 					$cache[0] = FALSE;
 					continue;
@@ -1105,7 +1187,7 @@ class Model
 			{
 				$subSkeleton = static::subSkeleton($skeleton);
 
-				if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+				if(!$recs && static::beforeRead(NULL, $subSkeleton) === FALSE)
 				{
 					continue;
 				}
@@ -1118,7 +1200,7 @@ class Model
 					continue;
 				}
 
-				if(static::afterRead($model, $subSkeleton) === FALSE)
+				if(!$recs && static::afterRead($model, $subSkeleton) === FALSE)
 				{
 					continue;
 				}
@@ -1163,7 +1245,7 @@ class Model
 
 		if(isset($def['type']) && $def['type'] == 'load')
 		{
-			return function(...$overArgs) use($gen, $args, $rawArgs, &$cache, &$idCache)
+			return function(...$overArgs) use($gen, $args, $rawArgs, &$cache, &$idCache, $recs)
 			{
 				\SeanMorris\Ids\Log::debug(sprintf(
 					'Loading %s', get_called_class()
@@ -1184,7 +1266,7 @@ class Model
 				{
 					$subSkeleton = static::subSkeleton($skeleton);
 
-					if(static::beforeRead(NULL, $subSkeleton) === FALSE)
+					if(!$recs && static::beforeRead(NULL, $subSkeleton) === FALSE)
 					{
 						continue;
 					}
@@ -1196,7 +1278,7 @@ class Model
 						\SeanMorris\Ids\Log::debug('Read Failed', $skeleton);
 					}
 
-					if(static::afterRead($model, $subSkeleton) === FALSE)
+					if(!$recs && static::afterRead($model, $subSkeleton) === FALSE)
 					{
 						continue;
 					}
@@ -1385,6 +1467,8 @@ class Model
 
 		reset($skeleton[static::$table]);
 
+		Log::debug($skeleton);
+
 		return [key($skeleton[static::$table]), array_shift($skeleton[static::$table])];
 	}
 
@@ -1413,8 +1497,6 @@ class Model
 			$subSkeletonAlias
 			, $subSkeleton
 		) = static::subskeletonWithAlias($skeleton);
-
-		//var_dump($subSkeletonAlias, $subSkeleton);
 
 		$baseClass = get_class();
 		$parentClass = get_parent_class(get_called_class());
@@ -1456,11 +1538,40 @@ class Model
 
 				if(isset($skeleton[$subjectClass::$table]))
 				{
+					\SeanMorris\Ids\Log::debug(sprintf(
+						'Trying to preload %s for %s::%s'
+						, $subjectClass
+						, get_called_class()
+						, $property
+					));
+
 					$model = $value;
 
 					$subSkeletons = $subjectClass::subskeletons($skeleton);
 
-					$subSkeletonAliasChain = explode('__', $subSkeletonAlias);
+					$_subSkeletonAlias = $subSkeletonAlias;
+					$parentClass       = get_parent_class(get_called_class());
+
+					if($parentClass
+						&& isset($parentClass::$hasOne[$property])
+						&& $_subjectClass = $parentClass::$hasOne[$property]
+					){
+						Log::debug(
+							$parentClass
+							, $_subjectClass::$table
+							, $subjectClass::$table
+						);
+
+						if($_subjectClass::$table === $subjectClass::$table)
+						{
+							list(
+								$_subSkeletonAlias
+								, $_subSkeleton
+							) = $parentClass::subskeletonWithAlias($skeleton);
+						}
+					}
+
+					$subSkeletonAliasChain = explode('__', $_subSkeletonAlias);
 
 					$subSkeletonKey = array_pop($subSkeletonAliasChain)
 						. '_'
@@ -1470,7 +1581,7 @@ class Model
 						. '_0'
 					;
 
-					\SeanMorris\Ids\Log::debug($subSkeletonAlias, $subSkeletonKey);
+					\SeanMorris\Ids\Log::debug($_subSkeletonAlias, $subSkeletonKey, $subSkeletons);
 
 					if(isset(
 						$subSkeletons[$subSkeletonKey]
@@ -2019,7 +2130,7 @@ class Model
 			{
 				$propClass = $property->class;
 
-				if($property->isStatic())
+				if($property->isStatic() || $property->isPrivate())
 				{
 					continue;
 				}
@@ -2181,6 +2292,10 @@ class Model
 
 			if(array_key_exists($property, $skeleton))
 			{
+				if($this->{$property} !== $skeleton[$property])
+				{
+					$this->_changed[$property] = true;
+				}
 				$this->{$property} = $skeleton[$property];
 			}
 		}
@@ -2208,30 +2323,70 @@ class Model
 
 				$this->{$property} = $values->id;
 			}
-			else if(is_array($values) && isset($values['id']) && $values['id'])
+			else if(is_array($values))
 			{
-				\SeanMorris\Ids\Log::debug('Using existing model');
-
-				if(isset($values['class']) && $values['class']
-					&& is_subclass_of($values['class'], $propertyClass)
-				){
-					$propertyClass = $values['class'];
-				}
-
-				$subject = $propertyClass::loadOneById($values['id']);
-
-				if(!$subject)
+				if(isset($values['id']) && $values['id'])
 				{
-					continue;
+					\SeanMorris\Ids\Log::debug('Using existing model');
+
+					if(isset($values['class']) && $values['class']
+						&& is_subclass_of($values['class'], $propertyClass)
+					){
+						$propertyClass = $values['class'];
+					}
+
+					$subject = $propertyClass::loadOneById($values['id']);
+
+					if(!$subject)
+					{
+						continue;
+					}
+
+					$subject->consume($values);
+
+					if($subject->save())
+					{
+						$this->{$property} = $subject->id;
+					}
 				}
-
-				$subject->consume($values);
-
-				if($subject->save())
+				else if($values)
 				{
-					$this->{$property} = $subject->id;
-				}
+					 if(!isset($values['class']) || !$values['class'])
+					 {
+					 	$values['class'] = $propertyClass;
+					 }
 
+					\SeanMorris\Ids\Log::debug(
+						'Trying to create new model'
+						, $values['class']
+						, $propertyClass
+					);
+
+					if(is_a($values['class'], $propertyClass, TRUE))
+					{
+						\SeanMorris\Ids\Log::debug(
+							'Creating new model'
+							, $values['class']
+							, $propertyClass
+						);
+
+						$subject = new $values['class'];
+
+						$subject->consume($values);
+
+						try
+						{
+							if($subject->save())
+							{
+								$this->{$property} = $subject->id;
+							}
+						}
+						catch(\SeanMorris\PressKit\Exception\ModelAccessException $exception)
+						{
+							\SeanMorris\Ids\Log::logException($exception);
+						}
+					}
+				}
 			}
 		}
 
@@ -2305,7 +2460,6 @@ class Model
 							\SeanMorris\Ids\Log::logException($exception);
 						}
 
-
 						$subModelsSubmitted = TRUE;
 					}
 					else
@@ -2372,24 +2526,42 @@ class Model
 			if($this->$property instanceof Model)
 			{
 				$skeleton[$property] = $this->$property->id;
+
+				if($children && $children < 0)
+				{
+					$skeleton[$property] = $this->$property->unconsume(FALSE);
+				}
+
 				continue;
 			}
 
 			if(is_array($this->$property))
 			{
+				if($this->canHaveOne($property) && !$children)
+				{
+					$skeleton[$property] = $this->$property['id'] ?? NULL;
+
+					continue;
+				}
+
+				if(!$this->_stub && (!$children || $children < 0))
+				{
+					continue;
+				}
+
 				$loadedChildren = $this->$property;
 
 				$skeletons = [];
 
 				foreach($loadedChildren as $index => $child)
 				{
-					if(is_object($child) && $child instanceof static)
+					if($child instanceof Model)
 					{
-						$skeletons[] = $child->unconsume(0);
+						$skeletons[$index] = $child->unconsume(FALSE);
 					}
 					else
 					{
-						$skeletons[] = $child;
+						$skeletons[$index] = $child;
 					}
 				}
 
@@ -2403,7 +2575,7 @@ class Model
 
 		//\SeanMorris\Ids\Log::debug($children);
 
-		if($children)
+		if($children && $children > 0)
 		{
 			//\SeanMorris\Ids\Log::debug(static::$hasMany);
 
@@ -2416,7 +2588,7 @@ class Model
 				$skeleton[$property] = array_map(
 					function($subject) use($children)
 					{
-						return $subject->unconsume($children -1);
+						return $subject->unconsume($children - 1);
 					}
 					, $subjects
 				);
@@ -2436,6 +2608,9 @@ class Model
 				$skeleton[$property] = $subject->unconsume($children -1);
 			}
 		}
+
+		// \SeanMorris\Ids\Log::debug($skeleton);
+		// \SeanMorris\Ids\Log::trace($skeleton);
 
 		return $skeleton;
 	}
@@ -2686,9 +2861,37 @@ class Model
 		return $owners;
 	}
 
+	public function changed($property = NULL)
+	{
+		if($property === NULL)
+		{
+			return $this->_changed;
+		}
+
+		return $this->changed[$property] ?? FALSE;
+	}
+
 	public static function table()
 	{
 		return static::$table;
+	}
+
+	protected static function startTransaction()
+	{
+		$database = \SeanMorris\Ids\Database::get('main');
+		$database->prepare('START TRANSACTION')->execute();
+	}
+
+	protected static function commitTransaction()
+	{
+		$database = \SeanMorris\Ids\Database::get('main');
+		$database->prepare('COMMIT')->execute();
+	}
+
+	protected static function rollbackTransaction()
+	{
+		$database = \SeanMorris\Ids\Database::get('main');
+		$database->prepare('ROLLBACK')->execute();
 	}
 
 	protected static function beforeConsume($instance, &$skeleton)

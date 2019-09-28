@@ -1,5 +1,6 @@
 <?php
 error_reporting(-1);
+ini_set('display_errors', FALSE);
 
 define('START', microtime(true));
 
@@ -67,8 +68,7 @@ if(php_sapi_name() === 'cli')
 
 		$autoloadPath = $userSettings->root . '/vendor/autoload.php';
 
-		$_SERVER['HTTP_HOST'] =  $userSettings->domain;
-	
+		$_SERVER['HTTP_HOST'] = $userSettings->domain;
 	}
 }
 
@@ -87,8 +87,22 @@ $composer = FALSE;
 
 if($autoloadPath)
 {
+	if(!file_exists($autoloadPath))
+	{
+		$error = sprintf(
+			'Cannot find autoloader specified at path: %s'
+			, $autoloadPath
+		);
+		if(php_sapi_name() == 'cli')
+		{
+			print $error . PHP_EOL;
+		}
+		throw new Exception($error);
+	}
+
 	define('IDS_VENDOR_ROOT', dirname($autoloadPath));
-	define('IDS_ROOT', dirname(IDS_VENDOR_ROOT));
+	define('IDS_ROOT'       , dirname(IDS_VENDOR_ROOT));
+
 	$composer = require $autoloadPath;
 }
 else
@@ -111,13 +125,23 @@ ini_set("error_log", $errorPath);
 
 register_shutdown_function(function() {
 	$error = error_get_last();
+
+    if ($error['type'] === E_COMPILE_ERROR)
+    {
+		\SeanMorris\Ids\Log::error(
+			\SeanMorris\Ids\Log::color('COMPILER ERROR OCCURRED.', 'black', 'red')
+			, $error
+		);
+    }
+
     if ($error['type'] === E_ERROR)
     {
-    	\SeanMorris\Ids\Log::error(
-    		'FATAL ERROR OCCURRED.'
-    		, $error
-    	);
+		\SeanMorris\Ids\Log::error(
+			'FATAL ERROR OCCURRED.'
+			, $error
+		);
     }
+
 	\SeanMorris\Ids\Log::info(
 		'Response Complete.'
 		, memory_get_peak_usage(true)
@@ -180,17 +204,30 @@ $existingErrorHandler = set_error_handler(
 	}
 );
 
-if($db = \SeanMorris\Ids\Settings::read('databases'))
+if($dbs = \SeanMorris\Ids\Settings::read('databases'))
 {
-	\SeanMorris\Ids\Log::debug('Turning off MYSQLs ONLY_FULL_GROUP_BY...');
-	\SeanMorris\Ids\Database::registerMulti($db);
-	$dbHandle = \SeanMorris\Ids\Database::get('main');
+	\SeanMorris\Ids\Database::registerMulti($dbs);
 
-	$query = $dbHandle->prepare("SET sql_mode=(
-		SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY','')
-	)");
+	foreach($dbs as $name => $creds)
+	{
+		\SeanMorris\Ids\Log::debug(
+			sprintf('Setting SQL mode for %s...', $name)
+		);
+	
+		$dbHandle = \SeanMorris\Ids\Database::get($name);
 
-	$query->execute();
+		$query = $dbHandle->prepare("SET SESSION sql_mode=(
+			SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY','')
+		)");
+
+		$query->execute();
+
+		$query = $dbHandle->prepare("SET SESSION sql_mode=(
+			SELECT REPLACE(@@sql_mode,'NO_ZERO_DATE','')
+		)");
+
+		$query->execute();
+	}
 }
 
 if(!\SeanMorris\Ids\Settings::read('devmode'))

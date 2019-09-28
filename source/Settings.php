@@ -6,6 +6,7 @@ class Settings
 		$settings
 		, $currentSite
 		, $currentPort
+		, $callbacks
 	;
 
 	protected function __construct(){}
@@ -71,6 +72,14 @@ class Settings
 				static::$currentPort = $port;
 
 				static::$settings = json_decode(file_get_contents($settingsFile));
+
+				if(!static::$settings)
+				{
+					throw new \Exception(sprintf(
+						'Settings file at %s is invalid.'
+						, static::$settings
+					));
+				}
 			}
 		}
 
@@ -117,6 +126,23 @@ class Settings
 			{
 				return $filepath;
 			}
+		}
+
+		return FALSE;
+	}
+
+	public static function register(...$name)
+	{
+		$callback = array_pop($name);
+
+		static::$callbacks[implode('::', $name)] = $callback;
+	}
+
+	public static function get(...$name)
+	{
+		if($c = static::$callbacks[implode('::', $name)])
+		{
+			return $c(static::read(...$name));
 		}
 
 		return FALSE;

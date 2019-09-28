@@ -99,10 +99,31 @@ class Relationship extends Model
 			// $subjectClass = $owner->getSubjectClass($column);
 
 			$instance = parent::instantiate($skeleton, $args);
+			$subjectClass = $instance->subjectClass;
 
-			// $subjectClass = $instance->subjectClass;
-			// $subject      = $subjectClass::instantiate($skeleton);
-			$subject = $instance->subject();
+			$subSkeleton = $subjectClass::subSkeleton($skeleton);
+
+			if($subjectClass::beforeRead(NULL, $subSkeleton) === FALSE)
+			{
+				return;
+			}
+
+			$subject = $subjectClass::instantiate($skeleton);
+
+			if($subjectClass::afterRead($subject, $subSkeleton) === FALSE)
+			{
+				return;
+			}
+
+			if($subject
+				&& $instance
+				&& (
+					$subject->id !== $instance->subjectId
+					|| get_class($subject) !== $instance->subjectClass
+				)
+			){
+				$subject = $instance->subject();
+			}
 
 			$instance->ownerObject   = $owner;
 			$instance->subjectObject = $subject;

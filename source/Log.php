@@ -121,6 +121,7 @@ class Log
 
 	protected static function log($levelString, ...$data)
 	{
+		global $switches;
 		$output = null;
 
 		$logPackages = (array)Settings::read('logPackages');
@@ -133,9 +134,21 @@ class Log
 			$level = static::$levels[$levelString];
 		}
 
-		if($level <= static::$levels['warn'] && php_sapi_name() == 'cli')
-		{
-			print_r($data);
+		if(($level <= static::$levels['warn']
+			&& php_sapi_name() == 'cli'
+			&& ($switches['verbose'] ?? $switches['v'] ?? FALSE)
+		) || (php_sapi_name() == 'cli'
+			&& ($switches['vv'] ?? FALSE)
+		)){
+			foreach($data as $d)
+			{
+				if(is_scalar($d))
+				{
+					print $d . PHP_EOL;
+					continue;
+				}
+				print_r($data);
+			}
 		}
 
 		$maxLevel = NULL;
@@ -516,7 +529,7 @@ class Log
 				. static::SECOND_SIGNIFICANCE
 				. "f]::[%s.%0"
 				. static::SECOND_SIGNIFICANCE
-				. "d]::[%d]"
+				. "d]::[%d]::[%s]"
 				. (
 					$level
 						? (
@@ -536,6 +549,7 @@ class Log
 			, date('Y-m-d h:i:s')
 			, $mill
 			, getmypid()
+			, number_format(memory_get_usage())
 		);
 
 		
@@ -791,6 +805,8 @@ class Log
 
 	public static function logException($e, $internal = false)
 	{
+		global $switches;
+
 		$line = static::renderException($e);
 
 		static::startLog();
@@ -801,7 +817,7 @@ class Log
 			, ini_get('error_log')
 		);
 
-		if(php_sapi_name() == 'cli' && !$internal)
+		if(php_sapi_name() == 'cli' && !$internal && ($switches['vv'] ?? FALSE))
 		{
 			fwrite(STDERR, $line);
 		}

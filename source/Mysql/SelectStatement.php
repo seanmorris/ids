@@ -28,6 +28,16 @@ class SelectStatement extends WhereStatement
 		return parent::__construct($table);
 	}
 
+	protected function databaseTier()
+	{
+		if($database = \SeanMorris\Ids\Database::get('slave'))
+		{
+			return 'slave';
+		}
+
+		return parent::databaseTier();
+	}
+
 	public function tableAlias()
 	{
 		if(!$this->alias && $this->master)

@@ -23,23 +23,26 @@ class		Database
 		if(!isset(static::$credentials[$name][0]))
 		{
 			throw new \Exception(sprintf(
-				'No Database "%s" regsitered.'
+				'No Database "%s" regsitered for %s.'
 				, $name
+				, $_SERVER['HTTP_HOST']
 			));
 		}
 
-		return isset(static::$connections[$name])
+		$db = isset(static::$connections[$name])
 			? static::$connections[$name]
-			: static::$connections[$name] = new \PDO(
+			: static::$connections[$name] = $new = new \PDO(
 				static::$credentials[$name][0]
 				, static::$credentials[$name][1]
 				, static::$credentials[$name][2]
-				/*
-				, isset(static::$credentials[$name][3])
-					? isset(static::$credentials[$name][3])
-					: array()
-				*/
-		);
+			);
+
+		if($new ?? FALSE)
+		{
+			$new->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+		}
+
+		return $db;
 	}
 
 	public static function registerMulti($args)

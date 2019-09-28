@@ -68,6 +68,13 @@ class Meta
 			&& php_sapi_name() !== 'cli'
 			&& !\SeanMorris\Ids\Http\Http::disconnected()
 		){
+			session_set_cookie_params(
+				\SeanMorris\Ids\Settings::read('session', 'lifetime')
+				, \SeanMorris\Ids\Settings::read('session', 'path')
+				, \SeanMorris\Ids\Settings::read('session', 'domain')
+				, ($_SERVER['HTTPS'] ?? FALSE) === 'on'
+				, TRUE
+			);
 			session_start();
 		}
 
@@ -146,8 +153,29 @@ class Meta
 		$allFiles = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
 		$phpFiles = new \RegexIterator($allFiles, '/\.php$/');
 
+		$skip = \SeanMorris\Ids\Settings::read('scan', 'exclude') ?? [];
+
 		foreach ($phpFiles as $phpFile)
 		{
+			$relativePath = preg_replace(
+				sprintf('|^%s|', preg_quote(IDS_ROOT . '/vendor/'))
+				, ''
+				, $phpFile->getPath()
+			);
+
+			\SeanMorris\Ids\Log::debug(sprintf(
+				'Scanning file %s'
+				, $relativePath
+			));
+
+			foreach($skip as $s)
+			{
+				if(preg_match(sprintf('|^%s|', $s), $relativePath))
+				{
+					continue 2;
+				}
+			}
+
 			$aliases = [];
 
 			if(preg_match('/(simple)?[Tt]est(s)?/', $phpFile->getRealPath()))
@@ -200,8 +228,9 @@ class Meta
 					$aliases[$lastToken] = $aliased;
 				}
 
-				if(T_CLASS === $tokens[$index][0])
-				{
+				if(T_CLASS === $tokens[$index][0]
+					&& T_PAAMAYIM_NEKUDOTAYIM !== $tokens[$index-1][0]
+				){
 					if(T_IMPLEMENTS === $tokens[$index + 4][0]
 						|| T_EXTENDS === $tokens[$index + 4][0]
 					){
@@ -264,7 +293,7 @@ class Meta
 						break;
 					}
 
-					$class = $namespace.'\\'.$tokens[$index][1];
+					$class = $namespace . '\\' . $tokens[$index][1];
 
 					try
 					{
