@@ -542,7 +542,29 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 			$line = array_combine($header, $line);
 
-			var_dump($line);
+			$model = new $modelClass;
+
+			$line = array_map(function($cell){
+				if($cell === '')
+				{
+					return NULL;
+				}
+				return $cell;
+			}, $line);
+
+			$model->consume($line, TRUE);
+
+			try
+			{
+				$model->create();
+			}
+			catch(\Exception $exception)
+			{
+				\SeanMorris\Ids\Log::logException($exception);
+				$model->update();
+			}
+
+			var_dump($model->id);
 		}
 	}
 
