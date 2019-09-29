@@ -228,6 +228,14 @@ if($dbs = \SeanMorris\Ids\Settings::read('databases'))
 	}
 }
 
+session_set_cookie_params(
+	\SeanMorris\Ids\Settings::read('session', 'lifetime')
+	, \SeanMorris\Ids\Settings::read('session', 'path')
+	, \SeanMorris\Ids\Settings::read('session', 'domain')
+	, ($_SERVER['HTTPS'] ?? FALSE) === 'on'
+	, TRUE
+);
+
 if(!\SeanMorris\Ids\Settings::read('devmode'))
 {
 	\SeanMorris\Ids\Log::suppress();
