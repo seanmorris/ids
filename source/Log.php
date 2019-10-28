@@ -239,7 +239,7 @@ class Log
 
 		if(!$fileExists)
 		{
-			chmod(ini_get('error_log'), 0666);
+			// chmod(ini_get('error_log'), 0666);
 		}
 	}
 
