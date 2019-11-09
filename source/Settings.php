@@ -71,7 +71,17 @@ class Settings
 				static::$currentSite = $hostname;
 				static::$currentPort = $port;
 
-				static::$settings = json_decode(file_get_contents($settingsFile));
+				if(preg_match('/\.ya?ml$/', $settingsFile) && function_exists('yaml_parse_file'))
+				{
+					static::$settings = json_decode(json_encode(yaml_parse_file(
+						$settingsFile
+					)));
+				}
+				else
+				{
+					static::$settings = json_decode(file_get_contents($settingsFile));
+				}
+
 
 				if(!static::$settings)
 				{
@@ -88,9 +98,13 @@ class Settings
 
 	public static function findSettingsFile($hostname, $port)
 	{
+		global $switches;
+
 		$rootPackage = Package::getRoot();
 
-		$settingsFileFormat = $rootPackage->localDir() . 'sites/%s.json';
+		$settingsFileExtensions = ['yml', 'yaml', 'json'];
+
+		$settingsFilenameFormat = $rootPackage->localDir() . 'sites/%s.%s';
 
 		$filenames = [
 			sprintf('%s:%d/settings', $hostname, $port)
@@ -118,13 +132,24 @@ class Settings
 
 		foreach ($filenames as $filename)
 		{
-			$filepath = sprintf($settingsFileFormat, $filename);
-
-			$checked[] = $filepath;
-
-			if(file_exists($filepath))
+			foreach($settingsFileExtensions as $extension)
 			{
-				return $filepath;
+				$filepath = sprintf($settingsFilenameFormat, $filename, $extension);
+
+				$checked[] = $filepath;
+
+				if(file_exists($filepath))
+				{
+					if($switches['verbose'] ?? $switches['v'] ?? FALSE)
+					{
+						fwrite(fopen('php://stderr'), sprintf(
+							'Using settings file: %s'
+							, $filepath
+						));
+					}
+
+					return $filepath;
+				}
 			}
 		}
 
