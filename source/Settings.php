@@ -36,7 +36,7 @@ class Settings
 		if(!static::$currentSite || static::$currentSite != $hostname)
 		{
 			if(isset($_SERVER['HTTP_HOST']))
-			{	
+			{
 				$hostname = parse_url('//' . $_SERVER['HTTP_HOST'], PHP_URL_HOST);
 			}
 
@@ -82,7 +82,6 @@ class Settings
 					static::$settings = json_decode(file_get_contents($settingsFile));
 				}
 
-
 				if(!static::$settings)
 				{
 					throw new \Exception(sprintf(
@@ -102,7 +101,12 @@ class Settings
 
 		$rootPackage = Package::getRoot();
 
-		$settingsFileExtensions = ['yml', 'yaml', 'json'];
+		$settingsFileExtensions = ['json'];
+
+		if(function_exists('yaml_parse_file'))
+		{
+			$settingsFileExtensions = ['yml', 'yaml', 'json'];
+		}
 
 		$settingsFilenameFormat = $rootPackage->localDir() . 'sites/%s.%s';
 
