@@ -110,6 +110,15 @@ class Relationship extends Model
 
 			$subject = $subjectClass::instantiate($skeleton);
 
+			if(!$subject && $skeleton[ $subjectClass::table() ])
+			{
+				$subject = new $subjectClass;
+
+				$subject->consume(
+					array_shift($skeleton[ $subjectClass::table() ])
+				);
+			}
+
 			if($subjectClass::afterRead($subject, $subSkeleton) === FALSE)
 			{
 				return;
@@ -200,14 +209,14 @@ class Relationship extends Model
 			$_args = $args;
 
 			$subject = array_shift($_args);
-			
+
 			if(is_object($subject))
 			{
 				$args = [$subject->id, get_class($subject)];
 			}
 		}
 
-		//\SeanMorris\Ids\Log::debug( "RELATIONSHIP RESOLVEDEF END\n" );	
+		//\SeanMorris\Ids\Log::debug( "RELATIONSHIP RESOLVEDEF END\n" );
 		return $def;
 	}
 }

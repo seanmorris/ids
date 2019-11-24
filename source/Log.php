@@ -552,7 +552,7 @@ class Log
 			, number_format(memory_get_usage())
 		);
 
-		
+
 	}
 
 	public static function position($depth = 0)
@@ -741,14 +741,14 @@ class Log
 					else
 					{
 						$renderedArg = static::render($arg);
-						// $renderedArg = substr($renderedArg, 0, 1024);
-						if(strlen($renderedArg) > 1024)
-						{
-							$renderedArg = (is_object($arg)
-								? get_class($arg)
-								: 'Array'
-							) . '[]...';
-						}							
+						$renderedArg = substr($renderedArg, 0, 1024*1024);
+						// if(strlen($renderedArg) > 1024*1024)
+						// {
+						// 	$renderedArg = (is_object($arg)
+						// 		? get_class($arg)
+						// 		: 'Array'
+						// 	) . '[]...';
+						// }
 					}
 
 					$renderedArgs[] = 'Arg #' . $a . ' ' .$renderedArg;

@@ -730,7 +730,7 @@ class Model
 			else
 			{
 				$colVal = NULL;
-			}			
+			}
 		}
 
 		return $colVal;
@@ -823,7 +823,7 @@ class Model
 			}
 
 			$callback = array_pop($_args);
-			
+
 			$models = static::$methodName(...array_merge([$position], $_args, [$pageSize]));
 
 			while($models)
@@ -1308,6 +1308,7 @@ class Model
 	{
 		if(!isset($skeleton[static::$table]))
 		{
+			Log::warn('Cannot instantiate skeleton:', $skeleton);
 			return;
 		}
 
@@ -2054,7 +2055,7 @@ class Model
 				if(count($subClasses) == 1)
 				{
 					$select->conditions([[
-						'class' => sprintf('"%s"', 
+						'class' => sprintf('"%s"',
 							addslashes(current($subClasses))
 						)
 					]]);
@@ -2088,7 +2089,7 @@ class Model
 				if(count($subClasses) == 1)
 				{
 					$select->conditions([[
-						'class' => sprintf('"%s"', 
+						'class' => sprintf('"%s"',
 							addslashes(current($subClasses))
 						)
 					]]);
