@@ -77,11 +77,9 @@ abstract class Statement
 		\SeanMorris\Ids\Log::query('Query executed.', new \SeanMorris\Ids\LogMeta([
 			'query'              => $queryObject->queryString
 			, 'query_time'       => $queryTime
-			, 'query_count'      => static::$queryCount
-			, 'query_total_time' => static::$queryTime
 			, 'querty_tier'      => $this->databaseTier()
 			, 'query_type'       => get_called_class()
-			, 'query_args'       => $finalArgs
+			, 'query_args'       => $args
 		]));
 
 		$slowQuery = \SeanMorris\Ids\Settings::read('slowQuery');
@@ -97,6 +95,14 @@ abstract class Statement
 				)
 				, ''
 				, $queryObject->queryString
+				, new \SeanMorris\Ids\LogMeta([
+					'query'              => $queryObject->queryString
+					, 'query_time'       => $queryTime * 1000
+					, 'querty_tier'      => $this->databaseTier()
+					, 'query_type'       => get_called_class()
+					, 'query_args'       => $args
+					, 'query_table'      => $this->table
+				])
 			);
 		}
 

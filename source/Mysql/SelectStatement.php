@@ -21,6 +21,8 @@ class SelectStatement extends WhereStatement
 		, $preArgs = []
 	;
 
+	const RETURNS = TRUE;
+
 	public function __construct($table)
 	{
 		$this->master = $this;
@@ -186,7 +188,7 @@ class SelectStatement extends WhereStatement
 			{
 				$columnString .= ($columnString && $subColString)
 					? (PHP_EOL . ', ' . $subColString)
-					: NULL;				
+					: NULL;
 			}
 
 			if(!$conditionString)
@@ -348,9 +350,9 @@ class SelectStatement extends WhereStatement
 
 			if($subColString)
 			{
-				$columnString .= PHP_EOL . ', ' . $subColString;				
+				$columnString .= PHP_EOL . ', ' . $subColString;
 			}
-			
+
 			// @TODO: Why is $subConditionString sometimes empty?
 			if($subConditionString)
 			{
@@ -390,7 +392,7 @@ class SelectStatement extends WhereStatement
 					, $conditionString
 					, $localConditionString
 				);
-				
+
 			}
 		}
 		else
@@ -549,7 +551,7 @@ class SelectStatement extends WhereStatement
 			return $col;
 		}
 
-		\SeanMorris\Ids\Log::debug('DONE FETCHING COLUMNS!');		
+		\SeanMorris\Ids\Log::debug('DONE FETCHING COLUMNS!');
 	}
 
 	public function fetch(...$args)
@@ -577,7 +579,9 @@ class SelectStatement extends WhereStatement
 
 	public function generate()
 	{
-		$closure = function(...$args)
+		$queryStartTime = microtime(TRUE);
+
+		$closure = function(...$args) use($queryStartTime)
 		{
 			$queryObject = $this->execute(...$args);
 			// try
@@ -590,8 +594,16 @@ class SelectStatement extends WhereStatement
 			// 	die;
 			// }
 
+			$first = FALSE;
+
 			while($row = $queryObject->fetch(\PDO::FETCH_ASSOC))
 			{
+				if(!$first)
+				{
+					$first = TRUE;
+
+					$this->complete($queryObject, $queryStartTime, $args);
+				}
 				\SeanMorris\Ids\Log::debug(
 					'Generating row...'
 					, $row
@@ -622,10 +634,29 @@ class SelectStatement extends WhereStatement
 				yield $result;
 			}
 
+			if(!$first)
+			{
+				$this->complete($queryObject, $queryStartTime, $args);
+			}
+
 			\SeanMorris\Ids\Log::debug('DONE GENERATING ROWS!');
 		};
 
 		return $closure;
+	}
+
+	protected function complete($queryObject, $queryStartTime, $args)
+	{
+		$queryTime = microtime(TRUE) - $queryStartTime;
+
+		\SeanMorris\Ids\Log::query('Query executed.', new \SeanMorris\Ids\LogMeta([
+			'query'              => $queryObject->queryString
+			, 'query_time'       => $queryTime * 1000
+			, 'querty_tier'      => $this->databaseTier()
+			, 'query_type'       => get_called_class()
+			, 'query_args'       => $args
+			, 'query_table'      => $this->table
+		]));
 	}
 
 	public function group(...$groups)

@@ -1,6 +1,6 @@
 <?php
 error_reporting(-1);
-ini_set('display_errors', TRUE);
+ini_set('display_errors', FALSE);
 
 define('START', microtime(true));
 
@@ -142,6 +142,9 @@ register_shutdown_function(function() {
 		);
     }
 
+    $queryTimeMs   = \SeanMorris\Ids\Mysql\Statement::queryTime() * 1000;
+    $requestTimeMs = (microtime(true) - START) * 1000;
+
 	\SeanMorris\Ids\Log::info(
 		'Response Complete.'
 		, memory_get_peak_usage(true)
@@ -161,6 +164,12 @@ register_shutdown_function(function() {
 			) . ' sec'
 		]
 		, PHP_EOL
+		, new \SeanMorris\Ids\LogMeta([
+			'request_space'      => memory_get_peak_usage(true)
+			, 'request_time'     => $requestTimeMs
+			, 'query_count'      => \SeanMorris\Ids\Mysql\Statement::queryCount()
+			, 'query_total_time' => $queryTimeMs
+		])
 	);
 });
 

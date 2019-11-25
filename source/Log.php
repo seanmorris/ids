@@ -127,14 +127,14 @@ class Log
 		$logPackages = (array)Settings::read('logPackages');
 		$position    = (object) static::position(2);
 
-		$logBlob = static::logBlob(0);
-
 		$level = 0;
 
 		if(isset(static::$levels[$levelString]))
 		{
 			$level = static::$levels[$levelString];
 		}
+
+		$logBlob = static::logBlob(0, $level < static::$levels['warn']);
 
 		if(($level <= static::$levels['warn']
 			&& php_sapi_name() == 'cli'
@@ -203,7 +203,15 @@ class Log
 
 		if($level > $maxLevel || $level == 0)
 		{
-			return;
+			if(!$logAlso = Settings::read('logAlso'))
+			{
+				$logAlso = [];
+			}
+
+			if(!in_array($levelString, $logAlso))
+			{
+				return;
+			}
 		}
 
 		static::startLog($maxLevel);
@@ -280,54 +288,71 @@ class Log
 	{
 		$position = static::position($depth + 2);
 
-		$trace = $exception
+		$ex = ($exception && $exception instanceof \Exception);
+
+		$trace = $ex
 			? $exception->getTrace()
 			: (array_slice($position['backtrace'], $depth + 2) ?? []);
 
-		$file = $exception
+		$file = $ex
 			? $exception->getFile()
 			: ($position['file'] ?? NULL);
 
-		$line = $exception
+		$line = $ex
 			? $exception->getLine()
 			: ($position['line'] ?? NULL);
 
-		$class = $exception
+		$class = $ex
 			? ($trace[0]['class'] ?? NULL)
 			: ($position['class'] ?? NULL);
 
-		$function = $exception
+		$function = $ex
 			? $trace[0]['function']
 			: ($position['function'] ?? NULL);
 
 		$logBlob  = (object) [
 			'pid'        => getmypid()
+			, 'sapi'     => php_sapi_name()
 			, 'rid'      => static::$started
 			, 'file'     => $file
 			, 'line'     => $line
 			, 'class'    => $class
 			, 'function' => $function
-			, 'trace'    => static::renderTrace($trace)
 			, 'depth'    => count($trace ?? [])
 		];
 
+		$maxLevelString = Settings::read('logLevel');
+
+		$maxLevel = 0;
+
+		if(isset(static::$levels[$maxLevelString]))
+		{
+			$maxLevel = static::$levels[$maxLevelString];
+		}
+
+		if(!$exception && $maxLevel < static::$levels['trace'])
+		{
+			unset($logBlob->trace);
+		}
+
 		if(isset($_SERVER, $_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']))
 		{
-			$logBlob->path   = $_SERVER['REQUEST_URI'];
 			$logBlob->method = $_SERVER['REQUEST_METHOD'];
+			$logBlob->path   = $_SERVER['REQUEST_URI'];
 		}
 
 		if(isset($_SERVER, $_SERVER['REMOTE_ADDR']))
 		{
-			$logBlob->from = $_SERVER['REMOTE_ADDR'];
+			$logBlob->remote = $_SERVER['REMOTE_ADDR'];
 		}
 
 		if($_REQUEST)
 		{
-			$logBlob->_GET     = static::dump($_GET, [], FALSE);
-			$logBlob->_POST    = static::dump($_POST, [], FALSE);
-			$logBlob->_FILES   = static::dump($_FILES, [], FALSE);
-			$logBlob->_REQUEST = static::dump($_REQUEST, [], FALSE);
+			$_GET     && $logBlob->_GET     = static::dump($_GET, [], FALSE);
+			$_POST    && $logBlob->_POST    = static::dump($_POST, [], FALSE);
+			$_REQUEST && $logBlob->_REQUEST = static::dump($_REQUEST, [], FALSE);
+
+			count($_FILES) && $logBlob->_FILES   = static::dump($_FILES, [], FALSE);
 		}
 
 		return $logBlob;
