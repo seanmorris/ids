@@ -1,6 +1,6 @@
 <?php
 error_reporting(-1);
-ini_set('display_errors', FALSE);
+ini_set('display_errors', TRUE);
 
 define('START', microtime(true));
 
@@ -213,7 +213,7 @@ if($dbs = \SeanMorris\Ids\Settings::read('databases'))
 		\SeanMorris\Ids\Log::debug(
 			sprintf('Setting SQL mode for %s...', $name)
 		);
-	
+
 		$dbHandle = \SeanMorris\Ids\Database::get($name);
 
 		$query = $dbHandle->prepare("SET SESSION sql_mode=(
@@ -238,7 +238,7 @@ if(php_sapi_name() !== 'cli')
 		, \SeanMorris\Ids\Settings::read('session', 'domain')
 		, ($_SERVER['HTTPS'] ?? FALSE) === 'on'
 		, TRUE
-	);	
+	);
 }
 
 if(!\SeanMorris\Ids\Settings::read('devmode'))

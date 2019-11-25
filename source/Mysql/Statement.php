@@ -52,7 +52,7 @@ abstract class Statement
 		$queryString = $this->assemble(...(func_get_args()));
 
 		\SeanMorris\Ids\Log::debug('Tier', $this->databaseTier());
-		\SeanMorris\Ids\Log::query($queryString);
+		\SeanMorris\Ids\Log::query('Preparing query', $queryString);
 
 		$database = $this->database();
 
@@ -69,6 +69,20 @@ abstract class Statement
 		$queryObject->execute($args);
 
 		$queryTime = microtime(TRUE) - $queryStartTime;
+
+		static::$queryCount++;
+
+		static::$queryTime += $queryTime;
+
+		\SeanMorris\Ids\Log::query('Query executed.', new \SeanMorris\Ids\LogMeta([
+			'query'              => $queryObject->queryString
+			, 'query_time'       => $queryTime
+			, 'query_count'      => static::$queryCount
+			, 'query_total_time' => static::$queryTime
+			, 'querty_tier'      => $this->databaseTier()
+			, 'query_type'       => get_called_class()
+			, 'query_args'       => $finalArgs
+		]));
 
 		$slowQuery = \SeanMorris\Ids\Settings::read('slowQuery');
 		$queryLimit = \SeanMorris\Ids\Settings::read('queryLimit');
@@ -93,10 +107,6 @@ abstract class Statement
 				, $queryLimit
 			));
 		}
-
-		static::$queryCount++;
-
-		static::$queryTime += $queryTime;
 
 		\SeanMorris\Ids\Log::debug(
 			'Queries Run: ' . static::$queryCount

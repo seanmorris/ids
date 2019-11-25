@@ -125,7 +125,9 @@ class Log
 		$output = null;
 
 		$logPackages = (array)Settings::read('logPackages');
-		$position = static::position(1);
+		$position    = (object) static::position(2);
+
+		$logBlob = static::logBlob(0);
 
 		$level = 0;
 
@@ -142,6 +144,10 @@ class Log
 		)){
 			foreach($data as $d)
 			{
+				if($d instanceof LogMeta)
+				{
+					continue;
+				}
 				if(is_scalar($d))
 				{
 					print $d . PHP_EOL;
@@ -185,15 +191,22 @@ class Log
 			}
 		}
 
+		$_levelString = $levelString;
+
 		if(isset(static::$levelColors[$levelString]))
 		{
-			$levelString = static::color($levelString, static::$levelColors[$levelString]);
+			$_levelString = static::color(
+				$levelString
+				, static::$levelColors[$levelString]
+			);
 		}
 
 		if($level > $maxLevel || $level == 0)
 		{
 			return;
 		}
+
+		static::startLog($maxLevel);
 
 		if($level == 1)
 		{
@@ -210,13 +223,25 @@ class Log
 		$output = '';
 
 		$output .= static::color(
-			static::header($levelString) . static::positionString(1)
+			static::header($_levelString) . static::positionString(2)
 			, static::HEAD_COLOR
 			, static::HEAD_BACKGROUND
 		);
 
 		foreach($data as $datum)
 		{
+			if($datum instanceof LogMeta)
+			{
+				foreach($datum as $k => $v)
+				{
+					if(!is_scalar($v))
+					{
+						$v = static::dump($v, [], FALSE);
+					}
+					$logBlob->$k = $v;
+				}
+				continue;
+			}
 			if(is_scalar($datum))
 			{
 				$output .= static::color($datum, static::getColor('line'), static::getColor('lineBg'));
@@ -227,27 +252,92 @@ class Log
 			$output .= static::dump($datum, [], static::$colors);
 		}
 
-		static::startLog($maxLevel);
+		$logBlob->type          = $levelString;
+		$logBlob->level         = $level;
+		$logBlob->full_message  = $output;
+		$logBlob->short_message = is_string($data[0])
+			? $data[0]
+			: strtok($output, "\n")
+			. PHP_EOL
+			. strtok("\n");
 
-		$fileExists = file_exists(ini_get('error_log'));
+		if($loggers = Settings::read('loggers'))
+		{
+			foreach($loggers as $logger)
+			{
+				$logger::log($logBlob);
+			}
+		}
 
 		file_put_contents(
 			ini_get('error_log')
 			, PHP_EOL . $output
 			, FILE_APPEND
 		);
+	}
 
-		if(!$fileExists)
+	protected static function logBlob($depth, $exception = false)
+	{
+		$position = static::position($depth + 2);
+
+		$trace = $exception
+			? $exception->getTrace()
+			: (array_slice($position['backtrace'], $depth + 2) ?? []);
+
+		$file = $exception
+			? $exception->getFile()
+			: ($position['file'] ?? NULL);
+
+		$line = $exception
+			? $exception->getLine()
+			: ($position['line'] ?? NULL);
+
+		$class = $exception
+			? ($trace[0]['class'] ?? NULL)
+			: ($position['class'] ?? NULL);
+
+		$function = $exception
+			? $trace[0]['function']
+			: ($position['function'] ?? NULL);
+
+		$logBlob  = (object) [
+			'pid'        => getmypid()
+			, 'rid'      => static::$started
+			, 'file'     => $file
+			, 'line'     => $line
+			, 'class'    => $class
+			, 'function' => $function
+			, 'trace'    => static::renderTrace($trace)
+			, 'depth'    => count($trace ?? [])
+		];
+
+		if(isset($_SERVER, $_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']))
 		{
-			// chmod(ini_get('error_log'), 0666);
+			$logBlob->path   = $_SERVER['REQUEST_URI'];
+			$logBlob->method = $_SERVER['REQUEST_METHOD'];
 		}
+
+		if(isset($_SERVER, $_SERVER['REMOTE_ADDR']))
+		{
+			$logBlob->from = $_SERVER['REMOTE_ADDR'];
+		}
+
+		if($_REQUEST)
+		{
+			$logBlob->_GET     = static::dump($_GET, [], FALSE);
+			$logBlob->_POST    = static::dump($_POST, [], FALSE);
+			$logBlob->_FILES   = static::dump($_FILES, [], FALSE);
+			$logBlob->_REQUEST = static::dump($_REQUEST, [], FALSE);
+		}
+
+		return $logBlob;
 	}
 
 	protected static function startLog($maxLevel = 0)
 	{
 		if(!static::$started)
 		{
-			static::$started = TRUE;
+			static::$started = uniqid();
 
 			if(Settings::read('clearLogs'))
 			{
@@ -283,6 +373,18 @@ class Log
 				$from = 'From: ' . $_SERVER['REMOTE_ADDR'] . PHP_EOL;
 			}
 
+			$logBlob = static::logBlob(2);
+
+			$logBlob->shortMessage = 'Request processing started.';
+
+			if($loggers = Settings::read('loggers'))
+			{
+				foreach($loggers as $logger)
+				{
+					$logger::start($logBlob);
+				}
+			}
+
 			$output = static::LOG_SEPERATOR . PHP_EOL . $path . $from . $request . PHP_EOL;
 
 			file_put_contents(
@@ -304,13 +406,17 @@ class Log
 			, 'value', 'valueBg'
 		];
 
-		foreach($detectColors as $color)
+		if($colors !== FALSE)
 		{
-			if(!isset($colors[$color]))
+			foreach($detectColors as $color)
 			{
-				$colors[$color] = 'none';
+				if(!isset($colors[$color]))
+				{
+					$colors[$color] = 'none';
+				}
 			}
 		}
+
 
 		if(!is_array($val) && !is_object($val))
 		{
@@ -320,8 +426,12 @@ class Log
 			{
 				$output .= sprintf(
 					'(%s) "%s"'
-					, static::color($type, $colors['type'], $colors['typeBg'])
-					, static::color($val, $colors['value'], $colors['valueBg'])
+					, $colors
+						? static::color($type, $colors['type'], $colors['typeBg'])
+						: $type
+					, $colors
+						? static::color($val, $colors['value'], $colors['valueBg'])
+						: $val
 				);
 			}
 			else
@@ -332,10 +442,14 @@ class Log
 				}
 
 				$output .= sprintf(
-				'(%s) %s'
-				, static::color($type, $colors['type'], $colors['typeBg'])
-				, static::color($val, $colors['value'], $colors['valueBg'])
-			);
+					'(%s) %s'
+					, $colors
+						? static::color($type, $colors['type'], $colors['typeBg'])
+						: $type
+					, $colors
+						? static::color($val, $colors['value'], $colors['valueBg'])
+						: $val
+				);
 			}
 		}
 		else
@@ -379,27 +493,38 @@ class Log
 					$_val[$k] = $relflectedProp->getValue($val);
 				}
 
-				$output .= static::color(
-					sprintf(
-						'%s[%s] level %d'
-						, get_class($val)
-						, count($_val)
-						, count($parents)
-					)
-					, $colors['type']
-					, $colors['typeBg']
+				$_output = sprintf(
+					'%s[%s] level %d'
+					, get_class($val)
+					, count($_val)
+					, count($parents)
 				);
+
+				if($colors !== FALSE)
+				{
+					$output .= static::color(
+						$_output
+						, $colors['type']
+						, $colors['typeBg']
+					);
+				}
+
 			}
 			else
 			{
-				$output .= static::color(
-					sprintf('Array[%s] level %d'
-						, count($val)
-						, count($parents)
-					)
-					, $colors['type']
-					, $colors['typeBg']
+				$_output = sprintf('Array[%s] level %d'
+					, count($val)
+					, count($parents)
 				);
+
+				if($colors !== FALSE)
+				{
+					$output .= static::color(
+						$_output
+						, $colors['type']
+						, $colors['typeBg']
+					);
+				}
 			}
 
 			$output .= PHP_EOL;
@@ -421,7 +546,10 @@ class Log
 			foreach($_val as $key => $value)
 			{
 				$output .= str_repeat($indent, count($parents) + 1);
-				$key = static::color($key, $colors['key'], $colors['keyBg']);
+				if($colors !== FALSE)
+				{
+					$key = static::color($key, $colors['key'], $colors['keyBg']);
+				}
 				$output .= sprintf('[%s] => ', $key);
 
 				foreach($newParents as $level => $parent)
@@ -456,60 +584,6 @@ class Log
 	public static function clear()
 	{
 		file_put_contents(ini_get('error_log'), null);
-	}
-
-	protected static function file()
-	{
-		$args = func_get_args();
-
-		if(count($args) == 1)
-		{
-			$line = array_shift($args);
-		}
-		else
-		{
-			$line = $args;
-		}
-
-		$depth = 0;
-
-		if(static::$suppress)
-		{
-			return;
-		}
-
-		$path = NULL;
-
-		if(isset($_SERVER['REQUEST_URI']))
-		{
-			$path = $_SERVER['REQUEST_URI'] . PHP_EOL;
-		}
-
-		if(isset($_SERVER['REQUEST_METHOD']))
-		{
-			$path = $_SERVER['REQUEST_METHOD'] . ':' . $path;
-		}
-
-		if(count($_REQUEST))
-		{
-			$path = $path . PHP_EOL . print_r(
-				$_REQUEST, 1
-			);
-		}
-
-		file_put_contents(
-			ini_get('error_log')
-			,	PHP_EOL . (static::$started
-					? (NULL)
-					: (static::LOG_SEPERATOR . PHP_EOL . $path. PHP_EOL)
-				)
-				. static::header() . PHP_EOL
-				. static::positionString($depth +2)
-				. static::render($line) . PHP_EOL
-			, FILE_APPEND
-		);
-
-		static::$started = true;
 	}
 
 	public static function header($level = '')
@@ -559,12 +633,20 @@ class Log
 	{
 		$backtrace = debug_backtrace();
 
+		$position = [
+			'backtrace' => array_slice($backtrace, $depth -1)
+			, 'file'      => NULL
+			, 'line'      => NULL
+			, 'function'  => NULL
+			, 'class'     => NULL
+		];
+
 		if(isset($backtrace[$depth + 1], $backtrace[$depth + 1]['file']))
 		{
 			$position = [
 				'file'   => $backtrace[$depth + 1]['file']
 				, 'line' => $backtrace[$depth + 1]['line']
-			];
+			] + $position;
 
 			if(isset($backtrace[$depth + 2]['class']))
 			{
@@ -575,13 +657,9 @@ class Log
 			{
 				$position['function'] = $backtrace[$depth + 2]['function'];
 			}
+		}
 
-			return $position;
-		}
-		else
-		{
-			return false;
-		}
+		return $position;
 	}
 
 	public static function positionString($depth = 0, $glue = FALSE)
@@ -591,86 +669,37 @@ class Log
 			$glue = PHP_EOL;
 		}
 
-		$backtrace = debug_backtrace();
+		$position = (object) static::position($depth);
 
-		if(isset(
-			$backtrace[$depth + 1]
-			, $backtrace[$depth + 1]['file']
-			, $backtrace[$depth + 2]
-			, $backtrace[$depth + 2]['class']
-		)){
-			$class = NULL;
-
-			if(isset($backtrace[$depth + 2]['object']))
-			{
-				$class = get_class($backtrace[$depth + 2]['object']);
-			}
-			else if(isset($backtrace[$depth + 2]['class']))
-			{
-				$class = $backtrace[$depth + 2]['class'];
-			}
-
-			$function = NULL;
-
-			if(isset($backtrace[$depth + 2]['function']))
-			{
-				$function = $backtrace[$depth + 2]['function'];
-
-				if(in_array($function, [
-					'__callStatic'
-					, '__call'
-					, '__get'
-					, '__set'
-				])){
-					$function = sprintf(
-						'%s {%s}'
-						, $backtrace[$depth + 2]['args'][0]
-						, $function
-					);
-				}
-			}
-
-			$file = $backtrace[$depth + 1]['file'];
-
-			if(substr($file, 0, strlen(IDS_ROOT)) == IDS_ROOT)
-			{
-				$file = '.' . substr($file, strlen(IDS_ROOT));
-			}
-
-			if($class && $function)
-			{
-				return sprintf(
-					"%s::%s\n%s:%d%s"
-					, $class
-					, $function
-					, $file
-					, $backtrace[$depth + 1]['line']
-					, $glue
-				);
-			}
-			else if($function)
-			{
-				return sprintf(
-					"%s\n%s:%d%s"
-					, $function
-					, $file
-					, $backtrace[$depth + 1]['line']
-					, $glue
-				);
-			}
-			else
-			{
-				return sprintf(
-					"%s:%d%s"
-					, $file
-					, $backtrace[$depth + 1]['line']
-					, $glue
-				);
-			}
+		if($position->class && $position->function)
+		{
+			return sprintf(
+				"%s::%s\n%s:%d%s"
+				, $position->class
+				, $position->function
+				, $position->file
+				, $position->backtrace[$depth]['line']
+				, $glue
+			);
+		}
+		else if($position->function)
+		{
+			return sprintf(
+				"%s\n%s:%d%s"
+				, $position->function
+				, $position->file
+				, $position->backtrace[$depth]['line']
+				, $glue
+			);
 		}
 		else
 		{
-			return false;
+			return sprintf(
+				"%s:%d%s"
+				, $position->file
+				, $position->backtrace[$depth]['line']
+				, $glue
+			);
 		}
 	}
 
@@ -692,31 +721,8 @@ class Log
 		return $lines;
 	}
 
-	public static function renderException($e)
+	public static function renderTrace($trace)
 	{
-		if($e instanceof \SeanMorris\Ids\Http\HttpException)
-		{
-			$maxLevel = 0;
-			$maxLevelString = Settings::read('logLevel');
-
-			if(isset(static::$levels[$maxLevelString]))
-			{
-				$maxLevel = static::$levels[$maxLevelString];
-			}
-
-			if($maxLevel < 4)
-			{
-				return;
-			}
-		}
-
-		$indentedTrace = preg_replace(
-			['/^/m', '/\:\s(.+)/']
-			, ["\t", "\n\t\t\$1\n"]
-			, $e->getTraceAsString()
-		);
-
-		$trace = $e->getTrace();
 		$superTrace = [];
 
 		foreach ($trace as $level => $frame)
@@ -741,14 +747,6 @@ class Log
 					else
 					{
 						$renderedArg = static::render($arg);
-						$renderedArg = substr($renderedArg, 0, 1024*1024);
-						// if(strlen($renderedArg) > 1024*1024)
-						// {
-						// 	$renderedArg = (is_object($arg)
-						// 		? get_class($arg)
-						// 		: 'Array'
-						// 	) . '[]...';
-						// }
 					}
 
 					$renderedArgs[] = 'Arg #' . $a . ' ' .$renderedArg;
@@ -781,8 +779,39 @@ class Log
 
 		$superTrace = implode(PHP_EOL, $superTrace);
 
+		return $superTrace;
+	}
+
+	public static function renderException($e)
+	{
+		if($e instanceof \SeanMorris\Ids\Http\HttpException)
+		{
+			$maxLevel = 0;
+			$maxLevelString = Settings::read('logLevel');
+
+			if(isset(static::$levels[$maxLevelString]))
+			{
+				$maxLevel = static::$levels[$maxLevelString];
+			}
+
+			if($maxLevel < 4)
+			{
+				return;
+			}
+		}
+
+		$indentedTrace = preg_replace(
+			['/^/m', '/\:\s(.+)/']
+			, ["\t", "\n\t\t\$1\n"]
+			, $e->getTraceAsString()
+		);
+
+		$trace = $e->getTrace();
+
+		$superTrace = static::renderTrace($trace);
+
 		return static::color(
-		static::header()
+			static::header()
 			, static::HEAD_COLOR
 			, static::HEAD_BACKGROUND
 		) . PHP_EOL . static::color(
@@ -799,7 +828,6 @@ class Log
 			, static::ERROR_COLOR
 			, static::ERROR_BACKGROUND
 		)
-		//. PHP_EOL . $indentedTrace
 		. PHP_EOL . $superTrace . PHP_EOL;
 	}
 
@@ -810,6 +838,16 @@ class Log
 		$line = static::renderException($e);
 
 		static::startLog();
+
+		$logBlob = static::logBlob(2, $e);
+
+		if($loggers = Settings::read('loggers'))
+		{
+			foreach($loggers as $logger)
+			{
+				$logger::log($logBlob);
+			}
+		}
 
 		error_log(
 			$line
