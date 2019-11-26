@@ -46,6 +46,13 @@ class UpdateStatement extends WhereStatement
 		return $queryString;
 	}
 
+	public function execute(...$args)
+	{
+		static::altered($this->table);
+
+		return parent::execute(...$args);
+	}
+
 	public function joins()
 	{
 		return [];

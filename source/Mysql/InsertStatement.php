@@ -46,6 +46,8 @@ class InsertStatement extends Statement
 	{
 		$result = parent::execute(...$args);
 
+		static::altered($this->table);
+
 		if($result)
 		{
 			$database = \SeanMorris\Ids\Database::get('main');

@@ -119,6 +119,7 @@ abstract class WhereStatement extends Statement
 				, 'querty_tier'      => $this->databaseTier()
 				, 'query_type'       => get_called_class()
 				, 'query_args'       => $finalArgs
+				, 'query_table'      => $this->table
 			]));
 		}
 

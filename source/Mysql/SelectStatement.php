@@ -32,8 +32,9 @@ class SelectStatement extends WhereStatement
 
 	protected function databaseTier()
 	{
-		if($database = \SeanMorris\Ids\Database::get('slave'))
-		{
+		if(!static::isAltered($this->table)
+			&& $database = \SeanMorris\Ids\Database::get('slave')
+		){
 			return 'slave';
 		}
 

@@ -12,7 +12,7 @@ class DeleteStatement extends WhereStatement
 		{
 			$namedArgs = $args[0];
 		}
-		
+
 		$conditionString = $this->conditionTree(
 			$this->conditions
 			, 'AND'
@@ -30,5 +30,12 @@ class DeleteStatement extends WhereStatement
 	public function joins()
 	{
 		return [];
+	}
+
+	public function execute(...$args)
+	{
+		static::altered($this->table);
+
+		return parent::execute(...$args);
 	}
 }

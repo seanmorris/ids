@@ -8,7 +8,7 @@ abstract class Statement
 		, $wrappers = []
 	;
 
-	protected static $queryCount = 0, $queryTime = 0;
+	protected static $queryCount = 0, $queryTime = 0, $altered;
 
 	public function __construct($table)
 	{
@@ -82,7 +82,7 @@ abstract class Statement
 			, 'query_args'       => $args
 		]));
 
-		$slowQuery = \SeanMorris\Ids\Settings::read('slowQuery');
+		$slowQuery  = \SeanMorris\Ids\Settings::read('slowQuery');
 		$queryLimit = \SeanMorris\Ids\Settings::read('queryLimit');
 
 		if($slowQuery && $slowQuery <= $queryTime)
@@ -174,5 +174,15 @@ abstract class Statement
 	public static function queryTime()
 	{
 		return static::$queryTime;
+	}
+
+	protected static function altered($table)
+	{
+		static::$altered[$table] = TRUE;
+	}
+
+	protected static function isAltered($table)
+	{
+		return static::$altered[$table]?? FALSE;
 	}
 }
