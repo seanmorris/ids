@@ -1,0 +1,77 @@
+version: '2.4'
+
+services:
+
+  server:
+    image: ${REPO}/ids.server:${TAG}
+    ports: [ '80:80' ]
+    restart: always
+    build:
+      context: ../../
+      dockerfile: infra/docker/server.dockerfile
+    volumes:
+      - ../../:/app
+      - /tmp:/tmp
+    environment:
+      IDS_ENTRYPOINT: SeanMorris\Ids\Test\Route\HomeRoute
+      IDS_LOGCENSOR_ROUTER: 1
+      IDS_LOGCENSOR_PASSWORD: 1
+      IDS_SHOW_ERRORS: 1
+      IDS_LOG: php://stderr
+      IDS_LOGLEVEL: info
+
+  idilic:
+    entrypoint: bash
+    image: ${REPO}/ids.idilic:${TAG}
+    ports: ['9996:3306']
+    restart: on-failure
+    build:
+      context: ../../
+      dockerfile: infra/docker/idilic.dockerfile
+    volumes:
+      - ../../:/app
+      - /tmp:/tmp
+    environment:
+      IDS_LOG: php://stderr
+      IDS_LOGLEVEL: info
+
+      IDS_DATABASES_MAIN_HOSTNAME: database
+      IDS_DATABASES_MAIN_DATABASE: ids_schema
+      IDS_DATABASES_MAIN_USERNAME: test
+      IDS_DATABASES_MAIN_PASSWORD: test
+      IDS_DATABASES_MAIN_PORT: 3306
+
+      IDS_DATABASES_SLAVE_HOSTNAME: database
+      IDS_DATABASES_SLAVE_DATABASE: ids_schema
+      IDS_DATABASES_SLAVE_USERNAME: test
+      IDS_DATABASES_SLAVE_PASSWORD: test
+      IDS_DATABASES_SLAVE_PORT: 3306
+
+  database:
+    image: mariadb:10.4.8-bionic
+    restart: always
+    # ports: ['9996:3306']
+    volumes:
+      - schema:/var/lib/mysql
+    environment:
+      MYSQL_USER:          test
+      MYSQL_PASSWORD:      test
+      MYSQL_DATABASE:      ids_schema
+      MYSQL_ROOT_PASSWORD: test
+    command: ['mysqld', '--character-set-server=utf8mb4']
+
+volumes:
+  schema:
+    driver: "local"
+
+
+
+  # idilic:
+  #   image: ${REPO}/ids.idilic:${TAG}
+  #   build:
+  #     context: ../../
+  #     dockerfile: infra/docker/idilic.dockerfile
+  #   restart: on-failure
+  #   volumes:
+  #     - ../../:/app
+  #     - /tmp:/tmp
