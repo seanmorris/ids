@@ -7,20 +7,26 @@ define('START', microtime(true));
 date_default_timezone_set('GMT+0');
 
 $dir = getcwd();
+
+if($dir !== '/')
+{
+	$dir .= '/';
+}
+
 $profileDir = $dir;
 
 while(TRUE)
 {
-	$autoloadPath = $dir . '/vendor/autoload.php';
+	$autoloadPath = $dir . 'vendor/autoload.php';
 
 	if(file_exists($autoloadPath))
 	{
 		break;
 	}
 
-	$nextDir = dirname(realpath($dir));
+	$nextDir = dirname(realpath($dir)) . '/';
 
-	if($nextDir === $dir)
+	if(!file_exists($autoloadPath) && $nextDir === $dir)
 	{
 		$autoloadPath = NULL;
 		break;
@@ -136,6 +142,17 @@ register_shutdown_function(function() {
 
     if ($error['type'] === E_ERROR)
     {
+    	if(php_sapi_name() == 'cli' && ($switches['vv'] ?? FALSE))
+		{
+			fwrite(STDERR, 'FATAL ERROR OCCURRED.');
+    		fwrite(STDERR, \SeanMorris\Ids\Log::dump($error, [], FALSE));;
+		}
+		else if(php_sapi_name() !== 'cli' && \SeanMorris\Ids\Settings::read('show', 'errors'))
+		{
+			print 'FATAL ERROR OCCURRED.';
+    		print \SeanMorris\Ids\Log::dump($error, [], FALSE);
+		}
+
 		\SeanMorris\Ids\Log::error(
 			'FATAL ERROR OCCURRED.'
 			, $error
@@ -176,6 +193,22 @@ register_shutdown_function(function() {
 set_exception_handler(function($exception)
 {
 	\SeanMorris\Ids\Log::logException($exception);
+
+	$renderedException = \SeanMorris\Ids\Log::renderException($exception, FALSE);
+
+	global $switches;
+
+	if(php_sapi_name() == 'cli' && ($switches['vv'] ?? FALSE))
+	{
+		fwrite(STDERR, $renderedException);
+	}
+	else if(php_sapi_name() !== 'cli' && \SeanMorris\Ids\Settings::read('show', 'errors'))
+	{
+		var_dump($renderedException);
+		// header('Content-type: text/plain');
+		// print $renderedException;
+	}
+
 	exit(1);
 });
 

@@ -27,7 +27,7 @@ class RouterTest extends \UnitTestCase
 			$router = new \SeanMorris\Ids\Router($request, $routes);
 			try
 			{
-				$response = $router->route();				
+				$response = $router->route();
 			}
 			catch(\SeanMorris\Ids\Http\HttpResponse $e)
 			{

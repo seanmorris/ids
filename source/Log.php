@@ -124,8 +124,8 @@ class Log
 		global $switches;
 		$output = null;
 
-		$logPackages = (array)Settings::read('logPackages');
-		$position    = (object) static::position(2);
+		$logPackages = (array) Settings::read('logPackages');
+		$position    = static::position(2);
 
 		$level = 0;
 
@@ -420,7 +420,7 @@ class Log
 		}
 	}
 
-	protected static function dump($val, $parents = [], $colors = [])
+	public static function dump($val, $parents = [], $colors = [])
 	{
 		$indent = '  ';
 		$output = '';
@@ -493,6 +493,12 @@ class Log
 
 				foreach($relflectedProps as $relflectedProp)
 				{
+					if(Settings::read('logCensor', $relflectedProp->name))
+					{
+						$_val[$k] = '* censored *';
+						continue;
+					}
+
 					$relflectedProp = $relflectedVal->getProperty($relflectedProp->name);
 					$relflectedProp->setAccessible(true);
 
@@ -537,7 +543,8 @@ class Log
 			}
 			else
 			{
-				$_output = sprintf('Array[%s] level %d'
+				$_output = sprintf(
+					'Array[%s] level %d'
 					, count($val)
 					, count($parents)
 				);
@@ -553,7 +560,7 @@ class Log
 			}
 
 			$output .= PHP_EOL;
-			$output .= str_repeat($indent, count($parents));
+			$output .= str_repeat($indent, count($parents) + 1);
 			$output .= '{';
 
 			foreach($parents as $level => $parent)
@@ -568,9 +575,28 @@ class Log
 
 			$output .= PHP_EOL;
 
+			if(is_array($val))
+			{
+				$_val = array_map(
+					function($k, $v)
+					{
+						if(Settings::read('logCensor', $k))
+						{
+							return '* censored *';
+						}
+
+						return $v;
+					}
+					, array_keys($_val)
+					, $_val
+				);
+
+				$_val = array_combine(array_keys($val), $_val);
+			}
+
 			foreach($_val as $key => $value)
 			{
-				$output .= str_repeat($indent, count($parents) + 1);
+				$output .= str_repeat($indent, count($parents) + 2);
 				if($colors !== FALSE)
 				{
 					$key = static::color($key, $colors['key'], $colors['keyBg']);
@@ -590,7 +616,7 @@ class Log
 				$output .= static::dump($value, $newParents, $colors);
 			}
 
-			$output .= str_repeat($indent, count($parents)) . '}';
+			$output .= str_repeat($indent, count($parents) + 1) . '}';
 		}
 
 		return $output . PHP_EOL;
@@ -611,7 +637,7 @@ class Log
 		file_put_contents(ini_get('error_log'), null);
 	}
 
-	public static function header($level = '')
+	public static function header($level = '', $color = TRUE)
 	{
 		static $start;
 		if(!$start)
@@ -634,12 +660,14 @@ class Log
 						? (
 							'::['
 								. $level
-								. static::color(
-									']'
-									, static::HEAD_COLOR
-									, static::HEAD_BACKGROUND
-									, FALSE
-								)
+								. $color
+									? static::color(
+										']'
+										, static::HEAD_COLOR
+										, static::HEAD_BACKGROUND
+										, FALSE
+									)
+									: ']'
 						)
 						: NULL
 				)
@@ -746,7 +774,7 @@ class Log
 		return $lines;
 	}
 
-	public static function renderTrace($trace)
+	public static function renderTrace($trace, $color = TRUE)
 	{
 		$superTrace = [];
 
@@ -756,9 +784,36 @@ class Log
 
 			if(isset($frame['args']))
 			{
+				if(isset($frame['class']))
+				{
+					$reflection = new \ReflectionMethod($frame['class'], $frame['function']);
+				}
+				else if(function_exists($frame['function']))
+				{
+					$reflection = new \ReflectionFunction($frame['function']);
+				}
+
+				$paramNames = [];
+
+				if(isset($reflection))
+				{
+					$paramNames = array_map(
+						function($param) {
+							return $param->name;
+						}
+						, $reflection->getParameters()
+					);
+				}
+
 				foreach($frame['args'] as $a => $arg)
 				{
-					if(is_scalar($arg))
+					$paramName = $paramNames[$a] ?? NULL;
+
+					if($paramName && Settings::read('logCensor', $paramName))
+					{
+						$renderedArg = '* censored *';
+					}
+					else if(is_scalar($arg))
 					{
 						if(is_string($arg))
 						{
@@ -766,34 +821,43 @@ class Log
 						}
 						else
 						{
-							$renderedArg = static::render($arg);
+							$renderedArg = static::render($arg, $color);
 						}
 					}
 					else
 					{
-						$renderedArg = static::render($arg);
+						$renderedArg = static::render($arg, $color);
 					}
 
-					$renderedArgs[] = 'Arg #' . $a . ' ' .$renderedArg;
+					$renderedArgs[] = sprintf(
+						'Args #%d %s %s'
+						, $a
+						, $paramName
+							? '$' . $paramName . ' '
+							: NULL
+						, $renderedArg
+					);
 				}
 			}
 
 			$superTrace[] = sprintf(
-				"#%d %s:(%d)\n    %s::%s()%s\n"
+				"#%d %s:(%d)\n    %s%s()%s\n"
 				, $level
 				, $frame['file'] ?? NULL
 				, $frame['line'] ?? NULL
 				, isset($frame['object'])
-					? get_class($frame['object'])
-					: $frame['class'] ?? NULL
+					? get_class($frame['object']) . '::'
+					: (isset($frame['class']) ? $frame['class'] . '::' : '')
 				, $frame['function']
-				, $renderedArgs
-					? PHP_EOL . static::indent(
-						implode(PHP_EOL, $renderedArgs)
+				, is_scalar($renderedArgs)
+					? $renderedArgs
+					: static::indent(
+						$renderedArgs
+							? PHP_EOL . implode(PHP_EOL, $renderedArgs)
+							: NULL
 						, 2
 						, '    '
 					)
-					: NULL
 			);
 		}
 
@@ -807,7 +871,7 @@ class Log
 		return $superTrace;
 	}
 
-	public static function renderException($e)
+	public static function renderException($e, $color = TRUE)
 	{
 		if($e instanceof \SeanMorris\Ids\Http\HttpException)
 		{
@@ -833,27 +897,41 @@ class Log
 
 		$trace = $e->getTrace();
 
-		$superTrace = static::renderTrace($trace);
+		$superTrace = static::renderTrace($trace, $color);
 
-		return static::color(
-			static::header()
-			, static::HEAD_COLOR
-			, static::HEAD_BACKGROUND
-		) . PHP_EOL . static::color(
-			sprintf(
-				"%s thrown from %s:%d"
-					. PHP_EOL
-					. '%s'
-					. PHP_EOL
-				, get_class($e)
-				, $e->getFile()
-				, $e->getLine()
-				, $e->getMessage()
+		$header = sprintf(
+			"%s thrown from %s:%d"
+				. PHP_EOL
+				. '%s'
+				. PHP_EOL
+			, get_class($e)
+			, $e->getFile()
+			, $e->getLine()
+			, $e->getMessage()
+		);
+
+		if($color)
+		{
+			$header = static::color(
+				$header
+				, static::ERROR_COLOR
+				, static::ERROR_BACKGROUND
+			);
+
+			$header = static::color(
+				static::header('', $color)
+				, static::HEAD_COLOR
+				, static::HEAD_BACKGROUND
 			)
-			, static::ERROR_COLOR
-			, static::ERROR_BACKGROUND
-		)
-		. PHP_EOL . $superTrace . PHP_EOL;
+			. PHP_EOL
+			. $header;
+		}
+		else
+		{
+			$header = static::header('', $color) . $header;
+		}
+
+		return $header . PHP_EOL . $superTrace . PHP_EOL;
 	}
 
 	public static function logException($e, $internal = false)
@@ -880,16 +958,13 @@ class Log
 			, ini_get('error_log')
 		);
 
-		if(php_sapi_name() == 'cli' && !$internal && ($switches['vv'] ?? FALSE))
-		{
-			fwrite(STDERR, $line);
-		}
+		return $line;
 	}
 
 	protected static function indent($string, $level, $char = "\t")
 	{
 		return  ($indent = str_repeat($char, $level)) . preg_replace(
-			'/\n\s*/'
+			'/\n/'
 			, PHP_EOL . $indent
 			, $string
 		);
@@ -927,19 +1002,28 @@ class Log
 		return implode(PHP_EOL, $results);
 	}
 
-	protected static function render($input)
+	protected static function render($input, $color = TRUE)
 	{
+		return static::dump($input, [], $color?[]:FALSE);
+
 		if(!is_numeric($input) && !is_string($input))
 		{
-			$color = static::DATA_COLOR;
+			$foregroud  = static::DATA_COLOR;
 			$background = static::DATA_BACKGROUND;
-			$string = print_r($input,1);
+
+			$string = print_r($input, 1);
 		}
 		else
 		{
-			$string = $input;
-			$color = static::TEXT_COLOR;
+			$foregroud  = static::TEXT_COLOR;
 			$background = static::TEXT_BACKGROUND;
+
+			$string = $input;
+		}
+
+		if(!$color)
+		{
+			return $string;
 		}
 
 		return static::color($string, $color, $background);

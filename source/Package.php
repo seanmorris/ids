@@ -57,7 +57,7 @@ class Package
 			return new $packageClass($packageName);
 		}
 
-		$package = new static($packageName);
+	$package = new static($packageName);
 
 		return $package;
 	}
@@ -65,7 +65,7 @@ class Package
 	protected function __construct($package)
 	{
 		$packageName = static::name($package);
-		$packageDir = static::dir($package);
+		$packageDir  = static::dir($package);
 
 		$packageClass = $packageName . '\Package';
 

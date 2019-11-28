@@ -57,6 +57,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			$candidatePackages = array_values(array_filter(
 				\SeanMorris\Ids\Meta::classes()
 				, function($class) use($command){
+
 					if(!preg_match('/Idilic\\\Route\\\RootRoute$/', $class))
 					{
 						return FALSE;
@@ -686,7 +687,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 			print \SeanMorris\Ids\Idilic\Cli::color('Commands: ', 'white') . PHP_EOL;
 
-			
+
 			foreach($methods as $method)
 			{
 				if($method->name[0] == '_')
@@ -711,7 +712,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 						, \SeanMorris\Ids\Idilic\Cli::color($method->name, 'green')
 					);
 				}
-				
+
 			}
 
 			print PHP_EOL;
@@ -1031,7 +1032,7 @@ EOF
 			}
 			if($offset > strlen($line))
 			{
-				$offset = strlen($line);	
+				$offset = strlen($line);
 			}
 			if($byte == '7f')
 			{
@@ -1126,7 +1127,7 @@ EOF
 				$input .= $line;
 			}
 			ob_start();
-			eval($input . ';');			
+			eval($input . ';');
 			$output = ob_get_contents();
 			ob_end_flush();
 			$input = $line = NULL;
@@ -1177,7 +1178,7 @@ EOF
 		{
 			$string .= str_repeat("\x1b\x5b\x44", abs($offset));
 		}
-		return $string;	
+		return $string;
 	}
 
 	/** Print project info. */

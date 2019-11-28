@@ -5,10 +5,8 @@ class		Database
 	static $credentials	= []
 		, $connections	= [];
 
-	public static function register()
+	public static function register(...$args)
 	{
-		$args = func_get_args();
-
 		static::$credentials[ array_shift($args) ] = $args;
 	}
 
@@ -20,7 +18,7 @@ class		Database
 
 	public static function get($name)
 	{
-		if(!isset(static::$credentials[$name][0]))
+		if(!isset(static::$credentials[$name]))
 		{
 			throw new \Exception(sprintf(
 				'No Database "%s" regsitered for %s.'
@@ -52,6 +50,11 @@ class		Database
 			static::register(
 				$title
 				, $database->connection
+					?: sprintf(
+						'mysql:dbname=%s;host=%s;'
+						, $database->database
+						, $database->hostname
+					)
 				, $database->username
 				, $database->password
 			);

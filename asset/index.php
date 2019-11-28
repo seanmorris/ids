@@ -5,7 +5,8 @@ use \SeanMorris\Ids\Router;
 use \SeanMorris\Ids\Request;
 use \SeanMorris\Ids\Settings;
 
-$composer = require '../vendor/seanmorris/ids/source/init.php';
+// $composer = require '../vendor/seanmorris/ids/source/init.php';
+$composer = require '../source/init.php';
 
 if(isset($argv))
 {
@@ -14,7 +15,7 @@ if(isset($argv))
 }
 else
 {
-	$request = new Request(); 
+	$request = new Request();
 }
 
 if(!$entrypoint = Settings::read('entrypoint'))

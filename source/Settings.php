@@ -4,6 +4,7 @@ class Settings
 {
 	protected static
 		$settings
+		, $env
 		, $currentSite
 		, $currentPort
 		, $callbacks
@@ -13,6 +14,23 @@ class Settings
 
 	public static function read(...$names)
 	{
+		$nameList = $names;
+
+		$scoredName = implode('_', $names);
+
+		$envName = static::findEnvVarName(
+			$scoredName
+			, static::$currentSite
+			, static::$currentPort
+		);
+
+		if($envName)
+		{
+			$env = static::getenv();
+
+			return $env[$envName];
+		}
+
 		$settings = static::load(
 			static::$currentSite
 			, static::$currentPort
@@ -22,6 +40,21 @@ class Settings
 		{
 			if(!isset($settings->$name))
 			{
+				$prefixNames = static::findEnvVarName(
+					$scoredName
+					, static::$currentSite
+					, static::$currentPort
+					, TRUE
+				);
+
+				$prefix = key($prefixNames);
+				$suffix = current($prefixNames);
+
+				if($prefixNames)
+				{
+					return new SettingsReader($prefix, $suffix);
+				}
+
 				return;
 			}
 
@@ -93,6 +126,73 @@ class Settings
 		}
 
 		return static::$settings;
+	}
+
+	public static function findEnvVarName($name, $host = NULL, $port = NULL, $prefix = FALSE)
+	{
+		$env = static::getenv();
+
+		[$name, $host] = preg_replace(
+			['/\W/'], ['_']
+			, array_map('strtoupper', [$name, $host])
+		);
+
+		$envVarPrefix = static::envVarNames(NULL);
+		$envVarNames  = static::envVarNames($name, $host, $port);
+
+		foreach($envVarNames as $envVarName)
+		{
+			if(array_key_exists($envVarName, $env))
+			{
+				return $envVarName;
+			}
+		}
+
+		if($prefix)
+		{
+			$found = [];
+
+			foreach($env as $envK => $envV)
+			{
+				foreach($envVarNames as $e => $envVarName)
+				{
+					if(substr($envK, 0, strlen($envVarName)) === $envVarName)
+					{
+						$bareEnvPrefix = substr($envVarName, strlen($envVarPrefix[$e]));
+
+						$found[$bareEnvPrefix][] = substr($envK, strlen($envVarName));
+						break;
+					}
+				}
+			}
+
+			return $found;
+		}
+	}
+
+	protected static function envVarNames($name, $host = NULL, $port = NULL)
+	{
+		[$name, $host] = preg_replace(
+			['/\W/'], ['_']
+			, array_map('strtoupper', [$name, $host])
+		);
+
+		$hostName = NULL;
+		$portName = NULL;
+
+		if($port)
+		{
+			$portName = sprintf('IDS__%s__%s', $host, $name, $port);
+		}
+
+		if($host)
+		{
+			$hostName = sprintf('IDS__%s__%s', $host, $name);
+		}
+
+		$globalName = 'IDS_' . $name;
+
+		return array_filter([$portName, $hostName, $globalName]);
 	}
 
 	public static function findSettingsFile($hostname, $port)
@@ -175,5 +275,17 @@ class Settings
 		}
 
 		return FALSE;
+	}
+
+	public static function getenv()
+	{
+		if(static::$env)
+		{
+			return static::$env;
+		}
+
+		static::$env = getenv();
+
+		return static::$env;
 	}
 }
