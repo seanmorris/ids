@@ -52,7 +52,14 @@ restart:
 	make stop
 	make start
 
+restart-fg:
+	make stop
+	make start-fg
+
 start:
+	${DCOMPOSE} up -d
+
+start-fg:
 	${DCOMPOSE} up
 
 stop:

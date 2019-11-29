@@ -149,6 +149,7 @@ register_shutdown_function(function() {
 		}
 		else if(php_sapi_name() !== 'cli' && \SeanMorris\Ids\Settings::read('show', 'errors'))
 		{
+			header('Content-type: text/plain');
 			print 'FATAL ERROR OCCURRED.';
     		print \SeanMorris\Ids\Log::dump($error, [], FALSE);
 		}
@@ -204,9 +205,9 @@ set_exception_handler(function($exception)
 	}
 	else if(php_sapi_name() !== 'cli' && \SeanMorris\Ids\Settings::read('show', 'errors'))
 	{
-		var_dump($renderedException);
-		// header('Content-type: text/plain');
-		// print $renderedException;
+		// var_dump($renderedException);
+		header('Content-type: text/plain');
+		print $renderedException;
 	}
 
 	exit(1);

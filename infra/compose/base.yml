@@ -16,12 +16,12 @@ services:
       IDS_ENTRYPOINT: SeanMorris\Ids\Test\Route\HomeRoute
       IDS_LOGCENSOR_ROUTER: 1
       IDS_LOGCENSOR_PASSWORD: 1
+      IDS_LOGCENSOR_PASSWD: 1
       IDS_SHOW_ERRORS: 1
       IDS_LOG: php://stderr
       IDS_LOGLEVEL: info
 
   idilic:
-    entrypoint: bash
     image: ${REPO}/ids.idilic:${TAG}
     ports: ['9996:3306']
     restart: on-failure
@@ -34,6 +34,9 @@ services:
     environment:
       IDS_LOG: php://stderr
       IDS_LOGLEVEL: info
+      IDS_LOGCENSOR_ROUTER: 1
+      IDS_LOGCENSOR_PASSWORD: 1
+      IDS_LOGCENSOR_PASSWD: 1
 
       IDS_DATABASES_MAIN_HOSTNAME: database
       IDS_DATABASES_MAIN_DATABASE: ids_schema

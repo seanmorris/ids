@@ -191,16 +191,6 @@ class Log
 			}
 		}
 
-		$_levelString = $levelString;
-
-		if(isset(static::$levelColors[$levelString]))
-		{
-			$_levelString = static::color(
-				$levelString
-				, static::$levelColors[$levelString]
-			);
-		}
-
 		if($level > $maxLevel || $level == 0)
 		{
 			if(!$logAlso = Settings::read('logAlso'))
@@ -231,7 +221,7 @@ class Log
 		$output = '';
 
 		$output .= static::color(
-			static::header($_levelString) . static::positionString(2)
+			static::header($levelString) . static::positionString(2)
 			, static::HEAD_COLOR
 			, static::HEAD_BACKGROUND
 		);
@@ -640,10 +630,22 @@ class Log
 	public static function header($level = '', $color = TRUE)
 	{
 		static $start;
+
 		if(!$start)
 		{
 			$start = START;
 		}
+
+		$levelString = $level;
+
+		if($level && $color && isset(static::$levelColors[$level]))
+		{
+			$levelString = static::color(
+				$level
+				, static::$levelColors[$level]
+			);
+		}
+
 		$mull = pow(10,static::SECOND_SIGNIFICANCE);
 		$mill = microtime(true);
 		$mill -= floor($mill);
@@ -659,15 +661,15 @@ class Log
 					$level
 						? (
 							'::['
-								. $level
-								. $color
+								. $levelString
+								. ($color
 									? static::color(
 										']'
 										, static::HEAD_COLOR
 										, static::HEAD_BACKGROUND
 										, FALSE
 									)
-									: ']'
+									: ']')
 						)
 						: NULL
 				)
@@ -817,12 +819,16 @@ class Log
 					{
 						if(is_string($arg))
 						{
-							$renderedArg = ' "' . $arg . '"';
+							$renderedArg = '"' . $arg . '"';
 						}
 						else
 						{
-							$renderedArg = static::render($arg, $color);
+							$renderedArg = trim(static::render($arg, $color));
 						}
+					}
+					else if(is_resource($arg))
+					{
+						$renderedArg = trim(static::render($arg, $color));
 					}
 					else
 					{
@@ -830,10 +836,10 @@ class Log
 					}
 
 					$renderedArgs[] = sprintf(
-						'Args #%d %s %s'
+						'Arg %d%s = %s'
 						, $a
 						, $paramName
-							? '$' . $paramName . ' '
+							? ' $' . $paramName
 							: NULL
 						, $renderedArg
 					);
@@ -841,7 +847,7 @@ class Log
 			}
 
 			$superTrace[] = sprintf(
-				"#%d %s:(%d)\n    %s%s()%s\n"
+				"#%d %s:(%d)\n    %s%s(%s%s);\n"
 				, $level
 				, $frame['file'] ?? NULL
 				, $frame['line'] ?? NULL
@@ -849,7 +855,7 @@ class Log
 					? get_class($frame['object']) . '::'
 					: (isset($frame['class']) ? $frame['class'] . '::' : '')
 				, $frame['function']
-				, is_scalar($renderedArgs)
+				, $renderedArgs ? (is_scalar($renderedArgs)
 					? $renderedArgs
 					: static::indent(
 						$renderedArgs
@@ -857,7 +863,8 @@ class Log
 							: NULL
 						, 2
 						, '    '
-					)
+					)) : ''
+				, $renderedArgs ? "\n    " : ''
 			);
 		}
 
@@ -900,14 +907,11 @@ class Log
 		$superTrace = static::renderTrace($trace, $color);
 
 		$header = sprintf(
-			"%s thrown from %s:%d"
-				. PHP_EOL
-				. '%s'
-				. PHP_EOL
+			"%s\n\n[%s]: %s:%d\n"
+			, $e->getMessage()
 			, get_class($e)
 			, $e->getFile()
 			, $e->getLine()
-			, $e->getMessage()
 		);
 
 		if($color)
@@ -919,19 +923,25 @@ class Log
 			);
 
 			$header = static::color(
-				static::header('', $color)
+				static::header('error')
 				, static::HEAD_COLOR
 				, static::HEAD_BACKGROUND
 			)
+			. PHP_EOL
 			. PHP_EOL
 			. $header;
 		}
 		else
 		{
-			$header = static::header('', $color) . $header;
+			$header = static::header('error', FALSE)
+				. PHP_EOL
+				. $header;
 		}
 
-		return $header . PHP_EOL . $superTrace . PHP_EOL;
+		return $header
+			 . PHP_EOL
+			 . $superTrace
+			 . PHP_EOL;
 	}
 
 	public static function logException($e, $internal = false)
