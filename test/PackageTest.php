@@ -39,6 +39,13 @@ class PackageTest extends \UnitTestCase
 
 	public function tearDown()
 	{
+		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
+			$this->package->globalDir() . '_schema.json'
+		);
+
+		$testSchemaFile->copy(
+			$this->package->globalDir() . 'schema.json'
+		);
 	}
 
 	public function testApplySchema()
@@ -96,32 +103,32 @@ class PackageTest extends \UnitTestCase
 		);
 	}
 
-	// public function testColumnAddApplySchema()
-	// {
-	// 	$this->package->storeSchema();
+	public function testColumnAddApplySchema()
+	{
+		$this->package->storeSchema();
 
-	// 	$testSchemaFile = new \SeanMorris\Ids\Disk\File(
-	// 		$this->package->packageDir()
-	// 		. 'test/data/testColumnAddSchema.json'
-	// 	);
+		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
+			$this->package->packageDir()
+			. 'test/data/testColumnAddSchema.json'
+		);
 
-	// 	$testSchemaFile->copy(
-	// 		$this->package->globalDir() . 'schema.json'
-	// 	);
+		$testSchemaFile->copy(
+			$this->package->globalDir() . 'schema.json'
+		);
 
-	// 	$this->package->applySchema(TRUE);
+		$this->package->applySchema(TRUE);
 
-	// 	$db = \SeanMorris\Ids\Database::get('main');
+		$db = \SeanMorris\Ids\Database::get('main');
 
-	// 	$sth = $db->prepare('SHOW COLUMNS FROM Foozle WHERE field LIKE ?');
+		$sth = $db->prepare('SHOW COLUMNS FROM Foozle WHERE field LIKE ?');
 
-	// 	$sth->execute(['caption']);
+		$sth->execute(['caption']);
 
-	// 	$this->assertTrue(
-	// 		$sth->fetchObject()
-	// 		, 'Failed to create column "caption" on table "Foozle"'
-	// 	);
-	// }
+		$this->assertTrue(
+			$sth->fetchObject()
+			, 'Failed to create column "caption" on table "Foozle"'
+		);
+	}
 
 	public function testColumnRemoveApplySchema()
 	{

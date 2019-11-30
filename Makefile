@@ -75,4 +75,4 @@ run:
 	${DCOMPOSE} run --rm ${CMD}
 
 test:
-	make run CMD="idilic runTests SeanMorris/Ids"
+	make run CMD="idilic -v runTests SeanMorris/Ids"
