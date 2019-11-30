@@ -729,18 +729,21 @@ class Package
 	public function applySchema($real = false)
 	{
 		$exportTables = $this->getFullSchema();
-
-		$exportTables = $this->getFullSchema();
 		$queries = [];
 
-		foreach(static::$tables as $db => $tables)
+		foreach(static::$tables as $db => $definedTables)
 		{
 			$db = Database::get($db);
 
-			$tables += array_keys((array)$exportTables);
+			$tables = $definedTables + array_keys((array) $exportTables);
 
 			foreach($tables as $table)
 			{
+				if(!isset($definedTables->$table))
+				{
+					continue;
+				}
+
 				$tableCheckString = 'SHOW TABLES LIKE "' . $table . '"';
 
 				$tableCheck = $db->prepare($tableCheckString);

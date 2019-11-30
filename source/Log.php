@@ -726,6 +726,11 @@ class Log
 
 		$position = (object) static::position($depth);
 
+		if(!isset($position->backtrace[$depth]))
+		{
+			return;
+		}
+
 		if($position->class && $position->function)
 		{
 			return sprintf(
@@ -786,8 +791,10 @@ class Log
 
 			if(isset($frame['args']))
 			{
-				if(isset($frame['class']))
-				{
+				if(isset($frame['class']) && method_exists(
+					$frame['object'] ?? $frame['class']
+					, $frame['function']
+				)){
 					$reflection = new \ReflectionMethod($frame['class'], $frame['function']);
 				}
 				else if(function_exists($frame['function']))
