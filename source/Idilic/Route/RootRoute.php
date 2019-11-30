@@ -109,6 +109,15 @@ class RootRoute implements \SeanMorris\Ids\Routable
 					array_unshift($args, $command);
 				}
 			}
+			else if(!count($candidatePackages))
+			{
+				throw new \Exception(sprintf(
+					'No packages supply command "%s".'
+					, $command
+				));
+
+				return;
+			}
 			else
 			{
 				$answer = \SeanMorris\Ids\Idilic\Cli::multiQuestion(
@@ -1185,6 +1194,20 @@ EOF
 
 	public function info()
 	{
+		$databases = \SeanMorris\Ids\Settings::read('databases');
+
+		$dbs = NULL;
+
+		foreach($databases as $name => $database)
+		{
+			$dbs .= sprintf(
+				"Database: %s\n%sHost: %s\n"
+				, $name
+				, str_repeat(' ', 4)
+				, $database->hostname
+			);
+		}
+
 		return sprintf(
 "Domain:\t\t%s
 Root:\t\t%s
@@ -1197,7 +1220,7 @@ Root Package:\t%s
 			, \SeanMorris\Ids\Settings::read('entrypoint')
 			, \SeanMorris\Ids\Settings::read('logLevel')
 			, \SeanMorris\Ids\Package::getRoot()->packageSpace()
-		);
+		) . $dbs;
 	}
 
 	/** Watch project logs. Ctrl+c to exit. */

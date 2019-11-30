@@ -1,5 +1,5 @@
 #!make
-.PHONY: it clean build images start stop stop-all tag run
+.PHONY: it clean build images start start-fg restart restart-fg stop stop-all tag run test
 
 -include .env
 
@@ -73,3 +73,6 @@ tag:
 
 run:
 	${DCOMPOSE} run --rm ${CMD}
+
+test:
+	make run CMD="idilic runTests SeanMorris/Ids"

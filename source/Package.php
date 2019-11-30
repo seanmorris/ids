@@ -9,8 +9,12 @@ class Package
 
 	protected static
 		$assetManager
-		, $tables = ['main'=>[]]
-		//, $tables = ['main'=>['Foozle', 'Foobar']]
+		// , $tables = ['main'=>[]]
+		, $tables = ['main'=>[
+			'Foozle'
+			, 'Foobar'
+			, 'IdsRelationship'
+		]]
 	;
 
 	public static function getRoot()

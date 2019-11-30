@@ -14,7 +14,7 @@ class Relationship extends Model
 	;
 
 	protected static
-		$table = 'PressKitRelationship'
+		$table = 'IdsRelationship'
 		, $ignore = [
 			'ownerObject'
 			, 'subjectObject'
