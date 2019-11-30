@@ -1,24 +1,49 @@
 #!make
-.PHONY: it clean build images start start-fg restart restart-fg stop stop-all tag run test
+TARGET ?=test
+
+.PHONY: it clean build images start start-fg restart restart-fg stop stop-all tag run test env
 
 -include .env
+-include .env.${TARGET}
 
-PROJECT  = Ids
-REPO     = seanmorris
-TAG      = latest
+PROJECT =Ids
+REPO    =seanmorris
 
-TARGET   ?= base
-BRANCH   ?= `git rev-parse --abbrev-ref HEAD`
-DESC     ?= `git describe --tags 2>/dev/null || git rev-parse --short HEAD`
-TARGET   ?= test
-TAG      ?= ${BRANCH}-${DESC}-${TARGET}
-IMAGE    ?=
-DCOMPOSE ?=export TAG=${TAG} REPO=${REPO} && docker-compose \
+TARGET ?=base
+BRANCH ?=`git rev-parse --abbrev-ref HEAD`
+DESC   ?=`git describe --tags 2>/dev/null || git rev-parse --short HEAD`
+
+TAG       ?=${BRANCH}-${DESC}-${TARGET}
+IMAGE     ?=
+DHOST_IP  ?=`docker network inspect bridge --format="{{ (index .IPAM.Config 0).Gateway}}"`
+
+ifeq ($(TARGET),dev)
+	XDEBUG_ENV=XDEBUG_CONFIG="`grep -v '^\#' .env.dev \
+		| grep ^XDEBUG_CONFIG_ \
+		| while read VAR; do echo $$VAR | \
+		{ \
+			IFS='\=' read -r NAME VALUE; \
+			echo -n $$NAME | sed -e 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
+			echo -n =$$VALUE '';\
+		}; \
+		done`"
+else
+	XDEBUG_ENV=
+endif
+
+ENV=$$(grep -vhs '^\#' .env .env.${TARGET} | xargs) \
+	TAG=${TAG} REPO=${REPO} DHOST_IP=${DHOST_IP} \
+	${XDEBUG_ENV}
+
+DCOMPOSE ?=export ${ENV} \
+	&& docker-compose \
 	-p ${PROJECT} \
 	-f infra/compose/${TARGET}.yml
 
 it:
-	docker run --rm -it \
+	@ echo Building ${PROJECT} ${TAG}
+	@ sleep 2
+	@ docker run --rm -it \
 		-v $$PWD:/app \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		composer install
@@ -26,8 +51,6 @@ it:
 	make build
 	${DCOMPOSE} up --no-start
 	make images
-
-# 	make run CMD='idilic php idilic -d=\; link'
 
 clean:
 	rm -rf vendor/
@@ -72,7 +95,15 @@ tag:
 	@ echo ${TAG}
 
 run:
-	${DCOMPOSE} run --rm ${CMD}
+	@ ${DCOMPOSE} run --rm ${CMD}
 
 test:
-	make run CMD="idilic -v runTests SeanMorris/Ids"
+	@ make --no-print-directory run \
+		CMD="idilic runTests SeanMorris/Ids"
+		TARGET=${TARGET}
+
+env:
+	@ echo ${ENV};
+
+xenv:
+	@ echo ${XDEBUG_ENV}

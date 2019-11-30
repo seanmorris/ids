@@ -1,4 +1,4 @@
-FROM debian:buster-20191118-slim
+FROM debian:buster-20191118-slim as base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
 RUN apt-get update \
@@ -14,15 +14,6 @@ RUN apt-get update \
 RUN wget -qO /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
 	&& sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" \
 		 > /etc/apt/sources.list.d/sury-php.list'
-
-# 	&& sh -c 'echo "deb http://ppa.launchpad.net/apt-fast/stable/ubuntu trusty main\
-# deb-src http://ppa.launchpad.net/apt-fast/stable/ubuntu trusty main" \
-# 		 > /etc/apt/sources.list.d/apt-fast.list'
-
-# RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A2166B8DE8BDC3367D1901C11EE2FF37CA8DA16B \
-# 	&& apt-get update \
-# 	&& apt-get -y --no-install-recommends install apt-fast \
-# 	&& apt-get clean
 
 RUN  apt-get update \
 	&& apt-get install -y --no-install-recommends \
@@ -47,3 +38,14 @@ WORKDIR /app
 CMD ["-d=;", "info"]
 
 ENTRYPOINT ["idilic"]
+
+FROM base as dev
+
+RUN  apt-get update \
+	&& apt-get install -y --no-install-recommends \
+		php7.3-xdebug \
+	&& apt-get clean
+
+FROM base as prod
+
+COPY ./ /app

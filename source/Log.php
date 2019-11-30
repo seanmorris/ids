@@ -880,22 +880,6 @@ class Log
 
 	public static function renderException($e, $color = TRUE)
 	{
-		if($e instanceof \SeanMorris\Ids\Http\HttpException)
-		{
-			$maxLevel = 0;
-			$maxLevelString = Settings::read('logLevel');
-
-			if(isset(static::$levels[$maxLevelString]))
-			{
-				$maxLevel = static::$levels[$maxLevelString];
-			}
-
-			if($maxLevel < 4)
-			{
-				return;
-			}
-		}
-
 		$indentedTrace = preg_replace(
 			['/^/m', '/\:\s(.+)/']
 			, ["\t", "\n\t\t\$1\n"]
@@ -946,7 +930,21 @@ class Log
 
 	public static function logException($e, $internal = false)
 	{
-		global $switches;
+		if($e instanceof \SeanMorris\Ids\Http\HttpException)
+		{
+			$maxLevel = 0;
+			$maxLevelString = Settings::read('logLevel');
+
+			if(isset(static::$levels[$maxLevelString]))
+			{
+				$maxLevel = static::$levels[$maxLevelString];
+			}
+
+			if($maxLevel < 4)
+			{
+				return;
+			}
+		}
 
 		$line = static::renderException($e);
 

@@ -1,4 +1,4 @@
-FROM seanmorris/ids.idilic:latest
+FROM seanmorris/ids.idilic:latest as base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
 RUN apt-get update \
@@ -16,3 +16,6 @@ RUN ln -sf /proc/self/fd/1 /var/log/apache2/access.log \
     && ln -sf /proc/self/fd/1 /var/log/apache2/error.log
 
 ENTRYPOINT ["apachectl", "-D", "FOREGROUND"]
+
+FROM base as dev
+FROM base as prod

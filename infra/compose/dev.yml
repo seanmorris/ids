@@ -1,0 +1,28 @@
+version: '2.4'
+
+services:
+
+  server:
+    ports: ['80:80']
+    extends:
+      file: base.yml
+      service: server
+    depends_on:
+      - database
+
+  idilic:
+    extends:
+      file: base.yml
+      service: idilic
+    depends_on:
+      - database
+
+  database:
+    ports: ['9996:3306']
+    extends:
+      file: base.yml
+      service: database
+
+volumes:
+  schema:
+    driver: "local"

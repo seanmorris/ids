@@ -4,37 +4,43 @@ services:
 
   server:
     image: ${REPO}/ids.server:${TAG}
-    ports: [ '80:80' ]
     restart: always
-    depends_on:
-        - database
     env_file:
       ../../.env
     build:
       context: ../../
       dockerfile: infra/docker/server.dockerfile
+      target: ${TARGET}
     volumes:
       - ../../:/app
       - /tmp:/tmp
+    environment:
+      DHOST_IP: ${DHOST_IP}
+      XDEBUG_CONFIG: >
+        remote_host=${DHOST_IP}
+        remote_port=${XDEBUG_CONFIG_REMOTE_PORT}
+        remote_handler=${XDEBUG_CONFIG_REMOTE_HANDLER}
+        remote_enable=${XDEBUG_CONFIG_REMOTE_ENABLE}
+        remote_log=${XDEBUG_CONFIG_REMOTE_LOG}
 
   idilic:
     image: ${REPO}/ids.idilic:${TAG}
     restart: on-failure
-    depends_on:
-        - database
     env_file:
       ../../.env
     build:
       context: ../../
       dockerfile: infra/docker/idilic.dockerfile
+      target: ${TARGET}
     volumes:
       - ../../:/app
       - /tmp:/tmp
+    environment:
+      DHOST_IP: ${DHOST_IP}
 
   database:
     image: mariadb:10.4.8-bionic
     restart: always
-    ports: ['9996:3306']
     volumes:
       - schema:/var/lib/mysql
     environment:
