@@ -89,7 +89,7 @@
             },
             "IdsRelationship": {
                 "fields": {
-                	 "id": {
+                    "id": {
                         "Field": "id",
                         "Type": "int(11)",
                         "Collation": null,
@@ -103,7 +103,7 @@
                         "Field": "class",
                         "Type": "varchar(255)",
                         "Collation": "latin1_swedish_ci",
-                        "Null": "YES",
+                        "Null": "NO",
                         "Key": "",
                         "Default": null,
                         "Extra": "",
@@ -114,7 +114,7 @@
                         "Type": "varchar(255)",
                         "Collation": "utf8mb4_general_ci",
                         "Null": "NO",
-                        "Key": "PRI",
+                        "Key": "MUL",
                         "Default": null,
                         "Extra": "",
                         "Comment": ""
@@ -124,7 +124,7 @@
                         "Type": "int(11)",
                         "Collation": null,
                         "Null": "NO",
-                        "Key": "PRI",
+                        "Key": "",
                         "Default": null,
                         "Extra": "",
                         "Comment": ""
@@ -134,7 +134,7 @@
                         "Type": "varchar(255)",
                         "Collation": "utf8mb4_general_ci",
                         "Null": "NO",
-                        "Key": "PRI",
+                        "Key": "",
                         "Default": null,
                         "Extra": "",
                         "Comment": ""
@@ -144,7 +144,7 @@
                         "Type": "varchar(255)",
                         "Collation": "utf8mb4_general_ci",
                         "Null": "NO",
-                        "Key": "PRI",
+                        "Key": "MUL",
                         "Default": null,
                         "Extra": "",
                         "Comment": ""
@@ -154,7 +154,7 @@
                         "Type": "int(11)",
                         "Collation": null,
                         "Null": "NO",
-                        "Key": "PRI",
+                        "Key": "",
                         "Default": null,
                         "Extra": "",
                         "Comment": ""
@@ -164,13 +164,29 @@
                         "Type": "int(10) unsigned",
                         "Collation": null,
                         "Null": "NO",
-                        "Key": "PRI",
+                        "Key": "",
                         "Default": null,
                         "Extra": "",
                         "Comment": ""
                     }
                 },
                 "keys": {
+                    "PRIMARY": {
+                        "1": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "0",
+                            "Key_name": "PRIMARY",
+                            "Seq_in_index": "1",
+                            "Column_name": "id",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        }
+                    },
                     "relationship": {
                         "1": {
                             "Table": "IdsRelationship",

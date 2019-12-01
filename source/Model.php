@@ -1428,14 +1428,23 @@ class Model
 						, [$this, $column]
 					);
 
+					$relationship->delta = count($newRelationships);
+
 					$newRelationships[] = $relationship;
+
+					$relationship->save();
 				}
 			}
 			else
 			{
 				$relationship = array_shift($oldRelationships[$subjectId]);
 
-				$relationship->delta = $delta;
+				if($relationship->delta != $delta)
+				{
+					$relationship->delta = $delta;
+
+					$relationship->save();
+				}
 
 				$newRelationships[] = $relationship;
 			}
@@ -1443,10 +1452,10 @@ class Model
 
 		$newRelationships = array_values($newRelationships);
 
-		foreach($newRelationships as $delta => $newRel)
-		{
-			$newRel->save();
-		}
+		// foreach($newRelationships as $delta => $newRel)
+		// {
+		// 	$newRel->save();
+		// }
 
 		foreach($oldRelationships as $oldRels)
 		{

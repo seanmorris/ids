@@ -570,7 +570,7 @@ class Log
 				$_val = array_map(
 					function($k, $v)
 					{
-						if(Settings::read('logCensor', $k))
+						if($k && Settings::read('logCensor', $k))
 						{
 							return '* censored *';
 						}

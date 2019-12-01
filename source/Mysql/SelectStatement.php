@@ -650,13 +650,22 @@ class SelectStatement extends WhereStatement
 	{
 		$queryTime = microtime(TRUE) - $queryStartTime;
 
-		\SeanMorris\Ids\Log::query('Query executed.', new \SeanMorris\Ids\LogMeta([
-			'query'              => $queryObject->queryString
-			, 'query_time'       => $queryTime * 1000
-			, 'querty_tier'      => $this->databaseTier()
-			, 'query_type'       => get_called_class()
-			, 'query_args'       => $args
-			, 'query_table'      => $this->table
+		static::$queryTime += $queryTime;
+
+		$queryHash = sha1(print_r([
+			$queryObject->queryString
+			, $args
+		],1));
+
+		\SeanMorris\Ids\Log::query('Query executed.', $args, new \SeanMorris\Ids\LogMeta([
+			'query'         => $queryObject->queryString
+			, 'query_time'  => $queryTime * 1000
+			, 'query_tier'  => $this->databaseTier()
+			, 'query_type'  => get_called_class()
+			, 'query_table' => $this->table
+			, 'query_args'  => $args
+			, 'query_hash'  => $queryHash
+
 		]));
 	}
 

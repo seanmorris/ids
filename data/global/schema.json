@@ -89,7 +89,7 @@
             },
             "IdsRelationship": {
                 "fields": {
-                	 "id": {
+                    "id": {
                         "Field": "id",
                         "Type": "int(11)",
                         "Collation": null,
@@ -103,7 +103,7 @@
                         "Field": "class",
                         "Type": "varchar(255)",
                         "Collation": "latin1_swedish_ci",
-                        "Null": "YES",
+                        "Null": "NO",
                         "Key": "",
                         "Default": null,
                         "Extra": "",
@@ -114,7 +114,7 @@
                         "Type": "varchar(255)",
                         "Collation": "utf8mb4_general_ci",
                         "Null": "NO",
-                        "Key": "",
+                        "Key": "MUL",
                         "Default": null,
                         "Extra": "",
                         "Comment": ""
@@ -144,7 +144,7 @@
                         "Type": "varchar(255)",
                         "Collation": "utf8mb4_general_ci",
                         "Null": "NO",
-                        "Key": "",
+                        "Key": "MUL",
                         "Default": null,
                         "Extra": "",
                         "Comment": ""
@@ -188,7 +188,7 @@
                         }
                     },
                     "relationship": {
-                        "2": {
+                        "1": {
                             "Table": "IdsRelationship",
                             "Non_unique": "0",
                             "Key_name": "relationship",
@@ -202,7 +202,7 @@
                             "Comment": "",
                             "Index_comment": ""
                         },
-                        "3": {
+                        "2": {
                             "Table": "IdsRelationship",
                             "Non_unique": "0",
                             "Key_name": "relationship",
@@ -216,7 +216,7 @@
                             "Comment": "",
                             "Index_comment": ""
                         },
-                        "4": {
+                        "3": {
                             "Table": "IdsRelationship",
                             "Non_unique": "0",
                             "Key_name": "relationship",
@@ -230,7 +230,7 @@
                             "Comment": "",
                             "Index_comment": ""
                         },
-                        "5": {
+                        "4": {
                             "Table": "IdsRelationship",
                             "Non_unique": "0",
                             "Key_name": "relationship",
@@ -244,7 +244,7 @@
                             "Comment": "",
                             "Index_comment": ""
                         },
-                        "6": {
+                        "5": {
                             "Table": "IdsRelationship",
                             "Non_unique": "0",
                             "Key_name": "relationship",
@@ -258,7 +258,7 @@
                             "Comment": "",
                             "Index_comment": ""
                         },
-                        "7": {
+                        "6": {
                             "Table": "IdsRelationship",
                             "Non_unique": "0",
                             "Key_name": "relationship",
