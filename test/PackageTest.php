@@ -8,7 +8,12 @@ class PackageTest extends \UnitTestCase
 	{
 		$this->database = \SeanMorris\Ids\Database::get('main');
 		$package = $this->package = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
-		$package::setTables(['main' => ['Foobar', 'Foozle']]);
+
+		// $package::setTables(['main' => [
+		// 	'IdsRelationship'
+		// 	, 'Foobar'
+		// 	, 'Foozle'
+		// ]]);
 
 		foreach($this->package->tables() as $dbName => $tables)
 		{

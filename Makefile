@@ -101,9 +101,3 @@ test:
 	@ make --no-print-directory run \
 		CMD="idilic runTests SeanMorris/Ids"
 		TARGET=${TARGET}
-
-env:
-	@ echo ${ENV};
-
-xenv:
-	@ echo ${XDEBUG_ENV}

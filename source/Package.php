@@ -61,9 +61,13 @@ class Package
 			return new $packageClass($packageName);
 		}
 
-	$package = new static($packageName);
+		return new class($packageName) extends Package {
+			protected static $tables = ['main'=>[]];
+		};
 
-		return $package;
+		// $package = new static($packageName);
+
+		// return $package;
 	}
 
 	protected function __construct($package)
@@ -735,11 +739,14 @@ class Package
 		{
 			$db = Database::get($db);
 
-			$tables = $definedTables + array_keys((array) $exportTables);
+			$tables = $definedTables + array_keys(
+				(array) $exportTables
+			);
 
 			foreach($tables as $table)
 			{
-				if(!isset($definedTables->$table))
+
+				if(!in_array($table, $definedTables))
 				{
 					continue;
 				}
