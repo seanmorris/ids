@@ -381,6 +381,16 @@ class Log
 				;
 			}
 
+			if(php_sapi_name() == 'cli')
+			{
+				global $argv;
+
+				$request = sprintf(
+					PHP_EOL . 'Command: %s'
+					, implode(' ', $argv)
+				);
+			}
+
 			$from = NULL;
 
 			if(isset($_SERVER, $_SERVER['REMOTE_ADDR']))
@@ -549,7 +559,11 @@ class Log
 				}
 			}
 
-			$output .= PHP_EOL;
+			if($_val)
+			{
+				$output .= PHP_EOL;
+			}
+
 			$output .= str_repeat($indent, count($parents) + 1);
 			$output .= '{';
 
@@ -563,7 +577,10 @@ class Log
 				}
 			}
 
-			$output .= PHP_EOL;
+			if($_val)
+			{
+				$output .= PHP_EOL;
+			}
 
 			if(is_array($val))
 			{

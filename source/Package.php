@@ -505,7 +505,10 @@ class Package
 
 		if(!$schema)
 		{
-			$schema = new \StdClass;
+			throw new \Exception(sprintf(
+				'Schema file invalid at %s'
+				, $schemaFilename
+			));
 		}
 
 		if(!isset($schema->revisions))
@@ -570,9 +573,14 @@ class Package
 		if(!$globalDir->check())
 		{
 			$globalDir->create(NULL, 0766, TRUE);
+		}
 
-			var_dump($globalDir);
-			die;
+		if(!$globalDir->check())
+		{
+			throw new \Exception(sprintf(
+				'Cannot find global dir %s'
+				, $globalDir->name()
+			));
 		}
 
 		if(!file_exists($schemaFilename))
@@ -628,7 +636,14 @@ class Package
 			$db = Database::get($db);
 			foreach($tables as $table)
 			{
-				// print "Table " . $table . PHP_EOL;
+				$tableCheck = $db->prepare('SHOW TABLES LIKE "' . $table . '"');
+
+				$tableCheck->execute();
+
+				if(!$tableCheck->fetchObject())
+				{
+					continue;
+				}
 
 				if(!isset($storedSchema->$table))
 				{
@@ -745,8 +760,7 @@ class Package
 
 			foreach($tables as $table)
 			{
-
-				if(!in_array($table, $definedTables))
+				if(!isset($exportTables->$table))
 				{
 					continue;
 				}
@@ -771,6 +785,16 @@ class Package
 						\SeanMorris\Ids\Log::query('Loaded', $column);
 						if(!isset($exportTables->$table->fields->{$column->Field}))
 						{
+							if(!isset($exportTables->$table))
+							{
+								\SeanMorris\Ids\Log::warn(sprintf(
+									'Table %s::%s exists but is not defined in schema file.'
+									, $this
+									, $exportTables->$table
+								));
+
+								continue;
+							}
 							$queries[] = sprintf(
 								"ALTER TABLE `%s` DROP COLUMN `%s`;"
 								, $table
@@ -899,7 +923,6 @@ class Package
 
 				if(!$tableFound)
 				{
-					// var_dump("$table NOT FOUND!");
 					$createColumn = [];
 
 					if(!isset($exportTables->$table)
@@ -907,8 +930,6 @@ class Package
 					){
 						continue;
 					}
-
-					// var_dump("$table test------", $exportTables);
 
 					foreach($exportTables->$table->fields as $field)
 					{

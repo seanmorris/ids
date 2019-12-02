@@ -2,6 +2,8 @@
 namespace SeanMorris\Ids\Test\Model;
 class Foobar extends Foozle
 {
+	use Common;
+
 	protected
 		$barValue
 	;

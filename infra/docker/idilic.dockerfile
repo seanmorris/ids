@@ -44,7 +44,10 @@ FROM base as dev
 RUN  apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		php7.3-xdebug \
-	&& apt-get clean
+	&& apt-get clean \
+	&& echo -e "xdebug.remote_autostart=1\nxdebug.remote_mode=req" > \
+		/etc/php/7.3/cli/conf.d/30-xdebug-cli.ini \
+	&& chmod 777 /etc/php/7.3/cli/conf.d/30-xdebug-cli.ini
 
 FROM base as prod
 

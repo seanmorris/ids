@@ -16,12 +16,7 @@ services:
       - /tmp:/tmp
     environment:
       DHOST_IP: ${DHOST_IP}
-      XDEBUG_CONFIG: >
-        remote_host=${DHOST_IP}
-        remote_port=${XDEBUG_CONFIG_REMOTE_PORT}
-        remote_handler=${XDEBUG_CONFIG_REMOTE_HANDLER}
-        remote_enable=${XDEBUG_CONFIG_REMOTE_ENABLE}
-        remote_log=${XDEBUG_CONFIG_REMOTE_LOG}
+      XDEBUG_CONFIG: ${XDEBUG_CONFIG}
 
   idilic:
     image: ${REPO}/ids.idilic:${TAG}
@@ -37,6 +32,7 @@ services:
       - /tmp:/tmp
     environment:
       DHOST_IP: ${DHOST_IP}
+      XDEBUG_CONFIG: ${XDEBUG_CONFIG}
 
   database:
     image: mariadb:10.4.8-bionic
@@ -53,15 +49,3 @@ services:
 volumes:
   schema:
     driver: "local"
-
-
-
-  # idilic:
-  #   image: ${REPO}/ids.idilic:${TAG}
-  #   build:
-  #     context: ../../
-  #     dockerfile: infra/docker/idilic.dockerfile
-  #   restart: on-failure
-  #   volumes:
-  #     - ../../:/app
-  #     - /tmp:/tmp

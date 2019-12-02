@@ -535,16 +535,7 @@ class SelectStatement extends WhereStatement
 
 	public function fetchColumn(...$args)
 	{
-		try
-		{
-			$query = $this->execute(...$args);
-		}
-		catch(\Exception $e)
-		{
-			\SeanMorris\Ids\Log::error($e);
-			\SeanMorris\Ids\Log::trace();
-			die;
-		}
+		$query = $this->execute(...$args);
 
 		if($col = $query->fetchColumn())
 		{
@@ -557,16 +548,7 @@ class SelectStatement extends WhereStatement
 
 	public function fetch(...$args)
 	{
-		try
-		{
-			$query = $this->execute(...$args);
-		}
-		catch(\Exception $e)
-		{
-			\SeanMorris\Ids\Log::error($e);
-			\SeanMorris\Ids\Log::trace();
-			die;
-		}
+		$query = $this->execute(...$args);
 
 		if($row = $query->fetch())
 		{
@@ -585,15 +567,6 @@ class SelectStatement extends WhereStatement
 		$closure = function(...$args) use($queryStartTime)
 		{
 			$queryObject = $this->execute(...$args);
-			// try
-			// {
-			// }
-			// catch(\Exception $e)
-			// {
-			// 	\SeanMorris\Ids\Log::error($e);
-			// 	\SeanMorris\Ids\Log::trace();
-			// 	die;
-			// }
 
 			$first = FALSE;
 

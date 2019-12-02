@@ -726,7 +726,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 			print PHP_EOL;
 		}
-		die;
+
+		return;
 
 		$packages = \SeanMorris\Ids\Package::listPackages($router->contextGet('composer'));
 		$idsPackage = \SeanMorris\Ids\Package::get('SeanMorris\Ids');

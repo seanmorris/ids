@@ -2,6 +2,8 @@
 namespace SeanMorris\Ids\Test\Model;
 class Foozle extends \SeanMorris\Ids\Model
 {
+	use Common;
+
 	protected
 		$id
 		, $class

@@ -211,12 +211,22 @@ set_exception_handler(function($exception)
 		print $renderedException;
 	}
 
+	if(function_exists('xdebug_break'))
+	{
+		xdebug_break();
+	}
+
 	exit(1);
 });
 
 $existingErrorHandler = set_error_handler(
 	function($errorNumber, $errorString, $errorFile, $errorLine, $errorContext) use(&$existingErrorHandler)
 	{
+		if(function_exists('xdebug_break'))
+		{
+	    	xdebug_break();
+		}
+
 		$errorContextContent = NULL;
 
 		/*

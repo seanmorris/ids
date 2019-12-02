@@ -7,13 +7,7 @@ class PackageTest extends \UnitTestCase
 	public function setUp()
 	{
 		$this->database = \SeanMorris\Ids\Database::get('main');
-		$package = $this->package = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
-
-		// $package::setTables(['main' => [
-		// 	'IdsRelationship'
-		// 	, 'Foobar'
-		// 	, 'Foozle'
-		// ]]);
+		$this->package  = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
 
 		foreach($this->package->tables() as $dbName => $tables)
 		{
@@ -22,7 +16,7 @@ class PackageTest extends \UnitTestCase
 			foreach($tables as $table)
 			{
 				$dropTable = $db->prepare(sprintf(
-					'DROP TABLE %s'
+					'DROP TABLE IF EXISTS %s'
 					, $table
 				));
 
@@ -30,16 +24,9 @@ class PackageTest extends \UnitTestCase
 			}
 		}
 
-		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
-			$this->package->packageDir()
-			. 'test/data/testApplySchema.json'
-		);
-
-		$testSchemaFile->copy(
-			$this->package->globalDir() . 'schema.json'
-		);
-
-		$this->package->applySchema(TRUE);
+		$this->package::setTables([
+			'main' => ['Foobar', 'Foozle']
+		]);
 	}
 
 	public function tearDown()
@@ -55,6 +42,8 @@ class PackageTest extends \UnitTestCase
 
 	public function testApplySchema()
 	{
+
+
 		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
 			$this->package->packageDir()
 			. 'test/data/testApplySchema.json'
@@ -90,15 +79,21 @@ class PackageTest extends \UnitTestCase
 
 	public function testStoreSchema()
 	{
+		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
+			$this->package->packageDir()
+			. 'test/data/testApplySchema.json'
+		);
+
+		$testSchemaFile->copy(
+			$this->package->globalDir() . 'schema.json'
+		);
+
+		$this->package->applySchema(TRUE);
+
 		$this->package->storeSchema();
 
 		$schemaFile = new \SeanMorris\Ids\Disk\File(
 			$this->package->globalDir() . 'schema.json'
-		);
-
-		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
-			$this->package->packageDir()
-			. 'test/data/testApplySchema.json'
 		);
 
 		$this->assertEqual(

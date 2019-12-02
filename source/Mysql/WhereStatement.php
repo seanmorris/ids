@@ -82,10 +82,7 @@ abstract class WhereStatement extends Statement
 				&& !is_null($a)
 				&& !is_array($a);
 		})) {
-			\SeanMorris\Ids\Log::debug('Nonscalar argument supplied.');
-			\SeanMorris\Ids\Log::debug($nonscalar);
-			\SeanMorris\Ids\Log::trace();
-			die;
+			throw new \Exception('Nonscalar argument supplied to WhereStatement.');
 		}
 
 		$finalArgs = [];
@@ -158,9 +155,11 @@ abstract class WhereStatement extends Statement
 
 		if($errorCode !== '00000')
 		{
-			\SeanMorris\Ids\Log::error($queryObject->errorInfo());
-			\SeanMorris\Ids\Log::trace();
-			die;
+			$error = $queryObject->errorInfo();
+
+			throw new \Exception(sprintf(
+				'%s %s %s', ...$error
+			));
 		}
 
 		return $queryObject;

@@ -17,16 +17,22 @@ TAG       ?=${BRANCH}-${DESC}-${TARGET}
 IMAGE     ?=
 DHOST_IP  ?=`docker network inspect bridge --format="{{ (index .IPAM.Config 0).Gateway}}"`
 
+XDEBUG_CONFIG_REMOTE_HOST?=${DHOST_IP}
+
 ifeq ($(TARGET),dev)
-	XDEBUG_ENV=XDEBUG_CONFIG="`grep -v '^\#' .env.dev \
+	XDEBUG_ENV=XDEBUG_CONFIG="`\
+		cat .env.dev \
+		| env DHOST_IP=$$(${subst `, , ${XDEBUG_CONFIG_REMOTE_HOST}}) envsubst \
+		| grep -v '^\#' \
 		| grep ^XDEBUG_CONFIG_ \
 		| while read VAR; do echo $$VAR | \
 		{ \
 			IFS='\=' read -r NAME VALUE; \
+			echo -n ' '; \
 			echo -n $$NAME | sed -e 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
-			echo -n =$$VALUE '';\
-		}; \
-		done`"
+			echo -n =$$VALUE;\
+		} \
+		; done | cut -c 2-`"
 else
 	XDEBUG_ENV=
 endif
@@ -98,6 +104,9 @@ run:
 	@ ${DCOMPOSE} run --rm ${CMD}
 
 test:
+	echo ${ENV};
+
+
 	@ make --no-print-directory run \
 		CMD="idilic runTests SeanMorris/Ids"
 		TARGET=${TARGET}

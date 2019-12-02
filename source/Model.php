@@ -507,18 +507,11 @@ class Model
 
 				if(isset($curClass::$hasOne[$property]))
 				{
-					// var_dump($this->{$property});
-					//die;
 					//$this->storeRelationship($property, $this->{$property});
 				}
 
 				if(isset($curClass::$hasMany[$property]) && is_array($this->{$property}))
 				{
-					// \SeanMorris\Ids\Log::debug(
-					// 	'Storing relationships for ' . $property
-					// 	, $this->{$property}
-					// );
-
 					$this->storeRelationships($property, $this->{$property});
 				}
 			}
@@ -1302,6 +1295,12 @@ class Model
 				return $models;
 			};
 		}
+
+		throw new \Exception(sprintf(
+			'%s::%s is not a valid method.'
+			, get_called_class()
+			, $name
+		));
 	}
 
 	protected static function instantiate($skeleton, $args = [], $rawArgs = [])
