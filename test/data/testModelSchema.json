@@ -1,0 +1,398 @@
+{
+    "revisions": {
+        "0": {
+            "Foozle": {
+                "fields": {
+                    "publicId": {
+                        "Field": "publicId",
+                        "Type": "binary(16)",
+                        "Collation": null,
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "id": {
+                        "Field": "id",
+                        "Type": "int(11)",
+                        "Collation": null,
+                        "Null": "NO",
+                        "Key": "PRI",
+                        "Default": null,
+                        "Extra": "auto_increment",
+                        "Comment": ""
+                    },
+                    "class": {
+                        "Field": "class",
+                        "Type": "varchar(255)",
+                        "Collation": "latin1_swedish_ci",
+                        "Null": "YES",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "value": {
+                        "Field": "value",
+                        "Type": "varchar(255)",
+                        "Collation": "latin1_swedish_ci",
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    }
+                },
+                "keys": {
+                    "PRIMARY": {
+                        "1": {
+                            "Table": "Foozle",
+                            "Non_unique": "0",
+                            "Key_name": "PRIMARY",
+                            "Seq_in_index": "1",
+                            "Column_name": "id",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        }
+                    }
+                }
+            },
+            "Foobar": {
+                "fields": {
+                    "barValue": {
+                        "Field": "barValue",
+                        "Type": "varchar(255)",
+                        "Collation": "latin1_swedish_ci",
+                        "Null": "YES",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "id": {
+                        "Field": "id",
+                        "Type": "int(11)",
+                        "Collation": null,
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    }
+                }
+            },
+                        "IdsRelationship": {
+                "fields": {
+                    "id": {
+                        "Field": "id",
+                        "Type": "int(11)",
+                        "Collation": null,
+                        "Null": "NO",
+                        "Key": "PRI",
+                        "Default": null,
+                        "Extra": "auto_increment",
+                        "Comment": ""
+                    },
+                    "class": {
+                        "Field": "class",
+                        "Type": "varchar(255)",
+                        "Collation": "latin1_swedish_ci",
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "ownerClass": {
+                        "Field": "ownerClass",
+                        "Type": "varchar(255)",
+                        "Collation": "utf8mb4_general_ci",
+                        "Null": "NO",
+                        "Key": "MUL",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "ownerId": {
+                        "Field": "ownerId",
+                        "Type": "int(11)",
+                        "Collation": null,
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "property": {
+                        "Field": "property",
+                        "Type": "varchar(255)",
+                        "Collation": "utf8mb4_general_ci",
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "subjectClass": {
+                        "Field": "subjectClass",
+                        "Type": "varchar(255)",
+                        "Collation": "utf8mb4_general_ci",
+                        "Null": "NO",
+                        "Key": "MUL",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "subjectId": {
+                        "Field": "subjectId",
+                        "Type": "int(11)",
+                        "Collation": null,
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "delta": {
+                        "Field": "delta",
+                        "Type": "int(10) unsigned",
+                        "Collation": null,
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    }
+                },
+                "keys": {
+                    "PRIMARY": {
+                        "1": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "0",
+                            "Key_name": "PRIMARY",
+                            "Seq_in_index": "1",
+                            "Column_name": "id",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        }
+                    },
+                    "relationship": {
+                        "1": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "0",
+                            "Key_name": "relationship",
+                            "Seq_in_index": "1",
+                            "Column_name": "ownerClass",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        },
+                        "2": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "0",
+                            "Key_name": "relationship",
+                            "Seq_in_index": "2",
+                            "Column_name": "ownerId",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        },
+                        "3": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "0",
+                            "Key_name": "relationship",
+                            "Seq_in_index": "3",
+                            "Column_name": "subjectClass",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        },
+                        "4": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "0",
+                            "Key_name": "relationship",
+                            "Seq_in_index": "4",
+                            "Column_name": "subjectId",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        },
+                        "5": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "0",
+                            "Key_name": "relationship",
+                            "Seq_in_index": "5",
+                            "Column_name": "property",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        },
+                        "6": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "0",
+                            "Key_name": "relationship",
+                            "Seq_in_index": "6",
+                            "Column_name": "delta",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        }
+                    },
+                    "owner": {
+                        "1": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "1",
+                            "Key_name": "owner",
+                            "Seq_in_index": "1",
+                            "Column_name": "ownerClass",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        },
+                        "2": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "1",
+                            "Key_name": "owner",
+                            "Seq_in_index": "2",
+                            "Column_name": "ownerId",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        }
+                    },
+                    "subjectClass": {
+                        "1": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "1",
+                            "Key_name": "subjectClass",
+                            "Seq_in_index": "1",
+                            "Column_name": "subjectClass",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        },
+                        "2": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "1",
+                            "Key_name": "subjectClass",
+                            "Seq_in_index": "2",
+                            "Column_name": "subjectId",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        }
+                    },
+                    "ownerClass": {
+                        "1": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "1",
+                            "Key_name": "ownerClass",
+                            "Seq_in_index": "1",
+                            "Column_name": "ownerClass",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        },
+                        "2": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "1",
+                            "Key_name": "ownerClass",
+                            "Seq_in_index": "2",
+                            "Column_name": "ownerId",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        },
+                        "3": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "1",
+                            "Key_name": "ownerClass",
+                            "Seq_in_index": "3",
+                            "Column_name": "subjectClass",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        },
+                        "4": {
+                            "Table": "IdsRelationship",
+                            "Non_unique": "1",
+                            "Key_name": "ownerClass",
+                            "Seq_in_index": "4",
+                            "Column_name": "subjectId",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
