@@ -51,6 +51,8 @@ class ModelTest extends \UnitTestCase
 		$testSchemaFile->copy(
 			$this->package->globalDir() . 'schema.json'
 		);
+
+		$this->package->applySchema(TRUE);
 	}
 
 	public function testCreate()
@@ -77,6 +79,8 @@ class ModelTest extends \UnitTestCase
 	{
 		foreach($this->modelClasses as $modelClass)
 		{
+			$modelClass::clearCache();
+
 			if(!$model = $modelClass::loadOne())
 			{
 				$models = $modelClass::fill(10, function($index, $instance) {
@@ -152,6 +156,8 @@ class ModelTest extends \UnitTestCase
 		{
 			if(!$model = $modelClass::loadOne())
 			{
+				$modelClass::clearCache();
+
 				$models = $modelClass::fill(10, function($index, $instance) {
 					$instance->consume(['value' => $index]);
 
@@ -182,6 +188,8 @@ class ModelTest extends \UnitTestCase
 	{
 		foreach($this->modelClasses as $modelClass)
 		{
+			$modelClass::clearCache();
+
 			if(!$model = $modelClass::loadOne())
 			{
 				$models = $modelClass::fill(10, function($index, $instance) {
