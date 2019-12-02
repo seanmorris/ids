@@ -264,8 +264,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		if(!$packageName = array_shift($args))
 		{
-			echo 'No package supplied.\n';
-			return;
+			return 'No package supplied.';
 		}
 
 		$real = array_shift($args);

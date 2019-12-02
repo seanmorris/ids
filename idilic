@@ -1,2 +1,3 @@
 #/usr/local/bin bash
-make run CMD="idilic $@"
+
+export CMD="idilic $@" && make run

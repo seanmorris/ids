@@ -9,11 +9,13 @@ class Package
 
 	protected static
 		$assetManager
-		// , $tables = ['main'=>[]]
+		// , $tables = ['main'=>['IdsRelationship']]
 		, $tables = ['main'=>[
 			'Foozle'
 			, 'Foobar'
 			, 'IdsRelationship'
+			, 'Octopus'
+			, 'Tentacle'
 		]]
 	;
 

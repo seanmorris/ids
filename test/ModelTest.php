@@ -39,6 +39,10 @@ class ModelTest extends \UnitTestCase
 			$this->package->globalDir() . 'schema.json'
 		);
 
+		$this->package::setTables([
+			'main' => ['Foobar', 'Foozle', 'IdsRelationship']
+		]);
+
 		$this->package->applySchema(TRUE);
 	}
 
@@ -220,13 +224,57 @@ class ModelTest extends \UnitTestCase
 		}
 	}
 
-	public function octopusTest()
+	public function testOctopus()
 	{
-		for($i = 0; $i < 10; $i++)
-		{
-			$octopus = new \SeanMorris\Ids\Test\Model\Octopus;
+		$this->database = \SeanMorris\Ids\Database::get('main');
+		$this->package  = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
 
-			var_dump($octopus);
+		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
+			$this->package->packageDir()
+			. 'test/data/testModelOctopusSchema.json'
+		);
+
+		$testSchemaFile->copy(
+			$this->package->globalDir() . 'schema.json'
+		);
+
+		$this->package::setTables([
+			'main' => ['Octopus', 'Tentacle', 'IdsRelationship']
+		]);
+
+		$this->package->applySchema(TRUE);
+
+		\SeanMorris\Ids\Test\Model\Octopus::clearCache();
+
+		if(!$octopus = \SeanMorris\Ids\Test\Model\Octopus::loadOne())
+		{
+			$octopodes = \SeanMorris\Ids\Test\Model\Octopus::fill(5, function($index, $instance) {
+
+				$instance->consume([
+					'tentacleA' => new \SeanMorris\Ids\Test\Model\Tentacle
+					, 'tentacleB' => new \SeanMorris\Ids\Test\Model\Tentacle
+					, 'tentacleC' => new \SeanMorris\Ids\Test\Model\Tentacle
+					, 'tentacleD' => new \SeanMorris\Ids\Test\Model\Tentacle
+					, 'tentacleE' => new \SeanMorris\Ids\Test\Model\Tentacle
+					, 'tentacleF' => new \SeanMorris\Ids\Test\Model\Tentacle
+					, 'tentacleG' => new \SeanMorris\Ids\Test\Model\Tentacle
+					, 'tentacleH' => new \SeanMorris\Ids\Test\Model\Tentacle
+				]);
+
+				var_dump($instance);
+
+				$instance->save();
+
+				return $instance;
+			});
+
+			\SeanMorris\Ids\Test\Model\Octopus::clearCache();
+
+			$octopus = \SeanMorris\Ids\Test\Model\Octopus::loadOne();
 		}
+
+		$octopus->stretch();
+
+		die;
 	}
 }

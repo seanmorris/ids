@@ -101,7 +101,7 @@ tag:
 	@ echo ${TAG}
 
 run:
-	@ ${DCOMPOSE} run --rm ${CMD}
+	${DCOMPOSE} run --rm ${CMD}
 
 test:
 	echo ${ENV};
