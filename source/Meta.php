@@ -106,8 +106,6 @@ class Meta
 
 	public static function classes($super = NULL)
 	{
-		global $composer;
-
 		$path       = IDS_ROOT;
 		$classes    = [];
 

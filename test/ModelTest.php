@@ -261,8 +261,6 @@ class ModelTest extends \UnitTestCase
 					, 'tentacleH' => new \SeanMorris\Ids\Test\Model\Tentacle
 				]);
 
-				var_dump($instance);
-
 				$instance->save();
 
 				return $instance;

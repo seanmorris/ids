@@ -915,10 +915,6 @@ class Model
 
 		while(TRUE)
 		{
-			// var_=($currentDefClass);
-			$a = $args;
-			// var_dump($currentDefClass::resolveDef($name, $a));
-
 			$parentDefClass = get_parent_class($currentDefClass);
 
 			if(!$parentDefClass)
@@ -934,11 +930,6 @@ class Model
 			$currentDefClass = $parentDefClass;
 		}
 
-		// \SeanMorris\Ids\Log::debug(
-		// 	$name
-		// 	, $args
-		// );
-
 		$def  = static::resolveDef($name, $args);
 		$recs = FALSE;
 
@@ -947,19 +938,10 @@ class Model
 			$recs = $def['recs'];
 		}
 
-		// \SeanMorris\Ids\Log::debug(
-		// 	$def
-		// );
-
 		if(isset($def['cursor']) && $def['cursor'])
 		{
-			//$cursorValue = (int) array_pop($args);
 			$limit = (int) array_pop($args);
-
-			// $def['where'][] = ['id' => '?', '>'];
 		}
-
-		// \SeanMorris\Ids\Log::debug($def);
 
 		$select = static::selectStatement($def, null, $args);
 
@@ -968,13 +950,6 @@ class Model
 			$select->limit($limit);
 			$select->conditions([['id' => '?', '>']]);
 		}
-
-		// if(isset($def['type']) && $def['type'] == 'count')
-		// {
-		// 	$countStatement = $select->countStatement('id');
-
-		// 	return (int) $countStatement->fetchColumn(...$args);
-		// }
 
 		if(isset($def['paged']) && $def['paged'])
 		{
@@ -1507,7 +1482,6 @@ class Model
 			, $subSkeleton
 		) = static::subskeletonWithAlias($skeleton);
 
-		$baseClass = get_class();
 		$parentClass = get_parent_class(get_called_class());
 
 		while($parentClass)

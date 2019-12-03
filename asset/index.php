@@ -1,6 +1,5 @@
 <?php
 use \SeanMorris\Ids\Log;
-use \SeanMorris\Ids\Path;
 use \SeanMorris\Ids\Router;
 use \SeanMorris\Ids\Request;
 use \SeanMorris\Ids\Settings;

@@ -9,7 +9,6 @@ namespace SeanMorris\Ids\Idilic\Route;
  */
 class RootRoute implements \SeanMorris\Ids\Routable
 {
-
 	function _dynamic($router)
 	{
 		$args = $router->path()->consumeNodes();

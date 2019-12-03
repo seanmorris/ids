@@ -206,18 +206,6 @@ class Log
 
 		static::startLog($maxLevel);
 
-		if($level == 1)
-		{
-			$colors['line'] = 'lightRed';
-			$colors['lineBg'] = 'black';
-		}
-
-		if($level == 2)
-		{
-			$colors['line'] = 'black';
-			$colors['lineBg'] = 'yellow';
-		}
-
 		$output = '';
 
 		$output .= static::color(

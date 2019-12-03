@@ -49,7 +49,7 @@ DCOMPOSE ?=export ${ENV} \
 it:
 	@ echo Building ${PROJECT} ${TAG}
 	@ sleep 2
-	@ docker run --rm -it \
+	@ docker run --rm \
 		-v $$PWD:/app \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		composer install
@@ -105,8 +105,6 @@ run:
 
 test:
 	echo ${ENV};
-
-
 	@ make --no-print-directory run \
-		CMD="idilic runTests SeanMorris/Ids"
-		TARGET=${TARGET}
+		TARGET=${TARGET} CMD="idilic runTests SeanMorris/Ids" \
+		

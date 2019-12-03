@@ -4,3 +4,4 @@ vendor/*
 .env.*
 !.env.sample
 !.env.*.sample
+/nbproject/private/

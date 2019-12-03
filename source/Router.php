@@ -37,7 +37,7 @@ class Router
 
 		if(is_callable([$routes, '_init']))
 		{
-			$result = $routes->_init($this);
+		    $routes->_init($this);
 		}
 	}
 
@@ -45,7 +45,6 @@ class Router
 	{
 		$path = $this->path;
 		$routes = $this->routes;
-		$parent = $this->parent;
 
 		if(is_string($routes) && class_exists($routes))
 		{

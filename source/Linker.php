@@ -97,7 +97,6 @@ class Linker
 	{
 		$classes     = \SeanMorris\Ids\Meta::classes();
 		$subClasses  = [];
-		$baseClasses = [];
 		$classTree   = [];
 
 		foreach($classes as $class)
@@ -107,8 +106,6 @@ class Linker
 				$subClasses[$class] = $class;
 				continue;
 			}
-
-			$baseClasses[$class] = $class;
 		}
 
 		foreach($subClasses as $subClass)

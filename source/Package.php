@@ -1097,11 +1097,6 @@ class Package
 
 		foreach($key as $column)
 		{
-			if(isset($columns[$column->Seq_in_index]))
-			{
-				continue;
-			}
-
 			$keys[$column->Seq_in_index] = $column;
 		}
 

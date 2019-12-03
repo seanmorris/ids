@@ -9,13 +9,10 @@ class UpdateStatement extends WhereStatement
 	public function assemble()
 	{
 		$format = "UPDATE %s SET %s WHERE %s";
-		$columns = [];
 		$tokens = [];
 
 		foreach($this->columns as $column)
 		{
-			$columns[] = $column;
-
 			if(isset($this->wrappers[$column]))
 			{
 				if($this->hasReplacements($this->wrappers[$column]))
