@@ -269,12 +269,12 @@ class ModelTest extends \UnitTestCase
 			foreach($testModulo as $i => $testModulus)
 			{
 				$this->assertTrue(
-					$testModulus === ($tentacleId[$i]  % 8)
+					$testModulus === $tentacleId[$i]  % 8
 					, 'Incorrect tentacle loaded.'
 				);
 
 				$this->assertTrue(
-					$tentacleId[$i] > ($instance->id-1) * 8
+					$tentacleId[$i] > ($instance->id - 1) * 8
 					, 'Incorrect tentacle loaded.'
 				);
 
@@ -306,6 +306,18 @@ class ModelTest extends \UnitTestCase
 
 			$groceries = $instance->getSubjects('groceries');
 
+			foreach($groceries as $i => $grocery)
+			{
+				$this->assertTrue(
+					$grocery->id > ($instance->id - 1 ) * 10
+					, 'Incorrect grocery loaded.'
+				);
+
+				$this->assertTrue(
+					$grocery->id <= $instance->id  * 10
+					, 'Incorrect grocery loaded.'
+				);
+			}
 		});
 	}
 }
