@@ -192,4 +192,9 @@ abstract class Statement
 	{
 		return static::$altered[$table]?? FALSE;
 	}
+
+	public function table()
+	{
+		return $this->table;
+	}
 }

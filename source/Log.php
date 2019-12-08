@@ -3,7 +3,7 @@ namespace SeanMorris\Ids;
 
 class Log
 {
-	const SECOND_SIGNIFICANCE	= 5
+	protected const SECOND_SIGNIFICANCE	= 5
 		, TEXT_COLOR			= 'none'
 		, TEXT_BACKGROUND		= 'none'
 		, HEAD_COLOR			= 'darkGrey'
@@ -15,7 +15,7 @@ class Log
 		, LOG_SEPERATOR			= '########################################'
 	;
 
-	static $foregroundColors = array(
+	protected static $foregroundColors = array(
 		'black'			=> '0;30'
 		, 'darkGrey'	=> '1;30'
 		, 'blue'		=> '0;34'	, 'lightBlue'	=> '1;34'
@@ -29,7 +29,7 @@ class Log
 		, 'white'		=> '1;37'
 	);
 
-	static $backgroundColors = array(
+	protected static $backgroundColors = array(
 		'black'			=> 40
 		, 'red'			=> 41
 		, 'green'		=> 42
@@ -40,7 +40,7 @@ class Log
 		, 'lightGrey'	=> 47
 	);
 
-	static $levels = array(
+	protected static $levels = array(
 		'off'     => 0
 		, 'error' => 1
 		, 'warn'  => 2
@@ -50,7 +50,7 @@ class Log
 		, 'trace' => 6
 	);
 
-	static $colors = [
+	protected static $colors = [
 		'key' => 'lightBlue'
 		, 'keyBg' => NULL
 		, 'type' => 'green'
@@ -61,7 +61,7 @@ class Log
 		, 'lineBg' => NULL
 	];
 
-	static $levelColors = [
+	protected static $levelColors = [
 		'error'   => 'red'
 		, 'warn'  => 'yellow'
 		, 'info'  => 'white'
@@ -73,6 +73,10 @@ class Log
 		$started = false
 		, $colorOutput = true
 		, $suppress = false
+		, $censor
+		, $packages
+		, $level
+		, $also
 	;
 
 	public static function error(...$data)
@@ -131,34 +135,16 @@ class Log
 			$level = static::$levels[$levelString];
 		}
 
-		$logPackages = (array) Settings::read('logPackages');
-
-		if(($level <= static::$levels['warn']
-			&& php_sapi_name() == 'cli'
-			&& ($switches['verbose'] ?? $switches['v'] ?? FALSE)
-		) || (php_sapi_name() == 'cli'
-			&& ($switches['vv'] ?? FALSE)
-		)){
-			foreach($data as $d)
-			{
-				if($d instanceof LogMeta)
-				{
-					continue;
-				}
-				if(is_scalar($d))
-				{
-					print $d . PHP_EOL;
-					continue;
-				}
-				print_r($data);
-			}
+		if(!isset(static::$packages))
+		{
+			static::$packages = (array) Settings::read('logPackages');
 		}
 
 		$maxLevel = NULL;
 
-		if(is_array($logPackages))
+		if(is_array(static::$packages))
 		{
-			foreach($logPackages as $regex => $logLevel)
+			foreach(static::$packages as $regex => $logLevel)
 			{
 				if(!isset($position['class']))
 				{
@@ -180,25 +166,55 @@ class Log
 
 		if($maxLevel === NULL)
 		{
-			$maxLevelString = Settings::read('logLevel');
-
-			if(isset(static::$levels[$maxLevelString]))
+			if(!isset(static::$level))
 			{
-				$maxLevel = static::$levels[$maxLevelString];
+				static::$level = Settings::read('logLevel');
+			}
+
+			if(isset(static::$levels[static::$level]))
+			{
+				$maxLevel = static::$levels[static::$level];
 			}
 		}
 
 		if($level > $maxLevel || $level == 0)
 		{
-			if(!$logAlso = Settings::read('logAlso'))
+			if(!isset(static::$also))
 			{
-				$logAlso = [];
+				static::$also = Settings::read('logAlso') ?: [];
 			}
 
-			if(!in_array($levelString, $logAlso))
+			if(!in_array($levelString, static::$also))
 			{
 				return;
 			}
+		}
+
+		if(($level <= static::$levels['warn']
+				&& php_sapi_name() == 'cli'
+				&& ($switches['verbose'] ?? $switches['v'] ?? FALSE)
+				) || (php_sapi_name() == 'cli'
+			&& ($switches['vv'] ?? FALSE)
+		)){
+			foreach($data as $d)
+			{
+				if($d instanceof LogMeta)
+				{
+					continue;
+				}
+				if(is_scalar($d))
+				{
+					print $d . PHP_EOL;
+					continue;
+				}
+				print_r($data);
+			}
+		}
+
+
+		if(!static::$censor)
+		{
+			static::$censor = Settings::read('logCensor');
 		}
 
 		$position    = static::position(2);
@@ -482,7 +498,7 @@ class Log
 
 				foreach($relflectedProps as $relflectedProp)
 				{
-					if(Settings::read('logCensor', $relflectedProp->name))
+					if(static::$censor[$relflectedProp->name])
 					{
 						$_val[$k] = '* censored *';
 						continue;
@@ -576,7 +592,7 @@ class Log
 				$_val = array_map(
 					function($k, $v)
 					{
-						if($k && Settings::read('logCensor', $k))
+						if($k && Settings::read(static::$censor[$k]))
 						{
 							return '* censored *';
 						}
@@ -824,7 +840,7 @@ class Log
 				{
 					$paramName = $paramNames[$a] ?? NULL;
 
-					if($paramName && Settings::read('logCensor', $paramName))
+					if($paramName && static::$censor[$paramName])
 					{
 						$renderedArg = '* censored *';
 					}

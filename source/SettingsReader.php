@@ -55,7 +55,7 @@ class SettingsReader implements \Iterator, \ArrayAccess
 
 	public function offsetGet($name)
 	{
-		if($this->names[ $name ])
+		if(!isset($this->names[ $name ]))
 		{
 			return NULL;
 		}

@@ -16,9 +16,11 @@ class Settings
 
 	public static function read(...$names)
 	{
-		if(isset($cache[sha1(print_r($names, 1))]))
+		$cacheKey = md5(print_r($names, 1));
+
+		if(isset($cache[$cacheKey]))
 		{
-			return $cache[sha1(print_r($names, 1))];
+			return $cache[$cacheKey];
 		}
 
 		$nameList = $names;
@@ -68,7 +70,7 @@ class Settings
 			$settings = $settings->$name;
 		}
 
-		$cache[md5sha1(print_r($names, 1))] = $settings;
+		$cache[$cacheKey] = $settings;
 
 		return $settings;
 	}
@@ -144,7 +146,7 @@ class Settings
 
 	public static function findEnvVarName($name, $host = NULL, $port = NULL, $prefix = FALSE)
 	{
-		$cacheKey = sha1(print_r(func_get_args(), 1));
+		$cacheKey = md5(print_r(func_get_args(), 1));
 
 		if(isset(static::$cache[$cacheKey]))
 		{

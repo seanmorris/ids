@@ -85,7 +85,7 @@ class Relationship extends Model
 		return $this->subjectObject;
 	}
 
-	protected static function instantiate($skeleton, $args = [], $rawArgs = [])
+	protected static function instantiate($skeleton, $args = [], $rawArgs = [], $select = NULL)
 	{
 		$owner      = array_shift($rawArgs);
 		$ownerClass = array_shift($rawArgs);

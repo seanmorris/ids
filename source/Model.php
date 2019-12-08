@@ -21,6 +21,7 @@ class Model
 		, $cache = []
 		, $idCache = []
 		, $instances = []
+		, $columnMeta = []
 	;
 
 	public function create()
@@ -51,8 +52,6 @@ class Model
 
 		static::clearCache();
 
-		\SeanMorris\Ids\Log::debug($curClass, $this);
-
 		$parentClass = get_parent_class($curClass);
 		$parentModel = NULL;
 
@@ -70,8 +69,6 @@ class Model
 		}
 
 		$columnsToWrappers = $curClass::getColumns('create', FALSE);
-
-		\SeanMorris\Ids\Log::debug($curClass, $columnsToWrappers, $this);
 
 		$wrappers = array_filter(
 			$columnsToWrappers
@@ -123,8 +120,6 @@ class Model
 						&& !$colVal['class']
 					)
 				){
-					\SeanMorris\Ids\Log::debug($colVal);
-
 					throw new \Exception(sprintf(
 						'Bad id and/or classname supplied for column %s.'
 						, $column
@@ -203,8 +198,6 @@ class Model
 
 		$id = $this->id;
 
-		\SeanMorris\Ids\Log::debug($this, $parentModel, $values);
-
 		$inserted = NULL;
 
 		if(!$parentClass || $parentClass::$table !== static::$table)
@@ -228,8 +221,6 @@ class Model
 
 			$saved = $curClass::loadOneFlatRecord($id);
 
-			\SeanMorris\Ids\Log::debug($saved);
-
 			if(!$saved)
 			{
 				return;
@@ -241,8 +232,6 @@ class Model
 		}
 
 		$reflection = new \ReflectionClass($curClass);
-
-		\SeanMorris\Ids\Log::debug($curClass, $this);
 
 		if($saved)
 		{
@@ -257,8 +246,6 @@ class Model
 				{
 					continue;
 				}
-
-				\SeanMorris\Ids\Log::debug([$property => $saved->$property]);
 
 				if($saved->$property == NULL && $curClass !== get_called_class())
 				{
@@ -285,11 +272,6 @@ class Model
 
 			if(isset($curClass::$hasMany[$property]) && is_array($value))
 			{
-				\SeanMorris\Ids\Log::debug(
-					'Storing relationships for ' . $property
-					, $this->{$property}
-				);
-
 				try
 				{
 					$this->storeRelationships($property, $this->{$property});
@@ -678,10 +660,6 @@ class Model
 
 		foreach(static::$cache as $class => &$cache)
 		{
-			\SeanMorris\Ids\Log::debug(sprintf(
-				'Static cache clearing for %s.'
-				, $class
-			));
 			if($descentants && is_subclass_of($class, get_called_class(), TRUE)
 				|| $class === get_called_class()
 			){
@@ -691,17 +669,9 @@ class Model
 
 		foreach(static::$idCache as $class => &$cache)
 		{
-			\SeanMorris\Ids\Log::debug(sprintf(
-				'ID Static cache clearing for %s.'
-				, $class
-			));
 			if($descentants && is_subclass_of($class, get_called_class(), TRUE)
 				|| $class === get_called_class()
 			){
-				\SeanMorris\Ids\Log::debug(sprintf(
-					'Static cache clearing for %s.'
-					, $class
-				));
 				$cache = [];
 			}
 		}
@@ -711,10 +681,6 @@ class Model
 			if($descentants && is_subclass_of($class, get_called_class(), TRUE)
 				|| $class === get_called_class()
 			){
-				\SeanMorris\Ids\Log::debug(sprintf(
-					'ID Static cache clearing for %s.'
-					, $class
-				));
 				$cache = [];
 			}
 		}
@@ -779,7 +745,7 @@ class Model
 			. '::'
 			. $name
 			. '--'
-			. md5(print_r($hashableArgs, 1));
+			. sha1(print_r($hashableArgs, 1));
 
 		$classCache =& self::$cache[$curClass];
 
@@ -1368,7 +1334,7 @@ class Model
 	{
 		list(,$subSkeleton) = static::subskeletonWithAlias($skeleton);
 
-		return $subSkeleton;
+		return $subSkeleton ?: [];
 	}
 
 	protected function consumeStatement($skeleton, $args = [], $rawArgs = [], $select = NULL)
@@ -1383,7 +1349,7 @@ class Model
 			}
 
 			$subSkeletonAlias = $select->tableAlias();
-			$subSkeleton      = $skeleton[$this->table()][$subSkeletonAlias];
+			$subSkeleton      = $skeleton[$select->table()][$subSkeletonAlias];
 		}
 		else
 		{
@@ -1993,7 +1959,13 @@ class Model
 	protected static function getColumns($type = null, $all = true)
 	{
 		$curClass = get_called_class();
-		$properties = $curClass::getProperties();
+
+		if(!isset(static::$columnMeta[$curClass]))
+		{
+			static::$columnMeta[$curClass] = $curClass::getProperties();
+		}
+
+		$properties = static::$columnMeta[$curClass];//$curClass::getProperties();
 
 		switch($type)
 		{
@@ -2249,8 +2221,16 @@ class Model
 							, 'id'  => $values->id
 						];
 					}
+					elseif($values instanceof $class)
+					{
+						if($values->save())
+						{
+							$this->{$property}[$delta] = $values->id;
 
-					if(isset($values['id']) && $values['id'])
+							$subModelsSubmitted = TRUE;
+						}
+					}
+					else if(is_array($values) && isset($values['id']) && $values['id'])
 					{
 						if(isset($values['class']) && $values['class']
 							&& is_subclass_of($values['class'], $propertyClass)
@@ -2265,11 +2245,7 @@ class Model
 							continue;
 						}
 
-						\SeanMorris\Ids\Log::debug('Using existing model', $subject, $values);
-
 						$subject->consume($values);
-
-						\SeanMorris\Ids\Log::debug('consumed', $subject, $values);
 
 						try
 						{
@@ -2285,9 +2261,9 @@ class Model
 
 						$subModelsSubmitted = TRUE;
 					}
-					else
+					elseif(is_array($values))
 					{
-						 if(!isset($values['class']) || !$values['class'])
+						if(!isset($values['class']) || !$values['class'])
 						 {
 						 	$values['class'] = $propertyClass;
 						 }
@@ -2584,7 +2560,9 @@ class Model
 		{
 			if($subjectRelationship)
 			{
-				yield $subjectRelationship->subject();
+				$this->{$column}[$subjectRelationship->delta] = $subjectRelationship->subject();
+
+				yield $this->{$column}[$subjectRelationship->delta];
 			}
 		}
 	}
