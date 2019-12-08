@@ -255,21 +255,31 @@ class ModelTest extends \UnitTestCase
 
 		\SeanMorris\Ids\Test\Model\Octopus::map(function($instance) use($testModulo){
 
-			$tentacleModulo = [
-				$instance->tentacleA->id % 8
-				, $instance->tentacleB->id % 8
-				, $instance->tentacleC->id % 8
-				, $instance->tentacleD->id % 8
-				, $instance->tentacleE->id % 8
-				, $instance->tentacleF->id % 8
-				, $instance->tentacleG->id % 8
-				, $instance->tentacleH->id % 8
+			$tentacleId= [
+				$instance->tentacleA->id
+				, $instance->tentacleB->id
+				, $instance->tentacleC->id
+				, $instance->tentacleD->id
+				, $instance->tentacleE->id
+				, $instance->tentacleF->id
+				, $instance->tentacleG->id
+				, $instance->tentacleH->id
 			];
 
 			foreach($testModulo as $i => $testModulus)
 			{
 				$this->assertTrue(
-					$testModulus === $tentacleModulo[$i]
+					$testModulus === ($tentacleId[$i]  % 8)
+					, 'Incorrect tentacle loaded.'
+				);
+
+				$this->assertTrue(
+					$tentacleId[$i] > ($instance->id-1) * 8
+					, 'Incorrect tentacle loaded.'
+				);
+
+				$this->assertTrue(
+					$tentacleId[$i] <= $instance->id * 8
 					, 'Incorrect tentacle loaded.'
 				);
 			}
