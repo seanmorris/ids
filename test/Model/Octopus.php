@@ -21,6 +21,19 @@ class Octopus extends \SeanMorris\Ids\Model
 	protected static
 		$table = 'Octopus'
 
+		, $byNull = [
+		    'with' => [
+		        'tentacleA'
+		        , 'tentacleB'
+		        , 'tentacleC'
+		        , 'tentacleD'
+		        , 'tentacleE'
+		        , 'tentacleF'
+		        , 'tentacleG'
+		        , 'tentacleH'
+		    ]
+		]
+
 		, $hasOne = [
 			'tentacleA' => 'SeanMorris\Ids\Test\Model\Tentacle'
 			, 'tentacleB' => 'SeanMorris\Ids\Test\Model\Tentacle'

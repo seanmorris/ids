@@ -158,8 +158,6 @@ class PackageTest extends \UnitTestCase
 
 	public function testDirectories()
 	{
-		global $composer;
-
 		$packageDir = $this->package->packageDir();
 		$localDir = $this->package->localDir();
 		$globalDir = $this->package->globalDir();

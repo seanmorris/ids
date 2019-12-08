@@ -153,7 +153,7 @@ class Model
 				{
 					$columnObject = new $columnClass;
 					$columnObject->consume($colVal);
-					// $columnObject = $columnClass::instantiate($colVal);
+
 					\SeanMorris\Ids\Log::debug(
 						$columnClass
 						, $colVal
@@ -248,21 +248,6 @@ class Model
 		{
 			foreach($saved as $property => $value)
 			{
-				// \SeanMorris\Ids\Log::debug(
-				// 	$curClass, $property, $value
-				// );
-				// if(!$reflection->hasProperty($property))
-				// {
-				// 	continue;
-				// }
-
-				// $reflectionProperty = $reflection->getProperty($property);
-
-				// if($reflectionProperty->class !== $curClass)
-				// {
-				// 	continue;
-				// }
-
 				if(isset($curClass::$hasOne[$property]))
 				{
 					continue;
@@ -296,13 +281,6 @@ class Model
 			if($reflectionProperty->class !== $curClass)
 			{
 				continue;
-			}
-
-			if(isset($curClass::$hasOne[$property]))
-			{
-				// var_dump($this->{$property});
-				//die;
-				//$this->storeRelationship($property, $this->{$property});
 			}
 
 			if(isset($curClass::$hasMany[$property]) && is_array($value))
@@ -400,57 +378,6 @@ class Model
 			if(is_array($colVal) && isset(static::$hasOne[$column]))
 			{
 				$colVal = $this->storeSubmodel($column, $colVal);
-				// $columnClass = static::$hasOne[$column];
-
-				// \SeanMorris\Ids\Log::debug($columnClass, $colVal);
-
-				// if(is_subclass_of($columnClass, $colVal['class']))
-				// {
-				// 	$colVal['class'] = $columnClass;
-				// }
-
-				// if(isset($colVal['id'])
-				// 	&& isset($colVal['class'])
-				// 	&& $colVal['class']
-				// 	&& (
-				// 		is_subclass_of($colVal['class'], $columnClass)
-				// 		|| $colVal['class'] == $columnClass
-				// 	)
-				// ){
-				// 	$columnClass = $colVal['class'];
-				// }
-				// else if(isset($colVal['class']) && $colVal['class'])
-				// {
-				// 	throw new \Exception(sprintf(
-				// 		'Bad classname supplied for column %s (%s).'
-				// 		, $column
-				// 		, isset($colVal['class'])
-				// 			? print_r($colVal['class'], true)
-				// 			: null
-				// 	));
-				// }
-
-				// if(is_array($colVal) && isset($colVal['id']))
-				// {
-				// 	if($columnObject = $columnClass::loadOneById($colVal['id']))
-				// 	{
-				// 		$columnObject->consume($colVal);
-
-				// 		$columnObject->save();
-
-				// 		\SeanMorris\Ids\Log::debug($columnObject);
-
-				// 		$colVal = $colVal['id'];
-				// 	}
-				// 	else
-				// 	{
-				// 		$colVal = NULL;
-				// 	}
-				// }
-				// else
-				// {
-				// 	// @todo Create new model based on input/classDef
-				// }
 			}
 			else if(is_array($colVal) && isset(static::$hasMany[$column]))
 			{
@@ -801,7 +728,6 @@ class Model
 
 			$position = 0;
 			$pageSize = 25;
-			$max      = FALSE;
 
 			$_args = $args;
 
@@ -854,8 +780,6 @@ class Model
 			. $name
 			. '--'
 			. md5(print_r($hashableArgs, 1));
-
-		// \SeanMorris\Ids\Log::debug(self::$cacheKey);
 
 		$classCache =& self::$cache[$curClass];
 
@@ -959,8 +883,6 @@ class Model
 			$select->limit($limit, $offset);
 		}
 
-		$gen = $select->generate();
-
 		$rawArgs = $args;
 
 		$args = array_map(
@@ -982,8 +904,10 @@ class Model
 				'Generating %s', $curClass
 			));
 
-			return function(...$overArgs) use($gen, $args, $rawArgs, $curClass, &$cache, &$idCache, $cacheHit, $def, $recs)
+			return function(...$overArgs) use($select, $args, $rawArgs, $curClass, &$cache, &$idCache, $cacheHit, $def, $recs)
 			{
+				$gen = $select->generate();
+
 				$overArgs = [];
 				$i = 0;
 
@@ -1015,7 +939,7 @@ class Model
 							continue;
 						}
 
-						$model = static::instantiate($skeleton, $args, $rawArgs);
+						$model = static::instantiate($skeleton, $args, $rawArgs, $select);
 
 						if(!$model)
 						{
@@ -1061,6 +985,8 @@ class Model
 
 		if(isset($def['type']) && $def['type'] == 'loadOne')
 		{
+			$gen = $select->generate();
+
 			\SeanMorris\Ids\Log::debug(sprintf(
 				'Loading one %s', get_called_class()
 			));
@@ -1094,7 +1020,7 @@ class Model
 					continue;
 				}
 
-				$model = static::instantiate($skeleton, $args, $rawArgs);
+				$model = static::instantiate($skeleton, $args, $rawArgs, $select);
 
 				if(!$model)
 				{
@@ -1119,14 +1045,6 @@ class Model
 				}
 
 				$cache[0] = $idCache[$model->id] = $model;
-				/*
-				if(isset(self::$instances[get_class($model)][$model->id]))
-				{
-					$existingModel = self::$instances[get_class($model)][$model->id];
-					$existingModel->consume($model->unconsume());
-					return $existingModel;
-				}
-				*/
 
 				return $model;
 			}
@@ -1138,6 +1056,8 @@ class Model
 
 		if(isset($def['type']) && $def['type'] == 'get')
 		{
+			$gen = $select->generate();
+
 			\SeanMorris\Ids\Log::debug(sprintf(
 				'Getting %s', get_called_class()
 			));
@@ -1160,7 +1080,7 @@ class Model
 					continue;
 				}
 
-				$model = static::instantiate($skeleton, $args, $rawArgs);
+				$model = static::instantiate($skeleton, $args, $rawArgs, $select);
 
 				if(!$model)
 				{
@@ -1213,8 +1133,10 @@ class Model
 
 		if(isset($def['type']) && $def['type'] == 'load')
 		{
-			return function(...$overArgs) use($gen, $args, $rawArgs, &$cache, &$idCache, $recs)
+			return function(...$overArgs) use($select, $args, $rawArgs, &$cache, &$idCache, $recs)
 			{
+				$gen = $select->generate();
+
 				\SeanMorris\Ids\Log::debug(sprintf(
 					'Loading %s', get_called_class()
 				));
@@ -1239,7 +1161,7 @@ class Model
 						continue;
 					}
 
-					$model = static::instantiate($skeleton, $args, $rawArgs);
+					$model = static::instantiate($skeleton, $args, $rawArgs, $select);
 
 					if(!$model)
 					{
@@ -1278,7 +1200,7 @@ class Model
 		));
 	}
 
-	protected static function instantiate($skeleton, $args = [], $rawArgs = [])
+	protected static function instantiate($skeleton, $args = [], $rawArgs = [], $select = NULL)
 	{
 		if(!isset($skeleton[static::$table]))
 		{
@@ -1311,7 +1233,7 @@ class Model
 
 		// set_time_limit(30);
 
-		$instance->consumeStatement($skeleton, $args, $rawArgs);
+		$instance->consumeStatement($skeleton, $args, $rawArgs, $select);
 
 		// set_time_limit($timelimit);
 
@@ -1325,7 +1247,6 @@ class Model
 		if(!$newSubjects)
 		{
 			$newSubjects = [];
-			// return;
 		}
 
 		\SeanMorris\Ids\Log::debug(sprintf(
@@ -1366,21 +1287,6 @@ class Model
 						continue;
 					}
 
-					// var_dump($subject);
-
-					// if(get_class($subject) !== $subjectClass)
-					// {
-					// 	throw new \Exception(sprintf(
-					// 		'%s::%s can store %s, but value at index %d is a %s.'
-					// 		, get_class($this)
-					// 		, $column
-					// 		, $subjectClass
-					// 		, $delta
-					// 		, get_class($subject)
-					// 	));
-					// 	continue;
-					// }
-
 					$relationshipClass = '\SeanMorris\Ids\Relationship';
 
 					if(static::$relationshipClass)
@@ -1419,17 +1325,8 @@ class Model
 
 					$relationship->save();
 				}
-
-				$newRelationships[] = $relationship;
 			}
 		}
-
-		$newRelationships = array_values($newRelationships);
-
-		// foreach($newRelationships as $delta => $newRel)
-		// {
-		// 	$newRel->save();
-		// }
 
 		foreach($oldRelationships as $oldRels)
 		{
@@ -1460,7 +1357,6 @@ class Model
 	{
 		if(!static::$table
 			|| !isset($skeleton[static::$table])
-			//&& is_array($skeleton[static::$table])
 		){
 			return [];
 		}
@@ -1470,17 +1366,32 @@ class Model
 
 	protected static function subSkeleton($skeleton)
 	{
-		list($alias, $subSkeleton) = static::subskeletonWithAlias($skeleton);
+		list(,$subSkeleton) = static::subskeletonWithAlias($skeleton);
 
 		return $subSkeleton;
 	}
 
-	protected function consumeStatement($skeleton, $args = [], $rawArgs = [])
+	protected function consumeStatement($skeleton, $args = [], $rawArgs = [], $select = NULL)
 	{
-		list(
-			$subSkeletonAlias
-			, $subSkeleton
-		) = static::subskeletonWithAlias($skeleton);
+		$joinMap = [];
+
+		if($select)
+		{
+			foreach($select->joins() as $join)
+			{
+				$joinMap[$join[1]] = $join[0]->tableAlias();
+			}
+
+			$subSkeletonAlias = $select->tableAlias();
+			$subSkeleton      = $skeleton[$this->table()][$subSkeletonAlias];
+		}
+		else
+		{
+			list(
+				$subSkeletonAlias
+				, $subSkeleton
+			) = static::subskeletonWithAlias($skeleton);
+		}
 
 		$parentClass = get_parent_class(get_called_class());
 
@@ -1547,22 +1458,21 @@ class Model
 
 						if($_subjectClass::$table === $subjectClass::$table)
 						{
-							list(
-								$_subSkeletonAlias
-								, $_subSkeleton
-							) = $parentClass::subskeletonWithAlias($skeleton);
+							list($_subSkeletonAlias) = $parentClass::subskeletonWithAlias($skeleton);
 						}
 					}
 
-					$subSkeletonAliasChain = explode('__', $_subSkeletonAlias);
+					$subSkeletonKey = $joinMap[$property];
 
-					$subSkeletonKey = array_pop($subSkeletonAliasChain)
-						. '_'
-						. $property
-						. '__'
-						. $subjectClass::$table
-						. '_0'
-					;
+// 					$subSkeletonAliasChain = explode('__', $_subSkeletonAlias);
+
+// 					$subSkeletonKey = array_pop($subSkeletonAliasChain)
+// 						. '_'
+// 						. $property
+// 						. '__'
+// 						. $subjectClass::$table
+// 						. '_0'
+// 					;
 
 					\SeanMorris\Ids\Log::debug($_subSkeletonAlias, $subSkeletonKey, $subSkeletons);
 
@@ -1584,7 +1494,6 @@ class Model
 							sprintf('Able to preload %s object', $subjectClass)
 							, $subSkeletonKey
 							, $subSkeletons
-							// , $skeleton[$subjectClass::$table]
 						);
 
 						$subSkeletonClean = [];
@@ -1627,9 +1536,7 @@ class Model
 
 	protected static function resolveDef($name, &$args = null)
 	{
-		// \SeanMorris\Ids\Log::debug("MODEL RESOLVEDEF\n");
 		$type = NULL;
-		//$type = 'generate';
 		$flat = $subs = $recs = $cursor = $paged = FALSE;
 
 		$originalName = $name;
@@ -1703,7 +1610,7 @@ class Model
 				{
 					$subs = TRUE;
 				}
-				if(strtolower($matchB[3]) == 'record' || strtolower($matchB[3]) == 'records')
+				if(strtolower($matchB[3]) == 'record' || strtolo[3] == 'records')
 				{
 					$recs = TRUE;
 				}
@@ -1713,19 +1620,6 @@ class Model
 			$cursor = FALSE;
 			$name   = NULL;
 		}
-
-// 		if($name && $recs)
-// 		{
-// 			throw new \Exception(sprintf(
-// 				"'%s' is not a valid selector for '%s'.
-// \"%s\"\t%d\t%d"
-// 				, $originalName
-// 				, get_called_class()
-// 				, $name
-// 				, (bool)$name
-// 				, $recs
-// 			));
-// 		}
 
 		$def = [
 			'name'        => $name
@@ -1746,11 +1640,6 @@ class Model
 		{
 			try
 			{
-				/*\SeanMorris\Ids\Log::debug(
-					"Class/Prop"
-					, $class
-					, $name
-				);*/
 				$property = new \ReflectionProperty($class, $name);
 			}
 			catch(\ReflectionException $exception)
@@ -1794,17 +1683,6 @@ class Model
 			$class = $parentClass;
 		}
 
-		if(!static::hasSelector($name))
-		{
-			// throw new \Exception(sprintf(
-			// 	'%s is not a valid selector for %s'
-			// 	, $originalName
-			// 	, get_called_class()
-			// ));
-		}
-
-		// \SeanMorris\Ids\Log::debug( "MODEL RESOLVEDEF END\n" );
-		// \SeanMorris\Ids\Log::debug($def);
 		return $def;
 	}
 
@@ -1861,20 +1739,6 @@ class Model
 			$selectDef['flat'] = $flat;
 		}
 
-		// \SeanMorris\Ids\Log::debug(
-		// 	'Resolved select def'
-		// 	, $selectDefName
-		// 	, $selectDef
-		// 	, 'for'
-		// 	, get_called_class()
-		// 	, 'of type'
-		// 	, isset($def['type'])
-		// 		? $def['type']
-		// 		: 'generate'
-		// 	, 'Superior def:'
-		// 	, $superior
-		// );
-
 		$where = [];
 		$order = [];
 		$index = [];
@@ -1916,12 +1780,8 @@ class Model
 			$select->group('id');
 		}
 
-		// \SeanMorris\Ids\Log::debug($selectDef);
-
 		if(!$selectDef['flat'] && isset($selectDef['join']) && is_array($selectDef['join']))
 		{
-			// \SeanMorris\Ids\Log::debug($called, $selectDef['join']);
-
 			foreach($selectDef['join'] as $joinClass => $join)
 			{
 				$defName = 'loadBy'.ucwords($join['by']);
@@ -1935,6 +1795,12 @@ class Model
 		{
 			foreach($selectDef['with'] as $childProperty => $joinBy)
 			{
+				if(is_numeric($childProperty))
+				{
+					$childProperty = $joinBy;
+					$joinBy        = 'byNull';
+				}
+
 				if(isset(static::$hasOne[$childProperty]))
 				{
 					$joinClass = $topClass::$hasOne[$childProperty];
@@ -1965,19 +1831,13 @@ class Model
 					array_unshift($args, $joinBy);
 					array_unshift($args, get_called_class());
 
-					//$select->assemble();
-
 					$subSelect = $relationshipClass::selectStatement($defName, $select, $args, $table);
-
-					//\SeanMorris\Ids\Log::debug($subSelect);
 
 					$select->join(
 						$subSelect
 						, 'id'
 						, 'ownerId'
 					);
-
-					//\SeanMorris\Ids\Log::debug($subSelect);
 				}
 				else
 				{
@@ -2005,11 +1865,8 @@ class Model
 			$parentClass = get_parent_class($parentClass);
 		}
 
-		// var_dump($parentClass, PHP_EOL . PHP_EOL);
-
 		if($parentClass && $parentClass::$table)
 		{
-			// var_dump('!!!!');
 			$selectDefName = is_array($selectDefName)
 				? ($selectDefName['name'] ?? $selectDefName)
 				: $selectDefName;
@@ -2086,10 +1943,6 @@ class Model
 					$select->conditions([[
 						'class' => $classesString, 'IN'
 					]]);
-
-					// $select->conditions([[
-					// 	'class' => sprintf('"%s"', addslashes($topClass))
-					// ]]);
 				}
 			}
 		}
@@ -2140,9 +1993,6 @@ class Model
 	protected static function getColumns($type = null, $all = true)
 	{
 		$curClass = get_called_class();
-
-		// \SeanMorris\Ids\Log::debug($curClass);
-
 		$properties = $curClass::getProperties();
 
 		switch($type)
@@ -2166,12 +2016,6 @@ class Model
 			$nonTableClasses = [];
 			while($class)
 			{
-				$classTableProperty = new \ReflectionProperty($class, 'table');
-				// \SeanMorris\Ids\Log::debug($class, $classTableProperty);
-				/*if($class::$table === NULL
-					|| $classTableProperty->class !== $class
-					|| $curClass == $class
-				){*/
 				if($class::$table === static::$table || !$class::$table)
 				{
 					$nonTableClasses[] = $class;
@@ -2183,8 +2027,6 @@ class Model
 
 				$class = get_parent_class($class);
 			}
-
-			// \SeanMorris\Ids\Log::debug($curClass, $nonTableClasses);
 		}
 
 		foreach($properties as $property)
@@ -2195,8 +2037,6 @@ class Model
 			}
 
 			$reflectionProperty = new \ReflectionProperty($curClass, $property);
-
-			//\SeanMorris\Ids\Log::debug($curClass, $property, $reflectionProperty);
 
 			if(!$all && !in_array($reflectionProperty->class, $nonTableClasses))
 			{
@@ -2494,8 +2334,6 @@ class Model
 			}
 		}
 
-		// print_r($this);
-
 		static::afterConsume($this, $skeleton);
 	}
 
@@ -2556,12 +2394,8 @@ class Model
 			$skeleton[$property] = $this->$property;
 		}
 
-		//\SeanMorris\Ids\Log::debug($children);
-
 		if($children && $children > 0)
 		{
-			//\SeanMorris\Ids\Log::debug(static::$hasMany);
-
 			foreach(static::$hasMany as $property => $class)
 			{
 				$subjects = $this->getSubjects($property);
@@ -2591,9 +2425,6 @@ class Model
 				$skeleton[$property] = $subject->unconsume($children -1);
 			}
 		}
-
-		// \SeanMorris\Ids\Log::debug($skeleton);
-		// \SeanMorris\Ids\Log::trace($skeleton);
 
 		return $skeleton;
 	}
@@ -2686,8 +2517,6 @@ class Model
 
 	public static function getSubjectClass($column)
 	{
-		// \SeanMorris\Ids\Log::debug(get_called_class(), $column);
-
 		$class = null;
 
 		if(isset(static::$hasOne[$column]))
@@ -2796,8 +2625,6 @@ class Model
 
 	public function genOwnerRelationships()
 	{
-		$class = get_called_class();
-
 		$relationshipClass = '\SeanMorris\Ids\Relationship';
 
 		if(static::$relationshipClass)

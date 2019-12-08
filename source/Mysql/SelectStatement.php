@@ -70,8 +70,6 @@ class SelectStatement extends WhereStatement
 
 	public function aliasColumns()
 	{
-		$alias = $this->alias;
-
 		return array_map(
 			function($column)
 			{
@@ -430,12 +428,6 @@ class SelectStatement extends WhereStatement
 
 		$parentAliases = NULL;
 		$current       = $this;
-		/*
-		while($parent = $current->superior)
-		{
-
-		}
-		*/
 
 		$join->alias = $join->master->aliasTableName(
 			$join->table
@@ -478,8 +470,6 @@ class SelectStatement extends WhereStatement
 
 	protected function aliasTableName($tableName, $select = NULL, $tag = NULL)
 	{
-		$this->aliasedSelects = [];
-
 		if(FALSE !== $index = array_search($select, $this->aliasedSelects))
 		{
 			return $tableName . '_' . $index;
@@ -502,11 +492,6 @@ class SelectStatement extends WhereStatement
 		}
 
 		$this->tableAliases[$alias] = $tableName;
-
-		if($select)
-		{
-			$aliasedSelects[] = $select;
-		}
 
 		return $alias;
 	}

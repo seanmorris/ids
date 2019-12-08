@@ -124,9 +124,6 @@ class Log
 		global $switches;
 		$output = null;
 
-		$logPackages = (array) Settings::read('logPackages');
-		$position    = static::position(2);
-
 		$level = 0;
 
 		if(isset(static::$levels[$levelString]))
@@ -134,7 +131,7 @@ class Log
 			$level = static::$levels[$levelString];
 		}
 
-		$logBlob = static::logBlob(0, $level < static::$levels['warn']);
+		$logPackages = (array) Settings::read('logPackages');
 
 		if(($level <= static::$levels['warn']
 			&& php_sapi_name() == 'cli'
@@ -203,6 +200,10 @@ class Log
 				return;
 			}
 		}
+
+		$position    = static::position(2);
+
+		$logBlob = static::logBlob(0, $level < static::$levels['warn']);
 
 		static::startLog($maxLevel);
 
@@ -624,7 +625,7 @@ class Log
 
 	public static function colorOutput($on = true)
 	{
-		$colorOutput = !!$on;
+		static::$colorOutput = !!$on;
 	}
 
 	public static function clear()

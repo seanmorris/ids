@@ -17,8 +17,6 @@ abstract class WhereStatement extends Statement
 	{
 		$queryStartTime = microtime(TRUE);
 
-		$argsUsed = [];
-
 		if(isset($args[0]) && is_array($args[0]))
 		{
 			$queryObject = $this->prepare($args[0]);
@@ -31,8 +29,6 @@ abstract class WhereStatement extends Statement
 				{
 					continue;
 				}
-
-				$argsUsed[] = $argName;
 
 				$argsDist[] = $args[0][$argName];
 			}

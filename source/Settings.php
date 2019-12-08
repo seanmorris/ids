@@ -4,7 +4,9 @@ class Settings
 {
 	protected static
 		$settings
+		, $file
 		, $env
+		, $cache
 		, $currentSite
 		, $currentPort
 		, $callbacks
@@ -14,6 +16,11 @@ class Settings
 
 	public static function read(...$names)
 	{
+		if(isset($cache[sha1(print_r($names, 1))]))
+		{
+			return $cache[sha1(print_r($names, 1))];
+		}
+
 		$nameList = $names;
 
 		$scoredName = implode('_', $names);
@@ -61,11 +68,18 @@ class Settings
 			$settings = $settings->$name;
 		}
 
+		$cache[md5sha1(print_r($names, 1))] = $settings;
+
 		return $settings;
 	}
 
 	public static function load($hostname = NULL, $port = NULL)
 	{
+		if(static::$settings)
+		{
+			return static::$settings;
+		}
+
 		if(!static::$currentSite || static::$currentSite != $hostname)
 		{
 			if(isset($_SERVER['HTTP_HOST']))
@@ -99,7 +113,7 @@ class Settings
 
 			$settingsFile = static::findSettingsFile($hostname, $port);
 
-			if(file_exists($settingsFile))
+			if(!static::$settings && file_exists($settingsFile))
 			{
 				static::$currentSite = $hostname;
 				static::$currentPort = $port;
@@ -130,6 +144,13 @@ class Settings
 
 	public static function findEnvVarName($name, $host = NULL, $port = NULL, $prefix = FALSE)
 	{
+		$cacheKey = sha1(print_r(func_get_args(), 1));
+
+		if(isset(static::$cache[$cacheKey]))
+		{
+			return static::$cache[$cacheKey];
+		}
+
 		$env = static::getenv();
 
 		[$name, $host] = preg_replace(
@@ -166,7 +187,7 @@ class Settings
 				}
 			}
 
-			return $found;
+			return static::$cache[$cacheKey] = $found;
 		}
 	}
 
@@ -197,6 +218,11 @@ class Settings
 
 	public static function findSettingsFile($hostname, $port)
 	{
+		if(isset(static::$file))
+		{
+			return static::$file;
+		}
+
 		global $switches;
 
 		$rootPackage = Package::getRoot();
@@ -232,15 +258,11 @@ class Settings
 			, ';'
 		];
 
-		$checked = [];
-
 		foreach ($filenames as $filename)
 		{
 			foreach($settingsFileExtensions as $extension)
 			{
 				$filepath = sprintf($settingsFilenameFormat, $filename, $extension);
-
-				$checked[] = $filepath;
 
 				if(file_exists($filepath))
 				{
@@ -252,12 +274,12 @@ class Settings
 						));
 					}
 
-					return $filepath;
+					return static::$file = $filepath;
 				}
 			}
 		}
 
-		return FALSE;
+		return static::$file = FALSE;
 	}
 
 	public static function register(...$name)

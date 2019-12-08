@@ -35,9 +35,9 @@ RUN ln -s /app/source/Idilic/idilic /usr/local/bin/idilic
 
 WORKDIR /app
 
-CMD ["-d=;", "info"]
-
 ENTRYPOINT ["idilic"]
+
+CMD ["-d=;", "info"]
 
 FROM base as dev
 

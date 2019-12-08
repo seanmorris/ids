@@ -4,8 +4,6 @@ use \SeanMorris\Ids\Path;
 use \SeanMorris\Ids\Router;
 use \SeanMorris\Ids\Idilic\Route\RootRoute;
 
-ini_set('display_errors', TRUE);
-
 array_shift($argv);
 
 $requestProto = new stdClass;

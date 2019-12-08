@@ -106,5 +106,5 @@ run:
 test:
 	echo ${ENV};
 	@ make --no-print-directory run \
-		TARGET=${TARGET} CMD="idilic runTests SeanMorris/Ids" \
+		TARGET=${TARGET} CMD="idilic SeanMorris/Ids runTests SeanMorris/Ids" \
 		
