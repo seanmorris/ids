@@ -1428,7 +1428,12 @@ class Model
 						}
 					}
 
-					$subSkeletonKey = $joinMap[$property];
+					$subSkeletonKey = FALSE;
+
+					if(isset($joinMap[$property]))
+					{
+					    $subSkeletonKey = $joinMap[$property];
+					}
 
 // 					$subSkeletonAliasChain = explode('__', $_subSkeletonAlias);
 

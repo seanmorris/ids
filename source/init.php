@@ -194,8 +194,6 @@ register_shutdown_function(function() {
 
 set_exception_handler(function($exception)
 {
-	\SeanMorris\Ids\Log::logException($exception);
-
 	$renderedException = \SeanMorris\Ids\Log::renderException($exception, FALSE);
 
 	global $switches;
@@ -210,6 +208,8 @@ set_exception_handler(function($exception)
 		header('Content-type: text/plain');
 		print $renderedException;
 	}
+
+	\SeanMorris\Ids\Log::logException($exception);
 
 	if(function_exists('xdebug_break'))
 	{

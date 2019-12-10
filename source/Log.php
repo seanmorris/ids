@@ -214,7 +214,7 @@ class Log
 
 		if(!static::$censor)
 		{
-			static::$censor = Settings::read('logCensor');
+			static::$censor = (array) Settings::read('logCensor');
 		}
 
 		$position    = static::position(2);
@@ -592,7 +592,7 @@ class Log
 				$_val = array_map(
 					function($k, $v)
 					{
-						if($k && Settings::read(static::$censor[$k]))
+						if(isset(static::$censor[$k]) && Settings::read(static::$censor[$k]))
 						{
 							return '* censored *';
 						}
