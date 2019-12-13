@@ -1285,12 +1285,11 @@ class Model
 			{
 				$relationship = array_shift($oldRelationships[$subjectId]);
 
-				if($relationship->delta != $delta)
-				{
-					$relationship->delta = $delta;
+				$newRelationships[] = $relationship;
 
-					$relationship->save();
-				}
+				$relationship->delta = $delta;
+
+				$relationship->save();
 			}
 		}
 

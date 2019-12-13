@@ -840,7 +840,7 @@ class Log
 				{
 					$paramName = $paramNames[$a] ?? NULL;
 
-					if($paramName && static::$censor[$paramName])
+					if($paramName && (static::$censor[$paramName] ?? 0))
 					{
 						$renderedArg = '* censored *';
 					}

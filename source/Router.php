@@ -261,7 +261,7 @@ class Router
 					{
 						$result = $routes->_dynamic($this);
 					}
-					
+
 					if($result === false && is_callable([$routes, '_notFound']))
 					{
 						$this->match = false;
@@ -320,7 +320,7 @@ class Router
 				, get_class($e)
 			), $e);
 
-			\SeanMorris\Ids\Log::logException($e, TRUE);
+// 			\SeanMorris\Ids\Log::logException($e, TRUE);
 
 			$result = $e->getMessage();
 
@@ -337,7 +337,7 @@ class Router
 					$subRequest = new Request(['uri' => $e->getMessage()]);
 
 					$router = new static($subRequest, $routes, $this);
-					
+
 					return $router->route();
 				}
 				else
