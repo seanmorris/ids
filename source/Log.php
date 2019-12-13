@@ -498,7 +498,7 @@ class Log
 
 				foreach($relflectedProps as $relflectedProp)
 				{
-					if(static::$censor[$relflectedProp->name])
+					if(isset(static::$censor[$relflectedProp->name]) && static::$censor[$relflectedProp->name])
 					{
 						$_val[$k] = '* censored *';
 						continue;
