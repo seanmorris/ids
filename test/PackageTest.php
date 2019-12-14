@@ -42,8 +42,6 @@ class PackageTest extends \UnitTestCase
 
 	public function testApplySchema()
 	{
-
-
 		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
 			$this->package->packageDir()
 			. 'test/data/testApplySchema.json'

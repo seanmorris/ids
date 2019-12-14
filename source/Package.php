@@ -1,7 +1,5 @@
 <?php
-
 namespace SeanMorris\Ids;
-
 class Package
 {
 	protected $folder, $packageName;
@@ -89,16 +87,15 @@ class Package
 				$this->packageName = $packageName;
 				$this->folder = $packages[$packageDir];
 			}
+			else if(isset($packages[strtolower($packageDir)]))
+			{
+				$this->packageName = $packageName;
+				$this->folder = $packages[strtolower($packageDir)];
+			}
 			else
-				if(isset($packages[strtolower($packageDir)]))
-				{
-					$this->packageName = $packageName;
-					$this->folder = $packages[strtolower($packageDir)];
-				}
-				else
-				{
-					throw new \Exception('No Package defined for ' . $package);
-				}
+			{
+				throw new \Exception('No Package defined for ' . $package);
+			}
 		}
 	}
 
@@ -197,16 +194,14 @@ class Package
 			return static::$directories['public'];
 		}
 
-		if(! $publicDir = Settings::read('public'))
+		if(!$publicDir = Settings::read('public'))
 		{
 			return;
 		}
 
-		static::$directories['public'] = new \SeanMorris\Ids\Disk\Directory(
+		return static::$directories['public'] = new \SeanMorris\Ids\Disk\Directory(
 			$publicDir . '/' . $this->dir($this->packageSpace())
 		);
-
-		return static::$directories['public'];
 	}
 
 	public function globalDir()
@@ -278,7 +273,8 @@ class Package
 		if(! isset($_SERVER['HTTP_HOST']) && php_sapi_name() == 'cli')
 		{
 			throw new \Exception(
-				'Please set a site with the "-d" switch or use .idilicProfile.json');
+				'Please set a site with the "-d" switch or use .idilicProfile.json'
+			);
 		}
 
 		$hostname = NULL;
@@ -313,12 +309,13 @@ class Package
 		{
 			$dirPath = sprintf('%ssites/%s', $this->localDir(), $fileName);
 
-			static::$directories['localSite'] = new \SeanMorris\Ids\Disk\Directory(
-				$dirPath);
+			$maybeDir = new \SeanMorris\Ids\Disk\Directory(
+				$dirPath
+			);
 
-			if(static::$directories['localSite']->check())
+			if($maybeDir->check())
 			{
-				return static::$directories['localSite'];
+				return static::$directories['localSite'] = $maybeDir;
 			}
 		}
 	}
@@ -333,7 +330,8 @@ class Package
 		if(! isset($_SERVER['HTTP_HOST']))
 		{
 			throw new \Exception(
-				'$_SERVER["HTTP_HOST"] is not defined. Please set a site with the "-d" switch or use .idilicProfile.json');
+				'$_SERVER["HTTP_HOST"] is not defined. Please set a site with the "-d" switch or use .idilicProfile.json'
+			);
 		}
 
 		return static::$directories['globalSite'] = new \SeanMorris\Ids\Disk\Directory(
@@ -351,10 +349,10 @@ class Package
 
 		if(class_exists($assetManager))
 		{
-			return new $assetManager();
+			return new $assetManager;
 		}
 
-		return new $assetManager();
+		return new $assetManager;
 	}
 
 	public function setVar($var, $val, $type = 'local')
@@ -506,7 +504,8 @@ class Package
 		if(! $schema)
 		{
 			throw new \Exception(
-				sprintf('Schema file invalid at %s', $schemaFilename));
+				sprintf('Schema file invalid at %s', $schemaFilename)
+			);
 		}
 
 		if(! isset($schema->revisions))
@@ -534,8 +533,7 @@ class Package
 
 			foreach($obj2 as $prop =>$val)
 			{
-				if(
-					isset($obj1->$prop)
+				if(isset($obj1->$prop)
 					&& is_object($obj1->$prop)
 					&& is_object($obj2->$prop)
 				){
@@ -645,17 +643,17 @@ class Package
 
 				if(! isset($storedSchema->$table))
 				{
-					$storedSchema->$table = new \StdClass();
+					$storedSchema->$table = new \StdClass;
 				}
 
 				if(! isset($storedSchema->$table->fields))
 				{
-					$storedSchema->$table->fields = new \StdClass();
+					$storedSchema->$table->fields = new \StdClass;
 				}
 
 				if(! isset($storedSchema->$table->keys))
 				{
-					$storedSchema->$table->keys = new \StdClass();
+					$storedSchema->$table->keys = new \StdClass;
 				}
 
 				$queryString = 'SHOW FULL COLUMNS FROM ' . $table;
@@ -667,8 +665,7 @@ class Package
 				{
 					unset($column->Privileges);
 
-					if(
-						isset($storedSchema->$table->fields->{$column->Field})
+					if(isset($storedSchema->$table->fields->{$column->Field})
 						&& $storedSchema->$table->fields->{$column->Field} == $column
 					){
 						continue;
@@ -676,12 +673,12 @@ class Package
 
 					if(! isset($changes->$table))
 					{
-						$changes->$table = new \StdClass();
+						$changes->$table = new \StdClass;
 					}
 
 					if(! isset($changes->$table->fields))
 					{
-						$changes->$table->fields = new \StdClass();
+						$changes->$table->fields = new \StdClass;
 					}
 
 					$changes->$table->fields->{$column->Field} = $column;
@@ -715,8 +712,7 @@ class Package
 						}
 					}
 
-					if(
-						isset($storedSchema->$table->keys->{$index->Key_name})
+					if(isset($storedSchema->$table->keys->{$index->Key_name})
 						&& isset($storedSchema->$table->keys->{$index->Key_name}->{$index->Seq_in_index})
 						&& $storedSchema->$table->keys->{$index->Key_name}->{$index->Seq_in_index} ==$index
 					){
@@ -725,17 +721,17 @@ class Package
 
 					if(! isset($changes->$table))
 					{
-						$changes->$table = new \StdClass();
+						$changes->$table = new \StdClass;
 					}
 
 					if(! isset($changes->$table->keys))
 					{
-						$changes->$table->keys = new \StdClass();
+						$changes->$table->keys = new \StdClass;
 					}
 
 					if(! isset($changes->$table->keys->{$index->Key_name}))
 					{
-						$changes->$table->keys->{$index->Key_name} = new \StdClass();
+						$changes->$table->keys->{$index->Key_name} = new \StdClass;
 					}
 
 					$changes->$table->keys->{$index->Key_name}->{$index->Seq_in_index} = $index;
@@ -784,8 +780,7 @@ class Package
 					while($column = $query->fetchObject())
 					{
 						\SeanMorris\Ids\Log::query('Loaded', $column);
-						if(! isset(
-							$exportTables->$table->fields->{$column->Field}))
+						if(! isset($exportTables->$table->fields->{$column->Field}))
 						{
 							if(! isset($exportTables->$table))
 							{
@@ -812,21 +807,17 @@ class Package
 
 						unset($column->Privileges);
 						unset($column->Key);
-						unset(
-							$exportTables->$table->fields->{$column->Field}->Key);
+						unset($exportTables->$table->fields->{$column->Field}->Key);
 
-						if(
-							$column ==
-							$exportTables->$table->fields->{$column->Field})
+						if($column == $exportTables->$table->fields->{$column->Field})
 						{
-							unset(
-								$exportTables->$table->fields->{$column->Field});
+							unset($exportTables->$table->fields->{$column->Field});
 							continue;
 						}
 
 						$queries[] = sprintf(
-							"ALTER TABLE %s MODIFY %s %s %s %s %s COMMENT '%s'",
-							$table
+							"ALTER TABLE %s MODIFY %s %s %s %s %s COMMENT '%s'"
+							, $table
 							, $exportTables->$table->fields->{$column->Field}->Field
 							, $exportTables->$table->fields->{$column->Field}->Type
 
@@ -856,8 +847,7 @@ class Package
 					while($index = $query->fetchObject())
 					{
 						\SeanMorris\Ids\Log::query('Loaded', $index);
-						if(! isset(
-							$exportTables->$table->keys->{$index->Key_name}))
+						if(! isset($exportTables->$table->keys->{$index->Key_name}))
 						{
 							continue;
 						}
@@ -883,9 +873,7 @@ class Package
 
 						if($index == $arKey[$index->Seq_in_index])
 						{
-							unset(
-								$exportTables->$table->keys->{$index->Key_name}
-							);
+							unset($exportTables->$table->keys->{$index->Key_name});
 
 							continue;
 						}
@@ -927,15 +915,18 @@ class Package
 						else
 						{
 							$queries[] = sprintf(
-								"ALTER TABLE `%s` DROP KEY %s;",
-								$table,
-								$index->Key_name);
+								"ALTER TABLE `%s` DROP KEY %s;"
+								, $table
+								, $index->Key_name
+							);
+
 							$queries[] = sprintf(
-								"ALTER TABLE `%s` ADD INDEX `%s` (`%s`) COMMENT '%s';",
-								$table,
-								$index->Key_name,
-								$columns,
-								$arKey[$index->Seq_in_index]->Index_comment);
+								"ALTER TABLE `%s` ADD INDEX `%s` (`%s`) COMMENT '%s';"
+								, $table
+								, $index->Key_name
+								, $columns
+								, $arKey[$index->Seq_in_index]->Index_comment
+							);
 						}
 
 						unset($exportTables->$table->keys->{$index->Key_name});
@@ -946,32 +937,33 @@ class Package
 				{
 					$createColumn = [];
 
-					if(
-						! isset($exportTables->$table) ||
-						! isset($exportTables->$table->fields))
+					if(!isset($exportTables->$table) || !isset($exportTables->$table->fields))
 					{
 						continue;
 					}
 
 					foreach($exportTables->$table->fields as $field)
 					{
-						if(! isset(
-							$exportTables->$table->fields->{$field->Field}))
+						if(! isset($exportTables->$table->fields->{$field->Field}))
 						{
 							continue;
 						}
 
 						$createColumn[] = sprintf(
-							"\t`%s` %s %s %s %s COMMENT '%s'",
-							$exportTables->$table->fields->{$field->Field}->Field,
-							$exportTables->$table->fields->{$field->Field}->Type,
-							$exportTables->$table->fields->{$field->Field}->Null ==
-							'YES' ? 'NULL' : 'NOT NULL',
-							$exportTables->$table->fields->{$field->Field}->Extra ==
-							'auto_increment' ? 'auto_increment' : NULL,
-							$exportTables->$table->fields->{$field->Field}->Collation ? 'COLLATE ' .
-							$exportTables->$table->fields->{$field->Field}->Collation : NULL,
-							$exportTables->$table->fields->{$field->Field}->Comment);
+							"\t`%s` %s %s %s %s COMMENT '%s'"
+							, $exportTables->$table->fields->{$field->Field}->Field
+							, $exportTables->$table->fields->{$field->Field}->Type
+							, $exportTables->$table->fields->{$field->Field}->Null == 'YES'
+								? 'NULL'
+								: 'NOT NULL'
+							, $exportTables->$table->fields->{$field->Field}->Extra == 'auto_increment'
+								? 'auto_increment'
+								: NULL
+							, $exportTables->$table->fields->{$field->Field}->Collation
+								? 'COLLATE ' . $exportTables->$table->fields->{$field->Field}->Collation
+								: NULL
+							, $exportTables->$table->fields->{$field->Field}->Comment
+						);
 					}
 
 					$createIndex = [];
@@ -988,56 +980,63 @@ class Package
 							if($keyName == 'PRIMARY')
 							{
 								$createIndex[] = sprintf(
-									"\tPRIMARY KEY (`%s`)",
-									$columns);
+									"\tPRIMARY KEY (`%s`)"
+									, $columns
+								);
 
 								continue;
 							}
 							else if($key[1]->Non_unique == 0)
 							{
 								$createIndex[] = sprintf(
-									"\tUNIQUE KEY `%s` (`%s`)",
-									$key[1]->Key_name,
-									$columns);
+									"\tUNIQUE KEY `%s` (`%s`)"
+									, $key[1]->Key_name
+									, $columns
+								);
 
 								continue;
 							}
 							else
 							{
 								$createIndex[] = sprintf(
-									"\tKEY `%s` (`%s`)",
-									$key[1]->Key_name,
-									$columns);
+									"\tKEY `%s` (`%s`)"
+									, $key[1]->Key_name
+									, $columns
+								);
 							}
 						}
 					}
 
 					$queries[] = sprintf(
-						"CREATE TABLE %s(\n%s\n);",
-						$table,
-						implode(
-							',' . PHP_EOL,
-							array_merge($createColumn, $createIndex)));
+						"CREATE TABLE %s(\n%s\n);"
+						, $table
+						, implode(
+							',' . PHP_EOL
+							, array_merge($createColumn, $createIndex)
+						)
+					);
 				}
 				else
 				{
 					foreach($exportTables->$table->fields as $field)
 					{
-						if(! isset(
-							$exportTables->$table->fields->{$field->Field}))
+						if(! isset($exportTables->$table->fields->{$field->Field}))
 						{
 							continue;
 						}
 
 						$queries[$field->Field] = sprintf(
-							'ALTER TABLE %s ADD COLUMN %s %s %s %s',
-							$table,
-							$exportTables->$table->fields->{$field->Field}->Field,
-							$exportTables->$table->fields->{$field->Field}->Type,
-							$exportTables->$table->fields->{$field->Field}->Null ==
-							'YES' ? 'NULL' : 'NOT NULL',
-							$exportTables->$table->fields->{$field->Field}->Extra ==
-							'auto_increment' ? 'auto_increment PRIMARY KEY' : NULL);
+							'ALTER TABLE %s ADD COLUMN %s %s %s %s'
+							, $table
+							, $exportTables->$table->fields->{$field->Field}->Field
+							, $exportTables->$table->fields->{$field->Field}->Type
+							, $exportTables->$table->fields->{$field->Field}->Null == 'YES'
+								? 'NULL'
+								: 'NOT NULL'
+							, $exportTables->$table->fields->{$field->Field}->Extra == 'auto_increment'
+								? 'auto_increment PRIMARY KEY'
+								: NULL
+						);
 					}
 
 					if(isset($exportTables->$table->keys))
@@ -1162,7 +1161,7 @@ class Package
 	{
 		while($skeleton = array_shift($args))
 		{
-			$model = new $modelClass();
+			$model = new $modelClass;
 			$model->consume($skeleton);
 
 			if(isset($skeleton['id']))

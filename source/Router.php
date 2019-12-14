@@ -37,7 +37,7 @@ class Router
 
 		if(is_callable([$routes, '_init']))
 		{
-		    $routes->_init($this);
+			$routes->_init($this);
 		}
 	}
 
@@ -319,8 +319,6 @@ class Router
 				'Caught HttpException of type %s'
 				, get_class($e)
 			), $e);
-
-// 			\SeanMorris\Ids\Log::logException($e, TRUE);
 
 			$result = $e->getMessage();
 
