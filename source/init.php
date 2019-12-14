@@ -133,33 +133,30 @@ if(!file_exists($errorPath))
 ini_set("error_log", $errorPath);
 
 register_shutdown_function(function() {
-	$error = error_get_last();
+	if($error = error_get_last())
+	{
+		if ($error['type'] === E_COMPILE_ERROR)
+		{
+			\SeanMorris\Ids\Log::error(
+				\SeanMorris\Ids\Log::color('COMPILER ERROR OCCURRED.', 'black', 'red')
+				, (object) $error
+				);
+		}
 
-	if ($error['type'] === E_COMPILE_ERROR)
-	{
-		\SeanMorris\Ids\Log::error(
-			\SeanMorris\Ids\Log::color('COMPILER ERROR OCCURRED.', 'black', 'red')
-			, (object) $error
-		);
-	}
+		if ($error['type'] === E_ERROR)
+		{
+			\SeanMorris\Ids\Log::error(
+				\SeanMorris\Ids\Log::color('FATAL ERROR OCCURRED.', 'black', 'red')
+				, (object) $error
+				);
+		}
 
-	if ($error['type'] === E_ERROR)
-	{
-		\SeanMorris\Ids\Log::error(
-			\SeanMorris\Ids\Log::color('FATAL ERROR OCCURRED.', 'black', 'red')
-			, (object) $error
-		);
-	}
-
-	if(\SeanMorris\Ids\Log::showErrors())
-	{
-// 		fwrite(STDERR, \SeanMorris\Ids\Log::dump($error, [], FALSE));
-	}
-	else if(php_sapi_name() !== 'cli' && \SeanMorris\Ids\Settings::read('show', 'errors'))
-	{
-		header('Content-type: text/plain');
-		print 'FATAL ERROR OCCURRED.';
-		print \SeanMorris\Ids\Log::dump($error, [], FALSE);
+		if(php_sapi_name() !== 'cli' && \SeanMorris\Ids\Settings::read('show', 'errors'))
+		{
+			header('Content-type: text/plain');
+			print 'FATAL ERROR OCCURRED.';
+			print \SeanMorris\Ids\Log::dump($error, [], FALSE);
+		}
 	}
 
 	$queryTimeMs   = \SeanMorris\Ids\Mysql\Statement::queryTime() * 1000;
