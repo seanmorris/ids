@@ -267,7 +267,7 @@ class Log
 					throw new \Exception(sprintf(
 						'Settings file specifies non-Logger as Logger: %s'
 						, $logger
-						));
+					));
 				}
 
 				$logger::log($logBlob);
@@ -1008,11 +1008,7 @@ class Log
 			}
 		}
 
-		error_log(
-			$line
-			, 3
-			, ini_get('error_log')
-		);
+		error_log($line, 3, ini_get('error_log'));
 
 		return $line;
 	}
@@ -1090,7 +1086,7 @@ class Log
 		global $switches;
 
 		return (php_sapi_name() == 'cli'
-			&& ($switches['vv']
+			&& ($switches['vv']??0
 				|| ($level <= static::$levels['warn']
 					&&
 					($switches['verbose']
