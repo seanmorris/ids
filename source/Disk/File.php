@@ -100,12 +100,12 @@ class File
 		{
 			while($d = $data->read())
 			{
-				$return = fwrite($this->writeHandle, $d);
+				return fwrite($this->writeHandle, $d);
 			}
 		}
 		else
 		{
-			$return = fwrite($this->writeHandle, $data);
+			return fwrite($this->writeHandle, $data);
 		}
 	}
 

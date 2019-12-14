@@ -556,7 +556,7 @@ class Package
 			return $obj1;
 		};
 
-		foreach($schema->revisions as $index =>$revision)
+		foreach($schema->revisions as $index => $revision)
 		{
 			$fullSchema = $objectMerge($fullSchema, $revision);
 		}
@@ -1158,7 +1158,7 @@ class Package
 		return $models;
 	}
 
-	public function importModels(...$args)
+	public function importModels($modelClass, ...$args)
 	{
 		while($skeleton = array_shift($args))
 		{

@@ -94,7 +94,7 @@ class Request
 			$args && $args[0] || array_shift($args);
 			$this->path = new Path(...$args);
 		}
-		
+
 		return $this->path;
 	}
 
@@ -127,7 +127,7 @@ class Request
 			+ $this->post()
 			+ $this->get()
 			+ $this->switches();
-	} 
+	}
 
 	public function get()
 	{
@@ -146,8 +146,6 @@ class Request
 
 	public function files()
 	{
-		$files = [];
-
 		$organizedFiles = [];
 
 		foreach($_FILES as $fieldName => $fileDef)
@@ -165,7 +163,7 @@ class Request
 				{
 					array_walk_recursive($fileDef[$elementName], function(&$element) use($elementName){
 						$element = [$elementName => $element];
-					});					
+					});
 				}
 
 				$newDef = [];

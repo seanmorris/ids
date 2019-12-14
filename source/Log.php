@@ -125,10 +125,10 @@ class Log
 
 	protected static function log($levelString, ...$data)
 	{
-		global $switches;
-		$output = null;
-
-		$level = 0;
+		$position = static::position(1);
+		$output   = null;
+		$level    = 0;
+		$maxLevel = NULL;
 
 		if(isset(static::$levels[$levelString]))
 		{
@@ -139,8 +139,6 @@ class Log
 		{
 			static::$packages = (array) Settings::read('logPackages');
 		}
-
-		$maxLevel = NULL;
 
 		if(is_array(static::$packages))
 		{
@@ -262,16 +260,16 @@ class Log
 
 		if($loggers = Settings::read('loggers'))
 		{
-			if(!is_a($logger, Logger, TRUE))
-			{
-				throw new \Exception(sprintf(
-					'Settings file specifies non-Logger as Logger: %s'
-					, $logger
-				));
-			}
-
 			foreach($loggers as $logger)
 			{
+				if(!is_a($logger, Logger, TRUE))
+				{
+					throw new \Exception(sprintf(
+						'Settings file specifies non-Logger as Logger: %s'
+						, $logger
+						));
+				}
+
 				$logger::log($logBlob);
 			}
 		}
@@ -930,11 +928,11 @@ class Log
 
 	public static function renderException($e, $color = TRUE)
 	{
-		$indentedTrace = preg_replace(
-			['/^/m', '/\:\s(.+)/']
-			, ["\t", "\n\t\t\$1\n"]
-			, $e->getTraceAsString()
-		);
+// 		$indentedTrace = preg_replace(
+// 			['/^/m', '/\:\s(.+)/']
+// 			, ["\t", "\n\t\t\$1\n"]
+// 			, $e->getTraceAsString()
+// 		);
 
 		$trace = $e->getTrace();
 
@@ -1066,14 +1064,14 @@ class Log
 
 		if(!is_numeric($input) && !is_string($input))
 		{
-			$foregroud  = static::DATA_COLOR;
+			$foreground  = static::DATA_COLOR;
 			$background = static::DATA_BACKGROUND;
 
 			$string = print_r($input, 1);
 		}
 		else
 		{
-			$foregroud  = static::TEXT_COLOR;
+			$foreground  = static::TEXT_COLOR;
 			$background = static::TEXT_BACKGROUND;
 
 			$string = $input;
@@ -1084,7 +1082,7 @@ class Log
 			return $string;
 		}
 
-		return static::color($string, $color, $background);
+		return static::color($string, $foreground, $background);
 	}
 
 	public static function showErrors($level = 1)

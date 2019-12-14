@@ -80,8 +80,6 @@ class Model
 
 		$columns = array_keys($columnsToWrappers);
 
-		$where = [];
-
 		$insert = new \SeanMorris\Ids\Mysql\InsertStatement($curClass::$table);
 
 		$values = [];
@@ -343,8 +341,6 @@ class Model
 		);
 
 		$columns = array_keys($columnsToWrappers);
-
-		$where = [];
 
 		$update = new \SeanMorris\Ids\Mysql\UpdateStatement($curClass::$table);
 		$update->columns(...$columns)->wrappers($wrappers)
@@ -770,7 +766,7 @@ class Model
 			$trace[] = sprintf('%s:%d', $frame['file'] ?? '--', $frame['line'] ?? 0);
 		}
 
-		$x = array_shift($backtrace);
+		array_shift($backtrace);
 
 		\SeanMorris\Ids\Log::debug(sprintf(
 			'%s::%s(...)'
@@ -801,7 +797,7 @@ class Model
 			$args = [];
 		}
 
-		$currentDefClass = $defClass = get_called_class();
+		$currentDefClass = get_called_class();
 
 		while(TRUE)
 		{
@@ -1580,7 +1576,7 @@ class Model
 				{
 					$subs = TRUE;
 				}
-				if(strtolower($matchB[3]) == 'record' || strtolo[3] == 'records')
+				if(strtolower($matchB[3]) == 'record' || strtolower($matchB[3]) == 'records')
 				{
 					$recs = TRUE;
 				}
@@ -1603,8 +1599,6 @@ class Model
 		];
 
 		$class = get_called_class();
-
-		$defFound = FALSE;
 
 		while($class)
 		{
@@ -1638,8 +1632,6 @@ class Model
 				$def['subs']       = $subs;
 				$def['flat']       = $flat;
 				$def['recs']       = $recs;
-
-				$defFound          = TRUE;
 				break;
 			}
 
@@ -1930,12 +1922,9 @@ class Model
 		{
 			$reflection = new \ReflectionClass($class);
 			$proprties = $reflection->getProperties();
-			$tableProperty = $reflection->getProperty('table');
 
 			foreach($proprties as $property)
 			{
-				$propClass = $property->class;
-
 				if($property->isStatic() || $property->isPrivate())
 				{
 					continue;

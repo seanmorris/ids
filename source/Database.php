@@ -49,12 +49,11 @@ class		Database
 		{
 			static::register(
 				$title
-				, $database->connection
-					?: sprintf(
-						'mysql:dbname=%s;host=%s;'
-						, $database->database
-						, $database->hostname
-					)
+				, $database->connection ?: sprintf(
+					'mysql:dbname=%s;host=%s;'
+					, $database->database
+					, $database->hostname
+				)
 				, $database->username
 				, $database->password
 			);

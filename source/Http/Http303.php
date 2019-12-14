@@ -2,7 +2,7 @@
 namespace SeanMorris\Ids\Http;
 class Http303 extends HttpException
 {
-	public function __construct($message = null, $code = 303, Exception $previous = null)
+	public function __construct($message = null, $code = 303, \Exception $previous = null)
 	{
 		parent::__construct($message, $code, $previous);
 	}
@@ -10,7 +10,7 @@ class Http303 extends HttpException
 	public function onCatch($router)
 	{
 		\SeanMorris\Ids\Log::debug(sprintf("Redirect Location: %s", $this->getMessage()));
-		
+
 		if(php_sapi_name() !== 'cli')
 		{
 			$url = $this->getMessage();
@@ -47,7 +47,7 @@ class Http303 extends HttpException
 		]);
 
 		$subrouter = new $router($subRequest, $router->routes(), $router);
-		
+
 		return $this->message = $subrouter->route();
 	}
 }

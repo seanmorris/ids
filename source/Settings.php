@@ -18,12 +18,10 @@ class Settings
 	{
 		$cacheKey = md5(print_r($names, 1));
 
-		if(isset($cache[$cacheKey]))
+		if(isset(static::$cache[$cacheKey]))
 		{
-			return $cache[$cacheKey];
+			return static::$cache[$cacheKey];
 		}
-
-		$nameList = $names;
 
 		$scoredName = implode('_', $names);
 
@@ -70,7 +68,7 @@ class Settings
 			$settings = $settings->$name;
 		}
 
-		$cache[$cacheKey] = $settings;
+		static::$cache[$cacheKey] = $settings;
 
 		return $settings;
 	}
@@ -110,8 +108,6 @@ class Settings
 					}
 				}
 			}
-
-			$rootPackage = Package::getRoot();
 
 			$settingsFile = static::findSettingsFile($hostname, $port);
 
