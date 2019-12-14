@@ -111,6 +111,8 @@ if($autoloadPath)
 	define('IDS_ROOT'       , dirname(IDS_VENDOR_ROOT));
 
 	$composer = require $autoloadPath;
+
+	\SeanMorris\Ids\Loader::register();
 }
 else
 {
@@ -133,36 +135,36 @@ ini_set("error_log", $errorPath);
 register_shutdown_function(function() {
 	$error = error_get_last();
 
-    if ($error['type'] === E_COMPILE_ERROR)
-    {
+	if ($error['type'] === E_COMPILE_ERROR)
+	{
 		\SeanMorris\Ids\Log::error(
 			\SeanMorris\Ids\Log::color('COMPILER ERROR OCCURRED.', 'black', 'red')
 			, $error
 		);
-    }
+	}
 
-    if ($error['type'] === E_ERROR)
-    {
-    	if(php_sapi_name() == 'cli' && ($switches['vv'] ?? FALSE))
+	if ($error['type'] === E_ERROR)
+	{
+		if(php_sapi_name() == 'cli' && ($switches['vv'] ?? FALSE))
 		{
 			fwrite(STDERR, 'FATAL ERROR OCCURRED.');
-    		fwrite(STDERR, \SeanMorris\Ids\Log::dump($error, [], FALSE));;
+			fwrite(STDERR, \SeanMorris\Ids\Log::dump($error, [], FALSE));;
 		}
 		else if(php_sapi_name() !== 'cli' && \SeanMorris\Ids\Settings::read('show', 'errors'))
 		{
 			header('Content-type: text/plain');
 			print 'FATAL ERROR OCCURRED.';
-    		print \SeanMorris\Ids\Log::dump($error, [], FALSE);
+			print \SeanMorris\Ids\Log::dump($error, [], FALSE);
 		}
 
 		\SeanMorris\Ids\Log::error(
 			'FATAL ERROR OCCURRED.'
 			, $error
 		);
-    }
+	}
 
-    $queryTimeMs   = \SeanMorris\Ids\Mysql\Statement::queryTime() * 1000;
-    $requestTimeMs = (microtime(true) - START) * 1000;
+	$queryTimeMs   = \SeanMorris\Ids\Mysql\Statement::queryTime() * 1000;
+	$requestTimeMs = (microtime(true) - START) * 1000;
 
 	\SeanMorris\Ids\Log::info(
 		'Response Complete.'
@@ -224,16 +226,14 @@ $existingErrorHandler = set_error_handler(
 	{
 		if(function_exists('xdebug_break'))
 		{
-	    	xdebug_break();
+			xdebug_break();
 		}
 
 		$errorContextContent = NULL;
 
-		/*
 		ob_start();
 		$errorContextContent = ob_get_contents();
 		ob_end_clean();
-		*/
 
 		$line = sprintf(
 			'(%d)"%s" thrown in %s:%d'

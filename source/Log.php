@@ -70,13 +70,13 @@ class Log
 	];
 
 	protected static
-		$started = false
+		$started       = false
 		, $colorOutput = true
-		, $suppress = false
-		, $censor
-		, $packages
-		, $level
-		, $also
+		, $suppress    = false
+		, $censor      = []
+		, $packages    = []
+		, $level       = 0
+		, $also        = []
 	;
 
 	public static function error(...$data)
@@ -211,10 +211,9 @@ class Log
 			}
 		}
 
-
 		if(!static::$censor)
 		{
-			static::$censor = (array) Settings::read('logCensor');
+			static::$censor = Settings::read('logCensor');
 		}
 
 		$position    = static::position(2);
@@ -258,14 +257,22 @@ class Log
 		$logBlob->type          = $levelString;
 		$logBlob->level         = $level;
 		$logBlob->full_message  = $output;
-		$logBlob->short_message = is_string($data[0])
+		$logBlob->short_message = is_string($data[0] ?? NULL)
 			? $data[0]
 			: strtok($output, "\n")
-			. PHP_EOL
-			. strtok("\n");
+				. PHP_EOL
+				. strtok("\n");
 
 		if($loggers = Settings::read('loggers'))
 		{
+			if(!is_a($logger, Logger, TRUE))
+			{
+				throw new \Exception(sprintf(
+					'Settings file specifies non-Logger as Logger: %s'
+					, $logger
+				));
+			}
+
 			foreach($loggers as $logger)
 			{
 				$logger::log($logBlob);
@@ -302,7 +309,7 @@ class Log
 			: ($position['class'] ?? NULL);
 
 		$function = $ex
-			? $trace[0]['function']
+			? ($trace[0]['function'] ?? NULL)
 			: ($position['function'] ?? NULL);
 
 		$logBlob  = (object) [
@@ -427,6 +434,11 @@ class Log
 
 	public static function dump($val, $parents = [], $colors = [])
 	{
+		if(!static::$censor)
+		{
+			static::$censor = Settings::read('logCensor');
+		}
+
 		$indent = '  ';
 		$output = '';
 
@@ -498,19 +510,10 @@ class Log
 
 				foreach($relflectedProps as $relflectedProp)
 				{
-					if(isset(static::$censor[$relflectedProp->name]) && static::$censor[$relflectedProp->name])
-					{
-						$_val[$k] = '* censored *';
-						continue;
-					}
-
 					$relflectedProp = $relflectedVal->getProperty($relflectedProp->name);
 					$relflectedProp->setAccessible(true);
 
-					if($relflectedProp->isStatic())
-					{
-						continue;
-					}
+					$name = $relflectedProp->name;
 
 					$access = 'Public';
 
@@ -524,7 +527,18 @@ class Log
 						$access = 'Private';
 					}
 
-					$k = $relflectedProp->name . ':' . $access;
+					$k = $name . ':' . $access;
+
+					if(isset(static::$censor[$name]) && static::$censor[$name])
+					{
+						$_val[$k] = '* censored *';
+						continue;
+					}
+
+					if($relflectedProp->isStatic())
+					{
+						continue;
+					}
 
 					$_val[$k] = $relflectedProp->getValue($val);
 				}
@@ -592,8 +606,9 @@ class Log
 				$_val = array_map(
 					function($k, $v)
 					{
-						if(isset(static::$censor[$k]) && Settings::read(static::$censor[$k]))
-						{
+						if(isset(static::$censor[$k])
+							&& Settings::read(static::$censor[$k])
+						){
 							return '* censored *';
 						}
 
@@ -756,30 +771,30 @@ class Log
 		if($position->class && $position->function)
 		{
 			return sprintf(
-				"%s::%s\n%s:%d%s"
+				"%s::%s\n%s:%s%s"
 				, $position->class
 				, $position->function
 				, $position->file
-				, $position->backtrace[$depth]['line']
+				, $position->backtrace[$depth]['line'] ?? '--'
 				, $glue
 			);
 		}
 		else if($position->function)
 		{
 			return sprintf(
-				"%s\n%s:%d%s"
+				"%s\n%s:%s%s"
 				, $position->function
 				, $position->file
-				, $position->backtrace[$depth]['line']
+				, $position->backtrace[$depth]['line'] ?? '--'
 				, $glue
 			);
 		}
 		else
 		{
 			return sprintf(
-				"%s:%d%s"
+				"%s:%s%s"
 				, $position->file
-				, $position->backtrace[$depth]['line']
+				, $position->backtrace[$depth]['line'] ?? '--'
 				, $glue
 			);
 		}
@@ -805,6 +820,11 @@ class Log
 
 	public static function renderTrace($trace, $color = TRUE)
 	{
+		if(!static::$censor)
+		{
+			static::$censor = Settings::read('logCensor');
+		}
+
 		$superTrace = [];
 
 		foreach ($trace as $level => $frame)
@@ -813,13 +833,18 @@ class Log
 
 			if(isset($frame['args']))
 			{
-				if(isset($frame['class']) && method_exists(
-					$frame['object'] ?? $frame['class']
-					, $frame['function']
-				)){
-					$reflection = new \ReflectionMethod($frame['class'], $frame['function']);
+				if(isset($frame['class'], $frame['function'])
+					&& method_exists(
+						$frame['object'] ?? $frame['class']
+						, $frame['function']
+					)
+				){
+					$reflection = new \ReflectionMethod(
+						$frame['class'] ?? $frame['class']
+						, $frame['function']
+					);
 				}
-				else if(function_exists($frame['function']))
+				else if(isset($frame['function']) && function_exists($frame['function']))
 				{
 					$reflection = new \ReflectionFunction($frame['function']);
 				}

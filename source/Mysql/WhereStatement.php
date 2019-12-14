@@ -107,12 +107,12 @@ abstract class WhereStatement extends Statement
 		if(!static::RETURNS)
 		{
 			\SeanMorris\Ids\Log::query('Query executed.', new \SeanMorris\Ids\LogMeta([
-				'query'              => $queryObject->queryString
-				, 'query_time'       => $queryTime
-				, 'querty_tier'      => $this->databaseTier()
-				, 'query_type'       => get_called_class()
-				, 'query_args'       => $finalArgs
-				, 'query_table'      => $this->table
+				'query'         => $queryObject->queryString
+				, 'query_time'  => $queryTime
+				, 'querty_tier' => $this->databaseTier()
+				, 'query_type'  => get_called_class()
+				, 'query_args'  => $finalArgs
+				, 'query_table' => $this->table
 			]));
 		}
 
@@ -258,14 +258,6 @@ abstract class WhereStatement extends Statement
 
 				$this->valueRequired[] = $required;
 				$this->valueNames[]    = $name;
-
-				// \SeanMorris\Ids\Log::trace();
-				// \SeanMorris\Ids\Log::debug(array(
-				// 	'column'    => $column
-				// 	, 'value'   => $value
-				// 	, 'compare' => $compare
-				// 	, 'name'    => $name
-				// ));
 
 				if($alias)
 				{

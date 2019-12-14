@@ -5,14 +5,15 @@ namespace SeanMorris\Ids;
 class Package
 {
 	protected $folder, $packageName;
-	protected static $assetManager, $packages = [], $directories = [],
-	// , $tables = ['main'=>['IdsRelationship']]
-	$tables = [
-		'main' => [
-			'Foozle', 'Foobar', 'IdsRelationship'
-			, 'Octopus', 'Tentacle', 'Grocery'
-		]
-	];
+
+	protected static
+		$assetManager
+		, $packages    = []
+		, $directories = []
+		, $tables      = [
+			'main' => ['IdsRelationship']
+		];
+
 	public static function getRoot()
 	{
 		if(isset(static::$directories['root']))
@@ -36,12 +37,15 @@ class Package
 		$packageClass = $packageName . '\\Package';
 
 		if(class_exists($packageClass))
-		{return new $packageClass($packageName);}
+		{
+			return new $packageClass($packageName);
+		}
 
 		$package = new static($packageName);
 
 		return $package;
 	}
+
 	public static function get($packageName = NULL)
 	{
 		if(! $packageName)
@@ -53,17 +57,15 @@ class Package
 		$packageClass = $packageName . '\\Package';
 
 		if(class_exists($packageClass))
-		{return new $packageClass($packageName);}
+		{
+			return new $packageClass($packageName);
+		}
 
 		return new class($packageName) extends Package {
-			protected static $tables = ['main' => []
-			];
+			protected static $tables = ['main' => []];
 		};
-
-		// $package = new static($packageName);
-
-		// return $package;
 	}
+
 	protected function __construct($package)
 	{
 		$packageName = static::name($package);
@@ -87,25 +89,30 @@ class Package
 				$this->packageName = $packageName;
 				$this->folder = $packages[$packageDir];
 			}
-			else if(isset($packages[strtolower($packageDir)]))
-			{
-				$this->packageName = $packageName;
-				$this->folder = $packages[strtolower($packageDir)];
-			}
 			else
-			{
-				throw new \Exception('No Package defined for ' . $package);
-			}
+				if(isset($packages[strtolower($packageDir)]))
+				{
+					$this->packageName = $packageName;
+					$this->folder = $packages[strtolower($packageDir)];
+				}
+				else
+				{
+					throw new \Exception('No Package defined for ' . $package);
+				}
 		}
 	}
+
 	public static function listPackages()
 	{
 		return array_keys(static::packageDirectories());
 	}
+
 	public static function packageDirectories()
 	{
 		if(static::$packages)
-		{return static::$packages;}
+		{
+			return static::$packages;
+		}
 
 		$vendorRoot = new \SeanMorris\Ids\Disk\Directory(IDS_VENDOR_ROOT);
 
@@ -142,138 +149,137 @@ class Package
 		ksort(static::$packages);
 
 		return static::$packages;
-
-		/*
-		 * $directories = array_merge(...array_values($composer->getPrefixes()));
-		 *
-		 * $packages = [];
-		 *
-		 * foreach($directories as $directory)
-		 * {
-		 * $dirHandle = opendir($directory);
-		 *
-		 * while($vendorDir = readdir($dirHandle))
-		 * {
-		 * if($vendorDir == '.' || $vendorDir == '..')
-		 * {
-		 * continue;
-		 * }
-		 *
-		 * if(!is_dir($directory . '/' . $vendorDir))
-		 * {
-		 * continue;
-		 * }
-		 *
-		 * $vendorDirHandle = opendir($directory . '/' . $vendorDir);
-		 *
-		 * while($packageDir = readdir($vendorDirHandle))
-		 * {
-		 * if($packageDir == '.' || $packageDir == '..')
-		 * {
-		 * continue;
-		 * }
-		 *
-		 * $packagePath = $directory . '/' . $vendorDir . '/' . $packageDir;
-		 *
-		 * $packages[] = $vendorDir . '/' . $packageDir;
-		 * }
-		 * }
-		 * }
-		 *
-		 * sort($packages);
-		 *
-		 * return $packages;
-		 */
 	}
+
 	public static function name($package)
 	{
 		return str_replace('/', '\\', $package);
 	}
+
 	public static function dir($package)
 	{
 		return str_replace('\\', '/', $package);
 	}
+
 	public function packageDir()
 	{
 		if(isset(static::$directories['package']))
-		{return static::$directories['package'];}
+		{
+			return static::$directories['package'];
+		}
 
 		return static::$directories['package'] = new \SeanMorris\Ids\Disk\Directory(
-			$this->folder);
+			$this->folder
+		);
 	}
+
 	public function packageSpace()
 	{
 		return $this->packageName;
 	}
+
 	public function assetDir()
 	{
 		if(isset(static::$directories['assets']))
-		{return static::$directories['assets'];}
+		{
+			return static::$directories['assets'];
+		}
 
 		return static::$directories['assets'] = new \SeanMorris\Ids\Disk\Directory(
-			$this->folder . 'asset/');
+			$this->folder . 'asset/'
+		);
 	}
+
 	public function publicDir()
 	{
 		if(isset(static::$directories['public']))
-		{return static::$directories['public'];}
+		{
+			return static::$directories['public'];
+		}
 
 		if(! $publicDir = Settings::read('public'))
-		{return;}
+		{
+			return;
+		}
 
 		static::$directories['public'] = new \SeanMorris\Ids\Disk\Directory(
-			$publicDir . '/' . $this->dir($this->packageSpace()));
+			$publicDir . '/' . $this->dir($this->packageSpace())
+		);
 
 		return static::$directories['public'];
 	}
+
 	public function globalDir()
 	{
 		if(isset(static::$directories['global']))
-		{return static::$directories['global'];}
+		{
+			return static::$directories['global'];
+		}
 
 		return static::$directories['global'] = new \SeanMorris\Ids\Disk\Directory(
-			$this->packageDir() . 'data/global/');
+			$this->packageDir() . 'data/global/'
+		);
 	}
+
 	public function localDir()
 	{
 		if(isset(static::$directories['local']))
-		{return static::$directories['local'];}
+		{
+			return static::$directories['local'];
+		}
 
 		return static::$directories['local'] = new \SeanMorris\Ids\Disk\Directory(
-			$this->packageDir() . 'data/local/');
+			$this->packageDir() . 'data/local/'
+		);
 	}
+
 	public function sourceDir()
 	{
 		if(isset(static::$directories['source']))
-		{return static::$directories['source'];}
+		{
+			return static::$directories['source'];
+		}
 
 		return static::$directories['source'] = new \SeanMorris\Ids\Disk\Directory(
-			$this->packageDir() . 'source/');
+			$this->packageDir() . 'source/'
+		);
 	}
+
 	public function testDir()
 	{
 		if(isset(static::$directories['test']))
-		{return static::$directories['test'];}
+		{
+			return static::$directories['test'];
+		}
 
 		return static::$directories['test'] = new \SeanMorris\Ids\Disk\Directory(
-			$this->packageDir() . 'test/');
+			$this->packageDir() . 'test/'
+		);
 	}
+
 	public function dataDir()
 	{
 		if(isset(static::$directories['data']))
-		{return static::$directories['data'];}
+		{
+			return static::$directories['data'];
+		}
 
 		return static::$directories['data'] = new \SeanMorris\Ids\Disk\Directory(
 			$this->packageDir() . 'data/');
 	}
+
 	public function localSiteDir()
 	{
 		if(isset(static::$directories['localSite']))
-		{return static::$directories['localSite'];}
+		{
+			return static::$directories['localSite'];
+		}
 
 		if(! isset($_SERVER['HTTP_HOST']) && php_sapi_name() == 'cli')
-		{throw new \Exception(
-				'Please set a site with the "-d" switch or use .idilicProfile.json');}
+		{
+			throw new \Exception(
+				'Please set a site with the "-d" switch or use .idilicProfile.json');
+		}
 
 		$hostname = NULL;
 
@@ -290,17 +296,17 @@ class Package
 		}
 
 		$fileNames = [
-			sprintf('%s:%d/', $hostname, $port),
-			sprintf('%s;%d/', $hostname, $port),
-			sprintf('%s:/', $hostname),
-			sprintf('%s;/', $hostname),
-			$hostname . '/',
-			sprintf(':%d/', $port),
-			sprintf(';%d/', $port),
-			':/settings',
-			';/settings',
-			':/',
-			';/'
+			sprintf('%s:%d/', $hostname, $port)
+			, sprintf('%s;%d/', $hostname, $port)
+			, sprintf('%s:/', $hostname)
+			, sprintf('%s;/', $hostname)
+			, $hostname . '/'
+			, sprintf(':%d/', $port)
+			, sprintf(';%d/', $port)
+			, ':/settings'
+			, ';/settings'
+			, ':/'
+			, ';/'
 		];
 
 		foreach($fileNames as $fileName)
@@ -311,21 +317,29 @@ class Package
 				$dirPath);
 
 			if(static::$directories['localSite']->check())
-			{return static::$directories['localSite'];}
+			{
+				return static::$directories['localSite'];
+			}
 		}
 	}
+
 	public function globalSiteDir()
 	{
 		if(isset(static::$directories['globalSite']))
-		{return static::$directories['globalSite'];}
+		{
+			return static::$directories['globalSite'];
+		}
 
 		if(! isset($_SERVER['HTTP_HOST']))
-		{throw new \Exception(
-				'$_SERVER["HTTP_HOST"] is not defined. Please set a site with the "-d" switch or use .idilicProfile.json');}
+		{
+			throw new \Exception(
+				'$_SERVER["HTTP_HOST"] is not defined. Please set a site with the "-d" switch or use .idilicProfile.json');
+		}
 
 		return static::$directories['globalSite'] = new \SeanMorris\Ids\Disk\Directory(
 			$this->globalDir() . 'sites/' . $_SERVER['HTTP_HOST'] . '/');
 	}
+
 	public function assetManager()
 	{
 		$assetManager = static::$assetManager;
@@ -336,10 +350,13 @@ class Package
 		}
 
 		if(class_exists($assetManager))
-		{return new $assetManager();}
+		{
+			return new $assetManager();
+		}
 
 		return new $assetManager();
 	}
+
 	public function setVar($var, $val, $type = 'local')
 	{
 		$varPath = preg_split('/(?<!\\\\)\:/', $var);
@@ -396,6 +413,7 @@ class Package
 
 		file_put_contents($path, json_encode($vars, JSON_PRETTY_PRINT));
 	}
+
 	public function getVar($var, $val = NULL, $type = 'local')
 	{
 		$varPath = preg_split('/(?<!\\\\)\:/', $var);
@@ -412,7 +430,9 @@ class Package
 		$path = $dir . 'var.json';
 
 		if(! file_exists($dir) || ! file_exists($path))
-		{return $val;}
+		{
+			return $val;
+		}
 
 		$varsJson = file_get_contents($path);
 
@@ -430,6 +450,7 @@ class Package
 
 		return $val;
 	}
+
 	public function deleteVar($var, $type = 'local')
 	{
 		$varPath = preg_split('/(?<!\\\\)\:/', $var);
@@ -446,7 +467,9 @@ class Package
 		$path = $dir . 'var.json';
 
 		if(! file_exists($dir) || ! file_exists($path))
-		{return;}
+		{
+			return;
+		}
 
 		$varsJson = file_get_contents($path);
 
@@ -468,18 +491,23 @@ class Package
 
 		file_put_contents($path, json_encode($vars));
 	}
+
 	protected function getStoredSchema()
 	{
 		$schemaFilename = $this->globalDir() . 'schema.json';
 
 		if(! file_exists($schemaFilename))
-		{return;}
+		{
+			return;
+		}
 
 		$schema = json_decode(file_get_contents($schemaFilename));
 
 		if(! $schema)
-		{throw new \Exception(
-				sprintf('Schema file invalid at %s', $schemaFilename));}
+		{
+			throw new \Exception(
+				sprintf('Schema file invalid at %s', $schemaFilename));
+		}
 
 		if(! isset($schema->revisions))
 		{
@@ -488,12 +516,15 @@ class Package
 
 		return $schema;
 	}
+
 	public function getFullSchema($revision = null)
 	{
 		$schema = $this->getStoredSchema();
 
 		if(! $schema)
-		{return;}
+		{
+			return;
+		}
 
 		$fullSchema = (object) [];
 
@@ -504,21 +535,22 @@ class Package
 			foreach($obj2 as $prop =>$val)
 			{
 				if(
-					isset($obj1->$prop) &&
-					is_object($obj1->$prop) &&
-					is_object($obj2->$prop))
-				{
+					isset($obj1->$prop)
+					&& is_object($obj1->$prop)
+					&& is_object($obj2->$prop)
+				){
 					$obj1->$prop = $objectMerge($obj1->$prop, $obj2->$prop);
 				}
-				else if($val === FALSE)
-				{
-					unset($obj1->$prop);
-				}
 				else
-				{
+					if($val === FALSE)
+					{
+						unset($obj1->$prop);
+					}
+					else
+					{
 
-					$obj1->$prop = $obj2->$prop;
-				}
+						$obj1->$prop = $obj2->$prop;
+					}
 			}
 
 			return $obj1;
@@ -531,6 +563,7 @@ class Package
 
 		return $fullSchema;
 	}
+
 	public function storeSchema()
 	{
 		$globalDir = $this->globalDir();
@@ -542,8 +575,10 @@ class Package
 		}
 
 		if(! $globalDir->check())
-		{throw new \Exception(
-				sprintf('Cannot find global dir %s', $globalDir->name()));}
+		{
+			throw new \Exception(
+				sprintf('Cannot find global dir %s', $globalDir->name()));
+		}
 
 		if(! file_exists($schemaFilename))
 		{
@@ -576,6 +611,7 @@ class Package
 			return $changes;
 		}
 	}
+
 	public function getSchemaChanges()
 	{
 		$storedSchema = $this->getFullSchema();
@@ -586,8 +622,7 @@ class Package
 			$storedSchema = (object) [];
 		}
 
-		$classTables = static::$tables + ['main' => []
-		];
+		$classTables = static::$tables + ['main' => []];
 
 		foreach($classTables as $db =>$tables)
 		{
@@ -596,6 +631,7 @@ class Package
 			$tables += array_keys((array) $storedSchema);
 
 			$db = Database::get($db);
+
 			foreach($tables as $table)
 			{
 				$tableCheck = $db->prepare('SHOW TABLES LIKE "' . $table . '"');
@@ -632,10 +668,9 @@ class Package
 					unset($column->Privileges);
 
 					if(
-						isset($storedSchema->$table->fields->{$column->Field}) &&
-						$storedSchema->$table->fields->{$column->Field} ==
-						$column)
-					{
+						isset($storedSchema->$table->fields->{$column->Field})
+						&& $storedSchema->$table->fields->{$column->Field} == $column
+					){
 						continue;
 					}
 
@@ -673,22 +708,18 @@ class Package
 
 						unset($arKey[$index->Seq_in_index]->Cardinality);
 
-						if(
-							isset($arKey[$index->Seq_in_index]) &&
-							$index ==
-							$arKey[$index->Seq_in_index])
-						{
+						if(isset($arKey[$index->Seq_in_index])
+							&& $index == $arKey[$index->Seq_in_index]
+						){
 							continue;
 						}
 					}
 
 					if(
-						isset($storedSchema->$table->keys->{$index->Key_name}) &&
-						isset(
-							$storedSchema->$table->keys->{$index->Key_name}->{$index->Seq_in_index}) &&
-						$storedSchema->$table->keys->{$index->Key_name}->{$index->Seq_in_index} ==
-						$index)
-					{
+						isset($storedSchema->$table->keys->{$index->Key_name})
+						&& isset($storedSchema->$table->keys->{$index->Key_name}->{$index->Seq_in_index})
+						&& $storedSchema->$table->keys->{$index->Key_name}->{$index->Seq_in_index} ==$index
+					){
 						continue;
 					}
 
@@ -714,6 +745,7 @@ class Package
 
 		return $changes;
 	}
+
 	public function applySchema($real = false)
 	{
 		$exportTables = $this->getFullSchema();
@@ -723,7 +755,9 @@ class Package
 		{
 			$db = Database::get($db);
 
-			$tables = array_unique($definedTables + array_keys((array) $exportTables));
+			$tables = array_unique(
+				$definedTables + array_keys((array) $exportTables)
+			);
 
 			foreach($tables as $table)
 			{
@@ -757,16 +791,19 @@ class Package
 							{
 								\SeanMorris\Ids\Log::warn(
 									sprintf(
-										'Table %s::%s exists but is not defined in schema file.',
-										$this,
-										$exportTables->$table));
+										'Table %s::%s exists but is not defined in schema file.'
+										, $this
+										, $exportTables->$table
+									)
+								);
 
 								continue;
 							}
 							$queries[] = sprintf(
-								"ALTER TABLE `%s` DROP COLUMN `%s`;",
-								$table,
-								$column->Field);
+								"ALTER TABLE `%s` DROP COLUMN `%s`;"
+								, $table
+								, $column->Field
+							);
 
 							continue;
 						}
@@ -789,16 +826,24 @@ class Package
 
 						$queries[] = sprintf(
 							"ALTER TABLE %s MODIFY %s %s %s %s %s COMMENT '%s'",
-							$table,
-							$exportTables->$table->fields->{$column->Field}->Field,
-							$exportTables->$table->fields->{$column->Field}->Type,
-							$exportTables->$table->fields->{$column->Field}->Null ==
-							'YES' ? 'NULL' : 'NOT NULL',
-							$exportTables->$table->fields->{$column->Field}->Extra ==
-							'auto_increment' ? 'auto_increment' : NULL,
-							$exportTables->$table->fields->{$column->Field}->Collation ? 'COLLATE ' .
-							$exportTables->$table->fields->{$column->Field}->Collation : NULL,
-							$exportTables->$table->fields->{$column->Field}->Comment);
+							$table
+							, $exportTables->$table->fields->{$column->Field}->Field
+							, $exportTables->$table->fields->{$column->Field}->Type
+
+							, $exportTables->$table->fields->{$column->Field}->Null == 'YES'
+								? 'NULL'
+								: 'NOT NULL'
+
+							, $exportTables->$table->fields->{$column->Field}->Extra == 'auto_increment'
+								? 'auto_increment'
+								: NULL
+
+							, $exportTables->$table->fields->{$column->Field}->Collation
+								? 'COLLATE ' . $exportTables->$table->fields->{$column->Field}->Collation
+								: NULL
+
+							, $exportTables->$table->fields->{$column->Field}->Comment
+						);
 
 						unset($exportTables->$table->fields->{$column->Field});
 					}
@@ -827,8 +872,9 @@ class Package
 						}
 
 						unset(
-							$index->Cardinality,
-							$arKey[$index->Seq_in_index]->Cardinality);
+							$index->Cardinality
+							, $arKey[$index->Seq_in_index]->Cardinality
+						);
 
 						if(! isset($arKey[$index->Seq_in_index]))
 						{
@@ -838,36 +884,45 @@ class Package
 						if($index == $arKey[$index->Seq_in_index])
 						{
 							unset(
-								$exportTables->$table->keys->{$index->Key_name});
+								$exportTables->$table->keys->{$index->Key_name}
+							);
+
 							continue;
 						}
 
 						$columns = static::latestColumns(
-							$exportTables->$table->keys->{$index->Key_name});
+							$exportTables->$table->keys->{$index->Key_name}
+						);
 
 						if($index->Key_name == 'PRIMARY')
 						{
 							$queries[] = sprintf(
-								"ALTER TABLE `%s` DROP PRIMARY KEY;",
-								$table);
+								"ALTER TABLE `%s` DROP PRIMARY KEY;"
+								, $table
+							);
+
 							$queries[] = sprintf(
-								"ALTER TABLE `%s` ADD PRIMARY KEY (`%s`) COMMENT '%s';",
-								$table,
-								$columns,
-								$arKey[$index->Seq_in_index]->Index_comment);
+								"ALTER TABLE `%s` ADD PRIMARY KEY (`%s`) COMMENT '%s';"
+								, $table
+								, $columns
+								, $arKey[$index->Seq_in_index]->Index_comment
+							);
 						}
-						elseif($index->Non_unique == 0)
+						else if($index->Non_unique == 0)
 						{
 							$queries[] = sprintf(
-								"ALTER TABLE `%s` DROP KEY %s;",
-								$table,
-								$index->Key_name);
+								"ALTER TABLE `%s` DROP KEY %s;"
+								, $table
+								, $index->Key_name
+							);
+
 							$queries[] = sprintf(
-								"ALTER TABLE `%s` ADD UNIQUE KEY `%s` (`%s`) COMMENT '%s';",
-								$table,
-								$index->Key_name,
-								$columns,
-								$arKey[$index->Seq_in_index]->Index_comment);
+								"ALTER TABLE `%s` ADD UNIQUE KEY `%s` (`%s`) COMMENT '%s';"
+								, $table
+								, $index->Key_name
+								, $columns
+								, $arKey[$index->Seq_in_index]->Index_comment
+							);
 						}
 						else
 						{
@@ -887,7 +942,7 @@ class Package
 					}
 				}
 
-				if(!$tableFound)
+				if(! $tableFound)
 				{
 					$createColumn = [];
 
@@ -1000,32 +1055,33 @@ class Package
 							if($keyName == 'PRIMARY')
 							{
 								$queries[] = sprintf(
-									"ALTER TABLE `%s` ADD PRIMARY KEY (`%s`)",
-									$table,
-									$columns);
+									"ALTER TABLE `%s` ADD PRIMARY KEY (`%s`)"
+									, $table
+									, $columns
+								);
 
 								continue;
 							}
-							else if(
-								$arKey[$arKey["1"]->Seq_in_index]->Non_unique ==
-								0)
-							{
-								$queries[] = sprintf(
-									"ALTER TABLE `%s` ADD UNIQUE KEY `%s` (`%s`)",
-									$table,
-									$arKey[1]->Key_name,
-									$columns);
+							else if($arKey[$arKey["1"]->Seq_in_index]->Non_unique ==	0)
+								{
+									$queries[] = sprintf(
+										"ALTER TABLE `%s` ADD UNIQUE KEY `%s` (`%s`)"
+										, $table
+										, $arKey[1]->Key_name
+										, $columns
+									);
 
-								continue;
-							}
-							else
-							{
-								$queries[] = sprintf(
-									"ALTER TABLE `%s` ADD KEY `%s` (`%s`)",
-									$table,
-									$arKey[1]->Key_name,
-									$columns);
-							}
+									continue;
+								}
+								else
+								{
+									$queries[] = sprintf(
+										"ALTER TABLE `%s` ADD KEY `%s` (`%s`)"
+										, $table
+										, $arKey[1]->Key_name
+										, $columns
+									);
+								}
 						}
 					}
 				}
@@ -1044,6 +1100,7 @@ class Package
 
 		return $queries;
 	}
+
 	protected function latestKeys($key)
 	{
 		$keys = [];
@@ -1055,16 +1112,20 @@ class Package
 
 		return $keys;
 	}
+
 	protected function latestColumns($key)
 	{
 		$columns = implode(
-			'`, `',
-			array_map(function ($column) {
+			'`, `'
+			, array_map(function ($column) {
 				return $column->Column_name;
-			}, $this->latestKeys($key)));
+			}
+			, $this->latestKeys($key))
+		);
 
 		return $columns;
 	}
+
 	public function exportModels($model, $function, $args)
 	{
 		// var_dump($model::getGenerator($function));
@@ -1096,6 +1157,7 @@ class Package
 
 		return $models;
 	}
+
 	public function importModels(...$args)
 	{
 		while($skeleton = array_shift($args))
@@ -1123,23 +1185,29 @@ class Package
 			}
 		}
 	}
+
 	public static function tables()
 	{
 		return static::$tables;
 	}
+
 	public static function setTables($tables)
 	{
 		static::$tables = $tables;
 	}
+
 	public static function fromClass($class)
 	{
 		$splitClass = preg_split('/\\\\/', $class);
 
 		if(! count($splitClass) >= 2)
-		{return FALSE;}
+		{
+			return FALSE;
+		}
 
 		return static::get($splitClass[0] . '/' . $splitClass[1]);
 	}
+
 	public function cliName()
 	{
 		return preg_replace('/\\\\/', '/', $this->packageName);

@@ -50,28 +50,39 @@ class SettingsReader implements \Iterator, \ArrayAccess
 
 	public function offsetExists($name)
 	{
-		return isset($this->$keys[$name]);
+		return isset($this->keys[strtoupper($name)]);
 	}
 
 	public function offsetGet($name)
 	{
-		if(!isset($this->names[ $name ]))
+		if(!isset($this->keys[strtoupper($name)]))
 		{
 			return NULL;
 		}
 
-		return Settings::read($this->root, $this->names[ $name ]);
+		return Settings::read($this->root, strtoupper($name));
 	}
 
 	public function offsetSet($name, $value)
 	{
-		$this->keys[$name] = count($this->names);
-		$this->names[]     = $name;
+		if(array_key_exists(strtoupper($name), $this->keys))
+		{
+			return;
+		}
+
+		$this->keys[strtoupper($name)] = count($this->names);
+
+		$this->names[] = strtoupper($name);
 	}
 
 	public function offsetUnset($name)
 	{
-		unset($this->names[$this->keys[$name]]);
+		if(!array_key_exists(strtoupper($name), $this->keys))
+		{
+			return;
+		}
+
+		unset($this->names[$this->keys[strtoupper($name)]]);
 
 		$this->keys = array_flip($this->names);
 	}
