@@ -51,14 +51,14 @@ class Log
 	);
 
 	protected static $colors = [
-		'key' => 'lightBlue'
-		, 'keyBg' => NULL
-		, 'type' => 'green'
-		, 'typeBg' => NULL
-		, 'value' => NULL
+		'key'       => 'lightBlue'
+		, 'keyBg'   => NULL
+		, 'type'    => 'green'
+		, 'typeBg'  => NULL
+		, 'value'   => NULL
 		, 'valueBg' => NULL
-		, 'line' => NULL
-		, 'lineBg' => NULL
+		, 'line'    => NULL
+		, 'lineBg'  => NULL
 	];
 
 	protected static $levelColors = [
@@ -73,10 +73,10 @@ class Log
 		$started       = false
 		, $colorOutput = true
 		, $suppress    = false
-		, $censor      = []
-		, $packages    = []
-		, $level       = 0
-		, $also        = []
+		, $censor      = NULL
+		, $packages    = NULL
+		, $level       = NULL
+		, $also        = NULL
 	;
 
 	public static function error(...$data)
@@ -190,12 +190,8 @@ class Log
 			}
 		}
 
-		if(($level <= static::$levels['warn']
-				&& php_sapi_name() == 'cli'
-				&& ($switches['verbose'] ?? $switches['v'] ?? FALSE)
-				) || (php_sapi_name() == 'cli'
-			&& ($switches['vv'] ?? FALSE)
-		)){
+		if(static::showErrors($level))
+		{
 			foreach($data as $d)
 			{
 				if($d instanceof LogMeta)
@@ -207,7 +203,8 @@ class Log
 					print $d . PHP_EOL;
 					continue;
 				}
-				print_r($data);
+
+				fwrite(fopen('php://stderr', 'w'), static::dump($d));
 			}
 		}
 
@@ -216,7 +213,7 @@ class Log
 			static::$censor = Settings::read('logCensor');
 		}
 
-		$position    = static::position(2);
+		static::position(2);
 
 		$logBlob = static::logBlob(0, $level < static::$levels['warn']);
 
@@ -459,7 +456,6 @@ class Log
 			}
 		}
 
-
 		if(!is_array($val) && !is_object($val))
 		{
 			$type = gettype($val);
@@ -583,7 +579,7 @@ class Log
 				$output .= PHP_EOL;
 			}
 
-			$output .= str_repeat($indent, count($parents) + 1);
+			$output .= str_repeat($indent, count($parents) + 0);
 			$output .= '{';
 
 			foreach($parents as $level => $parent)
@@ -623,7 +619,7 @@ class Log
 
 			foreach($_val as $key => $value)
 			{
-				$output .= str_repeat($indent, count($parents) + 2);
+				$output .= str_repeat($indent, count($parents) + 1);
 				if($colors !== FALSE)
 				{
 					$key = static::color($key, $colors['key'], $colors['keyBg']);
@@ -643,7 +639,7 @@ class Log
 				$output .= static::dump($value, $newParents, $colors);
 			}
 
-			$output .= str_repeat($indent, count($parents) + 1) . '}';
+			$output .= str_repeat($indent, count($parents) + 0) . '}';
 		}
 
 		return $output . PHP_EOL;
@@ -1089,5 +1085,23 @@ class Log
 		}
 
 		return static::color($string, $color, $background);
+	}
+
+	public static function showErrors($level = 1)
+	{
+		global $switches;
+
+		return (php_sapi_name() == 'cli'
+			&& ($switches['vv']
+				|| ($level <= static::$levels['warn']
+					&&
+					($switches['verbose']
+						?? $switches['vv']
+						?? $switches['v']
+						?? FALSE
+					)
+				)
+			)
+		);
 	}
 }

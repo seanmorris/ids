@@ -1,7 +1,6 @@
-vendor*
-vendor/*
 .env
 .env.*
+vendor*
+vendor/*
 !.env.sample
 !.env.*.sample
-/nbproject/private/
