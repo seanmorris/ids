@@ -63,7 +63,6 @@ if(php_sapi_name() === 'cli')
 		$userFile = getenv("HOME") . '/.idilicProfile.json';
 	}
 
-
 	if(!isset($_SERVER['HTTP_HOST']) && file_exists($userFile))
 	{
 		$userSettings = json_decode(file_get_contents($userFile));
@@ -253,6 +252,8 @@ $existingErrorHandler = set_error_handler(
 		throw new \ErrorException($line, $errorNumber, 0, $errorFile, $errorLine);
 	}
 );
+
+ini_set('display_errors', 1);
 
 if($dbs = \SeanMorris\Ids\Settings::read('databases'))
 {

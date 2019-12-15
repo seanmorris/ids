@@ -208,7 +208,7 @@ class Log
 
 		if(!static::$censor)
 		{
-			static::$censor = Settings::read('logCensor');
+			static::$censor = (object) Settings::read('logCensor');
 		}
 
 		static::position(2);
@@ -262,13 +262,13 @@ class Log
 		{
 			foreach($loggers as $logger)
 			{
-				if(!is_a($logger, Logger, TRUE))
-				{
-					throw new \Exception(sprintf(
-						'Settings file specifies non-Logger as Logger: %s'
-						, $logger
-					));
-				}
+// 				if(!is_a($logger, 'SeanMorris\Ids\Logger', TRUE))
+// 				{
+// 					throw new \Exception(sprintf(
+// 						'Settings file specifies non-Logger as Logger: %s'
+// 						, $logger
+// 					));
+// 				}
 
 				$logger::log($logBlob);
 			}
@@ -431,7 +431,7 @@ class Log
 	{
 		if(!static::$censor)
 		{
-			static::$censor = Settings::read('logCensor');
+			static::$censor = (object) Settings::read('logCensor');
 		}
 
 		$indent = '  ';
@@ -523,7 +523,7 @@ class Log
 
 					$k = $name . ':' . $access;
 
-					if(isset(static::$censor[$name]) && static::$censor[$name])
+					if(isset(static::$censor->$name) && static::$censor->$name)
 					{
 						$_val[$k] = '* censored *';
 						continue;
@@ -600,8 +600,8 @@ class Log
 				$_val = array_map(
 					function($k, $v)
 					{
-						if(isset(static::$censor[$k])
-							&& Settings::read(static::$censor[$k])
+						if(isset(static::$censor->$k)
+							&& Settings::read(static::$censor->$k)
 						){
 							return '* censored *';
 						}
@@ -816,7 +816,7 @@ class Log
 	{
 		if(!static::$censor)
 		{
-			static::$censor = Settings::read('logCensor');
+			static::$censor = (object) Settings::read('logCensor');
 		}
 
 		$superTrace = [];
@@ -859,7 +859,7 @@ class Log
 				{
 					$paramName = $paramNames[$a] ?? NULL;
 
-					if($paramName && (static::$censor[$paramName] ?? 0))
+					if($paramName && (static::$censor->$paramName ?? 0))
 					{
 						$renderedArg = '* censored *';
 					}
