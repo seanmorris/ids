@@ -25,7 +25,7 @@ abstract class Queue
 		, RPC                = FALSE
 
 		, ASYNC              = FALSE
-		
+
 		, BROADCAST_EXCHANGE = '::broadcast'
 		, RPC_TOPIC_EXCHANGE = '::rpcTopic'
 		, TOPIC_EXCHANGE     = '::topic'
@@ -155,12 +155,17 @@ abstract class Queue
 				));
 			}
 
-			$connection = new AMQPStreamConnection(
-				$servers->{static::RABBIT_MQ_SERVER}->{'server'}
-				, $servers->{static::RABBIT_MQ_SERVER}->{'port'}
-				, $servers->{static::RABBIT_MQ_SERVER}->{'user'}
-				, $servers->{static::RABBIT_MQ_SERVER}->{'pass'}
-			);
+			$tries = php_sapi_name() === 'cli' ? 15 : 3;
+			$delay = php_sapi_name() === 'cli' ? 5  : 1;
+
+			$connection = Fuse::retry($tries, $delay, function() use($servers) {
+				return new AMQPStreamConnection(
+					$servers->{static::RABBIT_MQ_SERVER}->{'server'}
+					, $servers->{static::RABBIT_MQ_SERVER}->{'port'}
+					, $servers->{static::RABBIT_MQ_SERVER}->{'user'}
+					, $servers->{static::RABBIT_MQ_SERVER}->{'pass'}
+				);
+			});
 
 			$channel = $connection->channel();
 
@@ -331,7 +336,7 @@ abstract class Queue
 			);
 
 			if($topic)
-			{			
+			{
 				$exchange = static::getRpcSendExchange($topic);
 
 				$channel->queue_bind($queue, $exchange, $topic);

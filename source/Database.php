@@ -27,20 +27,25 @@ class		Database
 			));
 		}
 
-		$db = isset(static::$connections[$name])
-			? static::$connections[$name]
-			: static::$connections[$name] = $new = new \PDO(
-				static::$credentials[$name][0]
-				, static::$credentials[$name][1]
-				, static::$credentials[$name][2]
+		$tries = php_sapi_name() === 'cli' ? 15 : 3;
+		$delay = php_sapi_name() === 'cli' ? 5  : 0;
+
+		return Fuse::retry($tries, $delay, function() use($name) {
+			$db = isset(static::$connections[$name])
+				? static::$connections[$name]
+				: static::$connections[$name] = new \PDO(
+					static::$credentials[$name][0]
+					, static::$credentials[$name][1]
+					, static::$credentials[$name][2]
 			);
 
-		if($new ?? FALSE)
-		{
-			$new->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-		}
+			if($db)
+			{
+				$db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+			}
 
-		return $db;
+			return $db;
+		});
 	}
 
 	public static function registerMulti($args)
