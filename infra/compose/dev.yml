@@ -9,6 +9,12 @@ services:
       service: server
     depends_on:
       - database
+    volumes:
+      - ../../:/app
+      - /tmp:/tmp
+    environment:
+      DHOST_IP: ${DHOST_IP}
+      XDEBUG_CONFIG: ${XDEBUG_CONFIG}
 
   idilic:
     extends:
@@ -16,6 +22,12 @@ services:
       service: idilic
     depends_on:
       - database
+    volumes:
+      - ../../:/app
+      - /tmp:/tmp
+    environment:
+      DHOST_IP: ${DHOST_IP}
+      XDEBUG_CONFIG: ${XDEBUG_CONFIG}
 
   database:
     ports: ['9996:3306']

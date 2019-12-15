@@ -1,5 +1,5 @@
 #!make
-TARGET ?=test
+TARGET ?=dev
 
 .PHONY: it clean build images start start-fg restart restart-fg stop stop-all tag run test env
 
@@ -10,20 +10,21 @@ PROJECT =Ids
 REPO    =seanmorris
 
 TARGET ?=base
-BRANCH ?=`git rev-parse --abbrev-ref HEAD`
-DESC   ?=`git describe --tags 2>/dev/null || git rev-parse --short HEAD`
+BRANCH ?=$$(git rev-parse --abbrev-ref HEAD)
+DESC   ?=$$(git describe --tags 2>/dev/null || git rev-parse --short HEAD)
 
 TAG       ?=${BRANCH}-${DESC}-${TARGET}
 IMAGE     ?=
-DHOST_IP  ?=`docker network inspect bridge --format="{{ (index .IPAM.Config 0).Gateway}}"`
+DHOST_IP  ?=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
 
-XDEBUG_CONFIG_REMOTE_HOST?=${DHOST_IP}
+INTERPOLATE_ENV=env -i DHOST_IP=${DHOST_IP} \
+	TAG=${TAG} REPO=${REPO} TARGET=${TARGET} \
+	envsubst
 
 ifeq ($(TARGET),dev)
 	XDEBUG_ENV=XDEBUG_CONFIG="`\
-		cat .env.dev \
-		| env DHOST_IP=$$(${subst `, , ${XDEBUG_CONFIG_REMOTE_HOST}}) envsubst \
-		| grep -v '^\#' \
+		cat .env.dev | ${INTERPOLATE_ENV} \
+		| grep -v ^\# \
 		| grep ^XDEBUG_CONFIG_ \
 		| while read VAR; do echo $$VAR | \
 		{ \
@@ -32,14 +33,16 @@ ifeq ($(TARGET),dev)
 			echo -n $$NAME | sed -e 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
 			echo -n =$$VALUE;\
 		} \
-		; done | cut -c 2-`"
+		; done | cut -c 2- \
+	 ` "
 else
 	XDEBUG_ENV=
 endif
 
-ENV=$$(grep -vhs '^\#' .env .env.${TARGET} | xargs) \
-	TAG=${TAG} REPO=${REPO} DHOST_IP=${DHOST_IP} \
-	${XDEBUG_ENV}
+ENV=TAG=${TAG} REPO=${REPO} DHOST_IP=${DHOST_IP} ${XDEBUG_ENV} \
+	$$(cat .env | ${INTERPOLATE_ENV} | grep -v ^\#) \
+	$$(cat .env.${TARGET} | ${INTERPOLATE_ENV} | grep -v ^\#)
+
 
 DCOMPOSE ?=export ${ENV} \
 	&& docker-compose \
@@ -101,9 +104,18 @@ tag:
 	@ echo ${TAG}
 
 run:
-	${DCOMPOSE} run --rm ${CMD}
+	${DCOMPOSE} run --rm \
+	$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /') \
+	${CMD}
 
 test:
 	echo ${ENV};
 	@ make --no-print-directory run \
-		TARGET=${TARGET} CMD="idilic -vv SeanMorris/Ids runTests SeanMorris/Ids" \
+		TARGET=${TARGET} CMD="idilic -vv SeanMorris/Ids runTests SeanMorris/Ids"
+
+env:
+	echo ${XDEBUG_ENV}
+	#env -i ${ENV} bash -c "env"
+
+hooks:
+	git config core.hooksPath githooks

@@ -1230,6 +1230,13 @@ Root Package:\t%s
 		popen('less -RSXMI +G /home/sean/letsvue/temporary/log.txt', 'w');
 	}
 
+	/** Print the current environment variables available.. */
+
+	public function env()
+	{
+		print \SeanMorris\Ids\Log::dump(getenv());
+	}
+
 	public static function parseDoc()
 	{
 

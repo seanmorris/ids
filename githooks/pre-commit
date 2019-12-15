@@ -1,0 +1,17 @@
+#!/bin/bash
+
+make
+
+echo "PHP will now lint all the php staged files..."
+
+phpLintErrors=0
+
+for stagedFile in $stagedFiles; do
+	res=`php -l $stagedFile 2>&1 | grep 'PHP Parse error:'`
+	echo "$stagedFile, $res"
+	if [ -n "$res" ]; then
+		phpLintErrors=1
+	fi
+done
+
+exit $phpLintErrors

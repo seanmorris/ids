@@ -11,12 +11,6 @@ services:
       context: ../../
       dockerfile: infra/docker/server.dockerfile
       target: ${TARGET}
-    volumes:
-      - ../../:/app
-      - /tmp:/tmp
-    environment:
-      DHOST_IP: ${DHOST_IP}
-      XDEBUG_CONFIG: ${XDEBUG_CONFIG}
 
   idilic:
     image: ${REPO}/ids.idilic:${TAG}
@@ -27,12 +21,6 @@ services:
       context: ../../
       dockerfile: infra/docker/idilic.dockerfile
       target: ${TARGET}
-    volumes:
-      - ../../:/app
-      - /tmp:/tmp
-    environment:
-      DHOST_IP: ${DHOST_IP}
-      XDEBUG_CONFIG: ${XDEBUG_CONFIG}
 
   database:
     image: mariadb:10.4.8-bionic
