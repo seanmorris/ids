@@ -40,8 +40,8 @@ else
 endif
 
 ENV=TAG=${TAG} REPO=${REPO} DHOST_IP=${DHOST_IP} ${XDEBUG_ENV} \
-	$$(cat .env | ${INTERPOLATE_ENV} | grep -v ^\#) \
-	$$(cat .env.${TARGET} | ${INTERPOLATE_ENV} | grep -v ^\#)
+	$$(cat .env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#) \
+	$$(cat .env.${TARGET} 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)
 
 
 DCOMPOSE ?=export ${ENV} \
@@ -67,12 +67,11 @@ build:
 images:
 	@ ${DCOMPOSE} images -q | while read IMAGE_HASH; do \
 		docker image inspect --format="{{index .RepoTags 0}}" $$IMAGE_HASH \
-		| sed s/\:.*\$/// \
 		| grep "^${REPO}" \
-		| grep "${TAG}" \
 		| while read IMAGE_NAME; do \
-			docker tag $$IMAGE_HASH $$IMAGE_NAME:latest-${TARGET}; \
-			echo $$IMAGE_NAME:latest-${TARGET}; \
+			IMAGE_PREFIX=`echo "$$IMAGE_NAME" | sed -e "s/\:.*\$$//"`; \
+			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":latest-${TARGET}; \
+			echo "$$IMAGE_PREFIX":latest-${TARGET}; \
 		done; \
 	done;
 	@ ${DCOMPOSE} images
