@@ -99,7 +99,7 @@ class Linker
 
 	public static function expose()
 	{
-		return [] + static::$exposeVars[get_called_class()];
+		return [] + (static::$exposeVars[get_called_class()] ?? []);
 	}
 
 	public static function set($key, $value, $package = NULL)
