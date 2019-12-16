@@ -31,11 +31,11 @@ RUN  apt-get update \
 		php7.3-yaml      \
 	&& apt-get clean
 
-RUN ln -s /app/source/Idilic/idilic /usr/local/bin/idilic
+ENV PATH "${PATH}:/app/source/Idilic:/app/vendor/bin"
 
 WORKDIR /app
 
-ENTRYPOINT ["/usr/local/bin/idilic"]
+ENTRYPOINT ["idilic"]
 
 CMD ["-d=;", "info"]
 
