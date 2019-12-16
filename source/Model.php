@@ -2450,6 +2450,8 @@ class Model
 
 			$this->{$property}[] = $subject;
 
+			$this->_changed[$property] = TRUE;
+
 			return TRUE;
 		}
 

@@ -93,9 +93,12 @@ class Package
 		$packageName  = static::name($packageName);
 		$packageClass = $packageName . '\\Package';
 
-		$composerData = json_decode($composerJson->slurp());
+		if($composerJson)
+		{
+			$composerData = json_decode($composerJson->slurp());
 
-		$packageName = static::name($composerData->name);
+			$packageName = static::name($composerData->name);
+		}
 
 		if(isset(
 			$composerData
@@ -104,9 +107,9 @@ class Package
 		)){
 			$namespaces = array_keys(get_object_vars(
 				$composerData->autoload->{'psr-4'}
-				));
+		));
 
-			foreach($namespaces as $namespace)
+		foreach($namespaces as $namespace)
 			{
 				if(strtolower($packageName . '\\') === strtolower($namespace))
 				{
