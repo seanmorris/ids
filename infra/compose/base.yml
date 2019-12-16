@@ -3,7 +3,7 @@ version: '2.4'
 services:
 
   server:
-    image: ${REPO}/ids.server:${TAG}
+    image: ${REPO}/${PROJECT}.server:${TAG}
     restart: always
     env_file:
       ../../.env
@@ -13,7 +13,7 @@ services:
       target: ${TARGET}
 
   idilic:
-    image: ${REPO}/ids.idilic:${TAG}
+    image: ${REPO}/${PROJECT}.idilic:${TAG}
     restart: on-failure
     env_file:
       ../../.env

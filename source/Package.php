@@ -60,7 +60,10 @@ class Package
 		}
 
 		return new class($packageName) extends Package {
-			protected static $tables = ['main' => []];
+			protected static
+				$directories = []
+				, $tables    = ['main' => []]
+			;
 		};
 	}
 
@@ -160,12 +163,14 @@ class Package
 
 	public function packageDir()
 	{
-		if(isset(static::$directories['package']))
+		$key = get_called_class() . 'package';
+
+		if(isset(static::$directories[$key]))
 		{
-			return static::$directories['package'];
+			return static::$directories[$key];
 		}
 
-		return static::$directories['package'] = new \SeanMorris\Ids\Disk\Directory(
+		return static::$directories[$key] = new \SeanMorris\Ids\Disk\Directory(
 			$this->folder
 		);
 	}
@@ -177,21 +182,25 @@ class Package
 
 	public function assetDir()
 	{
-		if(isset(static::$directories['assets']))
+		$key = get_called_class() . 'assets';
+
+		if(isset(static::$directories[$key]))
 		{
-			return static::$directories['assets'];
+			return static::$directories[$key];
 		}
 
-		return static::$directories['assets'] = new \SeanMorris\Ids\Disk\Directory(
+		return static::$directories[$key] = new \SeanMorris\Ids\Disk\Directory(
 			$this->folder . 'asset/'
 		);
 	}
 
 	public function publicDir()
 	{
-		if(isset(static::$directories['public']))
+		$key = get_called_class() . 'public';
+
+		if(isset(static::$directories[$key]))
 		{
-			return static::$directories['public'];
+			return static::$directories[$key];
 		}
 
 		if(!$publicDir = Settings::read('public'))
@@ -199,26 +208,30 @@ class Package
 			return;
 		}
 
-		return static::$directories['public'] = new \SeanMorris\Ids\Disk\Directory(
+		return static::$directories[$key] = new \SeanMorris\Ids\Disk\Directory(
 			$publicDir . '/' . $this->dir($this->packageSpace())
 		);
 	}
 
 	public function globalDir()
 	{
-		if(isset(static::$directories['global']))
+		$key = get_called_class() . 'global';
+
+		if(isset(static::$directories[$key]))
 		{
-			return static::$directories['global'];
+			return static::$directories[$key];
 		}
 
-		return static::$directories['global'] = new \SeanMorris\Ids\Disk\Directory(
+		return static::$directories[$key] = new \SeanMorris\Ids\Disk\Directory(
 			$this->packageDir() . 'data/global/'
 		);
 	}
 
 	public function localDir()
 	{
-		if(isset(static::$directories['local']))
+		$key = get_called_class() . 'local';
+
+		if(isset(static::$directories[$key]))
 		{
 			return static::$directories['local'];
 		}
@@ -230,44 +243,52 @@ class Package
 
 	public function sourceDir()
 	{
-		if(isset(static::$directories['source']))
+		$key = get_called_class() . 'source';
+
+		if(isset(static::$directories[$key]))
 		{
-			return static::$directories['source'];
+			return static::$directories[$key];
 		}
 
-		return static::$directories['source'] = new \SeanMorris\Ids\Disk\Directory(
+		return static::$directories[$key] = new \SeanMorris\Ids\Disk\Directory(
 			$this->packageDir() . 'source/'
 		);
 	}
 
 	public function testDir()
 	{
-		if(isset(static::$directories['test']))
+		$key = get_called_class() . 'test';
+
+		if(isset(static::$directories[$key]))
 		{
-			return static::$directories['test'];
+			return static::$directories[$key];
 		}
 
-		return static::$directories['test'] = new \SeanMorris\Ids\Disk\Directory(
+		return static::$directories[$key] = new \SeanMorris\Ids\Disk\Directory(
 			$this->packageDir() . 'test/'
 		);
 	}
 
 	public function dataDir()
 	{
-		if(isset(static::$directories['data']))
+		$key = get_called_class() . 'data';
+
+		if(isset(static::$directories[$key]))
 		{
-			return static::$directories['data'];
+			return static::$directories[$key];
 		}
 
-		return static::$directories['data'] = new \SeanMorris\Ids\Disk\Directory(
+		return static::$directories[$key] = new \SeanMorris\Ids\Disk\Directory(
 			$this->packageDir() . 'data/');
 	}
 
 	public function localSiteDir()
 	{
-		if(isset(static::$directories['localSite']))
+		$key = get_called_class() . 'localSite';
+
+		if(isset(static::$directories[$key]))
 		{
-			return static::$directories['localSite'];
+			return static::$directories[$key];
 		}
 
 		if(! isset($_SERVER['HTTP_HOST']) && php_sapi_name() == 'cli')
@@ -315,16 +336,18 @@ class Package
 
 			if($maybeDir->check())
 			{
-				return static::$directories['localSite'] = $maybeDir;
+				return static::$directories[$key] = $maybeDir;
 			}
 		}
 	}
 
 	public function globalSiteDir()
 	{
-		if(isset(static::$directories['globalSite']))
+		$key = get_called_class() . 'globalSite';
+
+		if(isset(static::$directories[$key]))
 		{
-			return static::$directories['globalSite'];
+			return static::$directories[$key];
 		}
 
 		if(! isset($_SERVER['HTTP_HOST']))
@@ -334,7 +357,7 @@ class Package
 			);
 		}
 
-		return static::$directories['globalSite'] = new \SeanMorris\Ids\Disk\Directory(
+		return static::$directories[$key] = new \SeanMorris\Ids\Disk\Directory(
 			$this->globalDir() . 'sites/' . $_SERVER['HTTP_HOST'] . '/');
 	}
 

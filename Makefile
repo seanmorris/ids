@@ -1,15 +1,11 @@
 #!make
-TARGET ?=dev
-
 .PHONY: it clean build images start start-fg restart restart-fg stop stop-all tag run test env
 
 -include .env
 -include .env.${TARGET}
 
-PROJECT =Ids
-REPO    =seanmorris
-
-TARGET ?=base
+PROJECT?=Ids
+REPO   ?=seanmorris
 BRANCH ?=$$(git rev-parse --abbrev-ref HEAD)
 DESC   ?=$$(git describe --tags 2>/dev/null || git rev-parse --short HEAD)
 
@@ -88,6 +84,7 @@ start:
 	@ ${DCOMPOSE} up -d
 
 start-fg:
+	@ ${DCOMPOSE} up
 
 stop:
 	@ ${DCOMPOSE} down
@@ -108,7 +105,7 @@ test:
 		TARGET=${TARGET} CMD="idilic -vv SeanMorris/Ids runTests SeanMorris/Ids"
 
 env:
-	env -i ${ENV} bash -c "env"
+	@ env -i ${ENV} bash -c "env"
 
 hooks:
-	git config core.hooksPath githooks
+	@ git config core.hooksPath githooks

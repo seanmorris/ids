@@ -35,13 +35,13 @@ RUN ln -s /app/source/Idilic/idilic /usr/local/bin/idilic
 
 WORKDIR /app
 
-ENTRYPOINT ["idilic"]
+ENTRYPOINT ["/usr/local/bin/idilic"]
 
 CMD ["-d=;", "info"]
 
 FROM base as dev
 
-RUN  apt-get update \
+RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		php7.3-xdebug \
 	&& apt-get clean
