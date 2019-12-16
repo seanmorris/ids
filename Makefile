@@ -4,7 +4,7 @@
 -include .env
 -include .env.${TARGET}
 
-PROJECT?=Ids
+PROJECT?=ids
 REPO   ?=seanmorris
 BRANCH ?=$$(git rev-parse --abbrev-ref HEAD)
 DESC   ?=$$(git describe --tags 2>/dev/null || git rev-parse --short HEAD)
@@ -15,6 +15,7 @@ DHOST_IP  ?=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0)
 
 INTERPOLATE_ENV=env -i DHOST_IP=${DHOST_IP} \
 	TAG=${TAG} REPO=${REPO} TARGET=${TARGET} \
+	PROJECT=${PROJECT} \
 	envsubst
 
 ifeq ($(TARGET),dev)
@@ -36,6 +37,7 @@ else
 endif
 
 ENV=TAG=${TAG} REPO=${REPO} DHOST_IP=${DHOST_IP} ${XDEBUG_ENV} \
+	PROJECT=${PROJECT} \
 	$$(cat .env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#) \
 	$$(cat .env.${TARGET} 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)
 
@@ -52,7 +54,7 @@ it:
 		-v $$PWD:/app \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		composer install
-	@ make -s build TAG=latest IMAGE=idilic
+	@ make -s build TAG=latest-local IMAGE=idilic
 	@ make -s build
 	@ ${DCOMPOSE} up --no-start
 	@ make -s images
