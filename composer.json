@@ -7,7 +7,7 @@
 		}
 	]
 	, "bin": [
-		"source/Idilic/idilic"
+		"bin/idilic"
 	]
 	, "require-dev": {
 		"simpletest/simpletest": "dev-master"

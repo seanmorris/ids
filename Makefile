@@ -50,17 +50,26 @@ DCOMPOSE ?=export ${ENV} \
 it:
 	@ echo Building ${PROJECT} ${TAG}
 	@ sleep 2
+	@ make -s composer-install PROJECT=${PROJECT}
+	@ make -s build PROJECT=${PROJECT} TAG=latest-local IMAGE=idilic
+	@ make -s build PROJECT=${PROJECT}
+	@ ${DCOMPOSE} up --no-start
+	@ make -s PROJECT=${PROJECT} images
+
+build:
+	@ ${DCOMPOSE} build ${IMAGE}
+
+composer-install:
 	@ docker run --rm \
 		-v $$PWD:/app \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		composer install
-	@ make -s build TAG=latest-local IMAGE=idilic
-	@ make -s build
-	@ ${DCOMPOSE} up --no-start
-	@ make -s images
 
-build:
-	@ ${DCOMPOSE} build ${IMAGE}
+composer-update:
+	@ docker run --rm \
+		-v $$PWD:/app \
+		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
+		composer update
 
 images:
 	@ ${DCOMPOSE} images -q | while read IMAGE_HASH; do \
