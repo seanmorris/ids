@@ -25,7 +25,5 @@ class LoaderTest extends \UnitTestCase
 	public function testLoader()
 	{
 		$x = new \App\SomeInjection;
-
-		var_dump($x);
 	}
 }

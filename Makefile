@@ -56,16 +56,13 @@ it:
 		-v $$PWD:/app \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		composer install
-	make build TAG=latest IMAGE=idilic
-	make build
-	${DCOMPOSE} up --no-start
-	make images
-
-clean:
-	rm -rf vendor/
+	@ make -s build TAG=latest IMAGE=idilic
+	@ make -s build
+	@ ${DCOMPOSE} up --no-start
+	@ make -s images
 
 build:
-	${DCOMPOSE} build ${IMAGE}
+	@ ${DCOMPOSE} build ${IMAGE}
 
 images:
 	@ ${DCOMPOSE} images -q | while read IMAGE_HASH; do \
@@ -81,41 +78,38 @@ images:
 	@ ${DCOMPOSE} images
 
 restart:
-	make stop
-	make start
+	@ make -s stop
+	@ make -s start
 
 restart-fg:
-	make stop
-	make start-fg
+	@ make -s stop
+	@ make -s start-fg
 
 start:
-	${DCOMPOSE} up -d
+	@ ${DCOMPOSE} up -d
 
 start-fg:
-	${DCOMPOSE} up
 
 stop:
-	${DCOMPOSE} down
+	@ ${DCOMPOSE} down
 
 stop-all:
-	${DCOMPOSE} down --remove-orphans
+	@ ${DCOMPOSE} down --remove-orphans
 
 tag:
 	@ echo ${TAG}
 
 run:
-	${DCOMPOSE} run --rm \
+	@ ${DCOMPOSE} run --rm \
 	$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /') \
 	${CMD}
 
 test:
-	echo ${ENV};
 	@ make --no-print-directory run \
 		TARGET=${TARGET} CMD="idilic -vv SeanMorris/Ids runTests SeanMorris/Ids"
 
 env:
-	echo ${XDEBUG_ENV}
-	#env -i ${ENV} bash -c "env"
+	env -i ${ENV} bash -c "env"
 
 hooks:
 	git config core.hooksPath githooks
