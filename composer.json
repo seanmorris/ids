@@ -9,10 +9,10 @@
 	, "bin": [
 		"bin/idilic"
 	]
+	, "require": {
+	}
 	, "require-dev": {
 		"simpletest/simpletest": "dev-master"
-	}
-	, "require": {
 	}
 	, "autoload": {
 		"psr-4": {
