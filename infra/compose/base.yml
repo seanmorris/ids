@@ -24,10 +24,11 @@ services:
     volumes:
       - schema:/var/lib/mysql
     environment:
-      MYSQL_USER:          test
-      MYSQL_PASSWORD:      test
-      MYSQL_DATABASE:      ids_schema
-      MYSQL_ROOT_PASSWORD: test
+      MYSQL_USER:          ${IDS_DATABASES_MAIN_USERNAME}
+      MYSQL_PASSWORD:      ${IDS_DATABASES_MAIN_PASSWORD}
+      MYSQL_DATABASE:      ${IDS_DATABASES_MAIN_DATABASE}
+      MYSQL_PORT:          ${IDS_DATABASES_MAIN_PORT}
+      MYSQL_RANDOM_ROOT_PASSWORD: 1
     command: ['mysqld', '--character-set-server=utf8mb4']
 
 volumes:
