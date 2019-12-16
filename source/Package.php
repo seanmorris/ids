@@ -32,6 +32,25 @@ class Package
 		$composerData = json_decode($composerJson->slurp());
 
 		$packageName = static::name($composerData->name);
+
+		if(isset(
+			$composerData
+			, $composerData->autoload
+			, $composerData->autoload->{'psr-4'}
+		)){
+			$namespaces = array_keys(get_object_vars(
+				$composerData->autoload->{'psr-4'}
+			));
+
+			foreach($namespaces as $namespace)
+			{
+				if(strtolower($packageName . '\\') === strtolower($namespace))
+				{
+					$packageName = substr($namespace, 0, -1);
+				}
+			}
+		}
+
 		$packageClass = $packageName . '\\Package';
 
 		if(class_exists($packageClass))
@@ -39,7 +58,7 @@ class Package
 			return new $packageClass($packageName);
 		}
 
-		$package = new static($packageName);
+		$package = static::get($packageName);
 
 		return $package;
 	}
@@ -51,8 +70,35 @@ class Package
 			$packageName = preg_replace('/\\\(?:\w+$)/', '', get_called_class());
 		}
 
-		$packageName = static::name($packageName);
+		$dirFrag = preg_replace('/\\\\/', '/', $packageName);
+
+		$vendorRoot   = new \SeanMorris\Ids\Disk\Directory(IDS_VENDOR_ROOT);
+		$composerJson = $vendorRoot->dir($dirFrag)->file('composer.json');
+
+		$packageName  = static::name($packageName);
 		$packageClass = $packageName . '\\Package';
+
+		$composerData = json_decode($composerJson->slurp());
+
+		$packageName = static::name($composerData->name);$appRoot = $vendorRoot->parent();
+
+		if(isset(
+			$composerData
+			, $composerData->autoload
+			, $composerData->autoload->{'psr-4'}
+		)){
+			$namespaces = array_keys(get_object_vars(
+				$composerData->autoload->{'psr-4'}
+				));
+
+			foreach($namespaces as $namespace)
+			{
+				if(strtolower($packageName . '\\') === strtolower($namespace))
+				{
+					$packageName = substr($namespace, 0, -1);
+				}
+			}
+		}
 
 		if(class_exists($packageClass))
 		{

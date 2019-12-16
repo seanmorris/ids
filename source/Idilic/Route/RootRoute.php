@@ -173,20 +173,29 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 	public function runTests($router)
 	{
-		$args = $router->path()->consumeNodes();
-
-		while($packageName = array_shift($args))
+		if(!$packageList = $router->path()->consumeNodes())
 		{
-			$packageName = str_replace('/', '\\', $packageName);
-			$package = $this->_getPackage($packageName);
-			$tests = $package->testDir();
+			$packageList = \SeanMorris\Ids\Package::listPackages();
+		}
 
-			while($test = $tests->read())
+		while($packageName = array_shift($packageList))
+		{
+			printf("Checking %s...\n", $packageName);
+
+			$packageName = str_replace('/', '\\', $packageName);
+			$package     = \SeanMorris\Ids\Package::get($packageName);
+			$tests       = $package->testDir();
+			$packageName = $package->packageSpace();
+
+			while($tests->check() && $test = $tests->read())
 			{
+				printf("\tChecking %s...\n", $test);
+
 				if(!preg_match('/(\w+?Test)\.php/', $test->name(), $m))
 				{
 					continue;
 				}
+
 				$testClass = $packageName . '\\Test\\' . $m[1];
 				$test = new $testClass;
 				$test->run(new \TextReporter());
