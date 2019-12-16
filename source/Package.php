@@ -69,18 +69,33 @@ class Package
 		{
 			$packageName = preg_replace('/\\\(?:\w+$)/', '', get_called_class());
 		}
+		$vendorRoot = new \SeanMorris\Ids\Disk\Directory(IDS_VENDOR_ROOT);
+		$appRoot    = $vendorRoot->parent();
 
-		$dirFrag = preg_replace('/\\\\/', '/', $packageName);
+		$dirFrag    = strtolower(preg_replace('/\\\\/', '/', $packageName));
+		$spaceFrag  = strtolower(preg_replace('/\//', '\\', $packageName));
 
-		$vendorRoot   = new \SeanMorris\Ids\Disk\Directory(IDS_VENDOR_ROOT);
-		$composerJson = $vendorRoot->dir($dirFrag)->file('composer.json');
+		$rootComposerJson = $appRoot->file('composer.json');
+		$rootComposerData = json_decode($rootComposerJson->slurp());
+
+		$root = FALSE;
+
+		if(strtolower($dirFrag) === $rootComposerData->name)
+		{
+			$composerJson = $rootComposerJson;
+			$root = TRUE;
+		}
+		else
+		{
+			$composerJson = $vendorRoot->dir($dirFrag)->file('composer.json');
+		}
 
 		$packageName  = static::name($packageName);
 		$packageClass = $packageName . '\\Package';
 
 		$composerData = json_decode($composerJson->slurp());
 
-		$packageName = static::name($composerData->name);$appRoot = $vendorRoot->parent();
+		$packageName = static::name($composerData->name);
 
 		if(isset(
 			$composerData
@@ -102,10 +117,10 @@ class Package
 
 		if(class_exists($packageClass))
 		{
-			return new $packageClass($packageName);
+			return new $packageClass($packageName, $root);
 		}
 
-		return new class($packageName) extends Package {
+		return new class($packageName, $root) extends Package {
 			protected static
 				$directories = []
 				, $tables    = ['main' => []]
@@ -113,7 +128,7 @@ class Package
 		};
 	}
 
-	protected function __construct($package)
+	protected function __construct($package, $root = FALSE)
 	{
 		$packageName = static::name($package);
 		$packageDir = static::dir($package);
@@ -124,8 +139,15 @@ class Package
 		{
 			$reflection = new \ReflectionClass($packageClass);
 			$classFile = $reflection->getFileName();
-			$this->folder = dirname(dirname($classFile)) . '/';
 			$this->packageName = $packageName;
+
+			$this->folder = dirname(dirname($classFile)) . '/';
+
+			if($root)
+			{
+				$vendorRoot   = new \SeanMorris\Ids\Disk\Directory(IDS_VENDOR_ROOT);
+				$this->folder = $vendorRoot->parent();
+			}
 		}
 		else
 		{
@@ -209,7 +231,7 @@ class Package
 
 	public function packageDir()
 	{
-		$key = get_called_class() . 'package';
+		$key = $this->packageName . '-package';
 
 		if(isset(static::$directories[$key]))
 		{
@@ -228,7 +250,7 @@ class Package
 
 	public function assetDir()
 	{
-		$key = get_called_class() . 'assets';
+		$key = $this->packageName . '-assets';
 
 		if(isset(static::$directories[$key]))
 		{
@@ -242,7 +264,7 @@ class Package
 
 	public function publicDir()
 	{
-		$key = get_called_class() . 'public';
+		$key = $this->packageName . '-public';
 
 		if(isset(static::$directories[$key]))
 		{
@@ -261,7 +283,7 @@ class Package
 
 	public function globalDir()
 	{
-		$key = get_called_class() . 'global';
+		$key = $this->packageName . '-global';
 
 		if(isset(static::$directories[$key]))
 		{
@@ -275,7 +297,7 @@ class Package
 
 	public function localDir()
 	{
-		$key = get_called_class() . 'local';
+		$key = $this->packageName . '-local';
 
 		if(isset(static::$directories[$key]))
 		{
@@ -289,7 +311,7 @@ class Package
 
 	public function sourceDir()
 	{
-		$key = get_called_class() . 'source';
+		$key = $this->packageName . '-source';
 
 		if(isset(static::$directories[$key]))
 		{
@@ -303,7 +325,7 @@ class Package
 
 	public function testDir()
 	{
-		$key = get_called_class() . 'test';
+		$key = $this->packageName . '-test';
 
 		if(isset(static::$directories[$key]))
 		{
@@ -317,7 +339,7 @@ class Package
 
 	public function dataDir()
 	{
-		$key = get_called_class() . 'data';
+		$key = $this->packageName . '-data';
 
 		if(isset(static::$directories[$key]))
 		{
@@ -330,7 +352,7 @@ class Package
 
 	public function localSiteDir()
 	{
-		$key = get_called_class() . 'localSite';
+		$key = $this->packageName . '-localSite';
 
 		if(isset(static::$directories[$key]))
 		{
@@ -389,7 +411,7 @@ class Package
 
 	public function globalSiteDir()
 	{
-		$key = get_called_class() . 'globalSite';
+		$key = $this->packageName . '-globalSite';
 
 		if(isset(static::$directories[$key]))
 		{
@@ -494,7 +516,12 @@ class Package
 			$dir = $this->globalDir();
 		}
 
-		$path = $dir . 'var.json';
+		if(!$dir)
+		{
+			return $val;
+		}
+
+		$path = $dir->name() . 'var.json';
 
 		if(! file_exists($dir) || ! file_exists($path))
 		{

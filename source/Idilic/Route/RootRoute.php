@@ -180,8 +180,6 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		while($packageName = array_shift($packageList))
 		{
-			printf("Checking %s...\n", $packageName);
-
 			$packageName = str_replace('/', '\\', $packageName);
 			$package     = \SeanMorris\Ids\Package::get($packageName);
 			$tests       = $package->testDir();
@@ -189,8 +187,6 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 			while($tests->check() && $test = $tests->read())
 			{
-				printf("\tChecking %s...\n", $test);
-
 				if(!preg_match('/(\w+?Test)\.php/', $test->name(), $m))
 				{
 					continue;

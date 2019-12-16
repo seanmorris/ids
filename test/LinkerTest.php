@@ -7,10 +7,11 @@ class LinkerTest extends \UnitTestCase
 		$namespace = 'SeanMorris\Ids';
 		$package = strtolower($namespace);
 		$linkerClass = $namespace . '\Linker';
-		$testKey = 'Test@' . time();
+		$testKey = 'Test@';
 		$testValue = ['testValue', 'blah'];
 
 		$linkerClass::set($testKey, $testValue);
+		$linkerClass::set($testKey, $testValue, $package);
 
 		$linkerClass::link();
 
@@ -20,7 +21,7 @@ class LinkerTest extends \UnitTestCase
 
 		$globalData = $linkerClass::get($testKey);
 
-		$this->assertEqual($globalData[$package], $testValue);
+		$this->assertEqual($globalData[$namespace], $testValue);
 
 		$flatData = $linkerClass::get($testKey, TRUE);
 

@@ -3,10 +3,12 @@ namespace SeanMorris\Ids;
 class Linker
 {
 	protected static
-		$exposeVars = [];
+		$exposeVars    = []
+		, $foreginVars = [];
 
 	public static function link()
 	{
+		$rootPackage = \SeanMorris\Ids\Package::getRoot();
 		$packages = \SeanMorris\Ids\Package::listPackages();
 		$links = array();
 
@@ -14,8 +16,8 @@ class Linker
 		{
 			$package = \SeanMorris\Ids\Package::get($package);
 			$packageSpace = $package->packageSpace();
-			
-			if($exposedLinks = $package->getVar('link', NULL, 'global'))
+
+			if($exposedLinks = $package->getVar('link', NULL))
 			{
 				foreach($exposedLinks as $key => $value)
 				{
@@ -44,21 +46,33 @@ class Linker
 		$rootPackage = \SeanMorris\Ids\Package::getRoot();
 
 		$rootPackage->setVar('linker:links', $links);
+		$rootPackage->setVar(
+			'linker:foreignLinks'
+			, static::$foreginVars[get_called_class()] ?? []
+		);
 	}
 
 	public static function get($key = NULL, $package = NULL)
 	{
 		$rootPackage = \SeanMorris\Ids\Package::getRoot();
 
-		$links = (array)$rootPackage->getVar('linker:links:' . $key);
+		$links = (array) $rootPackage->getVar('linker:links:' . $key);
 
 		if($package && !is_bool($package))
 		{
-			$package = strtolower($package);
-			
-			if(array_key_exists($package, $links))
+			$package = \SeanMorris\Ids\Package::get($package);
+			$packageSpace = $package->packageSpace();
+
+			$links = (array) $rootPackage->getVar('linker:foreignLinks');
+
+			if(array_key_exists($packageSpace, $links))
 			{
-				return $links[$package];
+				$links = (array) $links[$packageSpace];
+			}
+
+			if(array_key_exists($key, $links))
+			{
+				return $links[$key];
 			}
 
 			return [];
@@ -85,12 +99,26 @@ class Linker
 
 	public static function expose()
 	{
-		return [] + static::$exposeVars;
+		return [] + static::$exposeVars[get_called_class()];
 	}
 
-	public static function set($key, $value)
+	public static function set($key, $value, $package = NULL)
 	{
-		static::$exposeVars[$key] = $value;
+		if($package)
+		{
+			if(!is_object($package))
+			{
+				$package = \SeanMorris\Ids\Package::get($package);
+			}
+
+			$package = $package->packageSpace();
+
+			static::$foreginVars[get_called_class()][$package][$key] = $value;
+
+			return;
+		}
+
+		static::$exposeVars[get_called_class()][$key] = $value;
 	}
 
 	public static function inheritance()
