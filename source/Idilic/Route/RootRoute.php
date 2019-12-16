@@ -1197,14 +1197,17 @@ EOF
 
 		$dbs = NULL;
 
-		foreach($databases as $name => $database)
+		if($databases)
 		{
-			$dbs .= sprintf(
-				"Database: %s\n%sHost: %s\n"
-				, $name
-				, str_repeat(' ', 4)
-				, $database->hostname
-			);
+			foreach($databases as $name => $database)
+			{
+				$dbs .= sprintf(
+					"Database: %s\n%sHost: %s\n"
+					, $name
+					, str_repeat(' ', 4)
+					, $database->hostname
+					);
+			}
 		}
 
 		return sprintf(

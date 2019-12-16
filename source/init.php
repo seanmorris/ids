@@ -122,6 +122,11 @@ else
 if(!$errorPath = \SeanMorris\Ids\Settings::read('log'))
 {
 	$errorPath = IDS_VENDOR_ROOT . '/../temporary/log.txt';
+
+	if(!is_writable($errorPath))
+	{
+		$errorPath = 'php://stderr';
+	}
 }
 
 if(!file_exists($errorPath))

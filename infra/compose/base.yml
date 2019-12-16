@@ -5,8 +5,6 @@ services:
   server:
     image: ${REPO}/${PROJECT}.server:${TAG}
     restart: always
-    env_file:
-      ../../.env
     build:
       context: ../../
       dockerfile: infra/docker/server.dockerfile
@@ -15,8 +13,6 @@ services:
   idilic:
     image: ${REPO}/${PROJECT}.idilic:${TAG}
     restart: on-failure
-    env_file:
-      ../../.env
     build:
       context: ../../
       dockerfile: infra/docker/idilic.dockerfile
@@ -36,4 +32,4 @@ services:
 
 volumes:
   schema:
-    driver: "local"
+    driver: local

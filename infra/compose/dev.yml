@@ -7,6 +7,8 @@ services:
     extends:
       file: base.yml
       service: server
+    env_file:
+      ../../.env
     depends_on:
       - database
     volumes:
@@ -20,6 +22,8 @@ services:
     extends:
       file: base.yml
       service: idilic
+    env_file:
+      ../../.env
     depends_on:
       - database
     volumes:
@@ -37,4 +41,4 @@ services:
 
 volumes:
   schema:
-    driver: "local"
+    driver: local
