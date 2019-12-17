@@ -391,12 +391,18 @@ class Model
 				}
 			}
 
-
 			$update->execute(...$values);
+
+			static $reflection = [];
 
 			if($this->id)
 			{
-				$reflection = new \ReflectionClass($curClass);
+				if(!isset($reflections[$curClass]))
+				{
+					$reflections[$curClass] = new \ReflectionClass($curClass);
+				}
+
+				$reflection = $reflections[$curClass];
 
 				foreach($this as $property => $value)
 				{
@@ -1500,7 +1506,14 @@ class Model
 			$class = get_called_class();
 		}
 
-		$reflection = new \ReflectionClass($class);
+		static $reflections = [];
+
+		if(!isset($reflections[$class]))
+		{
+			$reflections[$class] = new \ReflectionClass($class);
+		}
+
+		$reflection = $reflections[$class];
 
 		if($reflection->hasProperty($name))
 		{
@@ -1514,6 +1527,8 @@ class Model
 
 	protected static function resolveDef($name, &$args = null)
 	{
+		static $reflections = [];
+
 		$type = NULL;
 		$flat = $subs = $recs = $cursor = $paged = FALSE;
 
@@ -1616,7 +1631,14 @@ class Model
 		{
 			try
 			{
-				$property = new \ReflectionProperty($class, $name);
+				$key = $class . '::' . $name;
+
+				if(!isset($reflections[$key]))
+				{
+					$reflections[$key] = new \ReflectionProperty($class, $name);
+				}
+
+				$property = $reflections[$key];
 			}
 			catch(\ReflectionException $exception)
 			{
@@ -1926,7 +1948,7 @@ class Model
 	{
 		$class = get_called_class();
 
-		static $_propertyCache = [];
+		static $_propertyCache = [], $_reflectionCache = [];
 
 		$cacheKey = $class . '::' . (int) $all;
 
@@ -1939,8 +1961,14 @@ class Model
 
 		while($class)
 		{
-			$reflection = new \ReflectionClass($class);
-			$proprties = $reflection->getProperties();
+			if(!isset($_reflectionCache[$class]))
+			{
+				$reflection = new \ReflectionClass($class);
+
+				$_reflectionCache[$class] = $reflection->getProperties();
+			}
+
+			$proprties = $_reflectionCache[$class];
 
 			foreach($proprties as $property)
 			{

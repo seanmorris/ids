@@ -2,7 +2,7 @@
 namespace SeanMorris\Ids;
 class Package
 {
-	protected $folder, $packageName;
+	protected $folder, $packageName, $variables   = [];
 
 	protected static
 		$assetManager
@@ -451,6 +451,8 @@ class Package
 
 	public function setVar($var, $val, $type = 'local')
 	{
+		$key = $var . '::' . $type;
+
 		$varPath = preg_split('/(?<!\\\\)\:/', $var);
 
 		if($type == 'local')
@@ -504,10 +506,19 @@ class Package
 		}
 
 		file_put_contents($path, json_encode($vars, JSON_PRETTY_PRINT));
+
+		$this->variables[$key] = $val;
 	}
 
 	public function getVar($var, $val = NULL, $type = 'local')
 	{
+		$key = $var . '::' . $type;
+
+		if(isset($this->variables[$key]))
+		{
+			return $this->variables[$key];
+		}
+
 		$varPath = preg_split('/(?<!\\\\)\:/', $var);
 
 		if($type == 'local')
