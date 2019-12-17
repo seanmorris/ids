@@ -15,14 +15,14 @@ class Settings
 
 	public static function read(...$names)
 	{
-		$cacheKey = implode('_::_', $names);
+		static $cache = [];
 
-		if(isset(static::$cache[$cacheKey]))
+		$cacheKey = $scoredName = implode('_', $names);
+
+		if(isset($cache[$cacheKey]))
 		{
-			return static::$cache[$cacheKey];
+			return $cache[$cacheKey];
 		}
-
-		$scoredName = implode('_', $names);
 
 		$envName = static::findEnvVarName(
 			$scoredName
@@ -67,7 +67,7 @@ class Settings
 			$settings = $settings->$name;
 		}
 
-		static::$cache[$cacheKey] = $settings;
+		$cache[$cacheKey] = $settings;
 
 		return $settings;
 	}
@@ -109,11 +109,6 @@ class Settings
 			}
 
 			$settingsFile = static::findSettingsFile($hostname, $port);
-
-			if(!static::$settings && file_exists($settingsFile))
-			{
-				return static::$settings = (object) [];
-			}
 
 			if(!static::$settings && file_exists($settingsFile))
 			{
