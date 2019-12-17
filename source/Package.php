@@ -93,7 +93,7 @@ class Package
 		$packageName  = static::name($packageName);
 		$packageClass = $packageName . '\\Package';
 
-		if($composerJson)
+		if($composerJson && $composerJson->check())
 		{
 			$composerData = json_decode($composerJson->slurp());
 

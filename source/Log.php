@@ -125,7 +125,6 @@ class Log
 
 	protected static function log($levelString, ...$data)
 	{
-		$position = static::position(1);
 		$output   = null;
 		$level    = 0;
 		$maxLevel = NULL;
@@ -140,8 +139,20 @@ class Log
 			static::$packages = (array) Settings::read('logPackages');
 		}
 
-		if(is_array(static::$packages))
+		if(!isset(static::$level))
 		{
+			static::$level = Settings::read('logLevel');
+		}
+
+		if(isset(static::$levels[static::$level]))
+		{
+			$maxLevel = static::$levels[static::$level];
+		}
+
+		if(is_array(static::$packages) && static::$packages)
+		{
+			$position = static::position(1);
+
 			foreach(static::$packages as $regex => $logLevel)
 			{
 				if(!isset($position['class']))
@@ -159,19 +170,6 @@ class Log
 					$maxLevel = static::$levels[$logLevel];
 					break;
 				}
-			}
-		}
-
-		if($maxLevel === NULL)
-		{
-			if(!isset(static::$level))
-			{
-				static::$level = Settings::read('logLevel');
-			}
-
-			if(isset(static::$levels[static::$level]))
-			{
-				$maxLevel = static::$levels[static::$level];
 			}
 		}
 

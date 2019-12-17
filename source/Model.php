@@ -1924,9 +1924,16 @@ class Model
 
 	public static function getProperties($all = FALSE)
 	{
-		$result = [];
+		$calledClass = $class = get_called_class();
 
-		$class = get_called_class();
+		static $_propertyCache = [];
+
+		if(isset($_propertyCache[$calledClass]))
+		{
+			return $_propertyCache[$calledClass];
+		}
+
+		$result = [];
 
 		while($class)
 		{
@@ -1950,6 +1957,8 @@ class Model
 
 			$class = get_parent_class($class);
 		}
+
+		$_propertyCache[$calledClass] = $result;
 
 		return $result;
 	}
