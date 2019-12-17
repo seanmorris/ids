@@ -34,9 +34,9 @@ class		Database
 			? static::$connections[$name]
 			: Fuse::retry($tries, $delay, function() use($name) {
 				$db = static::$connections[$name] = new \PDO(
-						static::$credentials[$name][0]
-						, static::$credentials[$name][1]
-						, static::$credentials[$name][2]
+					static::$credentials[$name][0]
+					, static::$credentials[$name][1]
+					, static::$credentials[$name][2]
 				);
 
 				if($db)
