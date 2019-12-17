@@ -2489,7 +2489,7 @@ class Model
 
 			foreach($this->{$property} as $existingSubject)
 			{
-				if($existingSubject->id == $subject->id
+				if($subject && $existingSubject->id == (is_object($subject) ? $subject->id : $subject)
 					&& get_class($existingSubject) == get_class($subject)
 				){
 					return;
