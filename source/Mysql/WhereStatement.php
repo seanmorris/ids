@@ -70,7 +70,6 @@ abstract class WhereStatement extends Statement
 			, $this->valueWrappers
 		);
 
-
 		\SeanMorris\Ids\Log::debug('Args:', $args);
 
 		if($nonscalar = array_filter($args, function($a) {

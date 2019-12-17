@@ -483,7 +483,7 @@ class Model
 
 				if(!$saved)
 				{
-					\SeanMorris\Ids\Log::debug([$this, $saved]);
+					\SeanMorris\Ids\Log::debug(['NOT SAVED', $this, $saved]);
 
 					return FALSE;
 				}
@@ -771,26 +771,28 @@ class Model
 
 		array_shift($backtrace);
 
-		\SeanMorris\Ids\Log::debug(sprintf(
-			'%s::%s(...)'
-			, $curClass
-			, $name
-		), $args);
-
-		\SeanMorris\Ids\Log::debug(sprintf(
-			'%s::%s(...)'
+		\SeanMorris\Ids\Log::debug(
+			sprintf(
+				'%s::%s(...)'
+				, $curClass
+				, $name
+			)
+			, $args
+			, sprintf(
+				'%s::%s(...)'
 				. PHP_EOL
 				. "\t" . "Called from\n\t\t%s."
 				. PHP_EOL
 				. "\t" . 'Cache "%s%s"'
-			, $curClass
-			, $name
-			, implode(PHP_EOL . "\t\t", $trace)
-			, $cacheKey
-			, $cacheHit
-				? PHP_EOL . "\t\t" . 'CACHE HIT!!!'
-				: ''
-		));
+				, $curClass
+				, $name
+				, implode(PHP_EOL . "\t\t", $trace)
+				, $cacheKey
+				, $cacheHit
+					? PHP_EOL . "\t\t" . 'CACHE HIT!!!'
+					: ''
+			)
+		);
 
 		$cache   =& $classCache[$cacheKey];
 		$idCache =& self::$idCache[$curClass];
@@ -1319,7 +1321,7 @@ class Model
 
 		reset($skeleton[static::$table]);
 
-		Log::debug($skeleton);
+// 		Log::debug($skeleton);
 
 		return [key($skeleton[static::$table]), array_shift($skeleton[static::$table])];
 	}
@@ -1387,7 +1389,7 @@ class Model
 			}
 		}
 
-		\SeanMorris\Ids\Log::debug(get_called_class(), $skeleton);
+// 		\SeanMorris\Ids\Log::debug(get_called_class(), $skeleton);
 
 		foreach($this as $property => $value)
 		{
@@ -1395,11 +1397,11 @@ class Model
 			{
 				$subjectClass = static::$hasOne[$property];
 
-				\SeanMorris\Ids\Log::debug(
-					$property
-					, $subjectClass
-					, $subjectClass::$table
-				);
+// 				\SeanMorris\Ids\Log::debug(
+// 					$property
+// 					, $subjectClass
+// 					, $subjectClass::$table
+// 				);
 
 				if(isset($skeleton[$subjectClass::$table]))
 				{
@@ -1450,7 +1452,7 @@ class Model
 // 						. '_0'
 // 					;
 
-					\SeanMorris\Ids\Log::debug($_subSkeletonAlias, $subSkeletonKey, $subSkeletons);
+// 					\SeanMorris\Ids\Log::debug($_subSkeletonAlias, $subSkeletonKey, $subSkeletons);
 
 					if(isset(
 						$subSkeletons[$subSkeletonKey]
@@ -1859,8 +1861,6 @@ class Model
 
 			$subClasses = array_unique($subClasses);
 
-			Log::debug('Subclasses found:', $subClasses);
-
 			if($selectDef['subs'] && !$selectDef['recs'])
 			{
 				if(count($subClasses) == 1)
@@ -1970,7 +1970,14 @@ class Model
 
 	protected static function getColumns($type = null, $all = true)
 	{
-		$curClass = get_called_class();
+		$calledClass = $curClass = get_called_class();
+
+		static $_columnCache = [];
+
+		if(isset($_columnCache[$calledClass]))
+		{
+			return $_columnCache[$calledClass];
+		}
 
 		if(!isset(static::$columnMeta[$curClass]))
 		{
@@ -2047,7 +2054,7 @@ class Model
 			}
 		}
 
-		return $columns;
+		return $_columnCache[$calledClass] = $columns;
 	}
 
 	public function __get($name)

@@ -101,17 +101,6 @@ class Log
 
 	public static function query(...$data)
 	{
-		$data = array_map(
-			function($datum)
-			{
-				if(is_string($datum))
-				{
-					$datum = Log::color($datum, 'yellow');
-				}
-				return $datum;
-			}
-			, $data
-		);
 		static::log(__FUNCTION__, ...$data);
 	}
 
@@ -186,6 +175,21 @@ class Log
 			}
 		}
 
+		if($level == static::$levels['query'])
+		{
+			$data = array_map(
+				function($datum)
+				{
+					if(is_string($datum))
+					{
+						$datum = Log::color($datum, 'yellow');
+					}
+					return $datum;
+				}
+				, $data
+			);
+		}
+
 		if(static::showErrors($level))
 		{
 			foreach($data as $d)
@@ -208,8 +212,6 @@ class Log
 		{
 			static::$censor = (object) Settings::read('logCensor');
 		}
-
-		static::position(2);
 
 		$logBlob = static::logBlob(0, $level < static::$levels['warn']);
 

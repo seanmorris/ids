@@ -51,8 +51,11 @@ abstract class Statement
 	{
 		$queryString = $this->assemble(...(func_get_args()));
 
-		\SeanMorris\Ids\Log::debug('Tier', $this->databaseTier());
-		\SeanMorris\Ids\Log::query('Preparing query', $queryString);
+		\SeanMorris\Ids\Log::query(
+			'Tier:' . $this->databaseTier()
+			, 'Preparing query'
+			, $queryString
+		);
 
 		$database = $this->database();
 

@@ -6,7 +6,6 @@ class Settings
 		$settings
 		, $file
 		, $env
-		, $cache
 		, $currentSite
 		, $currentPort
 		, $callbacks
@@ -16,7 +15,7 @@ class Settings
 
 	public static function read(...$names)
 	{
-		$cacheKey = md5(print_r($names, 1));
+		$cacheKey = implode('_::_', $names);
 
 		if(isset(static::$cache[$cacheKey]))
 		{
@@ -113,6 +112,11 @@ class Settings
 
 			if(!static::$settings && file_exists($settingsFile))
 			{
+				return static::$settings = (object) [];
+			}
+
+			if(!static::$settings && file_exists($settingsFile))
+			{
 				static::$currentSite = $hostname;
 				static::$currentPort = $port;
 
@@ -142,18 +146,21 @@ class Settings
 
 	public static function findEnvVarName($name, $host = NULL, $port = NULL, $prefix = FALSE)
 	{
-		$cacheKey = md5(print_r(func_get_args(), 1));
+		$cacheKey = $name.'::'.$host.'::'.$port.'::'.$prefix;
 
-		if(isset(static::$cache[$cacheKey]))
+		static $cache = [];
+
+		if(isset($cache[$cacheKey]))
 		{
-			return static::$cache[$cacheKey];
+			return $cache[$cacheKey];
 		}
 
 		$env = static::getenv();
 
 		[$name, $host] = preg_replace(
-			['/\W/'], ['_']
-			, array_map('strtoupper', [$name, $host])
+			['/\W/']
+			, ['_']
+			, [strtoupper($name), strtoupper($host)]
 		);
 
 		$envVarPrefix = static::envVarNames(NULL);
@@ -163,7 +170,7 @@ class Settings
 		{
 			if(array_key_exists($envVarName, $env))
 			{
-				return $envVarName;
+				return $cache[$cacheKey] = $envVarName;
 			}
 		}
 
@@ -185,12 +192,21 @@ class Settings
 				}
 			}
 
-			return static::$cache[$cacheKey] = $found;
+			return $cache[$cacheKey] = $found;
 		}
 	}
 
 	protected static function envVarNames($name, $host = NULL, $port = NULL)
 	{
+		$cacheKey = $name.'::'.$host.'::'.$port.'::'.$port;
+
+		static $cache = [];
+
+		if(isset($cache[$cacheKey]))
+		{
+			return $cache[$cacheKey];
+		}
+
 		[$name, $host] = preg_replace(
 			['/\W/'], ['_']
 			, array_map('strtoupper', [$name, $host])
@@ -211,7 +227,9 @@ class Settings
 
 		$globalName = 'IDS_' . $name;
 
-		return array_filter([$portName, $hostName, $globalName]);
+		return $cache[$cacheKey] = array_filter(
+			[$portName, $hostName, $globalName]
+		);
 	}
 
 	public static function findSettingsFile($hostname, $port)
