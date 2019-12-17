@@ -196,17 +196,18 @@ register_shutdown_function(function() {
 
 set_exception_handler(function($exception)
 {
-	$renderedException = \SeanMorris\Ids\Log::renderException($exception, FALSE);
-
 	global $switches;
 
 	if(php_sapi_name() == 'cli' && ($switches['vv'] ?? FALSE))
 	{
+		$renderedException = \SeanMorris\Ids\Log::renderException($exception, FALSE);
+
 		fwrite(STDERR, $renderedException);
 	}
 	else if(php_sapi_name() !== 'cli' && \SeanMorris\Ids\Settings::read('show', 'errors'))
 	{
-		// var_dump($renderedException);
+		$renderedException = \SeanMorris\Ids\Log::renderException($exception, FALSE);
+
 		header('Content-type: text/plain');
 		print $renderedException;
 	}
