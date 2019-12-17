@@ -1924,13 +1924,15 @@ class Model
 
 	public static function getProperties($all = FALSE)
 	{
-		$calledClass = $class = get_called_class();
+		$class = get_called_class();
 
 		static $_propertyCache = [];
 
-		if(isset($_propertyCache[$calledClass]))
+		$cacheKey = $class . '::' . (int) $all;
+
+		if(isset($_propertyCache[$cacheKey]))
 		{
-			return $_propertyCache[$calledClass];
+			return $_propertyCache[$cacheKey];
 		}
 
 		$result = [];
@@ -1958,7 +1960,7 @@ class Model
 			$class = get_parent_class($class);
 		}
 
-		$_propertyCache[$calledClass] = $result;
+		$_propertyCache[$cacheKey] = $result;
 
 		return $result;
 	}
@@ -1974,7 +1976,12 @@ class Model
 
 		static $_columnCache = [];
 
-		$cacheKey = $calledClass . ((int) $all);
+		$cacheKey = $calledClass
+			. '::'
+			. (string) $type
+			. '::'
+			. ((int) $all)
+			. ':::';
 
 		if(isset($_columnCache[$cacheKey]))
 		{
