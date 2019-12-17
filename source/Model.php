@@ -1974,9 +1974,11 @@ class Model
 
 		static $_columnCache = [];
 
-		if(isset($_columnCache[$calledClass]))
+		$cacheKey = $calledClass . ((int) $all);
+
+		if(isset($_columnCache[$cacheKey]))
 		{
-			return $_columnCache[$calledClass];
+			return $_columnCache[$cacheKey];
 		}
 
 		if(!isset(static::$columnMeta[$curClass]))
@@ -2054,7 +2056,7 @@ class Model
 			}
 		}
 
-		return $_columnCache[$calledClass] = $columns;
+		return $_columnCache[$cacheKey] = $columns;
 	}
 
 	public function __get($name)
