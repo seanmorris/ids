@@ -222,14 +222,25 @@ class Package
 		return static::$packages;
 	}
 
-	public static function name($package)
+	public static function name($package = NULL)
 	{
-		return str_replace('/', '\\', $package);
+		return str_replace(
+			'/', '\\'
+			, $package ?? substr(
+				static::class
+				, 0
+				, strpos(
+					static::class
+					, '\\'
+					, strpos(static::class, '\\') + 1
+				)
+			)
+		);
 	}
 
 	public static function dir($package)
 	{
-		return str_replace('\\', '/', $package);
+		return str_replace('\\', '/', $package ?? static::class);
 	}
 
 	public function packageDir()

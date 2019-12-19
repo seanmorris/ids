@@ -1,4 +1,4 @@
-FROM seanmorris/ids.idilic:latest-local as base
+FROM seanmorris/ids.idilic:latest-local AS base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
 RUN apt-get update \
@@ -17,8 +17,8 @@ RUN ln -sf /proc/self/fd/1 /var/log/apache2/access.log \
 
 ENTRYPOINT ["apachectl", "-D", "FOREGROUND"]
 
-FROM base as dev
+FROM base AS dev
 
 COPY ./infra/xdebug/30-xdebug-apache.ini /etc/php/7.3/apache2/conf.d/30-xdebug-apache.ini
 
-FROM base as prod
+FROM base AS prod

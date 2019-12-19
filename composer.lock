@@ -13,16 +13,21 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/simpletest/simpletest.git",
-                "reference": "7c241978fccb2b41522f152cf441bcbf1aeffb16"
+                "reference": "3fea8f4a04b193538f71fa6f7c77c32bdcb0402f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simpletest/simpletest/zipball/7c241978fccb2b41522f152cf441bcbf1aeffb16",
-                "reference": "7c241978fccb2b41522f152cf441bcbf1aeffb16",
+                "url": "https://api.github.com/repos/simpletest/simpletest/zipball/3fea8f4a04b193538f71fa6f7c77c32bdcb0402f",
+                "reference": "3fea8f4a04b193538f71fa6f7c77c32bdcb0402f",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1"
+            },
+            "require-dev": {
+                "ext-dom": "*",
+                "ext-mbstring": "*",
+                "ext-tidy": "*"
             },
             "type": "library",
             "autoload": {
@@ -80,7 +85,7 @@
                 "testing",
                 "unit-test"
             ],
-            "time": "2019-09-17T23:16:37+00:00"
+            "time": "2019-12-18T15:12:09+00:00"
         }
     ],
     "aliases": [],

@@ -821,7 +821,7 @@ class Log
 
 		$superTrace = [];
 
-		foreach ($trace as $level => $frame)
+		foreach($trace as $level => $frame)
 		{
 			$renderedArgs = [];
 

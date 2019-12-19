@@ -12,6 +12,7 @@ DESC   ?=$$(git describe --tags 2>/dev/null || git rev-parse --short HEAD)
 TAG       ?=${BRANCH}-${DESC}-${TARGET}
 IMAGE     ?=
 DHOST_IP  ?=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
+NO_TTY    ?=-T
 
 INTERPOLATE_ENV=env -i DHOST_IP=${DHOST_IP} \
 	TAG=${TAG} REPO=${REPO} TARGET=${TARGET} \
@@ -71,7 +72,13 @@ composer-update:
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		composer update
 
-images:
+composer-update-no-dev:
+	@ docker run --rm \
+		-v $$PWD:/app \
+		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
+		composer update --no-dev
+
+tag-images:
 	@ ${DCOMPOSE} images -q | while read IMAGE_HASH; do \
 		docker image inspect --format="{{index .RepoTags 0}}" $$IMAGE_HASH \
 		| grep "^${REPO}" \
@@ -81,6 +88,9 @@ images:
 			echo "$$IMAGE_PREFIX":latest-${TARGET}; \
 		done; \
 	done;
+	@ ${DCOMPOSE} images
+
+images:
 	@ ${DCOMPOSE} images
 
 restart:
@@ -107,7 +117,12 @@ tag:
 	@ echo ${TAG}
 
 run:
-	@ ${DCOMPOSE} run --rm \
+	${DCOMPOSE} run --rm ${NO_TTY} \
+	$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /') \
+	${CMD}
+
+run-phar:
+	@ ${DCOMPOSE} run --rm --entrypoint='php SeanMorris_Ids.phar' \
 	$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /') \
 	${CMD}
 

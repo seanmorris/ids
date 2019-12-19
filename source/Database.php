@@ -4,7 +4,7 @@ namespace	SeanMorris\Ids;
  * Provides a key/value store of database connections.
  * Each connection is a sinlgeton and will only be instantiated once.
  */
-class		Database
+class Database
 {
 	static $credentials	= []
 		, $connections	= [];
@@ -19,6 +19,8 @@ class		Database
 	 * 	https://www.php.net/manual/en/ref.pdo-mysql.connection.php
 	 * @param string $username the username for the database connection.
 	 * @param string $password the password for the database connection.
+	 * @param int    $retry the number of times to retry a failes connection.
+	 * @param int    $delay the number of seconds between retries.
 	 */
 	public static function register(...$args)
 	{
@@ -45,12 +47,12 @@ class		Database
 			throw new \Exception(sprintf(
 				'No Database "%s" regsitered for %s.'
 				, $name
-				, $_SERVER['HTTP_HOST']
+				, $_SERVER['HTTP_HOST'] ?? 'null'
 			));
 		}
 
-		$tries = php_sapi_name() === 'cli' ? 15 : 3;
-		$delay = php_sapi_name() === 'cli' ? 5  : 0;
+		$tries = static::$credentials[$name][3];
+		$delay = static::$credentials[$name][4];
 
 		return isset(static::$connections[$name])
 			? static::$connections[$name]
@@ -103,9 +105,11 @@ class		Database
 					, $database->database
 					, $database->hostname
 					, $database->port ?? static::DEFAULT_PORT
-				)
+					)
 				, $database->username
 				, $database->password
+				, $database->retry->tries ?? 0
+				, $database->retry->delay ?? 0
 			);
 		}
 	}

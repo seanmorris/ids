@@ -56,6 +56,7 @@ if(php_sapi_name() === 'cli')
 		}
 
 		$profileDir = $nextDir;
+
 	}
 
 	if(!file_exists($userFile))
@@ -259,11 +260,9 @@ $existingErrorHandler = set_error_handler(
 	}
 );
 
-ini_set('display_errors', 1);
-
 if($dbs = \SeanMorris\Ids\Settings::read('databases'))
 {
-	\SeanMorris\Ids\Database::registerMulti($dbs);
+		\SeanMorris\Ids\Database::registerMulti($dbs);
 
 	foreach($dbs as $name => $creds)
 	{
@@ -282,8 +281,6 @@ if($dbs = \SeanMorris\Ids\Settings::read('databases'))
 		$query = $dbHandle->prepare("SET SESSION sql_mode=(
 			SELECT REPLACE(@@sql_mode,'NO_ZERO_DATE','')
 		)");
-
-		$query->execute();
 	}
 }
 
