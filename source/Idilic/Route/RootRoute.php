@@ -877,49 +877,6 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		return $package->deleteVar($var);
 	}
 
-	/** Print a minimal apache config for a given domain. */
-
-	public function apacheConfig($router)
-	{
-		if(!$domain = $router->request()->switches('d', 'domain', NULL))
-		{
-			if(file_exists(getenv("HOME") . '/.idilicProfile.json'))
-			{
-				$userFile = new \SeanMorris\Ids\Disk\File(
-					getenv("HOME") . '/.idilicProfile.json'
-				);
-				$userSettings = json_decode($userFile->slurp());
-
-				$domain = $userSettings->domain;
-			}
-		}
-
-		return sprintf(<<<'EOF'
-<VirtualHost *:80>
-  ServerName %s
-  DocumentRoot %s
-
-  <Directory %s>
-    Options Indexes FollowSymLinks
-    AllowOverride All
-    Order allow,deny
-    Allow from all
-    Require all granted
-  </Directory>
-
-  # Possible values: debug, info, notice, warn, error, crit,
-  # alert, emerg.
-  LogLevel warn
-  ErrorLog ${APACHE_LOG_DIR}/error.log
-  CustomLog ${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>
-EOF
-			, $domain
-			, \SeanMorris\Ids\Settings::read('public')
-			, \SeanMorris\Ids\Settings::read('public')
-		);
-	}
-
 	/** Start a RePL. */
 
 	public function repl()
