@@ -1,7 +1,6 @@
 <?php
 error_reporting(-1);
-ini_set('display_errors', TRUE);
-
+ini_set('display_errors', FALSE);
 define('START', microtime(TRUE));
 
 date_default_timezone_set('GMT+0');

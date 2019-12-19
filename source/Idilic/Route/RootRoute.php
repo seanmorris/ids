@@ -866,8 +866,6 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		{
 			eval($code);
 		}
-
-		// \SeanMorris\Ids\Settings::findSettingsFile('thruput', 80);
 	}
 
 	/** Remove a variable from a given package. */

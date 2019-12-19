@@ -69,12 +69,6 @@ class Database
 
 					return $db;
 				}
-
-				throw new \Exception(sprintf(
-					'Could not connect to "%s" at %s'
-					, $name
-					, static::$credentials[$name][0]
-				));
 			}
 		);
 	}
