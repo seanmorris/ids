@@ -129,6 +129,8 @@ abstract class WhereStatement extends Statement
 				)
 				, ''
 				, $queryObject->queryString
+				, ''
+				, implode(PHP_EOL, \SeanMorris\Ids\Log::trace(FALSE))
 			);
 		}
 

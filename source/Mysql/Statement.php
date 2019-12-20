@@ -104,6 +104,8 @@ abstract class Statement
 				)
 				, ''
 				, $queryObject->queryString
+				, ''
+				, implode(PHP_EOL, \SeanMorris\Ids\Log::trace(FALSE))
 				, new \SeanMorris\Ids\LogMeta([
 					'query'         => $queryObject->queryString
 					, 'query_time'  => $queryTime * 1000

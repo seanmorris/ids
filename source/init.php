@@ -225,11 +225,6 @@ set_exception_handler(function($exception)
 $existingErrorHandler = set_error_handler(
 	function($errorNumber, $errorString, $errorFile, $errorLine, $errorContext) use(&$existingErrorHandler)
 	{
-		if(function_exists('xdebug_break'))
-		{
-			xdebug_break();
-		}
-
 		$errorContextContent = NULL;
 
 		ob_start();
@@ -254,6 +249,19 @@ $existingErrorHandler = set_error_handler(
 			, $errorLine
 			, $errorContext
 		);
+
+		$errorPath = realpath($errorFile);
+
+		if(IDS_VENDOR_ROOT === substr($errorPath, 0, strlen(IDS_VENDOR_ROOT))
+			&& $errorNumber === E_DEPRECATED
+		){
+			return TRUE;
+		}
+
+		if(function_exists('xdebug_break'))
+		{
+			xdebug_break();
+		}
 
 		throw new \ErrorException($line, $errorNumber, 0, $errorFile, $errorLine);
 	}
