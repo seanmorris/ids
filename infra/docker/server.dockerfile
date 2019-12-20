@@ -21,7 +21,14 @@ RUN ln -sf /proc/self/fd/1 /var/log/apache2/access.log \
 
 ENTRYPOINT ["apachectl", "-D", "FOREGROUND"]
 
+FROM base AS test
 FROM base AS dev
+
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends \
+		php7.3-xdebug \
+	&& apt-get clean \
+	&& apt-get autoremove -y
 
 COPY ./infra/xdebug/30-xdebug-apache.ini /etc/php/7.3/apache2/conf.d/30-xdebug-apache.ini
 

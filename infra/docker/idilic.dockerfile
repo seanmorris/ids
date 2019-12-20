@@ -51,6 +51,7 @@ ENTRYPOINT ["idilic"]
 
 CMD ["-d=;", "info"]
 
+FROM base AS test
 FROM base AS dev
 
 RUN apt-get update \
