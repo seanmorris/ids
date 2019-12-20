@@ -600,9 +600,8 @@ class Log
 				$_val = array_map(
 					function($k, $v)
 					{
-						if(isset(static::$censor->$k)
-							&& Settings::read(static::$censor->$k)
-						){
+						if(isset(static::$censor->$k) && static::$censor->$k)
+						{
 							return '* censored *';
 						}
 
@@ -769,7 +768,7 @@ class Log
 				, $position->class
 				, $position->function
 				, $position->file
-				, $position->backtrace[$depth]['line'] ?? '--'
+				, $position->line ?? '--'
 				, $glue
 			);
 		}
@@ -779,7 +778,7 @@ class Log
 				"%s\n%s:%s%s"
 				, $position->function
 				, $position->file
-				, $position->backtrace[$depth]['line'] ?? '--'
+				, $position->line ?? '--'
 				, $glue
 			);
 		}
@@ -788,7 +787,7 @@ class Log
 			return sprintf(
 				"%s:%s%s"
 				, $position->file
-				, $position->backtrace[$depth]['line'] ?? '--'
+				, $position->line ?? '--'
 				, $glue
 			);
 		}

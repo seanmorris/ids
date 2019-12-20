@@ -154,11 +154,6 @@ class Meta
 				, $phpFile->getPath()
 			);
 
-			\SeanMorris\Ids\Log::debug(sprintf(
-				'Scanning file %s'
-				, $relativePath
-			));
-
 			foreach($skip as $s)
 			{
 				if(preg_match(sprintf('|^%s|', $s), $relativePath))
@@ -166,6 +161,11 @@ class Meta
 					continue 2;
 				}
 			}
+
+			\SeanMorris\Ids\Log::debug(sprintf(
+				'Scanning file %s'
+				, $relativePath
+			));
 
 			$aliases = [];
 

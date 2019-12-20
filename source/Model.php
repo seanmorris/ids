@@ -4,7 +4,7 @@ class Model
 {
 	protected $id, $class;
 
-	private $_changed = [];
+	private $_changed = [], $_unconsumed;
 
 	protected static
 		$table
@@ -714,22 +714,25 @@ class Model
 
 			$callback = array_pop($_args);
 
-			$models = static::$methodName(...array_merge([$position], $_args, [$pageSize]));
+			$_position = $position;
 
-			while($models)
+			do
 			{
+				$models = static::$methodName(...array_merge(
+					$_args
+					, [$_position, $pageSize]
+				));
+
 				foreach($models as $model)
 				{
 					if($callback($model) === 0)
 					{
 						break 2;
 					}
-				}
 
-				$models = static::$methodName(...array_merge(
-					[$model->id], $_args, [$pageSize]
-				));
-			}
+					$_position = $model->id;
+				}
+			} while($models);
 
 			return;
 		}
@@ -2146,6 +2149,7 @@ class Model
 				if($this->{$property} !== $skeleton[$property])
 				{
 					$this->_changed[$property] = true;
+					$this->_unconsumed = [];
 				}
 				$this->{$property} = $skeleton[$property];
 			}
@@ -2371,7 +2375,24 @@ class Model
 
 	public function unconsume($children = 0)
 	{
-		$proprties = static::getProperties(TRUE);
+		if(isset($this->_unconsumed[$children]))
+		{
+			return $this->_unconsumed[$children];
+		}
+
+		$class = get_called_class();
+
+		static $_propertyCache = [];
+
+		$cacheKey = $class;
+
+		if(!isset($_propertyCache[$cacheKey]))
+		{
+			$_propertyCache[$cacheKey] = static::getProperties(TRUE);
+		}
+
+		$proprties = $_propertyCache[$cacheKey];
+
 		$skeleton = [];
 
 		foreach($proprties as $property)
@@ -2458,7 +2479,7 @@ class Model
 			}
 		}
 
-		return $skeleton;
+		return $this->_unconsumed[$children] = $skeleton;
 	}
 
 	public function addSubject($property, $subject)
@@ -2507,6 +2528,7 @@ class Model
 			$this->{$property}[] = $subject;
 
 			$this->_changed[$property] = TRUE;
+			$this->_unconsumed = [];
 
 			return TRUE;
 		}
