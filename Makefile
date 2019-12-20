@@ -57,7 +57,7 @@ DCOMPOSE ?=export ${ENV} \
 
 it: infra/compose/${TARGET}.yml
 	@ echo Building ${FULLNAME}
-	@ cp -n .env.sample .env 2>/dev/null|| true 
+	@ cp -n .env.sample .env 2>/dev/null|| true
 	@ cp -n .env.${TARGET}.sample .env.${TARGET} 2>/dev/null|| true
 	@ make -s composer-install TARGET=${TARGET} PROJECT=${PROJECT}
 	@ ${DCOMPOSE} build ${IMAGE}
