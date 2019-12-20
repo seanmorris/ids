@@ -51,7 +51,7 @@ ENTRYPOINT ["idilic"]
 
 CMD ["-d=;", "info"]
 
-FROM base as dev
+FROM base AS dev
 
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
@@ -61,6 +61,6 @@ RUN apt-get update \
 
 COPY ./infra/xdebug/30-xdebug-cli.ini /etc/php/7.3/cli/conf.d/30-xdebug-cli.ini
 
-FROM base as prod
+FROM base AS prod
 
 COPY ./ /app

@@ -1,4 +1,4 @@
-FROM seanmorris/ids.idilic:latest-local AS base
+FROM seanmorris/ids.idilic:latest-base AS base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
 RUN apt-get update \
