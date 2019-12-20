@@ -98,10 +98,10 @@ push-images: infra/compose/${TARGET}.yml
 		&& ${DCOMPOSE} push
 	@ export TAG=$$(date '+%Y%m%d')-${TARGET} \
 		&& ${DCOMPOSE} push
-	${DCOMPOSE} push
+	@ ${DCOMPOSE} push
 
 pull-images: infra/compose/${TARGET}.yml
-	${DCOMPOSE} pull
+	@ ${DCOMPOSE} pull
 
 images: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} images
