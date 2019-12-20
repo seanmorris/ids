@@ -4,6 +4,7 @@
 	stop-all run run-phar test env hooks
 
 
+
 TARGET ?=dev
 
 -include .env
@@ -56,6 +57,8 @@ DCOMPOSE ?=export ${ENV} \
 
 it: infra/compose/${TARGET}.yml
 	@ echo Building ${FULLNAME}
+	@ cp -n .env.sample .env 2>/dev/null|| true 
+	@ cp -n .env.${TARGET}.sample .env.${TARGET} 2>/dev/null|| true
 	@ make -s composer-install TARGET=${TARGET} PROJECT=${PROJECT}
 	@ ${DCOMPOSE} build ${IMAGE}
 	@ ${DCOMPOSE} build
@@ -133,9 +136,9 @@ tag: infra/compose/${TARGET}.yml
 	@ echo ${TAG}
 
 run: infra/compose/${TARGET}.yml
-	${DCOMPOSE} run --rm ${NO_TTY} \
-	$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /') \
-	${CMD}
+	@ ${DCOMPOSE} run --rm ${NO_TTY} \
+		$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /') \
+		${CMD}
 
 run-phar: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} run --rm --entrypoint='php SeanMorris_Ids.phar' \
