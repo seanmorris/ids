@@ -2,20 +2,20 @@ version: '2.4'
 
 services:
 
-  server:
-    image: ${REPO}/${PROJECT}.server:${TAG}
-    restart: always
-    build:
-      context: ../../
-      dockerfile: infra/docker/server.dockerfile
-      target: ${TARGET}
-
   idilic:
     image: ${REPO}/${PROJECT}.idilic:${TAG}
     restart: on-failure
     build:
       context: ../../
       dockerfile: infra/docker/idilic.dockerfile
+      target: ${TARGET}
+
+  server:
+    image: ${REPO}/${PROJECT}.server:${TAG}
+    restart: always
+    build:
+      context: ../../
+      dockerfile: infra/docker/server.dockerfile
       target: ${TARGET}
 
   database:
