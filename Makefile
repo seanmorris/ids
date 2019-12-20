@@ -18,6 +18,7 @@ TAG       ?=${DESC}-${TARGET}-${BRANCH}
 IMAGE     ?=
 DHOST_IP  ?=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
 NO_TTY    ?=-T
+FULLNAME  ?=${REPO}/${PROJECT}:${TAG}
 
 INTERPOLATE_ENV=env -i DHOST_IP=${DHOST_IP} \
 	TAG=${TAG} REPO=${REPO} TARGET=${TARGET} \
@@ -42,7 +43,7 @@ else
 	XDEBUG_ENV=
 endif
 
-ENV=TAG=${TAG} REPO=${REPO} DHOST_IP=${DHOST_IP} ${XDEBUG_ENV} \
+ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} DHOST_IP=${DHOST_IP} ${XDEBUG_ENV} \
 	PROJECT=${PROJECT} TARGET=${TARGET} \
 	$$(cat .env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#) \
 	$$(cat .env.${TARGET} 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)
@@ -54,7 +55,7 @@ DCOMPOSE ?=export ${ENV} \
 	-f infra/compose/${TARGET}.yml
 
 it: infra/compose/${TARGET}.yml
-	@ echo Building ${PROJECT}:${TAG}
+	@ echo Building ${FULLNAME}
 	@ make -s composer-install TARGET=${TARGET} PROJECT=${PROJECT}
 	@ ${DCOMPOSE} build ${IMAGE}
 	@ ${DCOMPOSE} build
@@ -73,75 +74,80 @@ it: infra/compose/${TARGET}.yml
 	done;
 	@ ${DCOMPOSE} images
 
-composer-install:
+composer-install: infra/compose/${TARGET}.yml
 	@ docker run --rm \
 		-v $$PWD:/app \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		composer install
 
-composer-update:
+composer-update: infra/compose/${TARGET}.yml
 	@ docker run --rm \
 		-v $$PWD:/app \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		composer update
 
-composer-update-no-dev:
+composer-update-no-dev: infra/compose/${TARGET}.yml
 	@ docker run --rm \
 		-v $$PWD:/app \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		composer update --no-dev
 
-push-images:
+push-images: infra/compose/${TARGET}.yml
+	@ echo Pushing ${PROJECT}:${TAG}
+	@ export TAG="latest-${TARGET}" \
+		&& ${DCOMPOSE} push
+	@ export TAG=$$(date '+%Y%m%d')-${TARGET} \
+		&& ${DCOMPOSE} push
 	${DCOMPOSE} push
 
-pull-images:
+pull-images: infra/compose/${TARGET}.yml
 	${DCOMPOSE} pull
 
-images:
+images: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} images
 
-imagesq:
+imagesq: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} images -q
 
-restart:
+restart: infra/compose/${TARGET}.yml
 	@ make -s stop
 	@ make -s start
 
-restart-fg:
+restart-fg: infra/compose/${TARGET}.yml
 	@ make -s stop
 	@ make -s start-fg
 
-start:
+start: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} up -d
 
-start-fg:
+start-fg: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} up
 
-stop:
+stop: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} down
 
-stop-all:
+stop-all: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} down --remove-orphans
 
-tag:
+tag: infra/compose/${TARGET}.yml
 	@ echo ${TAG}
 
-run:
+run: infra/compose/${TARGET}.yml
 	${DCOMPOSE} run --rm ${NO_TTY} \
 	$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /') \
 	${CMD}
 
-run-phar:
+run-phar: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} run --rm --entrypoint='php SeanMorris_Ids.phar' \
 	$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /') \
 	${CMD}
 
-test:
+test: infra/compose/${TARGET}.yml
 	@ make --no-print-directory run \
 		TARGET=${TARGET} CMD="idilic -vv SeanMorris/Ids runTests SeanMorris/Ids"
 
-env:
+env: infra/compose/${TARGET}.yml
 	@ env -i ${ENV} bash -c "env"
 
-hooks:
+hooks: infra/compose/${TARGET}.yml
 	@ git config core.hooksPath githooks
