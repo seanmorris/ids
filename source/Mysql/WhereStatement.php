@@ -11,11 +11,11 @@ abstract class WhereStatement extends Statement
 		, $valueRequired = []
 	;
 
+	const RETURNS = FALSE;
+
 	public function execute(...$args)
 	{
 		$queryStartTime = microtime(TRUE);
-
-		$argsUsed = [];
 
 		if(isset($args[0]) && is_array($args[0]))
 		{
@@ -29,8 +29,6 @@ abstract class WhereStatement extends Statement
 				{
 					continue;
 				}
-
-				$argsUsed[] = $argName;
 
 				$argsDist[] = $args[0][$argName];
 			}
@@ -72,7 +70,6 @@ abstract class WhereStatement extends Statement
 			, $this->valueWrappers
 		);
 
-
 		\SeanMorris\Ids\Log::debug('Args:', $args);
 
 		if($nonscalar = array_filter($args, function($a) {
@@ -80,10 +77,7 @@ abstract class WhereStatement extends Statement
 				&& !is_null($a)
 				&& !is_array($a);
 		})) {
-			\SeanMorris\Ids\Log::debug('Nonscalar argument supplied.');
-			\SeanMorris\Ids\Log::debug($nonscalar);
-			\SeanMorris\Ids\Log::trace();
-			die;
+			throw new \Exception('Nonscalar argument supplied to WhereStatement.');
 		}
 
 		$finalArgs = [];
@@ -105,6 +99,23 @@ abstract class WhereStatement extends Statement
 
 		$queryTime = microtime(TRUE) - $queryStartTime;
 
+		static::$queryCount++;
+
+		static::$queryTime += $queryTime;
+
+		if(!static::RETURNS)
+		{
+			\SeanMorris\Ids\Log::query('Query executed.', new \SeanMorris\Ids\LogMeta([
+				'query'         => $queryObject->queryString
+				, 'query_time'  => $queryTime
+				, 'querty_tier' => $this->databaseTier()
+				, 'query_type'  => get_called_class()
+				, 'query_args'  => $finalArgs
+				, 'query_table' => $this->table
+			]));
+		}
+
+
 		$slowQuery = \SeanMorris\Ids\Settings::read('slowQuery');
 		$queryLimit = \SeanMorris\Ids\Settings::read('queryLimit');
 
@@ -118,6 +129,8 @@ abstract class WhereStatement extends Statement
 				)
 				, ''
 				, $queryObject->queryString
+				, ''
+				, implode(PHP_EOL, \SeanMorris\Ids\Log::trace(FALSE))
 			);
 		}
 
@@ -129,10 +142,6 @@ abstract class WhereStatement extends Statement
 			));
 		}
 
-		static::$queryCount++;
-
-		static::$queryTime += $queryTime;
-
 		\SeanMorris\Ids\Log::debug(
 			'Queries Run: ' . static::$queryCount
 			, sprintf('Query ran in %f seconds.', $queryTime)
@@ -143,9 +152,11 @@ abstract class WhereStatement extends Statement
 
 		if($errorCode !== '00000')
 		{
-			\SeanMorris\Ids\Log::error($queryObject->errorInfo());
-			\SeanMorris\Ids\Log::trace();
-			die;
+			$error = $queryObject->errorInfo();
+
+			throw new \Exception(sprintf(
+				'%s %s %s', ...$error
+			));
 		}
 
 		return $queryObject;
@@ -248,14 +259,6 @@ abstract class WhereStatement extends Statement
 
 				$this->valueRequired[] = $required;
 				$this->valueNames[]    = $name;
-
-				// \SeanMorris\Ids\Log::trace();
-				// \SeanMorris\Ids\Log::debug(array(
-				// 	'column'    => $column
-				// 	, 'value'   => $value
-				// 	, 'compare' => $compare
-				// 	, 'name'    => $name
-				// ));
 
 				if($alias)
 				{

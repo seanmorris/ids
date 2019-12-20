@@ -21,6 +21,8 @@ class SelectStatement extends WhereStatement
 		, $preArgs = []
 	;
 
+	const RETURNS = TRUE;
+
 	public function __construct($table)
 	{
 		$this->master = $this;
@@ -30,8 +32,9 @@ class SelectStatement extends WhereStatement
 
 	protected function databaseTier()
 	{
-		if($database = \SeanMorris\Ids\Database::get('slave'))
-		{
+		if(!static::isAltered($this->table)
+			&& $database = \SeanMorris\Ids\Database::get('slave')
+		){
 			return 'slave';
 		}
 
@@ -67,8 +70,6 @@ class SelectStatement extends WhereStatement
 
 	public function aliasColumns()
 	{
-		$alias = $this->alias;
-
 		return array_map(
 			function($column)
 			{
@@ -186,7 +187,7 @@ class SelectStatement extends WhereStatement
 			{
 				$columnString .= ($columnString && $subColString)
 					? (PHP_EOL . ', ' . $subColString)
-					: NULL;				
+					: NULL;
 			}
 
 			if(!$conditionString)
@@ -348,9 +349,9 @@ class SelectStatement extends WhereStatement
 
 			if($subColString)
 			{
-				$columnString .= PHP_EOL . ', ' . $subColString;				
+				$columnString .= PHP_EOL . ', ' . $subColString;
 			}
-			
+
 			// @TODO: Why is $subConditionString sometimes empty?
 			if($subConditionString)
 			{
@@ -390,7 +391,7 @@ class SelectStatement extends WhereStatement
 					, $conditionString
 					, $localConditionString
 				);
-				
+
 			}
 		}
 		else
@@ -427,12 +428,6 @@ class SelectStatement extends WhereStatement
 
 		$parentAliases = NULL;
 		$current       = $this;
-		/*
-		while($parent = $current->superior)
-		{
-
-		}
-		*/
 
 		$join->alias = $join->master->aliasTableName(
 			$join->table
@@ -475,8 +470,6 @@ class SelectStatement extends WhereStatement
 
 	protected function aliasTableName($tableName, $select = NULL, $tag = NULL)
 	{
-		$this->aliasedSelects = [];
-
 		if(FALSE !== $index = array_search($select, $this->aliasedSelects))
 		{
 			return $tableName . '_' . $index;
@@ -499,11 +492,6 @@ class SelectStatement extends WhereStatement
 		}
 
 		$this->tableAliases[$alias] = $tableName;
-
-		if($select)
-		{
-			$aliasedSelects[] = $select;
-		}
 
 		return $alias;
 	}
@@ -532,16 +520,7 @@ class SelectStatement extends WhereStatement
 
 	public function fetchColumn(...$args)
 	{
-		try
-		{
-			$query = $this->execute(...$args);
-		}
-		catch(\Exception $e)
-		{
-			\SeanMorris\Ids\Log::error($e);
-			\SeanMorris\Ids\Log::trace();
-			die;
-		}
+		$query = $this->execute(...$args);
 
 		if($col = $query->fetchColumn())
 		{
@@ -549,21 +528,12 @@ class SelectStatement extends WhereStatement
 			return $col;
 		}
 
-		\SeanMorris\Ids\Log::debug('DONE FETCHING COLUMNS!');		
+		\SeanMorris\Ids\Log::debug('DONE FETCHING COLUMNS!');
 	}
 
 	public function fetch(...$args)
 	{
-		try
-		{
-			$query = $this->execute(...$args);
-		}
-		catch(\Exception $e)
-		{
-			\SeanMorris\Ids\Log::error($e);
-			\SeanMorris\Ids\Log::trace();
-			die;
-		}
+		$query = $this->execute(...$args);
 
 		if($row = $query->fetch())
 		{
@@ -577,21 +547,22 @@ class SelectStatement extends WhereStatement
 
 	public function generate()
 	{
-		$closure = function(...$args)
+		$queryStartTime = microtime(TRUE);
+
+		$closure = function(...$args) use($queryStartTime)
 		{
 			$queryObject = $this->execute(...$args);
-			// try
-			// {
-			// }
-			// catch(\Exception $e)
-			// {
-			// 	\SeanMorris\Ids\Log::error($e);
-			// 	\SeanMorris\Ids\Log::trace();
-			// 	die;
-			// }
+
+			$first = FALSE;
 
 			while($row = $queryObject->fetch(\PDO::FETCH_ASSOC))
 			{
+				if(!$first)
+				{
+					$first = TRUE;
+
+					$this->complete($queryObject, $queryStartTime, $args);
+				}
 				\SeanMorris\Ids\Log::debug(
 					'Generating row...'
 					, $row
@@ -622,10 +593,38 @@ class SelectStatement extends WhereStatement
 				yield $result;
 			}
 
+			if(!$first)
+			{
+				$this->complete($queryObject, $queryStartTime, $args);
+			}
+
 			\SeanMorris\Ids\Log::debug('DONE GENERATING ROWS!');
 		};
 
 		return $closure;
+	}
+
+	protected function complete($queryObject, $queryStartTime, $args)
+	{
+		$queryTime = microtime(TRUE) - $queryStartTime;
+
+		static::$queryTime += $queryTime;
+
+		$queryHash = sha1(print_r([
+			$queryObject->queryString
+			, $args
+		],1));
+
+		\SeanMorris\Ids\Log::query('Query executed.', $args, new \SeanMorris\Ids\LogMeta([
+			'query'         => $queryObject->queryString
+			, 'query_time'  => $queryTime * 1000
+			, 'query_tier'  => $this->databaseTier()
+			, 'query_type'  => get_called_class()
+			, 'query_table' => $this->table
+			, 'query_args'  => $args
+			, 'query_hash'  => $queryHash
+
+		]));
 	}
 
 	public function group(...$groups)

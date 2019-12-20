@@ -4,6 +4,8 @@ class Settings
 {
 	protected static
 		$settings
+		, $file
+		, $env
 		, $currentSite
 		, $currentPort
 		, $callbacks
@@ -13,6 +15,28 @@ class Settings
 
 	public static function read(...$names)
 	{
+		static $cache = [];
+
+		$cacheKey = $scoredName = implode('_', $names);
+
+		if(isset($cache[$cacheKey]))
+		{
+			return $cache[$cacheKey];
+		}
+
+		$envName = static::findEnvVarName(
+			$scoredName
+			, static::$currentSite
+			, static::$currentPort
+		);
+
+		if($envName)
+		{
+			$env = static::getenv();
+
+			return $env[$envName];
+		}
+
 		$settings = static::load(
 			static::$currentSite
 			, static::$currentPort
@@ -22,17 +46,39 @@ class Settings
 		{
 			if(!isset($settings->$name))
 			{
+				$prefixNames = static::findEnvVarName(
+					$scoredName
+					, static::$currentSite
+					, static::$currentPort
+					, TRUE
+				);
+
+				$prefix = key($prefixNames);
+				$suffix = current($prefixNames);
+
+				if($prefixNames)
+				{
+					return new SettingsReader($prefix, $suffix);
+				}
+
 				return;
 			}
 
 			$settings = $settings->$name;
 		}
 
+		$cache[$cacheKey] = $settings;
+
 		return $settings;
 	}
 
 	public static function load($hostname = NULL, $port = NULL)
 	{
+		if(static::$settings)
+		{
+			return static::$settings;
+		}
+
 		if(!static::$currentSite || static::$currentSite != $hostname)
 		{
 			if(isset($_SERVER['HTTP_HOST']))
@@ -62,11 +108,9 @@ class Settings
 				}
 			}
 
-			$rootPackage = Package::getRoot();
-
 			$settingsFile = static::findSettingsFile($hostname, $port);
 
-			if(file_exists($settingsFile))
+			if(!static::$settings && file_exists($settingsFile))
 			{
 				static::$currentSite = $hostname;
 				static::$currentPort = $port;
@@ -95,8 +139,101 @@ class Settings
 		return static::$settings;
 	}
 
+	public static function findEnvVarName($name, $host = NULL, $port = NULL, $prefix = FALSE)
+	{
+		$cacheKey = $name.'::'.$host.'::'.$port.'::'.$prefix;
+
+		static $cache = [];
+
+		if(isset($cache[$cacheKey]))
+		{
+			return $cache[$cacheKey];
+		}
+
+		$env = static::getenv();
+
+		[$name, $host] = preg_replace(
+			['/\W/']
+			, ['_']
+			, [strtoupper($name), strtoupper($host)]
+		);
+
+		$envVarPrefix = static::envVarNames(NULL);
+		$envVarNames  = static::envVarNames($name, $host, $port);
+
+		foreach($envVarNames as $envVarName)
+		{
+			if(array_key_exists($envVarName, $env))
+			{
+				return $cache[$cacheKey] = $envVarName;
+			}
+		}
+
+		if($prefix)
+		{
+			$found = [];
+
+			foreach($env as $envK => $envV)
+			{
+				foreach($envVarNames as $e => $envVarName)
+				{
+					if(substr($envK, 0, strlen($envVarName)) === $envVarName)
+					{
+						$bareEnvPrefix = substr($envVarName, strlen($envVarPrefix[$e]));
+
+						$found[$bareEnvPrefix][] = substr($envK, strlen($envVarName));
+						break;
+					}
+				}
+			}
+
+			return $cache[$cacheKey] = $found;
+		}
+	}
+
+	protected static function envVarNames($name, $host = NULL, $port = NULL)
+	{
+		$cacheKey = $name.'::'.$host.'::'.$port.'::'.$port;
+
+		static $cache = [];
+
+		if(isset($cache[$cacheKey]))
+		{
+			return $cache[$cacheKey];
+		}
+
+		[$name, $host] = preg_replace(
+			['/\W/'], ['_']
+			, array_map('strtoupper', [$name, $host])
+		);
+
+		$hostName = NULL;
+		$portName = NULL;
+
+		if($port)
+		{
+			$portName = sprintf('IDS__%s__%s', $host, $name, $port);
+		}
+
+		if($host)
+		{
+			$hostName = sprintf('IDS__%s__%s', $host, $name);
+		}
+
+		$globalName = 'IDS_' . $name;
+
+		return $cache[$cacheKey] = array_filter(
+			[$portName, $hostName, $globalName]
+		);
+	}
+
 	public static function findSettingsFile($hostname, $port)
 	{
+		if(isset(static::$file))
+		{
+			return static::$file;
+		}
+
 		global $switches;
 
 		$rootPackage = Package::getRoot();
@@ -132,15 +269,11 @@ class Settings
 			, ';'
 		];
 
-		$checked = [];
-
 		foreach ($filenames as $filename)
 		{
 			foreach($settingsFileExtensions as $extension)
 			{
 				$filepath = sprintf($settingsFilenameFormat, $filename, $extension);
-
-				$checked[] = $filepath;
 
 				if(file_exists($filepath))
 				{
@@ -152,12 +285,12 @@ class Settings
 						));
 					}
 
-					return $filepath;
+					return static::$file = $filepath;
 				}
 			}
 		}
 
-		return FALSE;
+		return static::$file = FALSE;
 	}
 
 	public static function register(...$name)
@@ -175,5 +308,17 @@ class Settings
 		}
 
 		return FALSE;
+	}
+
+	public static function getenv()
+	{
+		if(static::$env)
+		{
+			return static::$env;
+		}
+
+		static::$env = getenv();
+
+		return static::$env;
 	}
 }

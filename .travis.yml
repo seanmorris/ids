@@ -1,0 +1,6 @@
+services:
+  - docker
+install:
+  - make TARGET=dev
+  - make test TARGET=dev
+script: make test

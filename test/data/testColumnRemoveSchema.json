@@ -92,7 +92,7 @@
             "Foozle": {
                 "fields": {
                     "caption": {
-                        "Field": "class",
+                        "Field": "caption",
                         "Type": "varchar(255)",
                         "Collation": "latin1_swedish_ci",
                         "Null": "YES",

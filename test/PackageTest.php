@@ -6,14 +6,8 @@ class PackageTest extends \UnitTestCase
 
 	public function setUp()
 	{
-		if($this->setUp)
-		{
-			return;
-		}
-
 		$this->database = \SeanMorris\Ids\Database::get('main');
-		$package = $this->package = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
-		$package::setTables(['main' => ['Foobar', 'Foozle']]);
+		$this->package  = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
 
 		foreach($this->package->tables() as $dbName => $tables)
 		{
@@ -22,7 +16,7 @@ class PackageTest extends \UnitTestCase
 			foreach($tables as $table)
 			{
 				$dropTable = $db->prepare(sprintf(
-					'DROP TABLE %s'
+					'DROP TABLE IF EXISTS %s'
 					, $table
 				));
 
@@ -30,21 +24,20 @@ class PackageTest extends \UnitTestCase
 			}
 		}
 
-		$this->setUp = 1;
+		$this->package::setTables([
+			'main' => ['Foobar', 'Foozle']
+		]);
 	}
 
 	public function tearDown()
-	{	
+	{
 		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
-			$this->package->packageDir()
-			. 'test/data/testApplySchema.json'
+			$this->package->globalDir() . '_schema.json'
 		);
 
 		$testSchemaFile->copy(
 			$this->package->globalDir() . 'schema.json'
 		);
-
-		$this->package->applySchema(TRUE);
 	}
 
 	public function testApplySchema()
@@ -57,7 +50,7 @@ class PackageTest extends \UnitTestCase
 		$schemaFile = $testSchemaFile->copy($this->package->globalDir() . 'schema.json');
 
 		$this->package->applySchema(TRUE);
-		
+
 		foreach($this->package->tables() as $dbName => $tables)
 		{
 			$db = \SeanMorris\Ids\Database::get($dbName);
@@ -84,15 +77,21 @@ class PackageTest extends \UnitTestCase
 
 	public function testStoreSchema()
 	{
-		$this->package->storeSchema();
-		
-		$schemaFile = new \SeanMorris\Ids\Disk\File(
-			$this->package->globalDir() . 'schema.json'
-		);
-
 		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
 			$this->package->packageDir()
 			. 'test/data/testApplySchema.json'
+		);
+
+		$testSchemaFile->copy(
+			$this->package->globalDir() . 'schema.json'
+		);
+
+		$this->package->applySchema(TRUE);
+
+		$this->package->storeSchema();
+
+		$schemaFile = new \SeanMorris\Ids\Disk\File(
+			$this->package->globalDir() . 'schema.json'
 		);
 
 		$this->assertEqual(
@@ -116,11 +115,11 @@ class PackageTest extends \UnitTestCase
 		);
 
 		$this->package->applySchema(TRUE);
-		
+
 		$db = \SeanMorris\Ids\Database::get('main');
 
 		$sth = $db->prepare('SHOW COLUMNS FROM Foozle WHERE field LIKE ?');
-		
+
 		$sth->execute(['caption']);
 
 		$this->assertTrue(
@@ -157,8 +156,6 @@ class PackageTest extends \UnitTestCase
 
 	public function testDirectories()
 	{
-		global $composer;
-
 		$packageDir = $this->package->packageDir();
 		$localDir = $this->package->localDir();
 		$globalDir = $this->package->globalDir();
@@ -173,7 +170,7 @@ class PackageTest extends \UnitTestCase
 			$packageDir->has( $this->package->globalDir() )
 			, 'Subdirectory detection failed for global directory'
 		);
-		
+
 		$this->assertTrue(
 			$packageDir->has( $this->package->assetDir() )
 			, 'Subdirectory detection failed for asset directory'

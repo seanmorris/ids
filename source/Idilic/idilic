@@ -4,8 +4,6 @@ use \SeanMorris\Ids\Path;
 use \SeanMorris\Ids\Router;
 use \SeanMorris\Ids\Idilic\Route\RootRoute;
 
-ini_set('display_errors', TRUE);
-
 array_shift($argv);
 
 $requestProto = new stdClass;
@@ -73,6 +71,10 @@ foreach($input as $arg)
 	$requestProto->switches = $switches;
 }
 
+$composer = require dirname(__FILE__) . '/../init.php';
+
+$_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?? \SeanMorris\Ids\Settings::read('default', 'domain');
+
 if(isset($switches['d']))
 {
 	$_SERVER['HTTP_HOST'] = $switches['d'];
@@ -82,8 +84,6 @@ if(isset($switches['domain']))
 {
 	$_SERVER['HTTP_HOST'] = $switches['domain'];
 }
-
-$composer = require dirname(__FILE__) . '/../init.php';
 
 foreach($requests as $req)
 {

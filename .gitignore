@@ -1,2 +1,6 @@
+.env
+.env.*
 vendor*
 vendor/*
+!.env.sample
+!.env.*.sample

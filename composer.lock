@@ -1,10 +1,9 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "hash": "e5bba1629e1c99eeac80bafd4a0bdc52",
     "content-hash": "738851889384018fba8dec643e5815f3",
     "packages": [],
     "packages-dev": [
@@ -14,25 +13,29 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/simpletest/simpletest.git",
-                "reference": "7929413286a405a59c1187e77ff73f43ede23849"
+                "reference": "3fea8f4a04b193538f71fa6f7c77c32bdcb0402f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simpletest/simpletest/zipball/7929413286a405a59c1187e77ff73f43ede23849",
-                "reference": "7929413286a405a59c1187e77ff73f43ede23849",
+                "url": "https://api.github.com/repos/simpletest/simpletest/zipball/3fea8f4a04b193538f71fa6f7c77c32bdcb0402f",
+                "reference": "3fea8f4a04b193538f71fa6f7c77c32bdcb0402f",
                 "shasum": ""
             },
             "require": {
-                "php": "^5.4 || ^7.0"
+                "php": "^7.1"
             },
-            "replace": {
-                "lastcraft/simpletest": "self.version",
-                "vierbergenlars/simpletest": "self.version"
+            "require-dev": {
+                "ext-dom": "*",
+                "ext-mbstring": "*",
+                "ext-tidy": "*"
             },
             "type": "library",
             "autoload": {
                 "classmap": [
-                    "."
+                    "src/"
+                ],
+                "exclude-from-classmap": [
+                    "/test"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -40,14 +43,6 @@
                 "LGPL-2.0+"
             ],
             "authors": [
-                {
-                    "name": "Lars Vierbergen",
-                    "email": "vierbergenlars@gmail.com"
-                },
-                {
-                    "name": "Lachlan Donald",
-                    "email": "lachlan@ljd.cc"
-                },
                 {
                     "name": "Marcus Baker",
                     "email": "marcus@lastcraft.com",
@@ -68,9 +63,20 @@
                 {
                     "name": "Edward Z. Yang",
                     "role": "Original developer"
+                },
+                {
+                    "name": "Lachlan Donald",
+                    "email": "lachlan@ljd.cc"
+                },
+                {
+                    "name": "Lars Vierbergen",
+                    "email": "vierbergenlars@gmail.com"
+                },
+                {
+                    "name": "Jens A. Koch"
                 }
             ],
-            "description": "Unit testing, mock objects and web testing framework for PHP built around test cases.",
+            "description": "SimpleTest is a framework for unit testing, web site testing and mock objects for PHP.",
             "homepage": "http://simpletest.org/",
             "keywords": [
                 "SimpleTest",
@@ -79,7 +85,7 @@
                 "testing",
                 "unit-test"
             ],
-            "time": "2016-01-23 20:03:54"
+            "time": "2019-12-18T15:12:09+00:00"
         }
     ],
     "aliases": [],

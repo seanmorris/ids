@@ -44,7 +44,7 @@ class AssetManager
 		\SeanMorris\Ids\Log::debug('Building assets:', $assets);
 
 		$assetHashes = [];
-		$assetOrder = [];
+
 		foreach($assets as $assetIndex => $asset)
 		{
 			$chunks = array_filter(explode('/', $asset));

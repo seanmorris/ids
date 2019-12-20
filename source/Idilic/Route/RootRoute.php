@@ -9,7 +9,6 @@ namespace SeanMorris\Ids\Idilic\Route;
  */
 class RootRoute implements \SeanMorris\Ids\Routable
 {
-
 	function _dynamic($router)
 	{
 		$args = $router->path()->consumeNodes();
@@ -57,6 +56,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			$candidatePackages = array_values(array_filter(
 				\SeanMorris\Ids\Meta::classes()
 				, function($class) use($command){
+
 					if(!preg_match('/Idilic\\\Route\\\RootRoute$/', $class))
 					{
 						return FALSE;
@@ -107,6 +107,15 @@ class RootRoute implements \SeanMorris\Ids\Routable
 					$packageName = sprintf('%s/%s', ...$routeParts);
 					array_unshift($args, $command);
 				}
+			}
+			else if(!count($candidatePackages))
+			{
+				throw new \Exception(sprintf(
+					'No packages supply command "%s".'
+					, $command
+				));
+
+				return;
 			}
 			else
 			{
@@ -164,20 +173,25 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 	public function runTests($router)
 	{
-		$args = $router->path()->consumeNodes();
+		if(!$packageList = $router->path()->consumeNodes())
+		{
+			$packageList = \SeanMorris\Ids\Package::listPackages();
+		}
 
-		while($packageName = array_shift($args))
+		while($packageName = array_shift($packageList))
 		{
 			$packageName = str_replace('/', '\\', $packageName);
-			$package = $this->_getPackage($packageName);
-			$tests = $package->testDir();
+			$package     = \SeanMorris\Ids\Package::get($packageName);
+			$tests       = $package->testDir();
+			$packageName = $package->packageSpace();
 
-			while($test = $tests->read())
+			while($tests->check() && $test = $tests->read())
 			{
 				if(!preg_match('/(\w+?Test)\.php/', $test->name(), $m))
 				{
 					continue;
 				}
+
 				$testClass = $packageName . '\\Test\\' . $m[1];
 				$test = new $testClass;
 				$test->run(new \TextReporter());
@@ -254,8 +268,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		if(!$packageName = array_shift($args))
 		{
-			echo 'No package supplied.\n';
-			return;
+			return 'No package supplied.';
 		}
 
 		$real = array_shift($args);
@@ -686,7 +699,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 			print \SeanMorris\Ids\Idilic\Cli::color('Commands: ', 'white') . PHP_EOL;
 
-			
+
 			foreach($methods as $method)
 			{
 				if($method->name[0] == '_')
@@ -711,12 +724,13 @@ class RootRoute implements \SeanMorris\Ids\Routable
 						, \SeanMorris\Ids\Idilic\Cli::color($method->name, 'green')
 					);
 				}
-				
+
 			}
 
 			print PHP_EOL;
 		}
-		die;
+
+		return;
 
 		$packages = \SeanMorris\Ids\Package::listPackages($router->contextGet('composer'));
 		$idsPackage = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
@@ -842,6 +856,18 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		return $package->getVar($var);
 	}
 
+	/** Execute PHP with the project initialized. */
+
+	public function run($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		if($code = array_shift($args))
+		{
+			eval($code);
+		}
+	}
+
 	/** Remove a variable from a given package. */
 
 	public function delete($router)
@@ -863,340 +889,53 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		return $package->deleteVar($var);
 	}
 
-	/** Print a minimal apache config for a given domain. */
-
-	public function apacheConfig($router)
-	{
-		if(!$domain = $router->request()->switches('d', 'domain', NULL))
-		{
-			if(file_exists(getenv("HOME") . '/.idilicProfile.json'))
-			{
-				$userFile = new \SeanMorris\Ids\Disk\File(
-					getenv("HOME") . '/.idilicProfile.json'
-				);
-				$userSettings = json_decode($userFile->slurp());
-
-				$domain = $userSettings->domain;
-			}
-		}
-
-		return sprintf(<<<'EOF'
-<VirtualHost *:80>
-  ServerName %s
-  DocumentRoot %s
-
-  <Directory %s>
-    Options Indexes FollowSymLinks
-    AllowOverride All
-    Order allow,deny
-    Allow from all
-    Require all granted
-  </Directory>
-
-  # Possible values: debug, info, notice, warn, error, crit,
-  # alert, emerg.
-  LogLevel warn
-  ErrorLog ${APACHE_LOG_DIR}/error.log
-  CustomLog ${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>
-EOF
-			, $domain
-			, \SeanMorris\Ids\Settings::read('public')
-			, \SeanMorris\Ids\Settings::read('public')
-		);
-	}
-
-	/** Multiota specific. */
-
-	public function batch($router)
-	{
-		$job = new \SeanMorris\Multiota\Test\Count\CountJob;
-		$job->start();
-		/*
-		$pool = new \SeanMorris\Multiota\Pool(
-			'\SeanMorris\Multiota\DataSource'
-			, '\SeanMorris\Multiota\Processor'
-		);
-
-		$pool->start();
-		*/
-		exit;
-	}
-
-	/** Multiota specific. */
-
-	public function batchProcess($router)
-	{
-
-		$processor = $router->path()->consumeNode();
-		$child = $router->path()->consumeNode();
-		$max = $router->path()->consumeNode();
-		$timeout = $router->path()->consumeNode();
-
-		$processor = new $processor($child, $max, $timeout);
-
-		$processor->spin();
-	}
-
-	/** Multiota specific. */
-
-	public function countJob()
-	{
-		$job = new \SeanMorris\Multiota\Test\Count\CountJob(
-			'SeanMorris\Multiota\RemotePool'
-			, [
-				'servers' => ['localhost']
-			]
-		);
-		$job->start();
-	}
-
-	/** Multiota specific. */
-
-	public function capitalizeJob()
-	{
-		$job = new \SeanMorris\Multiota\Job(
-			'SeanMorris\Multiota\Test\Capitalize\CapitalizeProcessor'
-			, 'SeanMorris\Multiota\RemotePool'
-			, [
-				'servers' => ['thewhtrbt.com', 'buzzingbeesalon.com']
-			]
-		);
-		$job->start();
-	}
-
-	/** Multiota specific. */
-
-	public function letterCountMap()
-	{
-		$job = new \SeanMorris\Multiota\Job(
-			'SeanMorris\Multiota\Test\LetterCount\Mapper'
-			//, 'SeanMorris\Multiota\RemotePool'
-			, [
-				'servers' => ['seantop', 'localhost']
-			]
-		);
-		$job->start();
-	}
-
-	/** Multiota specific. */
-
-	public function letterCountReduce()
-	{
-		$job = new \SeanMorris\Multiota\Job(
-			'SeanMorris\Multiota\Test\LetterCount\Reducer'
-			//, 'SeanMorris\Multiota\RemotePool'
-			, [
-				'servers' => ['seantop', 'localhost']
-			]
-		);
-		$job->start();
-	}
-
 	/** Start a RePL. */
 
-	public function repl()
-	{
-		stream_set_blocking(STDIN, FALSE);
-		exec('stty -icanon min 0 time 0');
-		system('stty -echo');
-		register_shutdown_function(function(){
-			system('stty echo');
-		});
-		set_error_handler(function($errno, $errstr, $errfile, $errline)
-		{
-			printf("Error %d: %s\n%s:%s", $errno, $errstr, $errfile, $errline);
-		});
-		set_exception_handler(function($exception)
-		{
-			print \SeanMorris\Ids\Log::renderException($exception);
-			fwrite(STDERR, PHP_EOL . 'Goodbye.' . PHP_EOL);
-		});
-		print "Welcome to iREPL v0.1\n>";
-		$line = $input = NULL;
-		$lines = [];
-		$offset = 0;
-		while (TRUE)
-		{
-			sleep(0.1);
-			$char = fread(STDIN,16);
-			$byte = bin2hex($char);
-			if(!strlen($char))
-			{
-				continue;
-			}
-			if($offset < 0)
-			{
-				$offset = 0;
-			}
-			if($offset > strlen($line))
-			{
-				$offset = strlen($line);	
-			}
-			if($byte == '7f')
-			{
-				if(strlen($line) && $offset < strlen($line))
-				{
-					print $this->backspace($line, $offset);
-					$line = substr($line, 0, strlen($line)-($offset+1)) . substr($line, strlen($line)-$offset);
-					print $line;
-				}
-				if(!$line)
-				{
-					$offset = 0;
-				}
-				continue;
-			}
-			if(!preg_match('/\n/', $char) && strlen($byte) == 2)
-			{
-				print $this->backspace($line, $offset);
-				$line = substr($line, 0, strlen($line)-$offset) . $char . substr($line, strlen($line)-$offset);
-				print $line;
-				continue;
-			}
-			else if(strlen($byte) > 2)
-			{
-				if($byte == '1b5b41')
-				{
-					print $this->backspace($line, $offset);
-					$line = current($lines);
-					print $line;
-					if(next($lines) === FALSE)
-					{
-						reset($lines);
-					}
-					continue;
-				}
-				else if($byte == '1b5b42')
-				{
-					print $this->backspace($line);
-					$line = current($lines);
-					print $line;
-					if(prev($lines) === FALSE)
-					{
-						reset($lines);
-					}
-					continue;
-				}
-				else if(in_array($byte, ['1b5b43', '1b5b44']))
-				{
-					if($byte == '1b5b44')
-					{
-						$offset++;
-					}
-					else
-					{
-						$offset--;
-					}
-					continue;
-				}
-			}
-			$line = trim($line);
-			array_unshift($lines, $line);
-			if (substr($line, 0, 1) === '/')
-			{
-				$line = Ltrim($line, '/');
-				if ($line === 'export') {
-					/*
-					file_put_contents(
-						getenv("HOME") . '/.idilic/replVars.dat',
-						serialize(array_diff_key(
-							get_defined_vars(),
-							array_flip(array('line', 'input', 'output'))
-						))
-					);
-					*/
-				}
-				else if ($line === 'import') {
-				}
-			}
-			else if (substr($line, -1, 1) === '\\')
-			{
-				$line = rtrim($line, '\\');
-				$input .= PHP_EOL . $line;
-				print "|";
-				continue;
-			}
-			else if ($line && substr($line, -1, 1) !== ';')
-			{
-				$input .= sprintf("print PHP_EOL; print_r(%s);", $line);
-			}
-			else if ($line)
-			{
-				$input .= $line;
-			}
-			ob_start();
-			eval($input . ';');			
-			$output = ob_get_contents();
-			ob_end_flush();
-			$input = $line = NULL;
-			$offset = 0;
-			print "\n>";
-		}
-	}
 
-	/** Execute PHP with the project initialized. */
-
-	public function run($router)
-	{
-		$args = $router->path()->consumeNodes();
-
-		if($code = array_shift($args))
-		{
-			eval($code);
-		}
-
-		// \SeanMorris\Ids\Settings::findSettingsFile('thruput', 80);
-	}
-
-	protected function backspace($len, $offset = 0)
-	{
-		$len = strlen($len);
-
-		//$string = $this->jump($offset);
-		$string = NULL;
-
-		//$len += $offset;
-
-		$string .= str_repeat("\x08", $len)
-			. str_repeat(" ", $len)
-			. str_repeat("\x08", $len);
-
-		return $string;
-	}
-
-	protected function jump($offset)
-	{
-		$string = NULL;
-
-		if($offset < 0)
-		{
-			$string .= str_repeat("\x1b\x5b\x43", abs($offset));
-		}
-		else if($offset)
-		{
-			$string .= str_repeat("\x1b\x5b\x44", abs($offset));
-		}
-		return $string;	
-	}
 
 	/** Print project info. */
 
 	public function info()
 	{
-		return sprintf(
-"Domain:\t\t%s
-Root:\t\t%s
-Entrypoint:\t%s
-Log Level:\t%s
-Root Package:\t%s
-"
+		$databases = \SeanMorris\Ids\Settings::read('databases');
+
+		$dbs = NULL;
+
+		if($databases)
+		{
+			foreach($databases as $name => $database)
+			{
+				$dbs .= sprintf(
+					"%sDatabase: %s\n%sHost: %s\n"
+					, str_repeat(' ', 4)
+					, $name
+					, str_repeat(' ', 8)
+					, $database->hostname
+				);
+			}
+		}
+
+		return sprintf(<<<EOT
+		Root Package: %s
+		      Domain: %s
+		     RootDir: %s
+		  Entrypoint: %s
+		   Log Level: %s
+
+		EOT
+			, \SeanMorris\Ids\Package::getRoot()->packageSpace()
 			, $_SERVER['HTTP_HOST']
 			, IDS_ROOT
 			, \SeanMorris\Ids\Settings::read('entrypoint')
 			, \SeanMorris\Ids\Settings::read('logLevel')
-			, \SeanMorris\Ids\Package::getRoot()->packageSpace()
-		);
+		) . $dbs;
+	}
+
+	/** Start a REPL. */
+
+	public function repl()
+	{
+		\SeanMorris\Ids\Repl::init();
 	}
 
 	/** Watch project logs. Ctrl+c to exit. */
@@ -1204,7 +943,54 @@ Root Package:\t%s
 	public function log()
 	{
 		ignore_user_abort(true);
-		popen('less -RSXMI +G /home/sean/letsvue/temporary/log.txt', 'w');
+		popen(sprintf(
+			'less -RSXMI +G %s/temporary/log.txt', 'w'
+			, \SeanMorris\Ids\Package::getRoot()
+		));
+	}
+
+	/** Print the current environment variables available. */
+
+	public function env()
+	{
+		print \SeanMorris\Ids\Log::dump(getenv());
+	}
+
+	public function pack()
+	{
+		$ids  = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
+		$root = \SeanMorris\Ids\Package::getRoot();
+		$name = preg_replace('/\W/', '_', $root->name());
+
+		$pharName = $name . '.phar';
+		$pharPath = $root->packageDir() . $pharName;
+
+		if(file_exists($pharPath))
+		{
+			unlink($pharPath);
+		}
+
+		$phar = new \Phar($pharPath);
+
+		$phar->setDefaultStub(
+			'source/Idilic/idilic'
+			, 'public/index.php'
+		);
+
+		$phar->startBuffering();
+		$files = $phar->buildFromDirectory(
+			$root->packageDir()
+			, '/^((?!.git).)*$/'
+		);
+
+// 		print_r($files);
+
+		$phar->stopBuffering();
+		$phar->compressFiles(\Phar::GZ);
+
+		chmod($pharPath, 0777);
+
+		return print_r($pharPath, 1);
 	}
 
 	public static function parseDoc()

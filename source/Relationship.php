@@ -14,7 +14,7 @@ class Relationship extends Model
 	;
 
 	protected static
-		$table = 'PressKitRelationship'
+		$table = 'IdsRelationship'
 		, $ignore = [
 			'ownerObject'
 			, 'subjectObject'
@@ -85,7 +85,7 @@ class Relationship extends Model
 		return $this->subjectObject;
 	}
 
-	protected static function instantiate($skeleton, $args = [], $rawArgs = [])
+	protected static function instantiate($skeleton, $args = [], $rawArgs = [], $select = NULL)
 	{
 		$owner      = array_shift($rawArgs);
 		$ownerClass = array_shift($rawArgs);
@@ -98,7 +98,7 @@ class Relationship extends Model
 			// \SeanMorris\Ids\Log::debug([$owner, $column, $owner->getSubjectClass($column)]);
 			// $subjectClass = $owner->getSubjectClass($column);
 
-			$instance = parent::instantiate($skeleton, $args);
+			$instance = parent::instantiate($skeleton, $args, [], $select);
 			$subjectClass = $instance->subjectClass;
 
 			$subSkeleton = $subjectClass::subSkeleton($skeleton);
@@ -108,7 +108,7 @@ class Relationship extends Model
 				return;
 			}
 
-			$subject = $subjectClass::instantiate($skeleton);
+			$subject = $subjectClass::instantiate($skeleton, [], [], $select);
 
 			if(!$subject && $skeleton[ $subjectClass::table() ])
 			{

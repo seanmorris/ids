@@ -8,7 +8,7 @@ abstract class Statement
 		, $wrappers = []
 	;
 
-	protected static $queryCount = 0, $queryTime = 0;
+	protected static $queryCount = 0, $queryTime = 0, $altered;
 
 	public function __construct($table)
 	{
@@ -51,8 +51,11 @@ abstract class Statement
 	{
 		$queryString = $this->assemble(...(func_get_args()));
 
-		\SeanMorris\Ids\Log::debug('Tier', $this->databaseTier());
-		\SeanMorris\Ids\Log::query($queryString);
+		\SeanMorris\Ids\Log::query(
+			'Tier:' . $this->databaseTier()
+			, 'Preparing query'
+			, $queryString
+		);
 
 		$database = $this->database();
 
@@ -70,7 +73,25 @@ abstract class Statement
 
 		$queryTime = microtime(TRUE) - $queryStartTime;
 
-		$slowQuery = \SeanMorris\Ids\Settings::read('slowQuery');
+		static::$queryCount++;
+
+		static::$queryTime += $queryTime;
+
+		$queryHash = sha1(print_r([
+			$queryObject->queryString, $args
+		],1));
+
+		\SeanMorris\Ids\Log::query('Query executed.', new \SeanMorris\Ids\LogMeta([
+			'query'         => $queryObject->queryString
+			, 'query_time'  => $queryTime
+			, 'query_tier'  => $this->databaseTier()
+			, 'query_type'  => get_called_class()
+			, 'query_table' => $this->table
+			, 'query_args'  => $args
+			, 'query_hash'  => $queryHash
+		]));
+
+		$slowQuery  = \SeanMorris\Ids\Settings::read('slowQuery');
 		$queryLimit = \SeanMorris\Ids\Settings::read('queryLimit');
 
 		if($slowQuery && $slowQuery <= $queryTime)
@@ -83,6 +104,17 @@ abstract class Statement
 				)
 				, ''
 				, $queryObject->queryString
+				, ''
+				, implode(PHP_EOL, \SeanMorris\Ids\Log::trace(FALSE))
+				, new \SeanMorris\Ids\LogMeta([
+					'query'         => $queryObject->queryString
+					, 'query_time'  => $queryTime * 1000
+					, 'query_tier'  => $this->databaseTier()
+					, 'query_type'  => get_called_class()
+					, 'query_args'  => $args
+					, 'query_table' => $this->table
+					, 'query_hash'  => $queryHash
+				])
 			);
 		}
 
@@ -93,10 +125,6 @@ abstract class Statement
 				, $queryLimit
 			));
 		}
-
-		static::$queryCount++;
-
-		static::$queryTime += $queryTime;
 
 		\SeanMorris\Ids\Log::debug(
 			'Queries Run: ' . static::$queryCount
@@ -158,5 +186,20 @@ abstract class Statement
 	public static function queryTime()
 	{
 		return static::$queryTime;
+	}
+
+	protected static function altered($table)
+	{
+		static::$altered[$table] = TRUE;
+	}
+
+	protected static function isAltered($table)
+	{
+		return static::$altered[$table]?? FALSE;
+	}
+
+	public function table()
+	{
+		return $this->table;
 	}
 }
