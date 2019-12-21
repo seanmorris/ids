@@ -1,23 +1,27 @@
 #!/bin/bash
 
-echo "PHP will now lint all the php staged files..."
+set -u;
 
-phpLintErrors=0
+PHP_ERROR=0;
+git diff-index HEAD \
+	| grep ".php" \
+	| grep "^:"   \
+	| sed 's:.* [UAM][ \\''t]*\([^ \\''t]*\):\1:g' \
+	| while read FILE; do \
+		echo Checking $FILE...;
+		echo -ne "\t";
+		php -l $FILE 2>&1;
+		[[ 0 -ne  $? ]] && PHP_ERROR=1;
+	done;
 
-for stagedFile in $stagedFiles; do
-	res=`php -l $stagedFile 2>&1 | grep 'PHP Parse error:'`
-	echo "$stagedFile, $res"
-	if [ -n "$res" ]; then
-		phpLintErrors=1
-	fi
-done
+set -eu;
 
-if [ -n "$phpLintErrors" ]; then
-	exit $phpLintErrors
-fi
-
-make TARGET=dev
-
-make test
+[[ 1 -ne $PHP_ERROR ]] \
+	&& echo Please correct the above errors before committing. \
+	&& exit $PHP_ERROR;
 
 make TARGET=base
+make TARGET=dev
+make TARGET=test
+
+make test TARGET=test

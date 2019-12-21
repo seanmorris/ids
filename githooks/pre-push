@@ -1,0 +1,5 @@
+#!/bin/bash
+
+make push-images TARGET=base
+make push-images TARGET=dev
+make push-images TARGET=test
