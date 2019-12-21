@@ -6,13 +6,8 @@ services:
     extends:
       file: base.yml
       service: idilic
-    env_file:
-      ../../.env
-    depends_on:
-      - database
-    volumes:
-      - ../../:/app
-      - /tmp:/tmp
+    depends_on: [database]
+    volumes: ["../../:/app", "/tmp:/tmp"]
     environment:
       DHOST_IP: ${DHOST_IP}
       XDEBUG_CONFIG: ${XDEBUG_CONFIG}
@@ -22,13 +17,8 @@ services:
     extends:
       file: base.yml
       service: server
-    env_file:
-      ../../.env
-    depends_on:
-      - database
-    volumes:
-      - ../../:/app
-      - /tmp:/tmp
+    depends_on: [database]
+    volumes: ["../../:/app", "/tmp:/tmp"]
     environment:
       DHOST_IP: ${DHOST_IP}
       XDEBUG_CONFIG: ${XDEBUG_CONFIG}

@@ -6,24 +6,16 @@ services:
     extends:
       file: base.yml
       service: idilic
-    env_file:
-      ../../.env
-    depends_on:
-      - database
-    volumes:
-      - ../../:/app
+    depends_on: [database]
+    volumes: ["../../:/app"]
 
   server:
     ports: ['80:80']
     extends:
       file: base.yml
       service: server
-    env_file:
-      ../../.env
-    depends_on:
-      - database
-    volumes:
-      - ../../:/app
+    depends_on: [database]
+    volumes: ["../../:/app"]
 
   database:
     ports: ['9996:3306']
