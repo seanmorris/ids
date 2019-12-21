@@ -41,7 +41,7 @@ RUN set -eux; \
 	apt-get autoremove -y; \
 	apt-get clean;
 
-ENV PATH="${PATH}:/app/source/Idilic:/app/vendor/bin"
+ENV PATH="${PATH}:/app/source/Idilic:/app/vendor/seanmorris/ids/source/Idilic:/app/vendor/bin"
 
 WORKDIR /app
 

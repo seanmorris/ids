@@ -22,8 +22,7 @@ services:
     command: ['mysqld', '--character-set-server=utf8mb4']
     image: mariadb:10.4.8-bionic
     restart: always
-    volumes:
-      - schema:/var/lib/mysql
+    volumes: ['schema:/var/lib/mysql']
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: 1
       MYSQL_USER:     ${IDS_DATABASES_MAIN_USERNAME}

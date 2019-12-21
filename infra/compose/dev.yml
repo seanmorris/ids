@@ -7,24 +7,24 @@ services:
       file: base.yml
       service: idilic
     depends_on: [database]
-    volumes: ["../../:/app", "/tmp:/tmp"]
+    volumes: ['../../:/app', '/tmp:/tmp']
     environment:
       XDEBUG_CONFIG: ${XDEBUG_CONFIG}
       DHOST_IP: ${DHOST_IP}
 
   server:
-    ports: ['80:80']
+    volumes: ['../../:/app', '/tmp:/tmp']
+    ports: ['${IDS_EXPOSE_HTTP}:80']
     extends:
       file: base.yml
       service: server
     depends_on: [database]
-    volumes: ["../../:/app", "/tmp:/tmp"]
     environment:
       XDEBUG_CONFIG: ${XDEBUG_CONFIG}
       DHOST_IP: ${DHOST_IP}
 
   database:
-    ports: ['9996:3306']
+    ports: ['${IDS_EXPOSE_SQL}:${IDS_DATABASES_MAIN_PORT}']
     extends:
       file: base.yml
       service: database

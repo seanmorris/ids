@@ -3,7 +3,6 @@
 	push-images pull-images tag-images start start-fg restart restart-fg stop \
 	stop-all run run-phar test env hooks
 
-
 TARGET   ?=dev
 
 -include .env
@@ -74,9 +73,9 @@ DCOMPOSE ?=export ${ENV} \
 it: infra/compose/${TARGET}.yml
 	@ echo Building ${FULLNAME}
 	@ cp -n .env.sample .env 2>/dev/null \
-		||  touch .env \
+		||  touch -a .env
 	@ cp -n .env.${TARGET}.sample .env.${TARGET} 2>/dev/null \
-		||  touch .env.{TARGET} \
+		||  touch -a .env.{TARGET}
 	@ docker run --rm \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		-v $$PWD:/app \

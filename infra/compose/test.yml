@@ -3,22 +3,20 @@ version: '2.4'
 services:
 
   idilic:
+    volumes: ['../../:/app']
     extends:
       file: base.yml
       service: idilic
     depends_on: [database]
-    volumes: ["../../:/app"]
 
   server:
-    ports: ['80:80']
+    volumes: ['../../:/app']
     extends:
       file: base.yml
       service: server
     depends_on: [database]
-    volumes: ["../../:/app"]
 
   database:
-    ports: ['9996:3306']
     extends:
       file: base.yml
       service: database
