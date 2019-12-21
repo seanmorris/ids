@@ -3,6 +3,7 @@
 	push-images pull-images tag-images start start-fg restart restart-fg stop \
 	stop-all run run-phar test env hooks
 
+
 TARGET   ?=dev
 
 -include .env
@@ -60,8 +61,8 @@ else
 	XDEBUG_ENV=
 endif
 
-ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} DHOST_IP=${DHOST_IP} ${XDEBUG_ENV} \
-	PROJECT=${PROJECT} TARGET=${TARGET} \
+ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} DHOST_IP=${DHOST_IP} \
+	PROJECT=${PROJECT} TARGET=${TARGET} ${XDEBUG_ENV} \
 	$$(cat .env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#) \
 	$$(cat .env.${TARGET} 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)
 
@@ -73,8 +74,10 @@ DCOMPOSE ?=export ${ENV} \
 
 it: infra/compose/${TARGET}.yml
 	@ echo Building ${FULLNAME}
-	@ cp -n .env.sample .env 2>/dev/null|| true
-	@ cp -n .env.${TARGET}.sample .env.${TARGET} 2>/dev/null|| true
+	@ cp -n .env.sample .env 2>/dev/null \
+		||  touch .env \
+	@ cp -n .env.${TARGET}.sample .env.${TARGET} 2>/dev/null \
+		||  touch .env.{TARGET} \
 	@ docker run --rm \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		-v $$PWD:/app \
