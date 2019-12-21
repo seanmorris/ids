@@ -1,7 +1,7 @@
 FROM seanmorris/ids.idilic:latest-base AS base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
-RUN set -eux; \ 
+RUN set -eux; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends apache2 libapache2-mod-php7.3; \
 	a2dismod mpm_event; \

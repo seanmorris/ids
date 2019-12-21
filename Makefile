@@ -41,7 +41,8 @@ endif
 ifeq (${TARGET},dev)
 	NO_DEV=
 	XDEBUG_ENV=XDEBUG_CONFIG="`\
-		cat .env.dev | ${INTERPOLATE_ENV} \
+		test -f .env.dev && cat .env.dev \
+		| ${INTERPOLATE_ENV} \
 		| grep -v ^\# \
 		| grep ^XDEBUG_CONFIG_ \
 		| while read VAR; do echo $$VAR | \
