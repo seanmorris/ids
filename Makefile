@@ -44,14 +44,12 @@ WHILE_TAGS=${WHILE_IMAGES} \
 		| while read TAG_NAME; do
 
 PARSE_ENV=grep -v ^\# \
-		| while read ENV; do echo $$ENV | { \
+		| while read -r ENV; do echo $$ENV | { \
 			IFS='\=' read -r NAME VALUE; \
 
 ENTROPY_DIR=/tmp/IDS_ENTROPY
 ENTROPY_KEY=default
-GET_ENTROPY=mkdir -p ${ENTROPY_DIR} \
-	&& chmod 700 ${ENTROPY_DIR} \
-	&& test -e ${ENTROPY_DIR}/$$ENTROPY_KEY \
+GET_ENTROPY=test -e ${ENTROPY_DIR}/$$ENTROPY_KEY \
 		&& cat ${ENTROPY_DIR}/$$ENTROPY_KEY \
 		|| cat /dev/urandom \
 			| tr -dc 'a-zA-Z0-9' \
@@ -61,11 +59,14 @@ GET_ENTROPY=mkdir -p ${ENTROPY_DIR} \
 
 STITCH_ENTROPY=test -e $$TO || while read -r LINE; do \
 	test -n "$$LINE" || continue; \
-	echo $$LINE | ${PARSE_ENV} \
-	grep -q $$NAME .entropy \
-		&& echo $$NAME=$$(export ENTROPY_KEY=$$NAME && ${GET_ENTROPY}) \
-		|| echo $$NAME=$$VALUE; \
-	}; done; done < $$FROM > $$TO
+	echo -n "$$LINE" | ${PARSE_ENV} \
+		grep $$NAME .entropy | { \
+		IFS=":" read -r ENV_KEY ENTROPY_KEY; \
+		echo -n $$NAME=; \
+		test -n "$$ENTROPY_KEY" \
+			&& echo $$(export ENTROPY_KEY=$$ENTROPY_KEY && ${GET_ENTROPY}) \
+			|| echo -E $$VALUE; \
+	};}; done; done < $$FROM > $$TO
 
 ifeq (${TARGET},test)
 	NO_DEV=
@@ -91,8 +92,8 @@ else
 endif
 
 ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP} \
-	PROJECT=${PROJECT} TARGET=${TARGET} ${XDEBUG_ENV} \
 	MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV} PROJECT_FULLNAME=${FULLNAME} \
+	PROJECT=${PROJECT} TARGET=${TARGET} ${XDEBUG_ENV} \
 	$$(cat .env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#) \
 	$$(cat .env.${TARGET} 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)
 
@@ -103,8 +104,8 @@ DCOMPOSE ?=export ${ENV} \
 
 it: infra/compose/${TARGET}.yml
 	@ echo Building ${FULLNAME}
+	@ mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR};
 	@ export FROM=.env.sample TO=.env && ${STITCH_ENTROPY};
-	@ (shopt -s nullglob; rm -rf ${ENTROPY_DIR})
 	@ export FROM=.env.${TARGET}.sample TO=.env.${TARGET} && ${STITCH_ENTROPY};
 	@ (shopt -s nullglob; rm -rf ${ENTROPY_DIR})
 	@ touch -a .env.${TARGET}

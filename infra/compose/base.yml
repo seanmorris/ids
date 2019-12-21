@@ -3,8 +3,8 @@ version: '2.4'
 services:
 
   idilic:
-    image: ${REPO}/${PROJECT}.idilic:${TAG}
-    restart: on-failure
+    image:    ${REPO}/${PROJECT}.idilic:${TAG}
+    restart:  on-failure
     env_file: ['${MAIN_ENV}', '${TRGT_ENV}']
     build:
       context: ../../
@@ -12,8 +12,8 @@ services:
       target: ${TARGET}
 
   server:
-    image: ${REPO}/${PROJECT}.server:${TAG}
-    restart: always
+    image:    ${REPO}/${PROJECT}.server:${TAG}
+    restart:  always
     env_file: ['${MAIN_ENV}', '${TRGT_ENV}']
     build:
       context: ../../
@@ -22,15 +22,15 @@ services:
 
   database:
     command: ['mysqld', '--character-set-server=utf8mb4']
-    image: mariadb:10.4.8-bionic
-    `restart: always
+    image:   mysql:5.7.28
+    restart: always
     volumes: ['schema:/var/lib/mysql']
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: 1
       MYSQL_USER:     ${IDS_DATABASES_MAIN_USERNAME}
       MYSQL_PASSWORD: ${IDS_DATABASES_MAIN_PASSWORD}
       MYSQL_DATABASE: ${IDS_DATABASES_MAIN_DATABASE}
-      MYSQL_PORT:     ${IDS_DATABASES_MAIN_PORT}
+      MYSQL_TCP_PORT: ${IDS_DATABASES_MAIN_PORT}
 
 volumes:
   schema:
