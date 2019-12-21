@@ -2,5 +2,6 @@ language: minimal
 services:
   - docker
 install:
-  - make TARGET=test
-script: make test TARGET=test
+  - export TARGET=test
+  - make
+script: make test

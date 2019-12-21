@@ -3,10 +3,15 @@
 	push-images pull-images tag-images start start-fg restart restart-fg stop \
 	stop-all run run-phar test env hooks
 
-TARGET   ?=dev
+SHELL    = /bin/bash
+MAKEDIR  =$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+TARGET   ?=base
 
--include .env
--include .env.${TARGET}
+MAIN_ENV ?=${MAKEDIR}.env
+TRGT_ENV ?=${MAKEDIR}.env.${TARGET}
+
+-include ${MAIN_ENV}
+-include ${TRGT_ENV}
 
 PROJECT  ?=ids
 REPO     ?=seanmorris
@@ -24,6 +29,8 @@ INTERPOLATE_ENV=env -i DHOST_IP=${DHOST_IP} \
 	PROJECT=${PROJECT} \
 	envsubst
 
+PASS_ENV=$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /')
+
 SUFFIX   =-${TARGET}$$([ ${BRANCH} = master ] && echo "" || echo "-${BRANCH}")
 TAG      ?=${DESC}${SUFFIX}
 FULLNAME ?=${REPO}/${PROJECT}:${TAG}
@@ -34,6 +41,8 @@ WHILE_TAGS=${WHILE_IMAGES} \
 		| sed -e 's/[][]//g' \
 		| sed -e 's/\s/\n/g' \
 		| while read TAG_NAME; do
+
+ENTROPY_DIR=/tmp/IDS_ENTROPY
 
 ifeq (${TARGET},test)
 	NO_DEV=
@@ -59,11 +68,11 @@ else
 	XDEBUG_ENV=
 endif
 
-ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} DHOST_IP=${DHOST_IP} \
+ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP} \
 	PROJECT=${PROJECT} TARGET=${TARGET} ${XDEBUG_ENV} \
+	MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV} PROJECT_FULLNAME=${FULLNAME} \
 	$$(cat .env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#) \
 	$$(cat .env.${TARGET} 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)
-
 
 DCOMPOSE ?=export ${ENV} \
 	&& docker-compose \
@@ -126,12 +135,12 @@ pull-images: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} pull
 
 restart: infra/compose/${TARGET}.yml
-	@ make -s stop
-	@ make -s start
+	@ ${DCOMPOSE} down
+	@ ${DCOMPOSE} up -d
 
 restart-fg: infra/compose/${TARGET}.yml
-	@ make -s stop
-	@ make -s start-fg
+	@ ${DCOMPOSE} down
+	@ ${DCOMPOSE} up
 
 start: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} up -d
@@ -148,15 +157,17 @@ stop-all: infra/compose/${TARGET}.yml
 current-tag: infra/compose/${TARGET}.yml
 	@ echo ${TAG}
 
+bash: infra/compose/${TARGET}.yml
+	@ ${DCOMPOSE} run --rm ${NO_TTY} \
+		${PASS_ENV} --entrypoint=bash idilic
+
 run: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} run --rm ${NO_TTY} \
-		$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /') \
-		${CMD}
+		${PASS_ENV} ${CMD}
 
 run-phar: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} run --rm --entrypoint='php SeanMorris_Ids.phar' \
-	$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /') \
-	${CMD}
+		${PASS_ENV} ${CMD}
 
 test: infra/compose/${TARGET}.yml
 	@ make --no-print-directory run \
@@ -167,3 +178,18 @@ env: infra/compose/${TARGET}.yml
 
 hooks: infra/compose/${TARGET}.yml
 	@ git config core.hooksPath githooks
+
+dcompose-config:
+	@ ${DCOMPOSE} config
+
+makedir:
+	echo ${TRGT_ENV}
+
+KEY=default
+get-entropy:
+	@ mkdir -p /tmp/IDS_ENTROPY
+	@ chmod 700 /tmp/IDS_ENTROPY
+	@ cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1
+
+
+clear-entropy:

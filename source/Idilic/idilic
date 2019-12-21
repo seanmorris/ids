@@ -4,7 +4,34 @@ use \SeanMorris\Ids\Path;
 use \SeanMorris\Ids\Router;
 use \SeanMorris\Ids\Idilic\Route\RootRoute;
 
+const IDILIC_PASSTHRU_CODE = '# idilic-passthru';
+
 array_shift($argv);
+
+if(file_exists($subidilicFile = getcwd() . '/idilic'))
+{
+	$subidilicFile = realpath($subidilicFile);
+	$env = getenv();
+
+	if(!isset($env['IDS_INSIDE_DOCKER']))
+	{
+		$line = trim(fgets(fopen($subidilicFile, 'r')));
+
+		if(substr($line, -strlen(IDILIC_PASSTHRU_CODE)) === IDILIC_PASSTHRU_CODE)
+		{
+			fwrite(STDERR, 'Handing off to Docker...');
+
+			$subidilic = 'bash -c '	. escapeshellarg(
+				$subidilicFile
+				. ' '
+				. implode(array_map('escapeshellarg', $argv))
+			);
+
+			echo `$subidilic` . PHP_EOL;
+			die;
+		}
+	}
+}
 
 $requestProto = new stdClass;
 $requests = [];

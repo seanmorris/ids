@@ -1,5 +1,20 @@
 #!/bin/bash
 
-make push-images TARGET=base
-make push-images TARGET=dev
-make push-images TARGET=test
+set -eu;
+
+export $(make env | tr '\n' ' ');
+
+[[ "$TARGET" == "dev" ]] ||  set -eux;
+
+if grep -q ^$BRANCH\:$TARGET\$ .publishing; then
+
+	echo "$BRANCH:$TARGET found in .publishing file. Ids is building & pushing now.";
+
+	make TARGET=$TARGET;
+	make TARGET=$TARGET test;
+	make TARGET=$TARGET push-images;
+
+	exit 0;
+fi
+
+echo "Branch '$BRANCH' is not in the .publishing file.";

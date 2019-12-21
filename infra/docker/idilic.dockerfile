@@ -39,9 +39,12 @@ RUN set -eux; \
 		wget;               \
 	apt-get purge -y --auto-remove; \
 	apt-get autoremove -y; \
-	apt-get clean;
+	apt-get clean
 
+ENV IDS_INSIDE_DOCKER=true
 ENV PATH="${PATH}:/app/source/Idilic:/app/vendor/seanmorris/ids/source/Idilic:/app/vendor/bin"
+
+SHELL ["/bin/bash", "-c"]
 
 WORKDIR /app
 

@@ -2,7 +2,12 @@
 
 set -u;
 
+export $(make env | tr '\n' ' ');
+
+[[ "$TARGET" == "dev" ]] ||  set -eux;
+
 PHP_ERROR=0;
+
 git diff-index HEAD \
 	| grep ".php" \
 	| grep "^:"   \
@@ -16,12 +21,8 @@ git diff-index HEAD \
 
 set -eu;
 
-[[ 1 -ne $PHP_ERROR ]] \
+[[ 0 -ne $PHP_ERROR ]] \
 	&& echo Please correct the above errors before committing. \
 	&& exit $PHP_ERROR;
 
-make TARGET=base
-make TARGET=dev
-make TARGET=test
-
-make test TARGET=test
+exit 0;

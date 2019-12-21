@@ -5,6 +5,7 @@ services:
   idilic:
     image: ${REPO}/${PROJECT}.idilic:${TAG}
     restart: on-failure
+    env_file: ['${MAIN_ENV}', '${TRGT_ENV}']
     build:
       context: ../../
       dockerfile: infra/docker/idilic.dockerfile
@@ -13,6 +14,7 @@ services:
   server:
     image: ${REPO}/${PROJECT}.server:${TAG}
     restart: always
+    env_file: ['${MAIN_ENV}', '${TRGT_ENV}']
     build:
       context: ../../
       dockerfile: infra/docker/server.dockerfile
