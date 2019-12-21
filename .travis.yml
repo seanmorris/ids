@@ -3,5 +3,4 @@ services:
   - docker
 install:
   - make TARGET=test
-  - make test TARGET=test
-script: make test
+script: make test TARGET=test
