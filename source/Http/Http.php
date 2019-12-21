@@ -13,7 +13,7 @@ class Http
 		{
 			$disconnect =& static::$disconnect;
 
-			ob_start(;
+			ob_start();
 
 			register_shutdown_function(function() use(&$disconnect){
 				$contentLength = ob_get_length();

@@ -9,8 +9,8 @@ services:
     depends_on: [database]
     volumes: ["../../:/app", "/tmp:/tmp"]
     environment:
-      DHOST_IP: ${DHOST_IP}
       XDEBUG_CONFIG: ${XDEBUG_CONFIG}
+      DHOST_IP: ${DHOST_IP}
 
   server:
     ports: ['80:80']
@@ -20,8 +20,8 @@ services:
     depends_on: [database]
     volumes: ["../../:/app", "/tmp:/tmp"]
     environment:
-      DHOST_IP: ${DHOST_IP}
       XDEBUG_CONFIG: ${XDEBUG_CONFIG}
+      DHOST_IP: ${DHOST_IP}
 
   database:
     ports: ['9996:3306']

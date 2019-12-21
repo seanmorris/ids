@@ -15,7 +15,6 @@ BRANCH   ?=$$(git rev-parse --abbrev-ref HEAD  2>/dev/null)
 HASH     ?=$$(echo _$$(git rev-parse --short HEAD) || echo init)
 DESC     ?=$$(git describe --tags 2>/dev/null || echo ${HASH})
 
-
 IMAGE    ?=
 DHOST_IP ?=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
 NO_TTY   ?=-T
@@ -69,7 +68,7 @@ ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} DHOST_IP=${DHOST_IP} \
 
 DCOMPOSE ?=export ${ENV} \
 	&& docker-compose \
-	-p ${PROJECT} \
+	-p ${PROJECT}_${TARGET} \
 	-f infra/compose/${TARGET}.yml
 
 it: infra/compose/${TARGET}.yml
