@@ -13,9 +13,11 @@ TARGET ?=dev
 PROJECT ?=ids
 REPO    ?=seanmorris
 BRANCH  ?=$$(git rev-parse --abbrev-ref HEAD)
-DESC    ?=$$(git describe --tags 2>/dev/null || git rev-parse --short HEAD)
+DESC    ?=$$(git describe --tags 2>/dev/null || echo _$$(git rev-parse --short HEAD) || echo init)
 
-TAG       ?=${DESC}-${TARGET}-${BRANCH}
+SUFFIX =-${TARGET}$$([ ${BRANCH} = master ] && echo "" || echo "-master")
+TAG    ?=${DESC}${SUFFIX}
+
 IMAGE     ?=
 DHOST_IP  ?=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
 NO_TTY    ?=-T
@@ -60,22 +62,19 @@ it: infra/compose/${TARGET}.yml
 	@ cp -n .env.sample .env 2>/dev/null|| true
 	@ cp -n .env.${TARGET}.sample .env.${TARGET} 2>/dev/null|| true
 	@ make -s composer-install TARGET=${TARGET} PROJECT=${PROJECT}
-	@ ${DCOMPOSE} build ${IMAGE}
+	@ export TAG=latest-${TARGET} ${DCOMPOSE} build idilic
 	@ ${DCOMPOSE} build
 	@ ${DCOMPOSE} up --no-start
-	@ ${DCOMPOSE} images -q | while read IMAGE_HASH; do \
-		docker image inspect --format="{{index .RepoTags 0}}" $$IMAGE_HASH \
-		| grep "^${REPO}" \
-		| grep "${TAG}$$" \
+	@ docker images seanmorris/ids.*:20191220-dev -q | while read IMAGE_HASH; do \
+		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
 		| while read IMAGE_NAME; do \
 			IMAGE_PREFIX=`echo "$$IMAGE_NAME" | sed -e "s/\:.*\$$//"`; \
-			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":`date '+%Y%m%d'`-${TARGET}; \
-			echo "$$IMAGE_PREFIX":`date '+%Y%m%d'`-${TARGET}; \
-			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":latest-${TARGET}; \
-			echo "$$IMAGE_PREFIX":latest-${TARGET}; \
+			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":`date '+%Y%m%d'`${SUFFIX}; \
+			echo "$$IMAGE_HASH $$IMAGE_PREFIX":`date '+%Y%m%d'`${SUFFIX}; \
+			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":latest${SUFFIX}; \
+			echo "$$IMAGE_HASH $$IMAGE_PREFIX":latest${SUFFIX}; \
 		done; \
 	done;
-	@ ${DCOMPOSE} images
 
 composer-install: infra/compose/${TARGET}.yml
 	@ docker run --rm \
