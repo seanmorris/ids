@@ -477,15 +477,16 @@ class Package
 
 		if(! file_exists($dir))
 		{
+			\SeanMorris\Ids\Log::warn(sprintf(
+				'%s directory %s does not exist. Attempting to create...'
+				, $type
+				, $dir
+			));
+
 			mkdir($dir, 0777, true);
 		}
 
 		$path = $dir . 'var.json';
-
-		if(! file_exists($dir))
-		{
-			mkdir($dir, 0777, true);
-		}
 
 		if(! file_exists($path))
 		{

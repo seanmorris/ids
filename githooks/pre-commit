@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -u;
+set -eu;
 
 export $(make env | tr '\n' ' ');
 
@@ -16,13 +16,12 @@ git diff-index HEAD \
 		echo Checking $FILE...;
 		echo -ne "\t";
 		php -l $FILE 2>&1;
-		[[ 0 -ne  $? ]] && PHP_ERROR=1;
+		PHP_ERROR=$?;
 	done;
 
 set -eu;
 
 [[ 0 -ne $PHP_ERROR ]] \
-	&& echo Please correct the above errors before committing. \
-	&& exit $PHP_ERROR;
+	&& echo Please correct the above errors before committing.;
 
-exit 0;
+exit $PHP_ERROR;
