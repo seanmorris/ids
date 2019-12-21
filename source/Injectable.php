@@ -14,7 +14,7 @@ trait Injectable
 			return new static::$_injections[$name];
 		}
 
-		if(!is_callable('parent::__get'))
+		if(!is_callable('parent::__get')
 		{
 			return;
 		}
