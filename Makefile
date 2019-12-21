@@ -3,32 +3,36 @@
 	push-images pull-images tag-images start start-fg restart restart-fg stop \
 	stop-all run run-phar test env hooks
 
-
-
-TARGET ?=dev
+TARGET   ?=dev
 
 -include .env
 -include .env.${TARGET}
 
-PROJECT ?=ids
-REPO    ?=seanmorris
-BRANCH  ?=$$(git rev-parse --abbrev-ref HEAD)
-DESC    ?=$$(git describe --tags 2>/dev/null || echo _$$(git rev-parse --short HEAD) || echo init)
+PROJECT  ?=ids
+REPO     ?=seanmorris
+BRANCH   ?=$$(git rev-parse --abbrev-ref HEAD  2>/dev/null)
+DESC     ?=$$(git describe --tags 2>/dev/null || echo _$$(git rev-parse --short HEAD) || echo init)
 
-SUFFIX =-${TARGET}$$([ ${BRANCH} = master ] && echo "" || echo "-master")
-TAG    ?=${DESC}${SUFFIX}
+SUFFIX   =-${TARGET}$$([ ${BRANCH} = master ] && echo "" || echo "-${BRANCH}")
+TAG      ?=${DESC}${SUFFIX}
+FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
-IMAGE     ?=
-DHOST_IP  ?=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
-NO_TTY    ?=-T
-FULLNAME  ?=${REPO}/${PROJECT}:${TAG}
+IMAGE    ?=
+DHOST_IP ?=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
+NO_TTY   ?=-T
+NO_DEV   ?=--no-dev
 
 INTERPOLATE_ENV=env -i DHOST_IP=${DHOST_IP} \
 	TAG=${TAG} REPO=${REPO} TARGET=${TARGET} \
 	PROJECT=${PROJECT} \
 	envsubst
 
+ifeq (${TARGET},test)
+	NO_DEV=
+endif
+
 ifeq (${TARGET},dev)
+	NO_DEV=
 	XDEBUG_ENV=XDEBUG_CONFIG="`\
 		cat .env.dev | ${INTERPOLATE_ENV} \
 		| grep -v ^\# \
@@ -59,13 +63,17 @@ DCOMPOSE ?=export ${ENV} \
 
 it: infra/compose/${TARGET}.yml
 	@ echo Building ${FULLNAME}
+	@ docker run --rm \
+		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
+		-v $$PWD:/app \
+		composer install ${NO_DEV}
 	@ cp -n .env.sample .env 2>/dev/null|| true
 	@ cp -n .env.${TARGET}.sample .env.${TARGET} 2>/dev/null|| true
 	@ make -s composer-install TARGET=${TARGET} PROJECT=${PROJECT}
 	@ export TAG=latest-${TARGET} ${DCOMPOSE} build idilic
 	@ ${DCOMPOSE} build
 	@ ${DCOMPOSE} up --no-start
-	@ docker images seanmorris/ids.*:20191220-dev -q | while read IMAGE_HASH; do \
+	@ docker images seanmorris/ids.*:${TAG} -q | while read IMAGE_HASH; do \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
 		| while read IMAGE_NAME; do \
 			IMAGE_PREFIX=`echo "$$IMAGE_NAME" | sed -e "s/\:.*\$$//"`; \
@@ -76,23 +84,11 @@ it: infra/compose/${TARGET}.yml
 		done; \
 	done;
 
-composer-install: infra/compose/${TARGET}.yml
-	@ docker run --rm \
-		-v $$PWD:/app \
-		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
-		composer install
-
 composer-update: infra/compose/${TARGET}.yml
 	@ docker run --rm \
 		-v $$PWD:/app \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		composer update
-
-composer-update-no-dev: infra/compose/${TARGET}.yml
-	@ docker run --rm \
-		-v $$PWD:/app \
-		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
-		composer update --no-dev
 
 push-images: infra/compose/${TARGET}.yml
 	@ echo Pushing ${PROJECT}:${TAG}

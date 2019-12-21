@@ -1,6 +1,6 @@
 services:
   - docker
 install:
-  - make TARGET=dev
-  - make test TARGET=dev
+  - make TARGET=test
+  - make test TARGET=test
 script: make test
