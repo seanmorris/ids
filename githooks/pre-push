@@ -11,7 +11,6 @@ if grep -q ^$BRANCH\:$TARGET\$ .publishing; then
 	echo "$BRANCH:$TARGET found in .publishing file. Ids is building & pushing now.";
 
 	make TARGET=$TARGET;
-	make TARGET=$TARGET test;
 	make TARGET=$TARGET push-images;
 
 	exit 0;
