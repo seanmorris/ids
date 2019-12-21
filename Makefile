@@ -36,13 +36,36 @@ TAG      ?=${DESC}${SUFFIX}
 FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
 WHILE_IMAGES=docker images ${REPO}/${PROJECT}.*:${TAG} -q | while read IMAGE_HASH; do
+
 WHILE_TAGS=${WHILE_IMAGES} \
 		docker image inspect --format="{{ index .RepoTags }}" $$IMAGE_HASH \
 		| sed -e 's/[][]//g' \
 		| sed -e 's/\s/\n/g' \
 		| while read TAG_NAME; do
 
+PARSE_ENV=grep -v ^\# \
+		| while read ENV; do echo $$ENV | { \
+			IFS='\=' read -r NAME VALUE; \
+
 ENTROPY_DIR=/tmp/IDS_ENTROPY
+ENTROPY_KEY=default
+GET_ENTROPY=mkdir -p ${ENTROPY_DIR} \
+	&& chmod 700 ${ENTROPY_DIR} \
+	&& test -e ${ENTROPY_DIR}/$$ENTROPY_KEY \
+		&& cat ${ENTROPY_DIR}/$$ENTROPY_KEY \
+		|| cat /dev/urandom \
+			| tr -dc 'a-zA-Z0-9' \
+			| fold -w 32 \
+			| head -n 1 \
+			| tee ${ENTROPY_DIR}/$$ENTROPY_KEY
+
+STITCH_ENTROPY=test -e $$TO || while read -r LINE; do \
+	test -n "$$LINE" || continue; \
+	echo $$LINE | ${PARSE_ENV} \
+	grep -q $$NAME .entropy \
+		&& echo $$NAME=$$(export ENTROPY_KEY=$$NAME && ${GET_ENTROPY}) \
+		|| echo $$NAME=$$VALUE; \
+	}; done; done < $$FROM > $$TO
 
 ifeq (${TARGET},test)
 	NO_DEV=
@@ -58,9 +81,8 @@ ifeq (${TARGET},dev)
 		| while read VAR; do echo $$VAR | \
 		{ \
 			IFS='\=' read -r NAME VALUE; \
-			echo -n ' '; \
-			echo -n $$NAME | sed -e 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
-			echo -n =$$VALUE;\
+			echo -En $$NAME | sed -e 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
+			echo -En =$$VALUE;\
 		} \
 		; done | cut -c 2- \
 	 ` "
@@ -81,10 +103,12 @@ DCOMPOSE ?=export ${ENV} \
 
 it: infra/compose/${TARGET}.yml
 	@ echo Building ${FULLNAME}
-	@ cp -n .env.sample .env 2>/dev/null \
-		||  touch -a .env
-	@ cp -n .env.${TARGET}.sample .env.${TARGET} 2>/dev/null \
-		||  touch -a .env.{TARGET}
+	@ export FROM=.env.sample TO=.env && ${STITCH_ENTROPY};
+	@ (shopt -s nullglob; rm -rf ${ENTROPY_DIR})
+	@ export FROM=.env.${TARGET}.sample TO=.env.${TARGET} && ${STITCH_ENTROPY};
+	@ (shopt -s nullglob; rm -rf ${ENTROPY_DIR})
+	@ touch -a .env.${TARGET}
+	@ touch -a .env
 	@ docker run --rm \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		-v $$PWD:/app \
@@ -181,15 +205,3 @@ hooks: infra/compose/${TARGET}.yml
 
 dcompose-config:
 	@ ${DCOMPOSE} config
-
-makedir:
-	echo ${TRGT_ENV}
-
-KEY=default
-get-entropy:
-	@ mkdir -p /tmp/IDS_ENTROPY
-	@ chmod 700 /tmp/IDS_ENTROPY
-	@ cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1
-
-
-clear-entropy:
