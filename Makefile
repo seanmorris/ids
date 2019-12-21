@@ -13,10 +13,6 @@ REPO     ?=seanmorris
 BRANCH   ?=$$(git rev-parse --abbrev-ref HEAD  2>/dev/null)
 DESC     ?=$$(git describe --tags 2>/dev/null || echo _$$(git rev-parse --short HEAD) || echo init)
 
-SUFFIX   =-${TARGET}$$([ ${BRANCH} = master ] && echo "" || echo "-${BRANCH}")
-TAG      ?=${DESC}${SUFFIX}
-FULLNAME ?=${REPO}/${PROJECT}:${TAG}
-
 IMAGE    ?=
 DHOST_IP ?=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
 NO_TTY   ?=-T
@@ -26,6 +22,17 @@ INTERPOLATE_ENV=env -i DHOST_IP=${DHOST_IP} \
 	TAG=${TAG} REPO=${REPO} TARGET=${TARGET} \
 	PROJECT=${PROJECT} \
 	envsubst
+
+SUFFIX   =-${TARGET}$$([ ${BRANCH} = master ] && echo "" || echo "-${BRANCH}")
+TAG      ?=${DESC}${SUFFIX}
+FULLNAME ?=${REPO}/${PROJECT}:${TAG}
+
+WHILE_IMAGES=docker images ${REPO}/${PROJECT}.*:${TAG} -q | while read IMAGE_HASH; do
+WHILE_TAGS=${WHILE_IMAGES} \
+		docker image inspect --format="{{ index .RepoTags }}" $$IMAGE_HASH \
+		| sed -e 's/[][]//g' \
+		| sed -e 's/\s/\n/g' \
+		| while read TAG_NAME; do
 
 ifeq (${TARGET},test)
 	NO_DEV=
@@ -63,17 +70,16 @@ DCOMPOSE ?=export ${ENV} \
 
 it: infra/compose/${TARGET}.yml
 	@ echo Building ${FULLNAME}
+	@ cp -n .env.sample .env 2>/dev/null|| true
+	@ cp -n .env.${TARGET}.sample .env.${TARGET} 2>/dev/null|| true
 	@ docker run --rm \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		-v $$PWD:/app \
 		composer install ${NO_DEV}
-	@ cp -n .env.sample .env 2>/dev/null|| true
-	@ cp -n .env.${TARGET}.sample .env.${TARGET} 2>/dev/null|| true
-	@ make -s composer-install TARGET=${TARGET} PROJECT=${PROJECT}
-	@ export TAG=latest-${TARGET} ${DCOMPOSE} build idilic
+	@ export TAG=latest-${TARGET} && ${DCOMPOSE} build idilic
 	@ ${DCOMPOSE} build
 	@ ${DCOMPOSE} up --no-start
-	@ docker images seanmorris/ids.*:${TAG} -q | while read IMAGE_HASH; do \
+	@ ${WHILE_IMAGES} \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
 		| while read IMAGE_NAME; do \
 			IMAGE_PREFIX=`echo "$$IMAGE_NAME" | sed -e "s/\:.*\$$//"`; \
@@ -90,22 +96,27 @@ composer-update: infra/compose/${TARGET}.yml
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		composer update
 
+list-images:
+	@ ${WHILE_IMAGES} \
+		echo $$(docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH) \
+		$$(docker image inspect --format="{{ .Size }}" $$IMAGE_HASH  \
+			| awk '{ S=$$1 /1024/1024 ; print S "MB" }' \
+		); \
+	done;
+
+list-tags:
+	@ ${WHILE_TAGS} \
+		echo $$TAG_NAME; \
+	done;done;
+
 push-images: infra/compose/${TARGET}.yml
 	@ echo Pushing ${PROJECT}:${TAG}
-	@ export TAG="latest-${TARGET}" \
-		&& ${DCOMPOSE} push
-	@ export TAG=$$(date '+%Y%m%d')-${TARGET} \
-		&& ${DCOMPOSE} push
-	@ ${DCOMPOSE} push
+	@ ${WHILE_TAGS} \
+		docker push $$TAG_NAME; \
+	done;done;
 
 pull-images: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} pull
-
-images: infra/compose/${TARGET}.yml
-	@ ${DCOMPOSE} images
-
-imagesq: infra/compose/${TARGET}.yml
-	@ ${DCOMPOSE} images -q
 
 restart: infra/compose/${TARGET}.yml
 	@ make -s stop
@@ -127,7 +138,7 @@ stop: infra/compose/${TARGET}.yml
 stop-all: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} down --remove-orphans
 
-tag: infra/compose/${TARGET}.yml
+current-tag: infra/compose/${TARGET}.yml
 	@ echo ${TAG}
 
 run: infra/compose/${TARGET}.yml
