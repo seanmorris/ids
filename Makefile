@@ -11,7 +11,9 @@ TARGET   ?=dev
 PROJECT  ?=ids
 REPO     ?=seanmorris
 BRANCH   ?=$$(git rev-parse --abbrev-ref HEAD  2>/dev/null)
-DESC     ?=$$(git describe --tags 2>/dev/null || echo _$$(git rev-parse --short HEAD) || echo init)
+HASH     ?=$$(echo _$$(git rev-parse --short HEAD) || echo init)
+DESC     ?=$$(git describe --tags 2>/dev/null || echo ${HASH})
+
 
 IMAGE    ?=
 DHOST_IP ?=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
@@ -88,6 +90,8 @@ it: infra/compose/${TARGET}.yml
 			echo "$$IMAGE_HASH $$IMAGE_PREFIX":`date '+%Y%m%d'`${SUFFIX}; \
 			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":latest${SUFFIX}; \
 			echo "$$IMAGE_HASH $$IMAGE_PREFIX":latest${SUFFIX}; \
+			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":${HASH}${SUFFIX}; \
+			echo "$$IMAGE_HASH $$IMAGE_PREFIX":${HASH}${SUFFIX}; \
 		done; \
 	done;
 
