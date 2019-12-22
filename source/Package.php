@@ -33,8 +33,7 @@ class Package
 
 		if(!isset($composerData->name))
 		{
-			throw new \Exception(
-				'Please ensure the root composer.json has a value for the "name" attribute.');
+			$composerData->name = 'Anonymous\Package';
 		}
 
 		$packageName = static::name($composerData->name ?? $packageName);
