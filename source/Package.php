@@ -31,7 +31,17 @@ class Package
 
 		$composerData = json_decode($composerJson->slurp());
 
-		$packageName = static::name($composerData->name);
+		$env = getenv();
+
+		$frag = preg_replace('/\\\(?:\w+$)/', '', get_called_class());
+
+		$packageName = static::name(
+			$composerData->name
+			?? $env['PROJECT_FULLNAME']
+			?? strtolower(preg_replace('/\//', '\\', $frag))
+		);
+
+		$packageName = static::name($composerData->name ?? $packageName);
 
 		if(isset(
 			$composerData

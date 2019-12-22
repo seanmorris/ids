@@ -4,11 +4,12 @@
 	stop-all run run-phar test env hooks
 
 SHELL    = /bin/bash
-MAKEDIR  =$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 TARGET   ?=base
+MAKEDIR  ?=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-MAIN_ENV =${MAKEDIR}.env
-TRGT_ENV =${MAKEDIR}.env.${TARGET}
+MAIN_ENV ?=${MAKEDIR}.env
+TRGT_ENV ?=${MAKEDIR}.env.${TARGET}
+
 SURE_ENV =touch ${MAIN_ENV} ${TRGT_ENV}
 
 TARGET_COMPOSE=infra/compose/${TARGET}.yml
