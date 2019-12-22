@@ -207,6 +207,10 @@ restart-bg: ${TARGET_COMPOSE}
 	@ ${DCOMPOSE} down
 	@ ${DCOMPOSE} up &
 
+kill: ${TARGET_COMPOSE}
+	@ ${SURE_ENV}
+	@ ${DCOMPOSE} kill
+
 current-tag: ${TARGET_COMPOSE}
 	@ echo ${TAG}
 

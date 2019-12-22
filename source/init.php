@@ -298,25 +298,27 @@ $existingErrorHandler = set_error_handler(
 
 if($dbs = \SeanMorris\Ids\Settings::read('databases'))
 {
-		\SeanMorris\Ids\Database::registerMulti($dbs);
+	\SeanMorris\Ids\Database::registerMulti($dbs);
 
 	foreach($dbs as $name => $creds)
 	{
-		\SeanMorris\Ids\Log::debug(
-			sprintf('Setting SQL mode for %s...', $name)
-		);
+		\SeanMorris\Ids\Database::initialize($name, function($db) use($name){
+			\SeanMorris\Ids\Log::debug(
+				sprintf('Setting SQL mode for %s...', $name)
+			);
 
-		$dbHandle = \SeanMorris\Ids\Database::get($name);
+			$query = $db->prepare("SET SESSION sql_mode=(
+				SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY','')
+			)");
 
-		$query = $dbHandle->prepare("SET SESSION sql_mode=(
-			SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY','')
-		)");
+			$query->execute();
 
-		$query->execute();
+			$query = $db->prepare("SET SESSION sql_mode=(
+				SELECT REPLACE(@@sql_mode,'NO_ZERO_DATE','')
+			)");
 
-		$query = $dbHandle->prepare("SET SESSION sql_mode=(
-			SELECT REPLACE(@@sql_mode,'NO_ZERO_DATE','')
-		)");
+			$query->execute();
+		});
 	}
 }
 
