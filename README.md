@@ -65,6 +65,12 @@ Thats it!
 
 The `dev` build target provides facilities for connecting to xdebug and graylog.
 
+### XDebug
+
+XDebug is built into the `dev` images by default. You can configure it by setting `XDEBUG_CONFIG_` environment variables in `.env.dev`. By default it will attempt to connect to port 9000 on `${DHOST_IP}`, which is the machine runing the project.
+
+### GrayLog
+
 ## Idilc CLI
 
 Ids comes with the `idilic` command when installed globally with composer. When executed, it will ascend through the current path looking for another project including Ids. When it finds it, it will attach to that project and utilize its facilities.
@@ -179,6 +185,30 @@ Branches other than master will generate:
 
 Images will be built on `git commit` and pushed on `git push` if the current branch and environment appear in the project root `.publishing` file in the form: `BRANCH:TARGET`.
 
+## Available Images
+
+Docker images for seanmorris/ids.idilic & seanmorris/ids.server for targets `base`, `dev`, and `test` are available for use
+& extenstion on DockerHub:
+
+* idilic https://hub.docker.com/repository/docker/seanmorris/ids.idilic
+* server https://hub.docker.com/repository/docker/seanmorris/ids.server
+
+Pull from the cli with:
+
+```bash
+$ docker pull seanmorris/ids.idilic:latest
+$ docker pull seanmorris/ids.server:latest
+```
+
+or extend in a dockerfile with one of the following:
+
+```Dockerfile
+FROM seanmorris/ids.idilic:TAGNAME
+FROM seanmorris/ids.server:TAGNAME
+```
+
+(it is not recommended to use `latest` in `FROM`)
+
 ## Configuration / Environment Variables / Secrets
 
 ### Loading settings
@@ -287,34 +317,6 @@ Settings and Defaults files do not need to be loaded at the same level of genera
 Settings always take precedence over defaults.
 
 Environment variables from the shell or .env files take precedence over yml files.
-
-## Available Images
-
-Docker images for seanmorris/ids.idilic & seanmorris/ids.server for targets `base`, `dev`, and `test` are available for use
-& extenstion on DockerHub:
-
-* idilic https://hub.docker.com/repository/docker/seanmorris/ids.idilic
-* server https://hub.docker.com/repository/docker/seanmorris/ids.server
-
-Pull from the cli with:
-
-```bash
-$ docker pull seanmorris/ids.idilic:latest
-$ docker pull seanmorris/ids.server:latest
-```
-
-or extend in a dockerfile with one of the following:
-
-```Dockerfile
-FROM seanmorris/ids.idilic:TAGNAME
-FROM seanmorris/ids.server:TAGNAME
-```
-
-(it is not recommended to use `latest` in `FROM`)
-
-## XDebug
-
-XDebug is built into the `dev` images by default. You can configure it by setting `XDEBUG_CONFIG_` environment variables in `.env.dev`. By default it will attempt to connect to port 9000 on `${DHOST_IP}`, which is the machine runing the project.
 
 to be continued...
 
