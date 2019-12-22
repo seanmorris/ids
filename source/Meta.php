@@ -141,7 +141,10 @@ class Meta
 			return $classes;
 		}
 
-		$allFiles = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
+		$allFiles = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(
+			$path, \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
+		));
+
 		$phpFiles = new \RegexIterator($allFiles, '/\.php$/');
 
 		$skip = \SeanMorris\Ids\Settings::read('scan', 'exclude') ?? [];
@@ -164,7 +167,7 @@ class Meta
 
 			\SeanMorris\Ids\Log::debug(sprintf(
 				'Scanning file %s'
-				, $relativePath
+				, $phpFile
 			));
 
 			$aliases = [];

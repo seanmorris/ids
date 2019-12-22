@@ -7,6 +7,11 @@ date_default_timezone_set('GMT+0');
 
 $dir = getcwd();
 
+if($dir === FALSE)
+{
+	throw new Exception('Cannot get working directory. Are you in a directory that has previously been unlinked?');
+}
+
 if($dir !== '/')
 {
 	$dir .= '/';
@@ -16,21 +21,24 @@ $profileDir = $dir;
 
 while(TRUE)
 {
-	$autoloadPath = $dir . 'vendor/autoload.php';
+	$vendorDir  = 'vendor/';
+	$autoloadPath = $dir . $vendorDir . 'autoload.php';
 
 	if(file_exists($autoloadPath))
 	{
 		break;
 	}
 
-	$autoloadPath = $dir . '.composer/vendor/autoload.php';
+	$vendorDir = '.composer/vendor/';
+	$autoloadPath = $dir . $vendorDir . 'autoload.php';
 
 	if(file_exists($autoloadPath))
 	{
 		break;
 	}
 
-	$autoloadPath = $dir . '.config.composer/vendor/autoload.php';
+	$vendorDir = '.config/.composer/vendor/';
+	$autoloadPath = $dir . $vendorDir . 'autoload.php';
 
 	if(file_exists($autoloadPath))
 	{
@@ -135,14 +143,19 @@ else
 	exit(1);
 }
 
-if(!$errorPath = \SeanMorris\Ids\Settings::read('log'))
-{
-	$errorPath = IDS_VENDOR_ROOT . '/../temporary/log.txt';
+$errorPath = 'php://stderr';
 
-	if(!is_writable($errorPath))
+if($_errorPath = \SeanMorris\Ids\Settings::read('log'))
+{
+	if(is_writable($_errorPath))
 	{
-		$errorPath = 'php://stderr';
+		$errorPath = $_errorPath; //IDS_VENDOR_ROOT . '/../temporary/log.txt';
 	}
+}
+
+if(is_object($errorPath))
+{
+	$errorPath = $errorPath->file;
 }
 
 if(!file_exists($errorPath))

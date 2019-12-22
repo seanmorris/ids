@@ -1017,6 +1017,60 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 	public function project()
 	{
-		`cp -nrv ~/ids/infra/installer/empty/* ./`;
+		$idsDir = \SeanMorris\Ids\Package::get()->packageDir();
+		$idsDir = escapeshellarg(realpath((string) $idsDir));
+
+		`cp -nr $idsDir/infra/installer/empty/* ./`;
+		`cp -nr $idsDir/infra/installer/empty/.* ./ 2>/dev/null`;
+
+		if(!file_exists('./composer.json'))
+		{
+			`composer require seanmorris/ids:dev-master`;
+		}
+
+		if(!`composer config name 2>/dev/null`)
+		{
+			$named = FALSE;
+
+			while(!$named)
+			{
+				$name  = \SeanMorris\Ids\Idilic\Cli::question(
+					'Would you like to name your project?'
+				);
+
+				if(!preg_match('/^\w+?\/\w+?$/', $name))
+				{
+					echo 'Project name must be in the form owner/projectname'
+						. PHP_EOL;
+
+					continue;
+				}
+
+				if($name === '')
+				{
+					break;
+				}
+
+				$_name = escapeshellarg($name);
+
+				exec("composer config name $_name", $out, $exitCode);
+
+				if($exitCode != 0)
+				{
+					echo 'Composer error with project name: ' . $name
+						. PHP_EOL
+						. $out
+						. $out ? PHP_EOL : NULL;
+
+					continue;
+				}
+
+				$named = TRUE;
+			}
+		}
+
+		`chgrp -R docker .`;
+		`chmod -R g+rw .`;
+		`chmod g+s .`;
 	}
 }

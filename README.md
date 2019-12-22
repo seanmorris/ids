@@ -69,6 +69,8 @@ If youre on the BASH shell simply run `TARGET=base`, `TARGET=test`, `TARGET=dev`
 
 Additional targets may be specified by creating a new `infra/compose/[TARGET].yml` in your project. Build this file as you'd build any other docker-compose file.
 
+Then create a new `.env.[TARGET]` file in `config/`. Add your defaults here.
+
 If you need some target specific build steps. then add a `FROM base as TARGET` section to any docker files in `infra/docker` that are relevant to that build target. You can expand on any existing build target, you're not limited to extending `base`.
 
 ## Build

@@ -1,5 +1,7 @@
 *
 !.gitignore
+!.env
+!.env.*
 !*.default.yml
 !*.default.yaml
 !*.default.json

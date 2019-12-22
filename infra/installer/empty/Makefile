@@ -15,5 +15,6 @@ init: ${TARGET_COMPOSE}
 	@ docker run --rm \
 		-v $$PWD:/app \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
-		composer require seanmorris/ids:dev-master
+		composer -vvv require seanmorris/ids:dev-master
 	@ make -s
+	@ make -s start-fg

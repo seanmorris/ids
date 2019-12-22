@@ -27,8 +27,9 @@ if(file_exists($subidilicFile = getcwd() . '/idilic'))
 				. implode(array_map('escapeshellarg', $argv))
 			);
 
-			echo `$subidilic` . PHP_EOL;
-			die;
+			passthru($subidilic, $exitCode);
+
+			exit($exitCode);
 		}
 	}
 }
