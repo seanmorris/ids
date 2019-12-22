@@ -158,14 +158,14 @@ Environment variables should have the the prefix `IDS_`. An environment variable
 
 ```php
 <?php
-use \SeanMorris\Settings;
+use \SeanMorris\Ids\Settings;
 
 $someVar = Settings::read('some', 'var');
 $someOtherVar = Settings::read('some', 'otherVar');
 
 ```
 
-They'd also both be accessible as an object:
+They'd also both be accessible as an object, which can be iterated:
 
 ```php
 <?php
@@ -174,6 +174,11 @@ $some = Settings::read('some');
 
 $some->var;
 $some->otherVar;
+
+foreach($some as $configKey => $value)
+{
+
+}
 
 ```
 
@@ -185,7 +190,7 @@ The above environment variables could be overridden for example.com with: `IDS__
 
 ```php
 <?php
-use \SeanMorris\Settings;
+use \SeanMorris\Ids\Settings;
 
 $someVar = Settings::read('some', 'var');
 $someOtherVar = Settings::read('some', 'otherVar');
@@ -203,12 +208,11 @@ Again, nothing changes in way they are accessed. The code reads them in the same
 
 ```php
 <?php
-use \SeanMorris\Settings;
+use \SeanMorris\Ids\Settings;
 
 $someVar = Settings::read('some', 'var');
-$someOtherVar = Settings::read('some', 'otherVar');
 
-... // and so on
+// ...and so on
 
 ```
 
@@ -243,8 +247,8 @@ Docker images for seanmorris/ids.idilic & seanmorris/ids.server for targets `bas
 Pull from the cli with:
 
 ```bash
-$ docker pull seanmorris/ids.idilic:latest
-$ docker pull seanmorris/ids.server:latest
+$ docker pull seanmorris/ids.idilic:latest # CLI interface
+$ docker pull seanmorris/ids.server:latest # HTTP interface
 ```
 
 or extend in a dockerfile with one of the following:
