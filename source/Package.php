@@ -31,15 +31,11 @@ class Package
 
 		$composerData = json_decode($composerJson->slurp());
 
-		$env = getenv();
-
-		$frag = preg_replace('/\\\(?:\w+$)/', '', get_called_class());
-
-		$packageName = static::name(
-			$composerData->name
-			?? $env['PROJECT_FULLNAME']
-			?? strtolower(preg_replace('/\//', '\\', $frag))
-		);
+		if(!isset($composerData->name))
+		{
+			throw new \Exception(
+				'Please ensure the root composer.json has a value for the "name" attribute.');
+		}
 
 		$packageName = static::name($composerData->name ?? $packageName);
 
@@ -90,7 +86,7 @@ class Package
 
 		$root = FALSE;
 
-		if(strtolower($dirFrag) === $rootComposerData->name)
+		if(strtolower($dirFrag) === $rootComposerData->name ?? NULL)
 		{
 			$composerJson = $rootComposerJson;
 			$root = TRUE;
