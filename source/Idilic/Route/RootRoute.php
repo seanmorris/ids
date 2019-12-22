@@ -1012,4 +1012,11 @@ class RootRoute implements \SeanMorris\Ids\Routable
 	{
 
 	}
+
+	/** Copy the files to start a new project. */
+
+	public function project()
+	{
+		`cp -nrv ~/ids/infra/installer/empty/* ./`;
+	}
 }

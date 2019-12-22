@@ -23,6 +23,20 @@ while(TRUE)
 		break;
 	}
 
+	$autoloadPath = $dir . '.composer/vendor/autoload.php';
+
+	if(file_exists($autoloadPath))
+	{
+		break;
+	}
+
+	$autoloadPath = $dir . '.config.composer/vendor/autoload.php';
+
+	if(file_exists($autoloadPath))
+	{
+		break;
+	}
+
 	$nextDir = dirname(realpath($dir)) . '/';
 
 	if(!file_exists($autoloadPath) && $nextDir === $dir)
@@ -103,13 +117,15 @@ if($autoloadPath)
 		{
 			print $error . PHP_EOL;
 		}
-		throw new Exception($error);
+		throw new \Exception($error);
 	}
 
 	define('IDS_VENDOR_ROOT', dirname($autoloadPath));
 	define('IDS_ROOT'       , dirname(IDS_VENDOR_ROOT));
 
 	$composer = require $autoloadPath;
+
+	ini_set('display_errors', 1);
 
 	\SeanMorris\Ids\Loader::register();
 }

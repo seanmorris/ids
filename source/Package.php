@@ -33,7 +33,7 @@ class Package
 
 		if(!isset($composerData->name))
 		{
-			$composerData->name = 'Anonymous\Package';
+			$composerData->name = '';
 		}
 
 		$packageName = static::name($composerData->name ?? $packageName);
@@ -85,8 +85,9 @@ class Package
 
 		$root = FALSE;
 
-		if(strtolower($dirFrag) === $rootComposerData->name ?? NULL)
-		{
+		if(isset($rootComposerData->name)
+			&& strtolower($dirFrag) === ($rootComposerData->name ?? NULL)
+		){
 			$composerJson = $rootComposerJson;
 			$root = TRUE;
 		}
@@ -220,7 +221,13 @@ class Package
 
 		$composerData = json_decode($composerJson->slurp());
 
-		static::$packages[$composerData->name] = $appRoot->name();
+		$name = '';
+
+		if(isset($composerData->name))
+		{
+			$name = $composerData->name;
+		}
+		static::$packages[$name] = $appRoot->name();
 
 		ksort(static::$packages);
 
@@ -392,11 +399,12 @@ class Package
 			return static::$directories[$key];
 		}
 
-		if(! isset($_SERVER['HTTP_HOST']) && php_sapi_name() == 'cli')
+		if(!isset($_SERVER['HTTP_HOST']) && php_sapi_name() == 'cli')
 		{
-			throw new \Exception(
-				'Please set a site with the "-d" switch or use .idilicProfile.json'
-			);
+			// throw new \Exception(
+			// 	'Please set a site with the "-d" switch or use .idilicProfile.json'
+			// );
+			return FALSE;
 		}
 
 		$hostname = NULL;

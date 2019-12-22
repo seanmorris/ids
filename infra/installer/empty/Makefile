@@ -15,12 +15,5 @@ init: ${TARGET_COMPOSE}
 	@ docker run --rm \
 		-v $$PWD:/app \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
-		composer init
-	@ docker run --rm \
-		-v $$PWD:/app \
-		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
-		composer require seanmorris/ids
-	@ docker run --rm \
-		-v $$PWD:/app \
-		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
-		composer install
+		composer require seanmorris/ids:dev-master
+	@ make -s

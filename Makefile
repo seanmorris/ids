@@ -20,7 +20,7 @@ TARGET_COMPOSE=infra/compose/${TARGET}.yml
 PROJECT  ?=ids
 REPO     ?=seanmorris
 BRANCH   =$$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo nobranch)
-HASH     =$$(echo _$$(git rev-parse --short HEAD) || echo init)
+HASH     =$$(echo _$$(git rev-parse --short HEAD 2>/dev/null) || echo init)
 DESC     =$$(git describe --tags 2>/dev/null || echo ${HASH})
 SUFFIX   =-${TARGET}$$([ ${BRANCH} = master ] && echo "" || echo "-${BRANCH}")
 TAG      ?=${DESC}${SUFFIX}
