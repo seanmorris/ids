@@ -1,0 +1,24 @@
+version: '2.4'
+
+services:
+
+  idilic:
+    extends:
+      file: base.yml
+      service: idilic
+    depends_on: [database]
+
+  server:
+    extends:
+      file: base.yml
+      service: server
+    depends_on: [database]
+
+  database:
+    extends:
+      file: base.yml
+      service: database
+
+volumes:
+  schema:
+    driver: local
