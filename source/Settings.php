@@ -5,6 +5,7 @@ class Settings
 	protected static
 		$settings
 		, $file
+		, $defaultFile
 		, $env
 		, $currentSite
 		, $currentPort
@@ -109,6 +110,7 @@ class Settings
 			}
 
 			$settingsFile = static::findSettingsFile($hostname, $port);
+			$defaultsFile = static::findSettingsFile($hostname, $port, TRUE);
 
 			if(!static::$settings && file_exists($settingsFile))
 			{
@@ -117,14 +119,55 @@ class Settings
 
 				if(preg_match('/\.ya?ml$/', $settingsFile) && function_exists('yaml_parse_file'))
 				{
-					static::$settings = json_decode(json_encode(yaml_parse_file(
+					$settings = json_decode(json_encode(yaml_parse_file(
 						$settingsFile
+					)));
+
+					$defaults = json_decode(json_encode(yaml_parse_file(
+						$defaultsFile
 					)));
 				}
 				else
 				{
-					static::$settings = json_decode(file_get_contents($settingsFile));
+					$settings = json_decode(file_get_contents($settingsFile));
+					$defaults = json_decode(file_get_contents($defaultsFile));
 				}
+
+				$merge = function($a, $b) use(&$merge){
+
+					if(is_scalar($b))
+					{
+						return $b;
+					}
+					else if(!isset($b) && $a)
+					{
+						return $a;
+					}
+
+					$r = (object) [];
+
+					if(!is_scalar($a))
+					{
+						foreach($a as $k => $v)
+						{
+							$r->$k = $v;
+						}
+					}
+
+					foreach($b as $k => $v)
+					{
+						if(is_scalar($a))
+						{
+							continue;
+						}
+
+						$r->$k = $merge($r->$k ?? [], $v);
+					}
+
+					return $r;
+				};
+
+				static::$settings = $merge($defaults, $settings);
 
 				if(!static::$settings)
 				{
@@ -232,11 +275,16 @@ class Settings
 		);
 	}
 
-	public static function findSettingsFile($hostname, $port)
+	public static function findSettingsFile($hostname, $port, $defaults = FALSE)
 	{
-		if(isset(static::$file))
+		if(!$defaults && isset(static::$file))
 		{
 			return static::$file;
+		}
+
+		if($defaults && isset(static::$defaultFile))
+		{
+			return static::$defaultFile;
 		}
 
 		global $switches;
@@ -280,11 +328,17 @@ class Settings
 			, ';'
 		];
 
+		$defaults = $defaults ? '.defaults' : FALSE;
+
 		foreach ($filenames as $filename)
 		{
 			foreach($settingsFileExtensions as $extension)
 			{
-				$filepath = sprintf($settingsFilenameFormat, $filename, $extension);
+				$filepath = sprintf(
+					$settingsFilenameFormat
+					, $filename . $defaults
+					, $extension
+				);
 
 				if(file_exists($filepath))
 				{
@@ -296,7 +350,14 @@ class Settings
 						));
 					}
 
-					return static::$file = $filepath;
+					if($defaults)
+					{
+						return static::$defaultFile = $filepath;
+					}
+					else
+					{
+						return static::$file = $filepath;
+					}
 				}
 			}
 		}

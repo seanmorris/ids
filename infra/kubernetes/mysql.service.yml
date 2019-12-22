@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: database
+  labels:
+    app: database
+    role: master
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+    - port:       3306
+      targetPort: 3306
+  selector:
+    app: database
+    role: master
+    tier: backend

@@ -1,0 +1,10 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+spec:
+ rules:
+ - host: $HOST
+   http:
+     paths:
+     - backend:
+         serviceName: server
+         servicePort: 80

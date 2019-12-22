@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: database
+          image: mysql:5.7.28
+          ports:
+            - containerPort: 3306
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+          env:
+            - name: MYSQL_RANDOM_ROOT_PASSWORD
+              value: 1
+            - name: MYSQL_USER
+              value: $IDS_DATABASES_MAIN_USERNAME
+            - name: MYSQL_PASSWORD
+              value: $IDS_DATABASES_MAIN_PASSWORD
+            - name: MYSQL_DATABASE
+              value: $IDS_DATABASES_MAIN_DATABASE
+            - name: MYSQL_TCP_PORT
+              value: $IDS_DATABASES_MAIN_PORT
+            # - name: GET_HOSTS_FROM
+            #   value: dns
+            # - name: GET_HOSTS_FROM
+            #   value: dns
+      #     volumeMounts:
+      #       - name: mysql-volume
+      #         mountPath: /var/lib/mysql
+      # volumes:
+      #   - name: mysql-volume
+      #     persistentVolumeClaim:
+      #       claimName: mysql-volume-claim

@@ -962,6 +962,15 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		print \SeanMorris\Ids\Log::dump(getenv());
 	}
 
+	/** Print a given configuration. */
+
+	public function config($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		return \SeanMorris\Ids\Settings::read(...$args);
+	}
+
 	public function pack()
 	{
 		$ids  = \SeanMorris\Ids\Package::get('SeanMorris\Ids');

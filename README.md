@@ -218,7 +218,7 @@ $someVar = Settings::read('some', 'var');
 
 ### Non-Secret Config
 
-Default values for environment variables that are **non-secrets**, (and thus may be pushed to version control) may be set in `infra/env/.env`. Target specific variables may be set in `infra/env/.env.[TARGET]`. **DO NOT PUT SECRETS SUCH AS PASSWORDS HERE.** These files will be checked into version control.
+Default values for environment variables that are **non-secrets**, (and thus may be pushed to version control) may be set in `config/.env`. Target specific variables may be set in `config/.env.[TARGET]`. **DO NOT PUT SECRETS SUCH AS PASSWORDS HERE.** These files will be checked into version control.
 
 These files will be used to generate the final .env files in the root of the project when the project is built or started.
 
@@ -236,12 +236,24 @@ So long as the .env files exist, and are not empty, the system will not attempt 
 
 Values from environment variables and .env files may accessd via PHP's `getenv()`. Ensure you've set the relevent values in the `environment` section of the target's docker-compose file if you chose not to add the value to a .env file.
 
-### Yaml Configuration
+### Json/Yaml Configuration
 
-Yaml files may be provided in the `config/` directory, under a directory named `hostname/` or `hostname;port/`. The file should be named `settings.yml`. A directory named `_` may be provided as a fallback if no others match. A directory named `;80` will match only for requests on port 80 regardless of the hostname.
+#### Settings
+
+Json/Yaml files may be provided in the `config/` directory, under a directory named `hostname/` or `hostname;port/`, where `hostname` and `port` are the domain and port you expect requests to come in on. The file should then be named `settings.json` or `settings.yml`.  A directory named `_;80` or `;80` will match only for requests on port 80 regardless of the hostname. A directory named `_;`, `_`, or ';' may be provided as a fallback if no others match.
 
 **NOTE**
 If any yml config file is loaded, the system stops there and does not look for others. Host or port specific yml files will not be merged with more general wild card ones.
+
+#### Defaults
+
+Default, non-secret values may be provided in a file named `settings.defaults.yml` or `settings.defaults.json`. Defaults are the same as settings except they're stored in version control.
+
+Defaults are loaded by the same rules as standard settings files. Once a singe defaults file is found no more will be loaded.
+
+Settings and Defaults files do not need to be loaded at the same level of generality. `settings.yml` may be found in `_;80` and settings.defaults.yml may be found in `hostname` or vice versa.
+
+Settings always take precedence over defaults.
 
 Environment variables from the shell or .env files take precedence over yml files.
 
@@ -298,9 +310,21 @@ to be continued...
 ## Existing Ids Projects
 ## Copyright / Licensing
 
-SeanMorris/Ids
+## Dependencies
 
-Copyright 2011-2019 Sean Morris
+* Bash
+* Composer
+* Docker
+* Docker Compose
+* GNU Make
+* Git
+* Linux or Compatible OS
+* PHP
+* SimpleTest/SimpleTest
+
+## SeanMorris/Ids
+
+### Copyright 2011-2019 Sean Morris
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

@@ -73,11 +73,11 @@ STITCH_ENTROPY=test -f $$TO && test -s $$TO || while read -r LINE; do \
 
 GEN_ENV=mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}; \
 	export \
-		FROM=${MAKEDIR}/infra/env/.env \
+		FROM=${MAKEDIR}/config/.env \
 		TO=${MAKEDIR}/.env \
 		&& ${STITCH_ENTROPY}; \
 	export \
-		FROM=${MAKEDIR}/infra/env/.env.${TARGET} \
+		FROM=${MAKEDIR}/config/.env.${TARGET} \
 		TO=${MAKEDIR}/.env.${TARGET} \
 		&& ${STITCH_ENTROPY}; \
 	(shopt -s nullglob; rm -rf ${ENTROPY_DIR}); \
