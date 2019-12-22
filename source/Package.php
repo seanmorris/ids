@@ -437,6 +437,17 @@ class Package
 
 		foreach($fileNames as $fileName)
 		{
+			$dirPath = sprintf('%ssites/%s', $this->configDir(), $fileName);
+
+			$maybeDir = new \SeanMorris\Ids\Disk\Directory(
+				$dirPath
+			);
+
+			if($maybeDir->check())
+			{
+				return static::$directories[$key] = $maybeDir;
+			}
+
 			$dirPath = sprintf('%ssites/%s', $this->localDir(), $fileName);
 
 			$maybeDir = new \SeanMorris\Ids\Disk\Directory(
@@ -502,7 +513,13 @@ class Package
 			$dir = $this->globalDir();
 		}
 
-		if(! file_exists($dir))
+		if(!$dir)
+		{
+			$dir = new \SeanMoris\Ids\Directory($this->configDir() . '_;/');
+			$dir->create();
+		}
+
+		if(!file_exists($dir))
 		{
 			\SeanMorris\Ids\Log::warn(sprintf(
 				'%s directory %s does not exist. Attempting to create...'

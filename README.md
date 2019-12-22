@@ -32,7 +32,6 @@ Add composer's global `vendor/bin` to your PATH by adding this to your `~/.bashr
 export PATH="$HOME/.composer/vendor/bin:$PATH"
 ```
 
-
 ## Creating a New Ids Project
 
 Create a new project with composer
@@ -177,7 +176,6 @@ Branches other than master will generate:
 *  repository/project:gitTag-target-branch
 *  repository/project:date-target-branch
 *  repository/project:latest-target-branch
-
 
 Images will be built on `git commit` and pushed on `git push` if the current branch and environment appear in the project root `.publishing` file in the form: `BRANCH:TARGET`.
 
