@@ -81,62 +81,6 @@ Docker & docker-compose are available here:
 * https://docs.docker.com/install/
 * https://docs.docker.com/compose/install/
 
-## Autotagging / Autopublishing / Git Hooks
-
-Register git hooks with `make hooks`.
-
-Image tags are generated automatically on build based on the date, current git tag (falls back to commit hash), and target. "-branch" will be omitted for master.
-
-*  repository/project:gitTag-target-branch
-*  repository/project:date-target-branch
-*  repository/project:latest-target-branch
-
-Images will be built on `git commit` and pushed on `git push` if the current branch and environment appear in the project root `.publishing` file in the form: `BRANCH:TARGET`.
-
-## Configuration / Environment Variables / Secrets
-
-### Non-Secret Config
-
-Default values for environment variables that are **non-secrets**, (and thus may be pushed to version control) may be set in `infra/env/.env`. Target specific variables may be set in `infra/env/.env.[TARGET]`. **DO NOT PUT SECRETS SUCH AS PASSWORDS HERE.** These files will be checked into versio control.
-
-These files will be used to generate the final .env files in the root of the project when the project is built or started.
-
-### Disposable Secrets
-
-If you need a quick random value to use in the build process (ie when creating a MYSQL password), make sure to add the key to the relevant .env file, but leave the value blank. Add the key name to the `.entropy` file in the root of your project in the form: `CONFIG_KEY:ENTROPY_KEY`. `CONFIG_KEY` is the name of your configuration value, and `ENTROPY_KEY` is an arbitrary string that allows you to re-use the same random value between different configuration keys.
-
-When the project starts, the .env files will be generated to the root of the project if they do not exist already, or if the existing ones are empty. Any keys present in the `.entropy` file will be set to a random 32 character string. This is how the schema name, username, and password are generated for the mysql server for the `make test` command when `TARGET=test`.
-
-run `TARGET=test idilic info` to see an example of this.
-
-### Normal Secrets
-
-So long as the .env files exist, and are not empty, the system will not attempt to regenerate them, so any secrets could in theory be added here, in place. This works fine for development, but for production it is recomended that secrets be stored in environtment variables.
-
-Values from environment variables and .env files may accessd via PHP's `getenv()`. Ensure you've set the relevent values in the `environment` section of the target's docker-compose file if you chose not to add the value to a .env file.
-
-## Available Images
-
-Docker images for seanmorris/ids.idilic & seanmorris/ids.server for targets `base`, `dev`, and `test` are available for use
-& extenstion on DockerHub:
-
-https://hub.docker.com/repository/docker/seanmorris/ids.idilic
-https://hub.docker.com/repository/docker/seanmorris/ids.server
-
-Pull from the cli with:
-
-```bash
-$ docker pull seanmorris/ids.idilic:latest
-$ docker pull seanmorris/ids.server:latest
-```
-
-or extend in a dockerfile with one of the following:
-
-```Dockerfile
-FROM seanmorris/ids.idilic:TAGNAME # CLI interface
-FROM seanmorris/ids.server:TAGNAME # HTTP interface
-```
-
 ## Start / Stop / Restart
 
 ```bash
@@ -163,7 +107,76 @@ $ make push-images # push all images for the current project, target & branch.
 $ make pull-images # push all images for the current project, target & branch.
 ```
 
+## Autotagging / Autopublishing / Git Hooks
+
+Register git hooks with `make hooks`.
+
+Image tags are generated automatically on build based on the date, current git tag (falls back to commit hash).
+
+The master branch will generate:
+
+*  repository/project:gitTag-target
+*  repository/project:date-target
+*  repository/project:latest-target
+
+Branches other than master will generate:
+
+*  repository/project:gitTag-target-branch
+*  repository/project:date-target-branch
+*  repository/project:latest-target-branch
+
+
+Images will be built on `git commit` and pushed on `git push` if the current branch and environment appear in the project root `.publishing` file in the form: `BRANCH:TARGET`.
+
+## Configuration / Environment Variables / Secrets
+
+### Non-Secret Config
+
+Default values for environment variables that are **non-secrets**, (and thus may be pushed to version control) may be set in `infra/env/.env`. Target specific variables may be set in `infra/env/.env.[TARGET]`. **DO NOT PUT SECRETS SUCH AS PASSWORDS HERE.** These files will be checked into version control.
+
+These files will be used to generate the final .env files in the root of the project when the project is built or started.
+
+### Disposable Secrets
+
+If you need a quick random value to use in the build process (ie when creating a MYSQL password), make sure to add the key to the relevant .env file, but leave the value blank. Add the key name to the `.entropy` file in the root of your project in the form: `CONFIG_KEY:ENTROPY_KEY`. `CONFIG_KEY` is the name of your configuration value, and `ENTROPY_KEY` is an arbitrary string that allows you to re-use the same random value between different configuration keys.
+
+When the project starts, the .env files will be generated to the root of the project if they do not exist already, or if the existing ones are empty. Any keys present in the `.entropy` file will be set to a random 32 character string. This is how the schema name, username, and password are generated for the mysql server for the `make test` command when `TARGET=test`.
+
+run `TARGET=test idilic info` to see an example of this.
+
+### Normal Secrets
+
+So long as the .env files exist, and are not empty, the system will not attempt to regenerate them, so any secrets could in theory be added here, in place. This works fine for development, but for production it is recomended that secrets be stored in environtment variables.
+
+Values from environment variables and .env files may accessd via PHP's `getenv()`. Ensure you've set the relevent values in the `environment` section of the target's docker-compose file if you chose not to add the value to a .env file.
+
+## Available Images
+
+Docker images for seanmorris/ids.idilic & seanmorris/ids.server for targets `base`, `dev`, and `test` are available for use
+& extenstion on DockerHub:
+
+* idilic https://hub.docker.com/repository/docker/seanmorris/ids.idilic
+* server https://hub.docker.com/repository/docker/seanmorris/ids.server
+
+Pull from the cli with:
+
+```bash
+$ docker pull seanmorris/ids.idilic:latest
+$ docker pull seanmorris/ids.server:latest
+```
+
+or extend in a dockerfile with one of the following:
+
+```Dockerfile
+FROM seanmorris/ids.idilic:TAGNAME # CLI interface
+FROM seanmorris/ids.server:TAGNAME # HTTP interface
+```
+
 (it is not recommended to use `latest` in `FROM`)
+
+## XDebug
+
+XDebug is built into the `dev` images by default. You can configure it by setting `XDEBUG_CONFIG_` environment variables in `.env.dev`. By default it will attempt to connect to port 9000 on `${DHOST_IP}`, which is the machine runing the project.
 
 to be continued...
 

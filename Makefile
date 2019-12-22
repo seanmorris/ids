@@ -220,7 +220,7 @@ run-phar: ${TARGET_COMPOSE}
 
 test: ${TARGET_COMPOSE}
 	@ ${GEN_ENV}
-	@ export TARGET=${TARGET} @ ${DCOMPOSE} run --rm ${NO_TTY} \
+	@ export TARGET=${TARGET} ${DCOMPOSE} run --rm ${NO_TTY} \
 		${PASS_ENV} \
 		idilic -vv SeanMorris/Ids runTests
 clean: ${TARGET_COMPOSE}
