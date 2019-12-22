@@ -21,11 +21,11 @@ if(file_exists($subidilicFile = getcwd() . '/idilic'))
 		{
 			fwrite(STDERR, 'Handing off to Docker...');
 
-			$subidilic = 'bash -c '	. escapeshellarg(
-				$subidilicFile
+			$subidilic = 'bash -c "' .
+				escapeshellcmd($subidilicFile)
 				. ' '
-				. implode(array_map('escapeshellarg', $argv))
-			);
+				. implode(' ', array_map('escapeshellarg', $argv))
+				. '"';
 
 			passthru($subidilic, $exitCode);
 
