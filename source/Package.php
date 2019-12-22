@@ -515,7 +515,7 @@ class Package
 
 		if(!$dir)
 		{
-			$dir = new \SeanMoris\Ids\Directory($this->configDir() . '_;/');
+			$dir = new \SeanMorris\Ids\Directory($this->configDir() . '_;/');
 			$dir->create();
 		}
 
