@@ -1,14 +1,16 @@
 #!make
+
 .PHONY: it composer-install composer-update composer-update-no-dev tag-images \
 	push-images pull-images tag-images start start-fg restart restart-fg stop \
 	stop-all run run-phar test env hooks
 
 SHELL    = /bin/bash
-MAKEDIR  =$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+MAKEDIR  ?=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 TARGET   ?=base
 
 MAIN_ENV =${MAKEDIR}.env
 TRGT_ENV =${MAKEDIR}.env.${TARGET}
+
 SURE_ENV =touch ${MAIN_ENV} ${TRGT_ENV}
 
 TARGET_COMPOSE=infra/compose/${TARGET}.yml
@@ -18,7 +20,7 @@ TARGET_COMPOSE=infra/compose/${TARGET}.yml
 
 PROJECT  ?=ids
 REPO     ?=seanmorris
-BRANCH   =$$(git rev-parse --abbrev-ref HEAD  2>/dev/null)
+BRANCH   =$$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo nobranch)
 HASH     =$$(echo _$$(git rev-parse --short HEAD) || echo init)
 DESC     =$$(git describe --tags 2>/dev/null || echo ${HASH})
 SUFFIX   =-${TARGET}$$([ ${BRANCH} = master ] && echo "" || echo "-${BRANCH}")
@@ -71,12 +73,17 @@ STITCH_ENTROPY=test -f $$TO && test -s $$TO || while read -r LINE; do \
 	};}; done; done < $$FROM > $$TO
 
 GEN_ENV=mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}; \
-	export FROM=infra/env/.env TO=.env && ${STITCH_ENTROPY}; \
-	export FROM=infra/env/.env.${TARGET} TO=.env.${TARGET} && ${STITCH_ENTROPY}; \
+	export \
+		FROM=${MAKEDIR}/infra/env/.env \
+		TO=${MAKEDIR}/.env \
+		&& ${STITCH_ENTROPY}; \
+	export \
+		FROM=${MAKEDIR}/infra/env/.env.${TARGET} \
+		TO=${MAKEDIR}/.env.${TARGET} \
+		&& ${STITCH_ENTROPY}; \
 	(shopt -s nullglob; rm -rf ${ENTROPY_DIR}); \
-	touch -a .env.${TARGET}; \
-	touch -a .env;
-
+	touch -a ${MAKEDIR}.env.${TARGET}; \
+	touch -a ${MAKEDIR}.env;
 
 ifeq (${TARGET},test)
 	NO_DEV=
@@ -85,7 +92,7 @@ endif
 ifeq (${TARGET},dev)
 	NO_DEV=
 	XDEBUG_ENV=XDEBUG_CONFIG="`\
-		test -f .env.dev && cat .env.dev \
+		test -f ${MAKEDIR}.env.dev && cat ${MAKEDIR}.env.dev \
 		| ${INTERPOLATE_ENV} \
 		| grep -v ^\# \
 		| grep ^XDEBUG_CONFIG_ \
@@ -103,9 +110,9 @@ endif
 
 ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP} \
 	MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV} PROJECT_FULLNAME=${FULLNAME} \
-	PROJECT=${PROJECT} TARGET=${TARGET:-${TARGET}} ${XDEBUG_ENV} \
-	$$(cat .env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#) \
-	$$(cat .env.${TARGET} 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)
+	PROJECT=${PROJECT} TARGET=${TARGET:-${TARGET}} MAKEDIR=${MAKEDIR} ${XDEBUG_ENV}\
+	$$(cat ${MAKEDIR}.env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#) \
+	$$(cat ${MAKEDIR}.env.${TARGET} 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)
 
 DCOMPOSE ?=export ${ENV} \
 	&& docker-compose \
@@ -162,19 +169,19 @@ push-images: ${TARGET_COMPOSE}
 	done;done;
 
 pull-images: ${TARGET_COMPOSE}
-	@ ${SURE_ENV}
+	@ ${GEN_ENV}
 	@ ${DCOMPOSE} pull
 
 start: ${TARGET_COMPOSE}
-	@ ${SURE_ENV}
+	@ ${GEN_ENV}
 	@ ${DCOMPOSE} up -d
 
 start-fg: ${TARGET_COMPOSE}
-	@ ${SURE_ENV}
+	@ ${GEN_ENV}
 	@ ${DCOMPOSE} up
 
 start-bg: ${TARGET_COMPOSE}
-	@ ${SURE_ENV}
+	@ ${GEN_ENV}
 	@ ${DCOMPOSE} up &
 
 stop: ${TARGET_COMPOSE}
@@ -240,3 +247,6 @@ hooks: ${TARGET_COMPOSE}
 
 dcompose-config: ${TARGET_COMPOSE}
 	@ ${DCOMPOSE} config
+
+md:
+	echo ${MAKEDIR}
