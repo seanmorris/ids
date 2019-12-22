@@ -44,7 +44,7 @@ $ composer create-project seanmorris/ids-project -s dev --remove-vcs
 Enter the directory and start php, apache & mysql:
 
 ```bash
-$ cd myname/myproject
+$ cd ids-project
 $ make start-bg
 ```
 
