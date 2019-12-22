@@ -5,12 +5,11 @@
 	stop-all run run-phar test env hooks
 
 SHELL    = /bin/bash
-MAKEDIR  ?=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
+REALDIR  =$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
+MAKEDIR  ?=${REALDIR}
 
 MAIN_ENV ?=${MAKEDIR}.env
 TRGT_ENV ?=${MAKEDIR}.env.${TARGET}
-
-SURE_ENV =touch ${MAIN_ENV} ${TRGT_ENV}
 
 TARGET_COMPOSE=infra/compose/${TARGET}.yml
 
@@ -71,18 +70,21 @@ STITCH_ENTROPY=test -f $$TO && test -s $$TO || while read -r LINE; do \
 			|| echo -E $$VALUE; \
 	};}; done; done < $$FROM > $$TO
 
-GEN_ENV=mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}; \
-	export \
-		FROM=${MAKEDIR}/config/.env \
-		TO=${MAKEDIR}/.env \
-		&& ${STITCH_ENTROPY}; \
-	export \
-		FROM=${MAKEDIR}/config/.env.${TARGET} \
-		TO=${MAKEDIR}/.env.${TARGET} \
-		&& ${STITCH_ENTROPY}; \
-	(shopt -s nullglob; rm -rf ${ENTROPY_DIR}); \
-	touch -a ${MAKEDIR}.env.${TARGET}; \
-	touch -a ${MAKEDIR}.env;
+GEN_ENV=docker run --rm -v $$PWD:/app -w=/app \
+	debian:buster-20191118-slim bash -c '{\
+		mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}; \
+			export \
+				FROM=config/.env \
+				TO=.env \
+				&& ${STITCH_ENTROPY}; \
+			export \
+				FROM=config/.env.${TARGET} \
+				TO=.env.${TARGET} \
+				&& ${STITCH_ENTROPY}; \
+			(shopt -s nullglob; rm -rf ${ENTROPY_DIR}); \
+			touch -a .env.${TARGET}; \
+			touch -a .env; \
+		}'
 
 ifeq (${TARGET},test)
 	NO_DEV=
@@ -119,12 +121,12 @@ DCOMPOSE=export ${ENV} && docker-compose \
 
 it: ${TARGET_COMPOSE}
 	@ echo Building ${FULLNAME}
+	@ export TAG=latest-${TARGET} && ${DCOMPOSE} build idilic
 	@ ${GEN_ENV}
 	@ docker run --rm \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		-v $$PWD:/app \
 		composer install ${NO_DEV}
-	@ export TAG=latest-${TARGET} && ${DCOMPOSE} build idilic
 	@ ${DCOMPOSE} build
 	@ ${DCOMPOSE} up --no-start
 	@ ${WHILE_IMAGES} \
@@ -228,6 +230,7 @@ test: ${TARGET_COMPOSE}
 	@ export TARGET=${TARGET} ${DCOMPOSE} run --rm ${NO_TTY} \
 		${PASS_ENV} \
 		idilic -vv SeanMorris/Ids runTests
+
 clean: ${TARGET_COMPOSE}
 	@ ${GEN_ENV}
 	@ ${DCOMPOSE} run --rm --entrypoint=bash \

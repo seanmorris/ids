@@ -12,6 +12,8 @@ The Ids library provides general domain-primitives for developing web based appl
 
 The project is made to run in docker but doesn't require it. It can be included in any composer project, and used in part or in whole easily.
 
+The philosophy of the project is headlined by security, speed and easy of use, in that order.
+
 ## Installation
 
 Include Ids in your project with:
@@ -48,6 +50,10 @@ $ make start-bg
 ```
 
 Thats it!
+
+The companion package that provides a template for new projects can be found here:
+
+https://github.com/seanmorris/ids-project
 
 ## Dependencies
 
