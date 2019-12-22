@@ -6,10 +6,9 @@
 
 SHELL    = /bin/bash
 MAKEDIR  ?=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
-TARGET   ?=base
 
-MAIN_ENV =${MAKEDIR}.env
-TRGT_ENV =${MAKEDIR}.env.${TARGET}
+MAIN_ENV ?=${MAKEDIR}.env
+TRGT_ENV ?=${MAKEDIR}.env.${TARGET}
 
 SURE_ENV =touch ${MAIN_ENV} ${TRGT_ENV}
 
