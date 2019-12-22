@@ -2,5 +2,5 @@
 .env.*
 vendor*
 vendor/*
-!.env.sample
-!.env.*.sample
+!infra/env/.env
+!infra/env/.env.*
