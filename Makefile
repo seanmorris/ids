@@ -109,12 +109,11 @@ endif
 
 ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP} \
 	MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV} PROJECT_FULLNAME=${FULLNAME} \
-	PROJECT=${PROJECT} TARGET=${TARGET:-${TARGET}} MAKEDIR=${MAKEDIR} ${XDEBUG_ENV}\
+	PROJECT=${PROJECT} TARGET=${TARGET:-${TARGET}} MAKEDIR=${MAKEDIR} ${XDEBUG_ENV} \
 	$$(cat ${MAKEDIR}.env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#) \
 	$$(cat ${MAKEDIR}.env.${TARGET} 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)
 
-DCOMPOSE ?=export ${ENV} \
-	&& docker-compose \
+DCOMPOSE=export ${ENV} && docker-compose \
 	-p ${PROJECT}_${TARGET} \
 	-f ${TARGET_COMPOSE}
 
@@ -187,6 +186,10 @@ stop: ${TARGET_COMPOSE}
 	@ ${SURE_ENV}
 	@ ${DCOMPOSE} down
 
+stop-all: ${TARGET_COMPOSE}
+	@ ${GEN_ENV}
+	@ ${DCOMPOSE} down --remove-orphans
+
 restart: ${TARGET_COMPOSE}
 	@ ${GEN_ENV}
 	@ ${DCOMPOSE} down
@@ -201,10 +204,6 @@ restart-bg: ${TARGET_COMPOSE}
 	@ ${GEN_ENV}
 	@ ${DCOMPOSE} down
 	@ ${DCOMPOSE} up &
-
-stop-all: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ ${DCOMPOSE} down --remove-orphans
 
 current-tag: ${TARGET_COMPOSE}
 	@ echo ${TAG}
@@ -245,4 +244,5 @@ hooks: ${TARGET_COMPOSE}
 	@ git config core.hooksPath githooks
 
 dcompose-config: ${TARGET_COMPOSE}
+	@ ${GEN_ENV}
 	@ ${DCOMPOSE} config
