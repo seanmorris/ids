@@ -4,8 +4,6 @@ set -eu;
 
 export $(make env | tr '\n' ' ');
 
-[[ "$TARGET" == "dev" ]] ||  set -eux;
-
 PHP_ERROR=0;
 
 git diff-index HEAD \

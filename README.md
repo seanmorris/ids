@@ -198,3 +198,6 @@ to be continued...
 ## Debugging
 ## Settings
 ## Testing
+## Theming / Frontends
+## Existing Ids Projects
+## Copyright / Licencing

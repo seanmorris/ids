@@ -4,16 +4,12 @@ set -eu;
 
 export $(make env | tr '\n' ' ');
 
-[[ "$TARGET" == "dev" ]] ||  set -eux;
-
-if grep -q ^$BRANCH\:$TARGET\$ .publishing; then
-
+while read LINE; do echo $LINE | {
 	echo "$BRANCH:$TARGET found in .publishing file. Ids is building & pushing now.";
+
+	IFS=":" read _BRANCH TARGET
 
 	make TARGET=$TARGET;
 	make TARGET=$TARGET push-images;
 
-	exit 0;
-fi
-
-echo "Branch '$BRANCH' is not in the .publishing file.";
+}; done < .publishing;
