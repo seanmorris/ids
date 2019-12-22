@@ -236,6 +236,15 @@ So long as the .env files exist, and are not empty, the system will not attempt 
 
 Values from environment variables and .env files may accessd via PHP's `getenv()`. Ensure you've set the relevent values in the `environment` section of the target's docker-compose file if you chose not to add the value to a .env file.
 
+### Yaml Configuration
+
+Yaml files may be provided in the `config/` directory, under a directory named `hostname/` or `hostname;port/`. The file should be named `settings.yml`. A directory named `_` may be provided as a fallback if no others match. A directory named `;80` will match only for requests on port 80 regardless of the hostname.
+
+**NOTE**
+If any yml config file is loaded, the system stops there and does not look for others. Host or port specific yml files will not be merged with more general wild card ones.
+
+Environment variables from the shell or .env files take precedence over yml files.
+
 ## Available Images
 
 Docker images for seanmorris/ids.idilic & seanmorris/ids.server for targets `base`, `dev`, and `test` are available for use
