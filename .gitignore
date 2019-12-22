@@ -1,6 +1,5 @@
 .env
 .env.*
-vendor*
 vendor/*
 !infra/env/.env
 !infra/env/.env.*

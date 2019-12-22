@@ -185,16 +185,16 @@ to be continued...
 ## Routing
 ## Modeling / ORM
 ## Schema Diffing & Patching
-## Migrations
-## HTTP API
-## IPC / AMPQ
-## Solr & Redis
+## Migrations*
+## HTTP API*
+## IPC / AMPQ*
+## Solr & Redis*
 ## Idilic CLI
-## Logging
-## Dependency Injection
+## Logging*
+## Dependency Injection*
 ## File Access
 ## Sessions
-## Email
+## Email+
 ## Debugging
 ## Settings
 ## Testing
