@@ -134,13 +134,13 @@ $ make start-fg   # Start the project in the foreground.
 $ make start-bg   # Start the project in the background,
                   # stream output to foreground.
 
-$ make stop       # Stop all services defined for target.
+$ make stop       # Stop all services defined for the target.
 
-$ make stop-all   # Stop all services spawned for target/
+$ make stop-all   # Stop all services spawned for the target
                   # even ones no longer in target compose file.
 
-$ make restart    # Stop, then restart the project in the background
-				  # with no output.
+$ make restart    # Stop, then restart the project in the background,
+                  # with no output.
 
 $ make restart-fg # Stop, then restart the project in the foreground.
 
