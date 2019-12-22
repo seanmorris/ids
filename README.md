@@ -38,16 +38,17 @@ export PATH="$HOME/.composer/vendor/bin:$PATH"
 Create a new project with composer
 
 ```bash
-$ composer create-project seanmorris/ids-project [MY_NAME]/[MY_PROJECT_NAME] -s dev --remove-vcs
+$ composer create-project seanmorris/ids-project -s dev --remove-vcs
 ```
 
-Enter the directory and start your services:
+Enter the directory and start php, apache & mysql:
 
 ```bash
 $ cd myname/myproject
-$ make
 $ make start-bg
 ```
+
+Thats it!
 
 ## Dependencies
 
