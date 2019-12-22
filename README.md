@@ -1,4 +1,6 @@
-# SeanMorris/Ids
+![avatar](https://avatars3.githubusercontent.com/u/640101?s=80&v=4)
+
+# SeanMorris/Ids v00.0.0
 
 */ eye dee ess /*
 
@@ -21,9 +23,14 @@ $ composer require seanmorris/ids
 Install Ids globally for access to the `idilic` cli tool:
 
 ```bash
-$ composer global require seanmorris/ids
+$ composer global require seanmorris/ids:dev-master
 ```
 
+Add composer's global `vendor/bin` to your PATH by adding this to your `~/.bashrc`.
+
+```bash
+export PATH="$HOME/.composer/vendor/bin:$PATH"
+```
 ## Dev Tools
 
 The `dev` build target provides facilities for connecting to xdebug and graylog.
@@ -72,7 +79,9 @@ The default build target is `base`. run `TARGET=dev` or `TARGET=test` to switch 
 
 ```bash
 $ TARGET=dev # Select a target
+
 $ make       # build the project
+
 $ make start # start the services
 ```
 
@@ -84,26 +93,37 @@ Docker & docker-compose are available here:
 ## Start / Stop / Restart
 
 ```bash
-$ make start      # Start the project in the background with no output
-$ make start-fg   # Start the project in the foreground
-$ make start-bg   # Start the project in the background, stream output to foreground
+$ make start      # Start the project in the background,
+                  # with no output
 
-$ make restart    # Restart the project in the background with no output
-$ make restart-fg # Restart the project in the foreground
-$ make restart-bg # Restart the project in the background, stream output to foreground
+$ make start-fg   # Start the project in the foreground.
 
-$ make stop       # Stop all services defined for target
-$ make stop-all   # Stop all services spawned for target
+$ make start-bg   # Start the project in the background,
+                  # stream output to foreground.
+
+$ make stop       # Stop all services defined for target.
+
+$ make stop-all   # Stop all services spawned for target/
                   # even ones no longer in target compose file.
+
+$ make restart    # Stop, then restart the project in the background
+				  # with no output.
+
+$ make restart-fg # Stop, then restart the project in the foreground.
+
+$ make restart-bg # Stop, then restart the project in the background,
+                  # stream output to foreground.
 ```
 
 ## Images & Tags
 
 ```bash
 $ make list-images # List all images for the current project, target & branch.
+
 $ make list-tags   # List all tags for the current project, target & branch.
 
 $ make push-images # push all images for the current project, target & branch.
+
 $ make pull-images # push all images for the current project, target & branch.
 ```
 
@@ -129,6 +149,68 @@ Branches other than master will generate:
 Images will be built on `git commit` and pushed on `git push` if the current branch and environment appear in the project root `.publishing` file in the form: `BRANCH:TARGET`.
 
 ## Configuration / Environment Variables / Secrets
+
+### Loading settings
+
+Settings may be provided in environment variables, .env files, or yml files.
+
+Environment variables should have the the prefix `IDS_`. An environment variable with the name IDS_SOME_VAR and IDS_SOME_OTHERVAR would be accessible within the system with:
+
+```php
+<?php
+use \SeanMorris\Settings;
+
+$someVar = Settings::read('some', 'var');
+$someOtherVar = Settings::read('some', 'otherVar');
+
+```
+
+They'd also both be accessible as an object:
+
+```php
+<?php
+
+$some = Settings::read('some');
+
+$some->var;
+$some->otherVar;
+
+```
+
+### Hostname & Port based configuration
+
+Hostname specific environment variables are prefixed with an extra underscore: `IDS__`. Dots and other non-word charaters in the hostname are placed by a single underscore, **except for the hyhpen which is replaced by 3 underscores.*** Another double underscore finishes the hostname, and the variable name comes next.
+
+The above environment variables could be overridden for example.com with: `IDS__EXAMPLE_COM__SOME_VAR` and `IDS__EXAMPLE_COM__SOME_OTHERVAR`. They would be accessed in the same way as above:
+
+```php
+<?php
+use \SeanMorris\Settings;
+
+$someVar = Settings::read('some', 'var');
+$someOtherVar = Settings::read('some', 'otherVar');
+
+$some = Settings::read('some');
+
+$some->var;
+$some->otherVar;
+
+```
+
+Example.com could overrive the variables by port number if they wanted to change some behavior based on whether the user was on SSL. Adding another double underscore between the hostname and the variable name allows us to do that: `IDS__EXAMPLE_COM__80__SOME_VAR` and `IDS__EXAMPLE_COM__80_SOME_OTHERVAR` for HTTP and `IDS__EXAMPLE_COM__443__SOME_VAR` and `IDS__EXAMPLE_COM__443_SOME_OTHERVAR` for HTTPS.
+
+Again, nothing changes in way they are accessed. The code reads them in the same way:
+
+```php
+<?php
+use \SeanMorris\Settings;
+
+$someVar = Settings::read('some', 'var');
+$someOtherVar = Settings::read('some', 'otherVar');
+
+... // and so on
+
+```
 
 ### Non-Secret Config
 
@@ -181,11 +263,12 @@ XDebug is built into the `dev` images by default. You can configure it by settin
 to be continued...
 
 ## Creating a New Ids Project
-## Asset Management
 ## Routing
 ## Modeling / ORM
+## Configuration
 ## Schema Diffing & Patching
 ## Migrations*
+## Asset Management
 ## Linking
 ## HTTP API*
 ## IPC / AMPQ*
@@ -197,7 +280,6 @@ to be continued...
 ## Sessions
 ## Email+
 ## Debugging
-## Settings
 ## Testing
 ## Theming / Frontends
 ## Existing Ids Projects

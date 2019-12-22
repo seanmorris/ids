@@ -203,6 +203,11 @@ class Settings
 		}
 
 		[$name, $host] = preg_replace(
+			['/-/'], ['___']
+			, array_map('strtoupper', [$name, $host])
+		);
+
+		[$name, $host] = preg_replace(
 			['/\W/'], ['_']
 			, array_map('strtoupper', [$name, $host])
 		);
@@ -212,7 +217,7 @@ class Settings
 
 		if($port)
 		{
-			$portName = sprintf('IDS__%s__%s', $host, $name, $port);
+			$portName = sprintf('IDS__%s__%s__%s', $host, $name, $port);
 		}
 
 		if($host)
