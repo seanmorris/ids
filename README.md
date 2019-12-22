@@ -247,15 +247,15 @@ Docker images for seanmorris/ids.idilic & seanmorris/ids.server for targets `bas
 Pull from the cli with:
 
 ```bash
-$ docker pull seanmorris/ids.idilic:latest # CLI interface
-$ docker pull seanmorris/ids.server:latest # HTTP interface
+$ docker pull seanmorris/ids.idilic:latest
+$ docker pull seanmorris/ids.server:latest
 ```
 
 or extend in a dockerfile with one of the following:
 
 ```Dockerfile
-FROM seanmorris/ids.idilic:TAGNAME # CLI interface
-FROM seanmorris/ids.server:TAGNAME # HTTP interface
+FROM seanmorris/ids.idilic:TAGNAME
+FROM seanmorris/ids.server:TAGNAME
 ```
 
 (it is not recommended to use `latest` in `FROM`)
