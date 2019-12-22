@@ -121,8 +121,8 @@ DCOMPOSE=export ${ENV} && docker-compose \
 
 it: ${TARGET_COMPOSE}
 	@ echo Building ${FULLNAME}
+	${GEN_ENV}
 	@ export TAG=latest-${TARGET} && ${DCOMPOSE} build idilic
-	@ ${GEN_ENV}
 	@ docker run --rm \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		-v $$PWD:/app \
