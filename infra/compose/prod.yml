@@ -9,6 +9,7 @@ services:
     depends_on: [database]
 
   server:
+    ports: ['${IDS_EXPOSE_HTTP}:80']
     extends:
       file: base.yml
       service: server

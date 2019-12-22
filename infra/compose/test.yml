@@ -10,6 +10,7 @@ services:
     depends_on: [database]
 
   server:
+    ports: ['${IDS_EXPOSE_HTTP}:80']
     volumes: ['../../:/app']
     extends:
       file: base.yml
@@ -17,6 +18,7 @@ services:
     depends_on: [database]
 
   database:
+    ports: ['${IDS_EXPOSE_SQL}:3306']
     extends:
       file: base.yml
       service: database

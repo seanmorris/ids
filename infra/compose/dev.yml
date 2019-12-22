@@ -13,8 +13,8 @@ services:
       DHOST_IP: ${DHOST_IP}
 
   server:
+    ports:   ['${IDS_EXPOSE_HTTP}:80']
     volumes: ['../../:/app', '/tmp:/tmp']
-    ports: ['${IDS_EXPOSE_HTTP}:80']
     extends:
       file: base.yml
       service: server

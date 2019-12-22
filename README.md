@@ -31,6 +31,36 @@ Add composer's global `vendor/bin` to your PATH by adding this to your `~/.bashr
 ```bash
 export PATH="$HOME/.composer/vendor/bin:$PATH"
 ```
+
+
+## Creating a New Ids Project
+
+Create a new project with composer
+
+```bash
+$ composer create-project seanmorris/ids-project [MY_NAME]/[MY_PROJECT_NAME] -s=dev --remove-vcs
+```
+
+Enter the directory and start your services:
+
+```bash
+$ cd myname/myproject
+$ make
+$ make start-bg:
+```
+
+## Dependencies
+
+* Composer
+* Docker
+* Docker Compose
+* GNU Make
+* Git
+* Linux or Compatible OS
+* PHP
+* SimpleTest/SimpleTest
+* Minikube (required for kubernetes targets only)
+
 ## Dev Tools
 
 The `dev` build target provides facilities for connecting to xdebug and graylog.
@@ -289,7 +319,6 @@ XDebug is built into the `dev` images by default. You can configure it by settin
 
 to be continued...
 
-## Creating a New Ids Project
 ## Routing
 ## Modeling / ORM
 ## Configuration

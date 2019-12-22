@@ -246,6 +246,3 @@ hooks: ${TARGET_COMPOSE}
 
 dcompose-config: ${TARGET_COMPOSE}
 	@ ${DCOMPOSE} config
-
-md:
-	echo ${MAKEDIR}

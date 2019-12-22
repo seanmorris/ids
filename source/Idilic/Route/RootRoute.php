@@ -1020,8 +1020,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		$idsDir = \SeanMorris\Ids\Package::get()->packageDir();
 		$idsDir = escapeshellarg(realpath((string) $idsDir));
 
-		`cp -nr $idsDir/infra/installer/empty/* ./`;
-		`cp -nr $idsDir/infra/installer/empty/.* ./ 2>/dev/null`;
+		`cp -nr $idsDir/infra/installer/empty-project/* ./`;
+		`cp -nr $idsDir/infra/installer/empty-project/.* ./ 2>/dev/null`;
 
 		if(!file_exists('./composer.json'))
 		{
