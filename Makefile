@@ -70,7 +70,7 @@ STITCH_ENTROPY=test -f $$TO && test -s $$TO || while read -r LINE; do \
 			|| echo -E $$VALUE; \
 	};}; done; done < $$FROM > $$TO
 
-GEN_ENV=docker run --rm -v $$PWD:/app -w=/app \
+GEN_ENV=docker run --rm -v ${MAKEDIR}:/app -w=/app \
 	debian:buster-20191118-slim bash -c '{\
 		mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}; \
 			export \
