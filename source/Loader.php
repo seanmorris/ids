@@ -6,6 +6,11 @@ class Loader
 	$requested = []
 	, $classes = [];
 
+	public static function register()
+	{
+		spl_autoload_register([static::class, 'load']);
+	}
+
 	public static function inject($classes)
 	{
 		foreach($classes as $alias => $target)
@@ -13,10 +18,7 @@ class Loader
 			if(static::$requested[$alias]??0)
 			{
 				throw new \Exception(sprintf(
-					'Cannot override injection %s after usage. Consider moving your injections up,'
-						. PHP_EOL
-						. '%s:%s
-s'
+					'Cannot override injection %s after usage. Consider moving your injections up,'. PHP_EOL . '%s:%s'
 					, $alias
 					, static::$requested[$alias]['file']
 					, static::$requested[$alias]['line']
@@ -25,6 +27,8 @@ s'
 
 			static::$classes[$alias] = $target;
 		}
+
+		return static::$classes;
 	}
 
 	public static function load($classname)
@@ -69,10 +73,5 @@ s'
 		}
 
 		class_alias($realClass, $classname);
-	}
-
-	public static function register()
-	{
-		spl_autoload_register([static::class, 'load']);
 	}
 }

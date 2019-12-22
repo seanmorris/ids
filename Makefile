@@ -7,18 +7,23 @@ SHELL    = /bin/bash
 MAKEDIR  =$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 TARGET   ?=base
 
-MAIN_ENV ?=${MAKEDIR}.env
-TRGT_ENV ?=${MAKEDIR}.env.${TARGET}
-SURE_ENV ?=touch ${MAIN_ENV} ${TRGT_ENV}
+MAIN_ENV =${MAKEDIR}.env
+TRGT_ENV =${MAKEDIR}.env.${TARGET}
+SURE_ENV =touch ${MAIN_ENV} ${TRGT_ENV}
+
+TARGET_COMPOSE=infra/compose/${TARGET}.yml
 
 -include ${MAIN_ENV}
 -include ${TRGT_ENV}
 
 PROJECT  ?=ids
 REPO     ?=seanmorris
-BRANCH   ?=$$(git rev-parse --abbrev-ref HEAD  2>/dev/null)
-HASH     ?=$$(echo _$$(git rev-parse --short HEAD) || echo init)
-DESC     ?=$$(git describe --tags 2>/dev/null || echo ${HASH})
+BRANCH   =$$(git rev-parse --abbrev-ref HEAD  2>/dev/null)
+HASH     =$$(echo _$$(git rev-parse --short HEAD) || echo init)
+DESC     =$$(git describe --tags 2>/dev/null || echo ${HASH})
+SUFFIX   =-${TARGET}$$([ ${BRANCH} = master ] && echo "" || echo "-${BRANCH}")
+TAG      ?=${DESC}${SUFFIX}
+FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
 IMAGE    ?=
 DHOST_IP ?=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
@@ -31,10 +36,6 @@ INTERPOLATE_ENV=env -i DHOST_IP=${DHOST_IP} \
 	envsubst
 
 PASS_ENV=$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /')
-
-SUFFIX   =-${TARGET}$$([ ${BRANCH} = master ] && echo "" || echo "-${BRANCH}")
-TAG      ?=${DESC}${SUFFIX}
-FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
 WHILE_IMAGES=docker images ${REPO}/${PROJECT}.*:${TAG} -q | while read IMAGE_HASH; do
 
@@ -102,16 +103,16 @@ endif
 
 ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP} \
 	MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV} PROJECT_FULLNAME=${FULLNAME} \
-	PROJECT=${PROJECT} TARGET=${TARGET} ${XDEBUG_ENV} \
+	PROJECT=${PROJECT} TARGET=${TARGET:-${TARGET}} ${XDEBUG_ENV} \
 	$$(cat .env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#) \
 	$$(cat .env.${TARGET} 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)
 
 DCOMPOSE ?=export ${ENV} \
 	&& docker-compose \
 	-p ${PROJECT}_${TARGET} \
-	-f infra/compose/${TARGET}.yml
+	-f ${TARGET_COMPOSE}
 
-it: infra/compose/${TARGET}.yml
+it: ${TARGET_COMPOSE}
 	@ echo Building ${FULLNAME}
 	@ ${GEN_ENV}
 	@ docker run --rm \
@@ -135,13 +136,13 @@ it: infra/compose/${TARGET}.yml
 		done; \
 	done;
 
-composer-update: infra/compose/${TARGET}.yml
+composer-update: ${TARGET_COMPOSE}
 	@ docker run --rm \
 		-v $$PWD:/app \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		composer update
 
-list-images:
+list-images: ${TARGET_COMPOSE}
 	@ ${WHILE_IMAGES} \
 		echo $$(docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH) \
 		$$(docker image inspect --format="{{ .Size }}" $$IMAGE_HASH  \
@@ -149,70 +150,93 @@ list-images:
 		); \
 	done;
 
-list-tags:
+list-tags: ${TARGET_COMPOSE}
 	@ ${WHILE_TAGS} \
 		echo $$TAG_NAME; \
 	done;done;
 
-push-images: infra/compose/${TARGET}.yml
+push-images: ${TARGET_COMPOSE}
 	@ echo Pushing ${PROJECT}:${TAG}
 	@ ${WHILE_TAGS} \
 		docker push $$TAG_NAME; \
 	done;done;
 
-pull-images: infra/compose/${TARGET}.yml
+pull-images: ${TARGET_COMPOSE}
+	@ ${SURE_ENV}
 	@ ${DCOMPOSE} pull
 
-restart: infra/compose/${TARGET}.yml
-	@ ${DCOMPOSE} down
+start: ${TARGET_COMPOSE}
+	@ ${SURE_ENV}
 	@ ${DCOMPOSE} up -d
 
-restart-fg: infra/compose/${TARGET}.yml
-	@ ${DCOMPOSE} down
+start-fg: ${TARGET_COMPOSE}
+	@ ${SURE_ENV}
 	@ ${DCOMPOSE} up
 
-start: infra/compose/${TARGET}.yml
-	@ ${DCOMPOSE} up -d
+start-bg: ${TARGET_COMPOSE}
+	@ ${SURE_ENV}
+	@ ${DCOMPOSE} up &
 
-start-fg: infra/compose/${TARGET}.yml
-	@ ${DCOMPOSE} up
-
-stop: infra/compose/${TARGET}.yml
+stop: ${TARGET_COMPOSE}
 	@ ${SURE_ENV}
 	@ ${DCOMPOSE} down
 
-stop-all: infra/compose/${TARGET}.yml
+restart: ${TARGET_COMPOSE}
+	@ ${GEN_ENV}
+	@ ${DCOMPOSE} down
+	@ ${DCOMPOSE} up -d
+
+restart-fg: ${TARGET_COMPOSE}
+	@ ${GEN_ENV}
+	@ ${DCOMPOSE} down
+	@ ${DCOMPOSE} up
+
+restart-bg: ${TARGET_COMPOSE}
+	@ ${GEN_ENV}
+	@ ${DCOMPOSE} down
+	@ ${DCOMPOSE} up &
+
+stop-all: ${TARGET_COMPOSE}
+	@ ${GEN_ENV}
 	@ ${DCOMPOSE} down --remove-orphans
 
-current-tag: infra/compose/${TARGET}.yml
+current-tag: ${TARGET_COMPOSE}
 	@ echo ${TAG}
 
-bash: infra/compose/${TARGET}.yml
+bash: ${TARGET_COMPOSE}
+	@ ${GEN_ENV}
 	@ ${DCOMPOSE} run --rm ${NO_TTY} \
 		${PASS_ENV} --entrypoint=bash idilic
 
-run: infra/compose/${TARGET}.yml
+run: ${TARGET_COMPOSE}
+	@ ${GEN_ENV}
 	@ ${DCOMPOSE} run --rm ${NO_TTY} \
 		${PASS_ENV} ${CMD}
 
-run-phar: infra/compose/${TARGET}.yml
+run-phar: ${TARGET_COMPOSE}
+	@ ${GEN_ENV}
 	@ ${DCOMPOSE} run --rm --entrypoint='php SeanMorris_Ids.phar' \
 		${PASS_ENV} ${CMD}
 
-test: infra/compose/${TARGET}.yml
-	@ make --no-print-directory run \
-		TARGET=${TARGET} CMD="idilic -vv SeanMorris/Ids runTests SeanMorris/Ids"
+test: ${TARGET_COMPOSE}
+	@ ${GEN_ENV}
+	@ export TARGET=${TARGET} @ ${DCOMPOSE} run --rm ${NO_TTY} \
+		${PASS_ENV} \
+		idilic -vv SeanMorris/Ids runTests
+clean: ${TARGET_COMPOSE}
+	@ ${GEN_ENV}
+	@ ${DCOMPOSE} run --rm --entrypoint=bash \
+		${PASS_ENV} idilic -c " \
+			(shopt -s nullglob; rm -rf .env .env.${TARGET}); \
+			(shopt -s nullglob; rm -rf vendor/); \
+		"
 
-clean:
-	@ (shopt -s nullglob; rm -rfi .env .env.${TARGET});
-	@ (shopt -s nullglob; rm -rfi vendor/);
-
-env: infra/compose/${TARGET}.yml
+env: ${TARGET_COMPOSE}
 	@ ${GEN_ENV}
 	@ env -i ${ENV} bash -c "env"
 
-hooks: infra/compose/${TARGET}.yml
+hooks: ${TARGET_COMPOSE}
 	@ git config core.hooksPath githooks
 
-dcompose-config:
+dcompose-config: ${TARGET_COMPOSE}
 	@ ${DCOMPOSE} config

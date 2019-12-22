@@ -1,0 +1,27 @@
+version: '2.4'
+
+services:
+
+  idilic:
+    depends_on: [database]
+    volumes: ["../../:/app", "/tmp:/tmp"]
+    extends:
+      file: base.yml
+      service: idilic
+
+  server:
+    depends_on: [database]
+    volumes: ["../../:/app", "/tmp:/tmp"]
+    extends:
+      file: base.yml
+      service: server
+
+  database:
+    volumes: ["../../:/app", "/tmp:/tmp"]
+    extends:
+      file: base.yml
+      service: database
+
+volumes:
+  schema:
+    driver: local

@@ -9,10 +9,11 @@ export $(make env | tr '\n' ' ');
 PHP_ERROR=0;
 
 git diff-index HEAD \
-	| grep ".php" \
-	| grep "^:"   \
+	| grep ".php"   \
+	| grep "^:"     \
 	| sed 's:.* [UAM][ \\''t]*\([^ \\''t]*\):\1:g' \
 	| while read FILE; do \
+		test -f $FILE || continue;
 		echo Checking $FILE...;
 		echo -ne "\t";
 		php -l $FILE 2>&1;

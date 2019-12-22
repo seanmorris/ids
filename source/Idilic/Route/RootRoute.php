@@ -906,11 +906,17 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			foreach($databases as $name => $database)
 			{
 				$dbs .= sprintf(
-					"%sDatabase: %s\n%sHost: %s\n"
+					"%sDatabase: %s\n%sSchema: %s\n%sHost: %s\n%sPort: %s\n%sUser: %s\n"
 					, str_repeat(' ', 4)
 					, $name
+					, str_repeat(' ', 6)
+					, $database->database
 					, str_repeat(' ', 8)
 					, $database->hostname
+					, str_repeat(' ', 8)
+					, $database->port
+					, str_repeat(' ', 8)
+					, $database->username
 				);
 			}
 		}
