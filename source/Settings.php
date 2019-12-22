@@ -255,6 +255,8 @@ class Settings
 			, $hostname . '/settings'
 			, sprintf(':%d/settings', $port)
 			, sprintf(';%d/settings', $port)
+
+			, '_/settings'
 			, ':/settings'
 			, ';/settings'
 
@@ -263,8 +265,12 @@ class Settings
 			, sprintf('%s:', $hostname)
 			, sprintf('%s;', $hostname)
 			, $hostname
+
+			, sprintf('_:%d', $port)
+			, sprintf('_;%d', $port)
 			, sprintf(':%d', $port)
 			, sprintf(';%d', $port)
+			, '_'
 			, ':'
 			, ';'
 		];

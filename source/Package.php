@@ -323,6 +323,20 @@ class Package
 		);
 	}
 
+	public function configDir()
+	{
+		$key = $this->packageName . '-config';
+
+		if(isset(static::$directories[$key]))
+		{
+			return static::$directories['config'];
+		}
+
+		return static::$directories['config'] = new \SeanMorris\Ids\Disk\Directory(
+			$this->packageDir() . 'config/'
+		);
+	}
+
 	public function sourceDir()
 	{
 		$key = $this->packageName . '-source';

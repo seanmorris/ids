@@ -9,6 +9,7 @@ TARGET   ?=base
 
 MAIN_ENV ?=${MAKEDIR}.env
 TRGT_ENV ?=${MAKEDIR}.env.${TARGET}
+SURE_ENV ?=touch ${MAIN_ENV} ${TRGT_ENV}
 
 -include ${MAIN_ENV}
 -include ${TRGT_ENV}
@@ -57,7 +58,7 @@ GET_ENTROPY=test -e ${ENTROPY_DIR}/$$ENTROPY_KEY \
 			| head -n 1 \
 			| tee ${ENTROPY_DIR}/$$ENTROPY_KEY
 
-STITCH_ENTROPY=test -e $$TO || while read -r LINE; do \
+STITCH_ENTROPY=test -f $$TO && test -s $$TO || while read -r LINE; do \
 	test -n "$$LINE" || continue; \
 	echo -n "$$LINE" | ${PARSE_ENV} \
 		grep $$NAME .entropy | { \
@@ -67,6 +68,14 @@ STITCH_ENTROPY=test -e $$TO || while read -r LINE; do \
 			&& echo $$(export ENTROPY_KEY=$$ENTROPY_KEY && ${GET_ENTROPY}) \
 			|| echo -E $$VALUE; \
 	};}; done; done < $$FROM > $$TO
+
+GEN_ENV=mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}; \
+	export FROM=infra/env/.env TO=.env && ${STITCH_ENTROPY}; \
+	export FROM=infra/env/.env.${TARGET} TO=.env.${TARGET} && ${STITCH_ENTROPY}; \
+	(shopt -s nullglob; rm -rf ${ENTROPY_DIR}); \
+	touch -a .env.${TARGET}; \
+	touch -a .env;
+
 
 ifeq (${TARGET},test)
 	NO_DEV=
@@ -104,12 +113,7 @@ DCOMPOSE ?=export ${ENV} \
 
 it: infra/compose/${TARGET}.yml
 	@ echo Building ${FULLNAME}
-	@ mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR};
-	@ export FROM=.env.sample TO=.env && ${STITCH_ENTROPY};
-	@ export FROM=.env.${TARGET}.sample TO=.env.${TARGET} && ${STITCH_ENTROPY};
-	@ (shopt -s nullglob; rm -rf ${ENTROPY_DIR})
-	@ touch -a .env.${TARGET}
-	@ touch -a .env
+	@ ${GEN_ENV}
 	@ docker run --rm \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		-v $$PWD:/app \
@@ -174,6 +178,7 @@ start-fg: infra/compose/${TARGET}.yml
 	@ ${DCOMPOSE} up
 
 stop: infra/compose/${TARGET}.yml
+	@ ${SURE_ENV}
 	@ ${DCOMPOSE} down
 
 stop-all: infra/compose/${TARGET}.yml
@@ -198,7 +203,12 @@ test: infra/compose/${TARGET}.yml
 	@ make --no-print-directory run \
 		TARGET=${TARGET} CMD="idilic -vv SeanMorris/Ids runTests SeanMorris/Ids"
 
+clean:
+	@ (shopt -s nullglob; rm -rfi .env .env.${TARGET});
+	@ (shopt -s nullglob; rm -rfi vendor/);
+
 env: infra/compose/${TARGET}.yml
+	@ ${GEN_ENV}
 	@ env -i ${ENV} bash -c "env"
 
 hooks: infra/compose/${TARGET}.yml

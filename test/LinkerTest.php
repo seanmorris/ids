@@ -11,7 +11,6 @@ class LinkerTest extends \UnitTestCase
 		$testValue = ['testValue', 'blah'];
 
 		$linkerClass::set($testKey, $testValue);
-		$linkerClass::set($testKey, $testValue, $package);
 
 		$linkerClass::link();
 
