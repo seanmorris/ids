@@ -46,7 +46,7 @@ Enter the directory and start your services:
 ```bash
 $ cd myname/myproject
 $ make
-$ make start-bg:
+$ make start-bg
 ```
 
 ## Dependencies
