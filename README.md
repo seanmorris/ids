@@ -95,9 +95,9 @@ By default Ids provides 4 build targets: base, prod, dev, and test. Each exposes
 
 * **prod** exposes port 80 (configurable by `IDS_EXPOSE_HTTP`) and port 443* ( configurable by `IDS_EXPOSE_HTTPS` ) and builds **without** require-dev.
 
-* **test** exposes port 1001 (configurable by `IDS_EXPOSE_HTTP`) and port 1101 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
+* **test** exposes port 2021 (configurable by `IDS_EXPOSE_HTTP`) and port 3031 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
 
-* **dev** exposes port 1000 ( configurable by `IDS_EXPOSE_HTTP` ) and port 1100 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
+* **dev** exposes port 2020 ( configurable by `IDS_EXPOSE_HTTP` ) and port 3030 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
 
 \*Not yet implemented.
 

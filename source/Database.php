@@ -7,7 +7,7 @@ namespace	SeanMorris\Ids;
 class Database
 {
 	static $credentials	= []
-		, $connections	= []
+		, $connections 	= []
 		, $initializers = [];
 
 	const DEFAULT_PORT = 3306;
@@ -28,6 +28,10 @@ class Database
 		static::$credentials[ array_shift($args) ] = $args;
 	}
 
+	public static function initialize($name, callable $callback)
+	{
+		static::$initializers[$name][] = $callback;
+	}
 	/**
 	 * Deregister database credentials & connections.
 	 */
@@ -66,10 +70,11 @@ class Database
 
 				if($db = static::$connections[$name])
 				{
-					while(static::$initializers[$name])
+					while(static::$initializers[$name] ?? FALSE)
 					{
-						array_shift(static::$initializers[$name])($db);
+						array_pop(static::$initializers[$name])($db);
 					}
+
 					$db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
 					return $db;
@@ -111,10 +116,5 @@ class Database
 				, $database->retry->delay ?? 0
 			);
 		}
-	}
-
-	public static function initialize($name, callable $callback)
-	{
-		static::$initializers[$name][] = $callback;
 	}
 }

@@ -1,6 +1,6 @@
 #!make
 
-.PHONY: it composer-install composer-update composer-update-no-dev tag-images \
+.PHONY: it init composer-install composer-update composer-update-no-dev tag-images \
 	push-images pull-images tag-images start start-fg restart restart-fg stop \
 	stop-all run run-phar test env hooks
 
@@ -209,7 +209,7 @@ restart-bg: ${TARGET_COMPOSE}
 
 kill: ${TARGET_COMPOSE}
 	@ ${SURE_ENV}
-	@ ${DCOMPOSE} kill
+	@ ${DCOMPOSE} kill -s 9
 
 current-tag: ${TARGET_COMPOSE}
 	@ echo ${TAG}
