@@ -245,7 +245,7 @@ babel: ${COMPOSE_FILE}
 	${GEN_ENV} && ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml \
 		run --rm ${PASS_ENV} node npx babel
 env: ${COMPOSE_FILE}
-	@ ${GEN_ENV} && env
+	@ ${GEN_ENV} && printenv -0
 
 hooks: ${COMPOSE_FILE}
 	@ git config core.hooksPath githooks

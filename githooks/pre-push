@@ -2,7 +2,10 @@
 
 set -eu;
 
-export $(make env | tr '\n' ' ');
+while read -d $'\0' VAR ; do declare "$VAR"; done < <(make env);
+
+[[ "$TARGET" == "test" ]] && set +x;
+
 
 while read LINE; do echo $LINE | {
 	echo "$BRANCH:$TARGET found in .publishing file. Ids is building & pushing now.";
