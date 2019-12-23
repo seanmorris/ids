@@ -1,5 +1,5 @@
 {
-	"name": "seanmorris/ids"
+	"name": "SeanMorris/Ids"
 	, "version": "0.0.0"
 	, "authors": [{
 		"name": "Sean Morris",
@@ -13,20 +13,16 @@
 	, "require-dev": {
 		"simpletest/simpletest": "dev-master"
 	}
+	, "dependencies": {}
+	, "devDependencies": {
+		"@babel/cli":"^7.0.0"
+		, "@babel/core":"^7.0.0"
+		, "@babel/minify":"^7.0.0"
+	}
 	, "autoload": {
 		"psr-4": {
-			"SeanMorris\\Ids\\Test\\": "test/",
-			"SeanMorris\\Ids\\": "source/"
+			"SeanMorris\\Ids\\Test\\":"test/"
+			, "SeanMorris\\Ids\\":"source/"
 		}
-	}
-	, "dependencies": {
-
-	}
-	, "devDependencies": {
-		"babel-cli": "^6.26.0"
-		, "babel-minify": "^0.5.0"
-		, "babel-preset-latest": "^6.24.1"
-		, "babel-preset-minify": "^0.5.0"
-		, "uglify-js-brunch": "^2"
 	}
 }

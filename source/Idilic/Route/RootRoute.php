@@ -998,8 +998,6 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			, '/^((?!.git).)*$/'
 		);
 
-// 		print_r($files);
-
 		$phar->stopBuffering();
 		$phar->compressFiles(\Phar::GZ);
 
@@ -1013,64 +1011,21 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 	}
 
-	/** Copy the files to start a new project. */
+	/** Access docker. */
 
-	public function project()
+	public function docker($router)
 	{
-		$idsDir = \SeanMorris\Ids\Package::get()->packageDir();
-		$idsDir = escapeshellarg(realpath((string) $idsDir));
+		$args = $router->path()->consumeNodes();
+		$args = implode(' ', $args);
 
-		`cp -nr $idsDir/infra/installer/empty-project/* ./`;
-		`cp -nr $idsDir/infra/installer/empty-project/.* ./ 2>/dev/null`;
+		echo `docker inspect --format '{{ json .}}' $args`;
+	}
 
-		if(!file_exists('./composer.json'))
-		{
-			`composer require seanmorris/ids:dev-master`;
-		}
+	public function babel($router)
+	{
+		$args = $router->path()->consumeNodes();
+		$args = implode(' ', $args);
 
-		if(!`composer config name 2>/dev/null`)
-		{
-			$named = FALSE;
-
-			while(!$named)
-			{
-				$name  = \SeanMorris\Ids\Idilic\Cli::question(
-					'Would you like to name your project?'
-				);
-
-				if(!preg_match('/^\w+?\/\w+?$/', $name))
-				{
-					echo 'Project name must be in the form owner/projectname'
-						. PHP_EOL;
-
-					continue;
-				}
-
-				if($name === '')
-				{
-					break;
-				}
-
-				$_name = escapeshellarg($name);
-
-				exec("composer config name $_name", $out, $exitCode);
-
-				if($exitCode != 0)
-				{
-					echo 'Composer error with project name: ' . $name
-						. PHP_EOL
-						. $out
-						. $out ? PHP_EOL : NULL;
-
-					continue;
-				}
-
-				$named = TRUE;
-			}
-		}
-
-		`chgrp -R docker .`;
-		`chmod -R g+rw .`;
-		`chmod g+s .`;
+		echo `env`;
 	}
 }

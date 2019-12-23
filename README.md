@@ -357,6 +357,7 @@ to be continued...
 * GNU Make
 * Git
 * Linux or Compatible OS
+* Node
 * PHP
 * SimpleTest/SimpleTest
 

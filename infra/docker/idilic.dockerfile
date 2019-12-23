@@ -1,8 +1,8 @@
 FROM debian:buster-20191118-slim as base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
-RUN set -eux; \
-	apt-get update; \
+RUN set -eux;               \
+	apt-get update;         \
 	apt-get install -y --no-install-recommends software-properties-common \
 		ca-certificates     \
 		gnupg               \

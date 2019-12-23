@@ -31,6 +31,15 @@ DHOST_IP ?=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).
 NO_TTY   ?=-T
 NO_DEV   ?=--no-dev
 
+DOCKER   ?=$$(which docker)
+
+NPX=cp  -n /app/package-lock.json /build; \
+	cat /app/composer.json           \
+		| tr '[:upper:]' '[:lower:]' \
+		| tr '/' '-'                 \
+		> package.json;              \
+	npx
+
 INTERPOLATE_ENV=env -i DHOST_IP=${DHOST_IP} \
 	TAG=${TAG} REPO=${REPO} TARGET=${TARGET} \
 	PROJECT=${PROJECT} \
@@ -111,8 +120,9 @@ else
 endif
 
 ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP} \
-	MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV} PROJECT_FULLNAME=${FULLNAME} \
-	PROJECT=${PROJECT} TARGET=${TARGET:-${TARGET}} MAKEDIR=${MAKEDIR} ${XDEBUG_ENV} \
+	MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV} PROJECT_FULLNAME=${FULLNAME}  \
+	PROJECT=${PROJECT} TARGET=${TARGET} MAKEDIR=${MAKEDIR} DOCKER=${DOCKER} \
+	${XDEBUG_ENV} NPX="${NPX}" \
 	$$(cat ${MAKEDIR}.env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#) \
 	$$(cat ${MAKEDIR}.env.${TARGET} 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)
 
@@ -121,13 +131,14 @@ DCOMPOSE=export ${ENV} && docker-compose \
 	-f ${COMPOSE_FILE}
 
 it: ${COMPOSE_FILE}
+	@ ${GEN_ENV}
 	@ echo Building ${FULLNAME}
-	${GEN_ENV}
-	@ export TAG=latest-${TARGET} && ${DCOMPOSE} build idilic
 	@ docker run --rm \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		-v $$PWD:/app \
 		composer install ${NO_DEV}
+	@ ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml build node
+	@ export TAG=latest-${TARGET} && ${DCOMPOSE} build idilic
 	@ ${DCOMPOSE} build
 	@ ${DCOMPOSE} up --no-start
 	@ ${WHILE_IMAGES} \
@@ -226,33 +237,19 @@ clean: ${COMPOSE_FILE}
 			(shopt -s nullglob; rm -rf .env .env.${TARGET}); \
 			(shopt -s nullglob; rm -rf vendor/);"
 
-npx: ${COMPOSE_FILE}
-	${GEN_ENV} && ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml \
-		run --rm ${PASS_ENV} node bash -c "\
-			cp  -n /app/package-lock.json /build; \
-			cat /app/composer.json \
-				| tr '[:upper:]' '[:lower:]' \
-				| tr '/' '-' \
-				> package.json; \
-			npx run ${CMD}; \
-			whoami";
-
-npm: ${COMPOSE_FILE}
+node: ${COMPOSE_FILE}
 	@ ${GEN_ENV} && ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml \
-		run --rm ${PASS_ENV} node bash -c "\
-			cp  -n /app/package-lock.json; \
-			cat /app/composer.json \
-				| tr '[:upper:]' '[:lower:]' \
-				| tr '/' '-' \
-				> package.json; \
-			npm i; \
-			cp package-lock.json /app";
+		run --rm ${PASS_ENV} node ${CMD}
 
+babel: ${COMPOSE_FILE}
+	${GEN_ENV} && ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml \
+		run --rm ${PASS_ENV} node npx babel
 env: ${COMPOSE_FILE}
-	@ ${GEN_ENV} && env -i ${ENV} bash -c "env"
+	@ ${GEN_ENV} && env
 
 hooks: ${COMPOSE_FILE}
 	@ git config core.hooksPath githooks
 
 dcompose-config: ${COMPOSE_FILE}
 	@ ${GEN_ENV} && ${DCOMPOSE} config
+

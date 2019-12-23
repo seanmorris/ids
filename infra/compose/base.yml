@@ -6,6 +6,9 @@ services:
     image:    ${REPO}/${PROJECT}.idilic:${TAG}
     restart:  on-failure
     env_file: ['${MAIN_ENV}', '${TRGT_ENV}']
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/bin/docker:${DOCKER}
     build:
       context: ../../
       dockerfile: infra/docker/idilic.dockerfile

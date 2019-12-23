@@ -3,10 +3,10 @@ version: '2.4'
 services:
 
   node:
-    restart:     always
+    restart: on-failure
     build:
       context: ../../
       dockerfile: infra/docker/tools/node.dockerfile
     volumes:
       - ../../:/app
-      - ../../infra/node/modules:/build/node_modules
+      - ../../vendor/_node_modules:/build/node_modules

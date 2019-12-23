@@ -2,6 +2,8 @@
 
 set -eu;
 
+make env;exit;
+
 export $(make env | tr '\n' ' ');
 
 PHP_ERROR=0;
