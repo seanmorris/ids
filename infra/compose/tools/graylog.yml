@@ -1,0 +1,32 @@
+version: '2.4'
+
+services:
+
+  elasticsearch:
+    image:   docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.2
+    restart: always
+    environment:
+      ES_JAVA_OPTS: -Xms8g -Xmx8g
+      http.host:    '0.0.0.0'
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+  graylog:
+    image:   graylog/graylog:3.1
+    restart: always
+    ports:
+      - 514:1514
+      - 19000:9000
+      - 5555:5555
+      - 12201:12201
+      - 12201:12201/udp
+    environment:
+      GRAYLOG_ROOT_PASSWORD_SHA2: 8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+      GRAYLOG_HTTP_EXTERNAL_URI:  http://127.0.0.1:19000/
+      GRAYLOG_PASSWORD_SECRET:    ${GRAYLOG_PASSWORD_SECRET}
+
+  mongo:
+    image:   mongo:3
+    restart: always

@@ -1,0 +1,20 @@
+package: SeanMorris/Ids
+version: v0.0.0
+
+authors:
+  - name:  Sean Morris
+    email: sean@seanmorr.is
+
+bin: ['source/Idilic/idilic']
+
+
+require-dev-test:
+  https://github.com/simpletest:
+      simpletest: dev-master
+
+require-prod: []
+require-dev:  []
+
+autoload:
+  SeanMorris\Ids\Test\: test/
+  SeanMorris\Ids\:      source/

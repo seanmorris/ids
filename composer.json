@@ -1,12 +1,10 @@
 {
 	"name": "seanmorris/ids"
 	, "version": "0.0.0"
-	, "authors": [
-		{
-			"name": "Sean Morris",
-			"email": "sean@sean-morris.com"
-		}
-	]
+	, "authors": [{
+		"name": "Sean Morris",
+		"email": "sean@sean-morris.com"
+	}]
 	, "bin": [
 		"bin/idilic"
 	]
@@ -20,5 +18,15 @@
 			"SeanMorris\\Ids\\Test\\": "test/",
 			"SeanMorris\\Ids\\": "source/"
 		}
+	}
+	, "dependencies": {
+
+	}
+	, "devDependencies": {
+		"babel-cli": "^6.26.0"
+		, "babel-minify": "^0.5.0"
+		, "babel-preset-latest": "^6.24.1"
+		, "babel-preset-minify": "^0.5.0"
+		, "uglify-js-brunch": "^2"
 	}
 }

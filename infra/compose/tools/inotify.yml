@@ -1,0 +1,12 @@
+version: '2.4'
+
+services:
+
+  node:
+    restart:     always
+    build:
+      context: ../../
+      dockerfile: infra/docker/tools/node.dockerfile
+    volumes:
+      - ../../:/app
+      - ../../infra/node/modules:/build/node_modules

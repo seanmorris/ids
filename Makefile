@@ -11,7 +11,8 @@ MAKEDIR  ?=${REALDIR}
 MAIN_ENV ?=${MAKEDIR}.env
 TRGT_ENV ?=${MAKEDIR}.env.${TARGET}
 
-TARGET_COMPOSE=infra/compose/${TARGET}.yml
+COMPOSE_FILE =infra/compose/${TARGET}.yml
+COMPOSE_TOOLS=infra/compose/tools
 
 -include ${MAIN_ENV}
 -include ${TRGT_ENV}
@@ -117,9 +118,9 @@ ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP} \
 
 DCOMPOSE=export ${ENV} && docker-compose \
 	-p ${PROJECT}_${TARGET} \
-	-f ${TARGET_COMPOSE}
+	-f ${COMPOSE_FILE}
 
-it: ${TARGET_COMPOSE}
+it: ${COMPOSE_FILE}
 	@ echo Building ${FULLNAME}
 	${GEN_ENV}
 	@ export TAG=latest-${TARGET} && ${DCOMPOSE} build idilic
@@ -143,13 +144,13 @@ it: ${TARGET_COMPOSE}
 		done; \
 	done;
 
-composer-update: ${TARGET_COMPOSE}
+composer-update: ${COMPOSE_FILE}
 	@ docker run --rm \
 		-v $$PWD:/app \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		composer update
 
-list-images: ${TARGET_COMPOSE}
+list-images: ${COMPOSE_FILE}
 	@ ${WHILE_IMAGES} \
 		echo $$(docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH) \
 		$$(docker image inspect --format="{{ .Size }}" $$IMAGE_HASH  \
@@ -157,99 +158,101 @@ list-images: ${TARGET_COMPOSE}
 		); \
 	done;
 
-list-tags: ${TARGET_COMPOSE}
+list-tags: ${COMPOSE_FILE}
 	@ ${WHILE_TAGS} \
 		echo $$TAG_NAME; \
 	done;done;
 
-push-images: ${TARGET_COMPOSE}
+push-images: ${COMPOSE_FILE}
 	@ echo Pushing ${PROJECT}:${TAG}
 	@ ${WHILE_TAGS} \
 		docker push $$TAG_NAME; \
 	done;done;
 
-pull-images: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ ${DCOMPOSE} pull
+pull-images: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} pull
 
-start: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ ${DCOMPOSE} up -d
+start: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && @ ${DCOMPOSE} up -d
 
-start-fg: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ ${DCOMPOSE} up
+start-fg: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} up
 
-start-bg: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ ${DCOMPOSE} up &
+start-bg: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} up &
 
-stop: ${TARGET_COMPOSE}
-	@ ${SURE_ENV}
-	@ ${DCOMPOSE} down
+stop: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} down
 
-stop-all: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ ${DCOMPOSE} down --remove-orphans
+stop-all: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} down --remove-orphans
 
-restart: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ ${DCOMPOSE} down
-	@ ${DCOMPOSE} up -d
+restart: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} down && ${DCOMPOSE} up -d
 
-restart-fg: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ ${DCOMPOSE} down
-	@ ${DCOMPOSE} up
+restart-fg: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} down && ${DCOMPOSE} up
 
-restart-bg: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ ${DCOMPOSE} down
-	@ ${DCOMPOSE} up &
+restart-bg: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} down && ${DCOMPOSE} up &
 
-kill: ${TARGET_COMPOSE}
-	@ ${SURE_ENV}
-	@ ${DCOMPOSE} kill -s 9
+kill: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} kill -s 9
 
-current-tag: ${TARGET_COMPOSE}
+current-tag: ${COMPOSE_FILE}
 	@ echo ${TAG}
 
-bash: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ ${DCOMPOSE} run --rm ${NO_TTY} \
+bash: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} run --rm ${NO_TTY} \
 		${PASS_ENV} --entrypoint=bash idilic
 
-run: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ ${DCOMPOSE} run --rm ${NO_TTY} \
+run: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} run --rm ${NO_TTY} \
 		${PASS_ENV} ${CMD}
 
-run-phar: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ ${DCOMPOSE} run --rm --entrypoint='php SeanMorris_Ids.phar' \
+run-phar: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} run --rm \
+		--entrypoint='php SeanMorris_Ids.phar' \
 		${PASS_ENV} ${CMD}
 
-test: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ export TARGET=${TARGET} ${DCOMPOSE} run --rm ${NO_TTY} \
-		${PASS_ENV} \
+test: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && export TARGET=${TARGET} ${DCOMPOSE} \
+		run --rm ${NO_TTY} ${PASS_ENV} \
 		idilic -vv SeanMorris/Ids runTests
 
-clean: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ ${DCOMPOSE} run --rm --entrypoint=bash \
-		${PASS_ENV} idilic -c " \
+clean: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml \
+		run --rm ${PASS_ENV} node bash -c "\
 			(shopt -s nullglob; rm -rf .env .env.${TARGET}); \
-			(shopt -s nullglob; rm -rf vendor/); \
-		"
+			(shopt -s nullglob; rm -rf vendor/);"
 
-env: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ env -i ${ENV} bash -c "env"
+npx: ${COMPOSE_FILE}
+	${GEN_ENV} && ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml \
+		run --rm ${PASS_ENV} node bash -c "\
+			cp  -n /app/package-lock.json /build; \
+			cat /app/composer.json \
+				| tr '[:upper:]' '[:lower:]' \
+				| tr '/' '-' \
+				> package.json; \
+			npx run ${CMD}; \
+			whoami";
 
-hooks: ${TARGET_COMPOSE}
+npm: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml \
+		run --rm ${PASS_ENV} node bash -c "\
+			cp  -n /app/package-lock.json; \
+			cat /app/composer.json \
+				| tr '[:upper:]' '[:lower:]' \
+				| tr '/' '-' \
+				> package.json; \
+			npm i; \
+			cp package-lock.json /app";
+
+env: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && env -i ${ENV} bash -c "env"
+
+hooks: ${COMPOSE_FILE}
 	@ git config core.hooksPath githooks
 
-dcompose-config: ${TARGET_COMPOSE}
-	@ ${GEN_ENV}
-	@ ${DCOMPOSE} config
+dcompose-config: ${COMPOSE_FILE}
+	@ ${GEN_ENV} && ${DCOMPOSE} config

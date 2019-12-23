@@ -11,22 +11,22 @@ RUN set -eux; \
 	wget -qO /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg; \
 	sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" \
 		 > /etc/apt/sources.list.d/sury-php.list'; \
-	apt-get update; \
+	apt-get update;         \
 	apt-get install -y --no-install-recommends \
-		libargon2-0      \
-		libsodium23      \
-		libssl1.1        \
-		libyaml-dev      \
-		php7.3           \
-		php7.3-cli       \
-		php7.3-common    \
-		php7.3-dom       \
-		php7.3-json      \
-		php7.3-opcache   \
-		php7.3-pdo-mysql \
-		php7.3-readline  \
-		php7.3-xml       \
-		php7.3-yaml;     \
+		libargon2-0         \
+		libsodium23         \
+		libssl1.1           \
+		libyaml-dev         \
+		php7.3              \
+		php7.3-cli          \
+		php7.3-common       \
+		php7.3-dom          \
+		php7.3-json         \
+		php7.3-opcache      \
+		php7.3-pdo-mysql    \
+		php7.3-readline     \
+		php7.3-xml          \
+		php7.3-yaml;        \
 	apt-get remove -y software-properties-common \
 		apache2-bin         \
 		apt-transport-https \
@@ -38,7 +38,7 @@ RUN set -eux; \
 		python              \
 		wget;               \
 	apt-get purge -y --auto-remove; \
-	apt-get autoremove -y; \
+	apt-get autoremove -y;  \
 	apt-get clean
 
 ENV IDS_INSIDE_DOCKER=true
