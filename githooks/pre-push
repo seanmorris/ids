@@ -1,18 +1,18 @@
 #!/bin/bash
+set -eux;
 
-set -eu;
-
-while read -d $'\0' VAR ; do declare "$VAR"; done < <(make env);
+while read -d $'\0' VAR ; do declare "$VAR"; done < <(make env SEP=-0);
 
 [[ "$TARGET" == "test" ]] && set +x;
 
+echo $BRANCH;
 
 while read LINE; do echo $LINE | {
-	echo "$BRANCH:$TARGET found in .publishing file. Ids is building & pushing now.";
+	IFS=":" read BRANCH TARGET
 
-	IFS=":" read _BRANCH TARGET
+	echo "$BRANCH:$TARGET found in .publishing file. Ids is building & pushing now.";
 
 	make TARGET=$TARGET;
 	make TARGET=$TARGET push-images;
 
-}; done < .publishing;
+}; done < <(grep ^$BRANCH\: .publishing);

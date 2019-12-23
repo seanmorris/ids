@@ -57,7 +57,7 @@ WHILE_TAGS=${WHILE_IMAGES} \
 
 PARSE_ENV=grep -v ^\# \
 		| while read -r ENV; do echo $$ENV | { \
-			IFS='\=' read -r NAME VALUE; \
+			IFS='\=' read -r ENV_NAME ENV_VALUE; \
 
 ENTROPY_DIR=/tmp/IDS_ENTROPY
 ENTROPY_KEY=default
@@ -69,31 +69,25 @@ GET_ENTROPY=test -e ${ENTROPY_DIR}/$$ENTROPY_KEY \
 			| head -n 1 \
 			| tee ${ENTROPY_DIR}/$$ENTROPY_KEY
 
-STITCH_ENTROPY=test -f $$TO && test -s $$TO || while read -r LINE; do \
-	test -n "$$LINE" || continue; \
-	echo -n "$$LINE" | ${PARSE_ENV} \
-		grep $$NAME .entropy | { \
+STITCH_ENTROPY=test -f $$TO && test -s $$TO || while read -r ENV_LINE; do \
+	test -n "$$ENV_LINE" || continue; \
+	echo -n "$$ENV_LINE" | ${PARSE_ENV} \
+		grep $$ENV_NAME .entropy | { \
 		IFS=":" read -r ENV_KEY ENTROPY_KEY; \
-		echo -n $$NAME=; \
+		echo -n $$ENV_NAME=; \
 		test -n "$$ENTROPY_KEY" \
 			&& echo $$(export ENTROPY_KEY=$$ENTROPY_KEY && ${GET_ENTROPY}) \
-			|| echo -E $$VALUE; \
+			|| echo -E $$ENV_VALUE; \
 	};}; done; done < $$FROM > $$TO
 
 GEN_ENV=docker run --rm -v ${MAKEDIR}:/app -w=/app \
 	debian:buster-20191118-slim bash -c '{\
 		mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}; \
-			export \
-				FROM=config/.env \
-				TO=.env \
+			export FROM=config/.env TO=.env \
 				&& ${STITCH_ENTROPY}; \
-			export \
-				FROM=config/.env.${TARGET} \
-				TO=.env.${TARGET} \
+			export FROM=config/.env.${TARGET} TO=.env.${TARGET} \
 				&& ${STITCH_ENTROPY}; \
 			(shopt -s nullglob; rm -rf ${ENTROPY_DIR}); \
-			touch -a .env.${TARGET}; \
-			touch -a .env; \
 		}'
 
 ifeq (${TARGET},test)
@@ -134,6 +128,7 @@ it: ${COMPOSE_FILE}
 	@ ${GEN_ENV}
 	@ echo Building ${FULLNAME}
 	@ docker run --rm \
+		-env-file=.env -env-file=.env.${TARGET} \
 		-v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
 		-v $$PWD:/app \
 		composer install ${NO_DEV}
@@ -232,6 +227,7 @@ test: ${COMPOSE_FILE}
 		idilic -vv SeanMorris/Ids runTests
 
 clean: ${COMPOSE_FILE}
+	@ rm -rf .env .env.dev .env.prod .env.test
 	@ ${GEN_ENV} && ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml \
 		run --rm ${PASS_ENV} node bash -c "\
 			(shopt -s nullglob; rm -rf .env .env.${TARGET}); \
@@ -244,8 +240,11 @@ node: ${COMPOSE_FILE}
 babel: ${COMPOSE_FILE}
 	${GEN_ENV} && ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml \
 		run --rm ${PASS_ENV} node npx babel
+
+SEP=
 env: ${COMPOSE_FILE}
-	@ ${GEN_ENV} && printenv -0
+	@ ${GEN_ENV}; export ${ENV} && env ${SEP};
+
 
 hooks: ${COMPOSE_FILE}
 	@ git config core.hooksPath githooks
