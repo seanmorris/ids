@@ -105,7 +105,12 @@ By default Ids provides 4 build targets: base, prod, dev, and test. Each exposes
 
 The system will use the TARGET environment variable to decide which build target to use.
 
-If youre on the BASH shell simply run `export TARGET=base`, `export TARGET=test`, `export TARGET=dev`, `export TARGET=prod`.
+If youre on the BASH shell simply run one of the following commands to set the target:
+
+* `make stay@base`
+* `make stay@dev`
+* `make stay@test`
+* `make stay@prod`
 
 ### Extending Environments
 
@@ -119,14 +124,12 @@ If you need some target specific build steps. then add a `FROM base as TARGET` s
 
 The project may be built with `make`. Debian users can get this tool by running `apt-get install build-essential`. The build process also requires `docker` and `docker-compose`. `minikube` is required only for kubernetes testing.
 
-The default build target is `base`. run `export TARGET=dev` or `export TARGET=test` to switch to the development/testing target.
+The default build target is `base`. run `make stay@dev` or `make stay@test` to switch to the development/testing target. You can use @TARGET at the beginning of any make command to use the target for just that command.
 
 ```bash
-$ export TARGET=dev # Select a target
+$ make @dev build # build the project
 
-$ make              # build the project
-
-$ make start        # start the services
+$ make @dev start # start the services
 ```
 
 Docker & docker-compose are available here:
@@ -388,54 +391,32 @@ The schema will be stored in `data/global/schema.json`.
 
 Run these from the project root to build and control the project infrastructure.
 
-`make` - Build the project
-
-`make env` - Print the project's environment config.
-
-`make test` - Run tests.
-
-`make start` - Start the project services.
-
-`make start-fg` - Start the project services, hold control of the terminal and stream output.
-
-`make start-bg` - Start the project services, hold control of the terminal and stream output.
-
-`make restart-fg` - Restart the project services, hold control of the terminal and stream output.
-
-`make restart-bg` - Restart the project services, hold control of the terminal and stream output.
-
-`make stop` - Stop the project services.
-
-`make stop-all` - Stop the project services, including any that no longer appear in the compose file.
-
-`make kill` - Immediately kill the project services.
-
-`make nuke`* - Immediately kill all containers on the host. Not yet implemented.
-
-`make current-tag` - Output the project tag for the current target & branch.
-
-`make list-tags` - List image tags for the current target & branch.
-
-`make list-images` - List images for the current target & branch.
-
-`make push-images` - List images for the current target & branch.
-
-`make pull-images` - List images for the current target & branch.
-
-`make hooks` - Initialize git hooks.
-
-`make composer-install` - Install composer packages.
-
-`make composer-update` - Update composer packages.
-
-`make composer-dump-autoload` - Regenerate and dump composer autoload files..
-
-`make npm install [PACKAGE]` - Run `npm install` inside the project.
-
-`make bash` - Get a bash prompt to an `idilic` container.
-
-`make run SERVICE [COMMAND]` - Run a command in a service container.
-
+ * `make build` `make b` - Build the project
+ * `make env` `make e` - Print the project's environment config.
+ * `make test` `make t`- Run tests.
+ * `make test` `make t`- Remove the generated configs, **even if they have been altered.**
+ * `make start` `make s`- Start the project services.
+ * `make start-fg` `make sf`- Start the project services, hold control of the terminal and stream output.
+ * `make start-bg` `make sb`- Start the project services, hold control of the terminal and stream output.
+ * `make restart-fg` `make rf` - Restart the project services, hold control of the terminal and stream output.
+ * `make restart-bg` `make rb`- Restart the project services, hold control of the terminal and stream output.
+ * `make stop` `make d`- Stop the project services.
+ * `make stop-all` `make da`- Stop the project services, including any that no longer appear in the compose file.
+ * `make kill` `make k`- Immediately kill the project services.
+ * `make nuke` `make nk`* - Immediately kill all containers on the host. Not yet implemented.
+ * `make current-tag` `ct`- Output the project tag for the current target & branch.
+ * `make list-tags` `make lt`- List image tags for the current target & branch.
+ * `make list-images` `make li`- List images for the current target & branch.
+ * `make push-images` `make psi`- List images for the current target & branch.
+ * `make pull-images` `make pli`- List images for the current target & branch.
+ * `make hooks` - Initialize git hooks.
+ * `make composer-install` `make ci`- Install composer packages.
+ * `make composer-update` `make co`- Update composer packages.
+ * `make composer-dump-autoload` `make cda`- Regenerate and dump composer autoload files..
+ * `make npm install PKG="[PACKAGE]"` `make ni`- Run `npm install` inside the project.
+ * `make bash` `make sh`- Get a bash prompt to an `idilic` container.
+ * `make run CMD="SERVICE [COMMAND]"` `make r`- Run a command in a service container.
+ *
 ## Dependencies
 
 * Bash

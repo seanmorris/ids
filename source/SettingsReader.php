@@ -2,7 +2,7 @@
 namespace SeanMorris\Ids;
 class SettingsReader implements \Iterator, \ArrayAccess
 {
-	protected $root, $names = [], $i = 0;
+	protected $root, $keys, $names = [], $i = 0;
 
 	public function __construct($root, $names)
 	{
@@ -48,6 +48,11 @@ class SettingsReader implements \Iterator, \ArrayAccess
 		return $this->i >= 0 && $this->i < count($this->names);
 	}
 
+	public function __isset($name)
+	{
+		return isset($this->keys[strtoupper($name)]);
+	}
+
 	public function offsetExists($name)
 	{
 		return isset($this->keys[strtoupper($name)]);
@@ -85,5 +90,23 @@ class SettingsReader implements \Iterator, \ArrayAccess
 		unset($this->names[$this->keys[strtoupper($name)]]);
 
 		$this->keys = array_flip($this->names);
+	}
+
+	public function dumpStruct()
+	{
+		$r = [];
+
+		foreach($this as $k=>$v)
+		{
+			if(method_exists($v, __FUNCTION__))
+			{
+				$r[$k] = $v->__FUNCTION__();
+				continue;
+			}
+
+			$r[$k] = $v;
+		}
+
+		return $r;
 	}
 }

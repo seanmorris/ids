@@ -1,4 +1,5 @@
 .env
+.var
 .env.*
 vendor/*
 !./config/.env

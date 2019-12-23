@@ -35,9 +35,10 @@ if(file_exists($subidilicFile = getcwd() . '/idilic'))
 }
 
 $requestProto = new stdClass;
-$requests = [];
-$requests[] =& $requestProto;
-$requestProto->args = $args = [];
+$requests     = [];
+$requests[]   =& $requestProto;
+
+$requestProto->args     = $args     = [];
 $requestProto->switches = $switches = [];
 
 $input = [];
@@ -69,12 +70,12 @@ foreach($input as $arg)
 			//continue;
 		}
 
-		$requestProto->args = $args;
+		$requestProto->args     = $args;
 		$requestProto->switches = $switches;
-		$args = [];
+		$args     = [];
 		$switches = [];
 
-		$requests[] = new stdClass;
+		$requests[]   = new stdClass;
 		$requestProto =& $requests[count($requests) - 1];
 
 		continue;
@@ -95,7 +96,7 @@ foreach($input as $arg)
 		$switches[$switch] = $value;
 	}
 
-	$requestProto->args = $args;
+	$requestProto->args     = $args;
 	$requestProto->switches = $switches;
 }
 
@@ -116,8 +117,8 @@ if(isset($switches['domain']))
 foreach($requests as $req)
 {
 	$request = new \SeanMorris\Ids\Request([
-		'path' => $path = new Path(...$req->args ?? [])
-		, 'switches' => $req->switches ?? NULL
+		'switches' => $req->switches ?? NULL
+		, 'path'   => $path = new Path(...$req->args ?? [])
 	]);
 
 	$routes = new RootRoute;
@@ -126,7 +127,19 @@ foreach($requests as $req)
 
 	if(!is_scalar($res) && $res !== null)
 	{
-		print json_encode($res, JSON_PRETTY_PRINT);
+		if(is_object($res) method($res, 'dumpStruct'))
+		{
+			$res = $res->dumpStruct();
+		}
+
+		if(function_exists('yaml_emit'))
+		{
+			print yaml_emit($res);
+		}
+		else
+		{
+			print json_encode($res, JSON_PRETTY_PRINT);
+		}
 	}
 	else
 	{
