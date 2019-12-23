@@ -357,7 +357,7 @@ Ensure you've installed the `idilic` cli tool from the start of the document. Us
 
 `idilic applySchema [PACKAGE]` - Apply the stored schema.
 
-`idilic applySchema` - Apply the stored schema for all installed packages.
+`idilic applySchemas` - Apply the stored schema for all installed packages.
 
 
 The schema will be stored in `data/global/schema.json`.
