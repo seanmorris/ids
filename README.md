@@ -353,9 +353,12 @@ to be continued...
 
 Ensure you've installed the `idilic` cli tool from the start of the document. Use the following commands to manage your database schema.
 
+`idilic storeSchema [PACKAGE]` - Store the current schema.
+
 `idilic applySchema [PACKAGE]` - Apply the stored schema.
 
-`idilic storeSchema [PACKAGE]` - Store the current schema.
+`idilic applySchema` - Apply the stored schema for all installed packages.
+
 
 The schema will be stored in `data/global/schema.json`.
 
