@@ -11,10 +11,11 @@ class ModelTest extends \UnitTestCase
 
 	public function setUp()
 	{
-		$this->database = \SeanMorris\Ids\Database::get('main');
 		$this->package  = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
 
 		$tables = $this->package->tables();
+
+		$this->database = \SeanMorris\Ids\Database::get('main');
 
 		foreach($tables as $dbName => $tables)
 		{

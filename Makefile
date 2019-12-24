@@ -14,10 +14,12 @@ REALDIR  :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 MAKEDIR  ?=${REALDIR}
 VAR_FILE ?=${MAKEDIR}.var
 
+MAIN_DLT ?=${MAKEDIR}.env.default
+TRGT_DLT ?=${MAKEDIR}.env.default$(if ${TARGET},${TARGET},base)
+
 MAIN_ENV ?=${MAKEDIR}.env
-MAIN_DLT ?=${MAKEDIR}.env
 TRGT_ENV ?=${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)
-TRGT_DLT ?=${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)
+
 ENV_LOCK ?=${MAKEDIR}.lock_env
 
 -include ${MAIN_ENV}
@@ -166,11 +168,12 @@ endef
 ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP}  \
 	PROJECT=${PROJECT} TARGET=${TARGET} MAKEDIR=${MAKEDIR} DOCKER=${DOCKER} \
 	${XDEBUG_ENV} NPX="${NPX}" MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV}    \
-	PROJECT_FULLNAME=${FULLNAME} REALDIR=${REALDIR}                         \
+	MAIN_DLT=${MAIN_DLT} TRGT_DLT=${TRGT_DLT} REALDIR=${REALDIR}            \
+	PROJECT_FULLNAME=${FULLNAME}                                            \
 	$$(cat ${MAKEDIR}.env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)   \
 	$$(cat ${MAKEDIR}.env.default 2>/dev/null                               \
-	$$(cat ${MAKEDIR}.env.default.$(if ${TARGET},${TARGET},base)            \
 		| ${INTERPOLATE_ENV} | grep -v ^\#)                                 \
+	$$(cat ${MAKEDIR}.env.default.$(if ${TARGET},${TARGET},base)            \
 		| ${INTERPOLATE_ENV} | grep -v ^\#)                                 \
 	$$(cat ${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)                    \
 		| ${INTERPOLATE_ENV} | grep -v ^\#)                                 \
@@ -190,7 +193,7 @@ build b: ${PREBUILD}
 	@ echo Building ${FULLNAME}
 	@ chmod ug+s . && umask 770
 	@ export TAG=latest-${TARGET} && ${DCOMPOSE} -f ${COMPOSE_TARGET} build idilic
-	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} build
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} build --parallel
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up --no-start
 	@ ${WHILE_IMAGES} \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
@@ -212,14 +215,16 @@ test t: ${PREBUILD}
 		idilic -vv SeanMorris/Ids runTests
 
 clean:
-	docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		debian:buster-20191118-slim bash -c " \
-			rm -f .env .env.* .var;   \
-			rm -rf  .lock_env vendor/;        \
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app          \
+		debian:buster-20191118-slim bash -c "           \
+			rm -f .env .env.${TARGET} .var;             \
+			rm -f .env.default .env.default.${TARGET};  \
+			rm -rf  .lock_env vendor/;                  \
 		"
+	docker volume prune -a;
+
 SEP=
 env e:
-	@ echo ${ENV} && env ${SEP};
 	@ export ${ENV} && env ${SEP};
 
 start s: ${PREBUILD}
@@ -248,6 +253,9 @@ restart-bg rb: ${PREBUILD}
 
 kill k: ${PREBUILD}
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} kill -s 9
+
+kill-all:
+	@ ${WHILE_IMAGES} echo docker kill -9 $$IMAGE_HASH; done;
 
 current-tag ct:
 	@ echo ${TAG}
@@ -308,17 +316,18 @@ npm-install ni: ${PREBUILD}
 		${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node npm i ${PKG}
 
 dcompose-config dcc: ${PREBUILD}
-	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} config
+	${DCOMPOSE} -f ${COMPOSE_TARGET} config
 
 dcompose dc: env
-	@ ${DCOMPOSE} -f ${COMPOSE_TARGET}
+	${DCOMPOSE} -f ${COMPOSE_TARGET}
 
 .lock_env:
 	$(shell)
-	@ [[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
+	[[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
 		${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
 			`${ISDEV} || echo "--no-dev"`;          \
-		REALDIR=${REALDIR} docker-compose           \
+			                                        \
+		${DCOMPOSE}                                 \
 			-f ${REALDIR}${COMPOSE_TOOLS}/node.yml  \
 			run node npm install                    \
 	);
@@ -337,7 +346,7 @@ stay@%:
 	@ echo Setting current target ${TARGET}...
 	${NEWTARGET}
 
-.env%:
+.env:
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
 			mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}; \
@@ -359,8 +368,6 @@ stay@%:
 		}'
 
 infra/compose/%yml:
-	echo ${TARGET};
-	echo infra/compose/${TARGET}.yml;
 	@ test -z "${TARGET}" || test -f infra/compose/${TARGET}.yml;
 
 ###

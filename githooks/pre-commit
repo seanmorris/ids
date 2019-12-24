@@ -1,9 +1,11 @@
 #!/bin/bash
-set -eu;
+set -eux;
 
 while read -d $'\0' VAR; do
 	[[ ! -z "$VAR" ]] && declare "$VAR";
 done < <(make env SEP=-0);
+
+make @base b;
 
 echo Committing to $BRANCH;
 
