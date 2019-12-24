@@ -1,8 +1,6 @@
 language: minimal
 services:
   - docker
-env:
-  - TARGET=test
 install:
-  - make
+  - make stay@test
 script: make test
