@@ -127,7 +127,7 @@ foreach($requests as $req)
 
 	if(!is_scalar($res) && $res !== null)
 	{
-		if(is_object($res) method($res, 'dumpStruct'))
+		if(is_object($res) && method_exists($res, 'dumpStruct'))
 		{
 			$res = $res->dumpStruct();
 		}

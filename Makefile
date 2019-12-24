@@ -1,15 +1,15 @@
 #!make
 
-.PHONY: stay@% stop @% sf restart-bg b d stop-all li k n r s t \
-	dcompose-config push-images pli e restart-fg cu init da start run-phar \
-	tag-images test build ni current-tag composer-install pull-images psi \
-	list-images list-tags npm-install ci kill restart dcc ct composer-update run \
-	composer-dump-autoload clean start-bg babel it rb sb lt composer-update-no-dev \
-	cda start-fg sh hooks node bash rf env
+.PHONY: @% b babel bash build cda ci clean composer-dump-autoload composer-install \
+	composer-update composer-update-no-dev ct ctr cu current-tag current-target d  \
+	da dcc dcompose-config e entropy-dir env .env .env% hooks init it k kill li \
+	list-images list-tags lt n ni node npm-install pli psi pull-images push-images \
+	r rb restart restart-bg restart-fg rf run run-phar s sb sf sh start start-bg \
+	start-fg stay@% stop stop-all t tag-images test
 
--include ${MAIN_ENV}
+MAKEFLAGS += --no-builtin-rules --always-make
 
-SHELL    = /bin/bash
+SHELL    =/bin/bash
 REALDIR  =$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 MAKEDIR  ?=${REALDIR}
 
@@ -17,28 +17,28 @@ VAR_FILE ?=${MAKEDIR}.var
 MAIN_ENV ?=${MAKEDIR}.env
 TRGT_ENV ?=${MAKEDIR}.env.${TARGET}
 
-COMPOSE_FILE =infra/compose/${TARGET}.yml
-COMPOSE_TOOLS=infra/compose/tools
-
 -include ${MAIN_ENV}
 -include ${TRGT_ENV}
 -include ${VAR_FILE}
+
+COMPOSE_FILE =infra/compose/${TARGET}.yml
+COMPOSE_TOOLS=infra/compose/tools
 
 PROJECT  ?=ids
 REPO     ?=seanmorris
 BRANCH   :=$$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo nobranch)
 HASH     :=$$(echo _$$(git rev-parse --short HEAD 2>/dev/null) || echo init)
 DESC     :=$$(git describe --tags 2>/dev/null || echo ${HASH})
-SUFFIX   :=-${TARGET}$$([ ${BRANCH} = master ] && echo "" || echo "-${BRANCH}")
+SUFFIX   =-${TARGET}$$([ ${BRANCH} = master ] && echo "" || echo "-${BRANCH}")
 TAG      ?=${DESC}${SUFFIX}
 FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
 IMAGE    ?=
-DHOST_IP ?=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
+DHOST_IP :=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
 NO_TTY   ?=-T
 NO_DEV   ?=--no-dev
 
-DOCKER   ?=$$(which docker)
+DOCKER   :=$$(which docker)
 
 NPX=cp  -n /app/package-lock.json /build; \
 	cat /app/composer.json           \
@@ -51,6 +51,16 @@ INTERPOLATE_ENV=env -i DHOST_IP=${DHOST_IP} \
 	TAG=${TAG} REPO=${REPO} TARGET=${TARGET} \
 	PROJECT=${PROJECT} \
 	envsubst
+
+XDEBUG_ENV=XDEBUG_CONFIG="`\
+	test -f ${MAKEDIR}.env && cat ${MAKEDIR}.env.${TARGET} \
+	| ${INTERPOLATE_ENV} \
+	| grep ^XDEBUG_CONFIG_ \
+	| while read VAR; do echo $$VAR | { \
+		IFS='\=' read -r NAME VALUE; \
+		echo -En $$NAME | sed -e 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
+		echo -En "=$$VALUE ";\
+	} done`"
 
 PASS_ENV=$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /')
 
@@ -66,7 +76,7 @@ PARSE_ENV=grep -v ^\# \
 		| while read -r ENV; do echo $$ENV | { \
 			IFS='\=' read -r ENV_NAME ENV_VALUE; \
 
-ENTROPY_DIR=/tmp/IDS_ENTROPY
+ENTROPY_DIR?=/tmp/IDS_ENTROPY
 ENTROPY_KEY=default
 GET_ENTROPY=test -e ${ENTROPY_DIR}/$$ENTROPY_KEY \
 		&& cat ${ENTROPY_DIR}/$$ENTROPY_KEY \
@@ -83,7 +93,7 @@ STITCH_ENTROPY=test -f $$TO && test -s $$TO || while read -r ENV_LINE; do \
 		IFS=":" read -r ENV_KEY ENTROPY_KEY; \
 		echo -n $$ENV_NAME=; \
 		test -n "$$ENTROPY_KEY" \
-			&& echo $$(export ENTROPY_KEY=$$ENTROPY_KEY && ${GET_ENTROPY}) \
+			&& echo $$(ENTROPY_KEY=$$ENTROPY_KEY && ${GET_ENTROPY}) \
 			|| echo -E $$ENV_VALUE; \
 	};}; done; done < $$FROM > $$TO
 
@@ -91,29 +101,10 @@ ifeq (${TARGET},test)
 	NO_DEV=
 endif
 
-ifeq (${TARGET},dev)
-	NO_DEV=
-	XDEBUG_ENV=XDEBUG_CONFIG="`\
-		test -f ${MAKEDIR}.env.dev && cat ${MAKEDIR}.env.dev \
-		| ${INTERPOLATE_ENV} \
-		| grep -v ^\# \
-		| grep ^XDEBUG_CONFIG_ \
-		| while read VAR; do echo $$VAR | \
-		{ \
-			IFS='\=' read -r NAME VALUE; \
-			echo -En $$NAME | sed -e 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
-			echo -En =$$VALUE;\
-		} \
-		; done | cut -c 2- \
-	 ` "
-else
-	XDEBUG_ENV=
-endif
-
 ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP} \
-	MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV} PROJECT_FULLNAME=${FULLNAME}  \
 	PROJECT=${PROJECT} TARGET=${TARGET} MAKEDIR=${MAKEDIR} DOCKER=${DOCKER} \
-	${XDEBUG_ENV} NPX="${NPX}" \
+	${XDEBUG_ENV} NPX="${NPX}" MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV} \
+	PROJECT_FULLNAME=${FULLNAME} \
 	$$(cat ${MAKEDIR}.env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#) \
 	$$(cat ${MAKEDIR}.env.${TARGET} 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)
 
@@ -126,12 +117,21 @@ DRUN=docker run --rm \
 	-env-file=.env.${TARGET} \
 	-v $$PWD:/app
 
-DCRUN=
+define UNINCLUDE
+	cat ${1} | grep -v ^\# \
+		| grep "^[A-Z_]\+=" \
+		| sed -e 's/\=.\+$$//' \
+		| while read OLD_VAR; do \
+			echo -e "$$OLD_VAR=DELETED"; \
+		done;
+endef
 
-build b: ${COMPOSE_FILE}
+$(eval X=G)
+
+build b: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ chmod ug+s . && umask 770
-	@ ${GEN_ENV}
 	@ echo Building ${FULLNAME}
+	@ [[ "${TARGET}" != "" ]] || (echo "No target set." && false)
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install ${NO_DEV}
 	@ ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml build node
 	@ export TAG=latest-${TARGET} && ${DCOMPOSE} build idilic
@@ -151,45 +151,55 @@ build b: ${COMPOSE_FILE}
 		done; \
 	done;
 
-test t: ${COMPOSE_FILE}
-	@ ${GEN_ENV} && export TARGET=${TARGET} ${DCOMPOSE} \
+test t: .env .env.${TARGET} ${COMPOSE_FILE}
+	@ export TARGET=${TARGET} && ${DCOMPOSE} \
 		run --rm ${NO_TTY} ${PASS_ENV} \
 		idilic -vv SeanMorris/Ids runTests
+
+clean: .env .env.${TARGET}
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+		debian:buster-20191118-slim bash -c \
+			shopt -s nullglob;
+			rm -f .env .env.${TARGET} .var
+			rm -rf vendor/
+
 SEP=
-env e: ${COMPOSE_FILE} .env .env.${TARGET}
+env e: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ export ${ENV} && env ${SEP};
 
-start s: ${COMPOSE_FILE} .env .env.${TARGET}
+start s: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ ${DCOMPOSE} up -d
 
-start-fg sf: ${COMPOSE_FILE} .env .env.${TARGET}
+start-fg sf: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ ${DCOMPOSE} up
 
-start-bg sb: ${COMPOSE_FILE} .env .env.${TARGET}
+start-bg sb: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ ${DCOMPOSE} up &
 
-stop d: ${COMPOSE_FILE} .env .env.${TARGET}
+stop d: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ ${DCOMPOSE} down
 
-stop-all da: ${COMPOSE_FILE} .env .env.${TARGET}
+stop-all da: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ ${DCOMPOSE} down --remove-orphans
 
-restart r: ${COMPOSE_FILE} .env .env.${TARGET}
+restart r: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ ${DCOMPOSE} down && ${DCOMPOSE} up -d
 
-restart-fg rf: ${COMPOSE_FILE} .env .env.${TARGET}
+restart-fg rf: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ ${DCOMPOSE} down && ${DCOMPOSE} up
 
-restart-bg rb: ${COMPOSE_FILE} .env .env.${TARGET}
+restart-bg rb: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ ${DCOMPOSE} down && ${DCOMPOSE} up &
 
-kill k: ${COMPOSE_FILE} .env .env.${TARGET}
+kill k: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ ${DCOMPOSE} kill -s 9
 
-current-tag ct: ${COMPOSE_FILE}
+current-tag ct:
 	@ echo ${TAG}
 
-current-target ctr: ${COMPOSE_FILE}
+current-target ctr:
+	@ echo ${IDS_LOGLEVEL}
+	@ [[ "${TARGET}" != "" ]] || (echo "No target set." && false)
 	@ echo ${TARGET}
 
 list-images li: ${COMPOSE_FILE}
@@ -211,70 +221,95 @@ push-images psi: ${COMPOSE_FILE}
 		docker push $$TAG_NAME; \
 	done;done;
 
-pull-images pli: ${COMPOSE_FILE}
-	@ ${GEN_ENV} && ${DCOMPOSE} pull
+pull-images pli: .env .env.${TARGET} ${COMPOSE_FILE}
+	${DCOMPOSE} pull
 
 hooks: ${COMPOSE_FILE}
 	@ git config core.hooksPath githooks
 
-run: ${COMPOSE_FILE}
-	@ ${GEN_ENV} && ${DCOMPOSE} run --rm ${NO_TTY} \
+run: .env .env.${TARGET} ${COMPOSE_FILE}
+	@ ${DCOMPOSE} run --rm ${NO_TTY} \
 		${PASS_ENV} ${CMD}
 
-bash sh: ${COMPOSE_FILE}
+bash sh: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ ${DCOMPOSE} run --rm ${NO_TTY} \
 		${PASS_ENV} --entrypoint=bash idilic
 
-composer-install ci: ${COMPOSE_FILE}
+composer-install ci:
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer update ${NO_DEV}
 
-composer-update cu: ${COMPOSE_FILE}
+composer-update cu:
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer update ${NO_DEV}
 
-composer-dump-autoload cda: ${COMPOSE_FILE}
+composer-dump-autoload cda:
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer dump-autoload
 
-node n: ${COMPOSE_FILE}
-	@ ${GEN_ENV} && ${DCOMPOSE} -f \
+node n: .env .env.${TARGET} ${COMPOSE_FILE}
+	${DCOMPOSE} -f \
 	${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node
 
 PKG=
-npm-install ni: ${COMPOSE_FILE}
-	@ ${GEN_ENV} && ${DCOMPOSE} -f \
+npm-install ni: ${COMPOSE_FILE} .env .env.${TARGET}
+	${DCOMPOSE} -f \
 	${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node npm i ${PKG}
 
-dcompose-config dcc: ${COMPOSE_FILE}
-	@ ${GEN_ENV} && ${DCOMPOSE} config
+dcompose-config dcc: ${COMPOSE_FILE} .env .env.${TARGET}
+	${DCOMPOSE} config
 
 ##
+
 stay@%: @%
 	@ echo Setting persistent target ${TARGET}...
 	@ echo TARGET=${TARGET} > ${VAR_FILE};
 
 @%:
-	@ echo Using target ${TARGET}...
-	@ $(eval TARGET=$(shell echo ${@} | cut -b 2-))
+	@ NEWTARGET=`echo ${@} | cut -c 2-`; \
+	test -f infra/compose/$$NEWTARGET.yml || (\
+		echo "No yml for target '$$NEWTARGET' found in config/ dir." \
+		&& false \
+	) && echo Using target $$NEWTARGET...
 
-.env .env.${TARGET}:
-	docker run --rm -v ${MAKEDIR}:/app -w=/app debian:buster-20191118-slim bash -c '{\
-		mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}; \
-		export FROM=config/${@} TO=${@} \
-			&& ${STITCH_ENTROPY}; \
-		(shopt -s nullglob; rm -rf ${ENTROPY_DIR}); \
-	}'
+	@ $(eval TARGET=$(shell echo ${@} | cut -b 2-))
+	@ $(eval COMPOSE_FILE=infra/compose/${TARGET}.yml)
+
+	$(foreach SETTING, $(shell $(call UNINCLUDE,${MAIN_ENV})), $(eval ${SETTING}))
+	$(foreach SETTING, $(shell $(call UNINCLUDE,${TRGT_ENV})), $(eval ${SETTING}))
+
+	@ $(eval MAIN_ENV ?=${MAKEDIR}.env)
+	@ $(eval TRGT_ENV ?=${MAKEDIR}.env.${TARGET})
+	@ $(eval -include ${MAIN_ENV})
+	@ $(eval -include ${TRGT_ENV})
+
+.env%: entropy-dir
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+		debian:buster-20191118-slim bash -c '{\
+			FILE=`basename ${@}`; \
+			[[ $$FILE == .env. ]] && FILE="$${FILE}${TARGET}"; \
+			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY}; \
+			(shopt -s nullglob; rm -rf ${ENTROPY_DIR}); \
+		}'
+
+.env: entropy-dir
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+		debian:buster-20191118-slim bash -c '{\
+			FILE=`basename ${@}`; \
+			[[ $$FILE == ".env." ]] || FILE=.env \
+			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY}; \
+			(shopt -s nullglob; rm -rf ${ENTROPY_DIR}); \
+		}'
+
+infra/compose/%yml:
+	test -f infra/compose/${TARGET}.yml;
+
+entropy-dir: ${ENTROPY_DIR}
+	@ mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}
 ###
 
-babel: ${COMPOSE_FILE}
-	${GEN_ENV} && ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml \
+babel: ${COMPOSE_FILE} .env .env.${TARGET}
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml \
 		run --rm ${PASS_ENV} node npx babel
 
-run-phar: ${COMPOSE_FILE}
-	@ ${GEN_ENV} && ${DCOMPOSE} run --rm \
+run-phar: ${COMPOSE_FILE} .env .env.${TARGET}
+	${DCOMPOSE} run --rm \
 		--entrypoint='php SeanMorris_Ids.phar' \
 		${PASS_ENV} ${CMD}
-
-clean: ${COMPOSE_FILE}
-	@ ${GEN_ENV} && ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml \
-		run --rm ${PASS_ENV} node bash -c "\
-			(shopt -s nullglob; rm -rf .env .env.*); \
-			(shopt -s nullglob; rm -rf vendor/);"
