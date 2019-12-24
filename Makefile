@@ -40,70 +40,100 @@ NO_DEV   ?=--no-dev
 
 DOCKER   :=$$(which docker)
 
-NPX=cp  -n /app/package-lock.json /build; \
-	cat /app/composer.json           \
-		| tr '[:upper:]' '[:lower:]' \
-		| tr '/' '-'                 \
-		> package.json;              \
-	npx
+define NPX
+	cp  -n /app/package-lock.json /build; \
+		cat /app/composer.json            \
+			| tr '[:upper:]' '[:lower:]'  \
+			| tr '/' '-'                  \
+			> package.json;               \
+		npx
+endef
 
-INTERPOLATE_ENV=env -i DHOST_IP=${DHOST_IP} \
-	TAG=${TAG} REPO=${REPO} TARGET=${TARGET} \
-	PROJECT=${PROJECT} \
-	envsubst
+define INTERPOLATE_ENV
+	env -i DHOST_IP=${DHOST_IP} \
+		TAG=${TAG} REPO=${REPO} TARGET=${TARGET} \
+		PROJECT=${PROJECT} \
+		envsubst
+endef
 
-XDEBUG_ENV=XDEBUG_CONFIG="`\
-	test -f ${MAKEDIR}.env && cat ${MAKEDIR}.env.${TARGET} \
-	| ${INTERPOLATE_ENV} \
-	| grep ^XDEBUG_CONFIG_ \
-	| while read VAR; do echo $$VAR | { \
-		IFS='\=' read -r NAME VALUE; \
-		echo -En $$NAME | sed -e 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
-		echo -En "=$$VALUE ";\
-	} done`"
+define XDEBUG_ENV
+	XDEBUG_CONFIG="`\
+		test -f ${MAKEDIR}.env \
+		&& cat ${MAKEDIR}.env.${TARGET} \
+		| ${INTERPOLATE_ENV} \
+		| grep ^XDEBUG_CONFIG_ \
+		| while read VAR; do echo $$VAR | { \
+			IFS='\=' read -r NAME VALUE; \
+			echo -En $$NAME \
+				| sed -e 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
+			echo -En "=$$VALUE ";\
+		} done`"
+endef
 
 PASS_ENV=$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /')
 
-WHILE_IMAGES=docker images ${REPO}/${PROJECT}.*:${TAG} -q | while read IMAGE_HASH; do
+define WHILE_IMAGES
+	docker images ${REPO}/${PROJECT}.*:${TAG} -q \
+	| while read IMAGE_HASH; do
+endef
 
-WHILE_TAGS=${WHILE_IMAGES} \
+define WHILE_TAGS
+	${WHILE_IMAGES} \
 		docker image inspect --format="{{ index .RepoTags }}" $$IMAGE_HASH \
 		| sed -e 's/[][]//g' \
 		| sed -e 's/\s/\n/g' \
 		| while read TAG_NAME; do
+endef
 
-PARSE_ENV=grep -v ^\# \
+define PARSE_ENV
+	grep -v ^\# \
 		| while read -r ENV; do echo $$ENV | { \
-			IFS='\=' read -r ENV_NAME ENV_VALUE; \
+			IFS='\=' read -r ENV_NAME ENV_VALUE;
+endef
 
 ENTROPY_DIR?=/tmp/IDS_ENTROPY
 ENTROPY_KEY=default
-GET_ENTROPY=test -e ${ENTROPY_DIR}/$$ENTROPY_KEY \
-		&& cat ${ENTROPY_DIR}/$$ENTROPY_KEY \
-		|| cat /dev/urandom \
-			| tr -dc 'a-zA-Z0-9' \
-			| fold -w 32 \
-			| head -n 1 \
-			| tee ${ENTROPY_DIR}/$$ENTROPY_KEY
 
-STITCH_ENTROPY=test -f $$TO && test -s $$TO || while read -r ENV_LINE; do \
-	test -n "$$ENV_LINE" || continue; \
-	echo -n "$$ENV_LINE" | ${PARSE_ENV} \
-		grep $$ENV_NAME .entropy | { \
-		IFS=":" read -r ENV_KEY ENTROPY_KEY; \
-		echo -n $$ENV_NAME=; \
-		test -n "$$ENTROPY_KEY" \
-			&& echo $$(ENTROPY_KEY=$$ENTROPY_KEY && ${GET_ENTROPY}) \
-			|| echo -E $$ENV_VALUE; \
+define GET_ENTROPY
+test -e ${ENTROPY_DIR}/$$ENTROPY_KEY \
+	&& cat ${ENTROPY_DIR}/$$ENTROPY_KEY \
+	|| cat /dev/urandom \
+		| tr -dc 'a-zA-Z0-9' \
+		| fold -w 32 \
+		| head -n 1 \
+		| tee ${ENTROPY_DIR}/$$ENTROPY_KEY
+endef
+
+define STITCH_ENTROPY
+	test -f $$TO && test -s $$TO || while read -r ENV_LINE; do \
+		test -n "$$ENV_LINE" || continue; \
+		echo -n "$$ENV_LINE" | ${PARSE_ENV} \
+			grep $$ENV_NAME .entropy | { \
+			IFS=":" read -r ENV_KEY ENTROPY_KEY; \
+			echo -n $$ENV_NAME=; \
+			test -n "$$ENTROPY_KEY" \
+				&& echo $$(ENTROPY_KEY=$$ENTROPY_KEY && ${GET_ENTROPY}) \
+				|| echo -E $$ENV_VALUE; \
 	};}; done; done < $$FROM > $$TO
+endef
 
-ifeq (${TARGET},test)
-	NO_DEV=
-endif
+define NEWTARGET:
+	NEWTARGET=`echo ${@} | cut -c 2-`; \
+	test -f infra/compose/$$NEWTARGET.yml || (\
+		echo "No yml for target '$$NEWTARGET' found in config/ dir." \
+		&& false \
+	) && echo Using target $$NEWTARGET...
 
-ifeq (${TARGET},dev)
-	NO_DEV=
-endif
+	$(eval COMPOSE_FILE=infra/compose/${TARGET}.yml)
+
+	$(foreach SETTING, $(shell $(call UNINCLUDE,${MAIN_ENV})), $(eval ${SETTING}))
+	$(foreach SETTING, $(shell $(call UNINCLUDE,${TRGT_ENV})), $(eval ${SETTING}))
+
+	$(eval MAIN_ENV ?=${MAKEDIR}.env)
+	$(eval TRGT_ENV ?=${MAKEDIR}.env.${TARGET})
+	$(eval -include ${MAIN_ENV})
+	$(eval -include ${TRGT_ENV})
+endef
 
 ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP} \
 	PROJECT=${PROJECT} TARGET=${TARGET} MAKEDIR=${MAKEDIR} DOCKER=${DOCKER} \
@@ -129,6 +159,14 @@ define UNINCLUDE
 			echo -e "$$OLD_VAR=DELETED"; \
 		done;
 endef
+
+ifeq (${TARGET},test)
+	NO_DEV=
+endif
+
+ifeq (${TARGET},dev)
+	NO_DEV=
+endif
 
 build b: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ echo Building ${FULLNAME}
@@ -260,32 +298,20 @@ dcompose-config dcc: ${COMPOSE_FILE} .env .env.${TARGET}
 
 ##
 
-stay@%: @%
+stay@%:
+	$(eval TARGET=$(shell echo ${@} | cut -b 6-))
 	@ echo Setting persistent target ${TARGET}...
 	@ echo TARGET=${TARGET} > ${VAR_FILE};
-
+	${NEWTARGET}
 @%:
-	@ NEWTARGET=`echo ${@} | cut -c 2-`; \
-	test -f infra/compose/$$NEWTARGET.yml || (\
-		echo "No yml for target '$$NEWTARGET' found in config/ dir." \
-		&& false \
-	) && echo Using target $$NEWTARGET...
-
-	@ $(eval TARGET=$(shell echo ${@} | cut -b 2-))
-	@ $(eval COMPOSE_FILE=infra/compose/${TARGET}.yml)
-
-	$(foreach SETTING, $(shell $(call UNINCLUDE,${MAIN_ENV})), $(eval ${SETTING}))
-	$(foreach SETTING, $(shell $(call UNINCLUDE,${TRGT_ENV})), $(eval ${SETTING}))
-
-	@ $(eval MAIN_ENV ?=${MAKEDIR}.env)
-	@ $(eval TRGT_ENV ?=${MAKEDIR}.env.${TARGET})
-	@ $(eval -include ${MAIN_ENV})
-	@ $(eval -include ${TRGT_ENV})
+	$(eval TARGET=$(shell echo ${@} | cut -b 2-))
+	${NEWTARGET}
 
 .env%:
 	@ mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+	@ set -eux; docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
+			set -eux; \
 			FILE=`basename ${@}`; \
 			[[ $$FILE == .env. ]] && FILE="$${FILE}${TARGET}"; \
 			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY}; \
@@ -294,8 +320,9 @@ stay@%: @%
 
 .env:
 	@ mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+	@ set -eux; docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
+			set -eux; \
 			FILE=`basename ${@}`; \
 			[[ $$FILE == ".env." ]] || FILE=.env \
 			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY}; \
