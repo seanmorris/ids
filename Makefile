@@ -299,7 +299,7 @@ stay@%: @%
 		}'
 
 infra/compose/%yml:
-	test -f infra/compose/${TARGET}.yml;
+	@ test -f infra/compose/${TARGET}.yml;
 
 entropy-dir: ${ENTROPY_DIR}
 	@ mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}

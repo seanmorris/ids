@@ -1,7 +1,11 @@
 #!/bin/bash
-set -eux;
+set -eu;
 
-while read -d $'\0' VAR ; do declare "$VAR"; done < <(make env);
+while read -d $'\0' VAR; do
+	[[ ! -z "$VAR" ]] && declare "$VAR";
+done < <(make env SEP=-0);
+
+echo Committing to $BRANCH;
 
 [[ "$TARGET" == "test" ]] && set +x;
 
