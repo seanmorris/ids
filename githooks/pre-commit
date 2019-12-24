@@ -18,11 +18,11 @@ git diff-index HEAD | grep "^:" | grep ".php" \
 
 set -eu;
 
-[[ 0 -ne $PHP_ERROR ]] \
-	&& echo Please correct the above errors before committing. \
+[[ ! -z "$PHP_ERROR" ]] && ( \
+	echo Please correct the above errors before committing. \
+		exit $PHP_ERROR;\
+	) \
 	|| echo No php errors found.;
-
-exit $PHP_ERROR;
 
 while read -d $'\0' VAR; do
 	[[ ! -z "$VAR" ]] && declare "$VAR";
