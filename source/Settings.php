@@ -163,6 +163,11 @@ class Settings
 						}
 					}
 
+					if(!$b)
+					{
+						return $r;
+					}
+
 					foreach($b as $k => $v)
 					{
 						if(is_scalar($a))
