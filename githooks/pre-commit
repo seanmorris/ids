@@ -1,11 +1,6 @@
 #!/bin/bash
 set -eu;
 
-while read -d $'\0' VAR; do
-	[[ ! -z "$VAR" ]] && declare "$VAR";
-done < <(make env SEP=-0);
-
-echo Committing to $BRANCH;
 
 [[ "$TARGET" == "dev" ]] && set +x;
 
@@ -28,3 +23,11 @@ set -eu;
 	|| echo No php errors found.;
 
 exit $PHP_ERROR;
+
+while read -d $'\0' VAR; do
+	[[ ! -z "$VAR" ]] && declare "$VAR";
+done < <(make env SEP=-0);
+
+make @test b t;
+
+echo Committing to $BRANCH;
