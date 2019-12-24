@@ -310,11 +310,11 @@ stay@%:
 	@ mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}
 	@ [[ ! -z "${TARGET}" ]] && docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
-			mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR};    \
-			FILE=`basename ${@}`;                                   \
-			[[ $$FILE == .env. ]] && FILE="/app/$${FILE}${TARGET}"; \
-			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY};      \
-			(shopt -s nullglob; rm -rf ${ENTROPY_DIR});             \
+			mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}; \
+			FILE=`basename ${@}`;                                \
+			[[ $$FILE == .env. ]] && FILE="$${FILE}${TARGET}";   \
+			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY};   \
+			(shopt -s nullglob; rm -rf ${ENTROPY_DIR});          \
 		}'
 
 .env:
