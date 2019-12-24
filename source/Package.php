@@ -49,7 +49,7 @@ class Package
 
 			foreach($namespaces as $namespace)
 			{
-				if(strtolower($packageName . '\\') === strtolower($namespace))
+				if(strtolower($packageName) === strtolower($namespace))
 				{
 					$packageName = substr($namespace, 0, -1);
 				}
@@ -70,19 +70,22 @@ class Package
 
 	public static function get($packageName = NULL)
 	{
-		$packageName =str_replace('\\/', '\\', $packageName);
+		$packageName = str_replace('\\/', '\\', $packageName);
 
 		$packageNameParts = explode('/\\', $packageName);
-
-		$packageName = array_shift($packageNameParts);
-
-		$packageName .= '\\' . array_shift($packageNameParts);
+		$packageName      = array_shift($packageNameParts);
+		$packageName     .= '\\' . array_shift($packageNameParts);
 
 		$vendorRoot = new \SeanMorris\Ids\Disk\Directory(IDS_VENDOR_ROOT);
 		$appRoot    = $vendorRoot->parent();
 
-		$dirFrag    = strtolower(preg_replace('/\\\\/', '/', $packageName));
-		$spaceFrag  = strtolower(preg_replace('/\//', '\\', $packageName));
+		$dirFrag    = strtolower(str_replace('\\', '/', $packageName));
+		$spaceFrag  = strtolower($packageName);
+
+		if($dirFrag[strlen($dirFrag) - 1] === '/')
+		{
+			$dirFrag = substr($dirFrag, 0, -1);
+		}
 
 		$rootComposerJson = $appRoot->file('composer.json');
 		$rootComposerData = json_decode($rootComposerJson->slurp());
@@ -103,34 +106,9 @@ class Package
 		$packageName  = static::name($packageName);
 		$packageClass = $packageName . '\\Package';
 
-		if($composerJson && $composerJson->check())
+		if($packageClass == __CLASS__ || class_exists($packageName))
 		{
-			$composerData = json_decode($composerJson->slurp());
-
-			$packageName = static::name($composerData->name);
-		}
-
-		if(isset(
-			$composerData
-			, $composerData->autoload
-			, $composerData->autoload->{'psr-4'}
-		)){
-			$namespaces = array_keys(get_object_vars(
-				$composerData->autoload->{'psr-4'}
-		));
-
-			foreach($namespaces as $namespace)
-			{
-				if(strtolower($packageName . '\\') === strtolower($namespace))
-				{
-					$packageName = substr($namespace, 0, -1);
-				}
-			}
-		}
-
-		if($packageName == __CLASS__ || class_exists($packageName))
-		{
-			return new $packageName($packageName, $root);
+			return new $packageClass($packageName, $root);
 		}
 
 		return new class($packageName, $root) extends Package {
@@ -154,12 +132,12 @@ class Package
 			$classFile = $reflection->getFileName();
 			$this->packageName = $packageName;
 
-			$this->folder = dirname(dirname($classFile)) . '/';
+			$folder = dirname(dirname($classFile)) . '/';
 
 			if($root)
 			{
 				$vendorRoot   = new \SeanMorris\Ids\Disk\Directory(IDS_VENDOR_ROOT);
-				$this->folder = $vendorRoot->parent();
+				$folder = $vendorRoot->parent();
 			}
 		}
 		else
@@ -169,16 +147,45 @@ class Package
 			if(isset($packages[$packageDir]))
 			{
 				$this->packageName = $packageName;
-				$this->folder = $packages[$packageDir];
+				$folder = $packages[$packageDir];
 			}
 			else if(isset($packages[strtolower($packageDir)]))
 			{
 				$this->packageName = $packageName;
-				$this->folder = $packages[strtolower($packageDir)];
+				$folder = $packages[strtolower($packageDir)];
 			}
 			else
 			{
 				throw new \Exception('No Package defined for ' . $package);
+			}
+		}
+
+		$this->folder = new \SeanMorris\Ids\Disk\Directory($folder);
+
+		$composerJson = $this->folder->file('composer.json');
+
+		if($composerJson && $composerJson->check())
+		{
+			$composerData = json_decode($composerJson->slurp());
+
+			$packageName = static::name($composerData->name);
+		}
+
+		if(isset(
+			$composerData
+			, $composerData->autoload
+			, $composerData->autoload->{'psr-4'}
+		)){
+			$namespaces = array_keys(
+				get_object_vars($composerData->autoload->{'psr-4'})
+			);
+
+			foreach($namespaces as $namespace)
+			{
+				if(strtolower($packageName . '\\') === strtolower($namespace))
+				{
+					$this->packageName = substr($namespace, 0, -1);
+				}
 			}
 		}
 	}
@@ -241,24 +248,21 @@ class Package
 	public static function name($package = NULL)
 	{
 		$name = str_replace(
-			'/', '\\'
-			, $package ?? substr(
-				static::class
-				, 0
-				, strpos(
+			'/', '\\', $package ?: substr(
+				static::class, 0, strpos(
 					static::class
 					, '\\'
-					, strpos(static::class, '\\') + 2
+					, strpos(static::class, '\\')
 				)
 			)
 		);
 
-		while(strstr($name, '\\\\'))
+		while($name && strstr($name, '\\\\'))
 		{
 			$name = str_replace('\\\\', '\\', $name);
 		}
 
-		while($name[strlen($name)-1] == '\\')
+		while($name && $name[strlen($name)-1] == '\\')
 		{
 			$name = substr($name, 0, -1);
 		}

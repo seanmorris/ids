@@ -181,10 +181,10 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		while($packageName = array_shift($packageList))
 		{
 			$packageName = str_replace('/', '\\', $packageName);
-			$package     = \SeanMorris\Ids\Package::get($packageName);
-			$packageName = $package::name($packageName);
-			$tests       = $package->testDir();
-			$packageName = $package->packageSpace();
+
+			$package   = \SeanMorris\Ids\Package::get($packageName);
+			$namespace = $package->packageSpace();
+			$tests     = $package->testDir();
 
 			while($tests->check() && $test = $tests->read())
 			{
@@ -193,7 +193,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 					continue;
 				}
 
-				$testClass = $packageName . '\\Test\\' . $m[1];
+				$testClass = $namespace . '\\Test\\' . $m[1];
 				$test = new $testClass;
 				$test->run(new \TextReporter());
 				echo PHP_EOL;
