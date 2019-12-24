@@ -196,13 +196,12 @@ test t: .env .env.${TARGET} ${COMPOSE_FILE}
 		run --rm ${NO_TTY} ${PASS_ENV} \
 		idilic -vv SeanMorris/Ids runTests
 
-clean: .env .env.${TARGET}
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		debian:buster-20191118-slim bash -c \
-			shopt -s nullglob;
-			rm -f .env .env.${TARGET} .var
-			rm -rf vendor/
-
+clean:
+	docker run --rm -v ${MAKEDIR}:/app -w=/app \
+		debian:buster-20191118-slim bash -c " \
+			rm -f .env .env.${TARGET} .var;   \
+			rm -rf vendor/;                   \
+		"
 SEP=
 env e: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ export ${ENV} && env ${SEP};
@@ -308,23 +307,24 @@ stay@%:
 	${NEWTARGET}
 
 .env%:
-	@ mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+	@ mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}
+	@ [[ ! -z "${TARGET}" ]] && docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
-			FILE=`basename ${@}`; \
-			[[ $$FILE == .env. ]] && FILE="$${FILE}${TARGET}"; \
-			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY}; \
-			(shopt -s nullglob; rm -rf ${ENTROPY_DIR}); \
+			mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR};    \
+			FILE=`basename ${@}`;                                   \
+			[[ $$FILE == .env. ]] && FILE="/app/$${FILE}${TARGET}"; \
+			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY};      \
+			(shopt -s nullglob; rm -rf ${ENTROPY_DIR});             \
 		}'
 
 .env:
-	@ mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
-			FILE=`basename ${@}`; \
-			[[ $$FILE == ".env." ]] || FILE=.env \
-			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY}; \
-			(shopt -s nullglob; rm -rf ${ENTROPY_DIR}); \
+			mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}; \
+			FILE=`basename ${@}`;                                \
+			[[ $$FILE == ".env." ]] || FILE=.env                 \
+			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY};   \
+			(shopt -s nullglob; rm -rf ${ENTROPY_DIR});          \
 		}'
 
 infra/compose/%yml:
