@@ -26,9 +26,9 @@ class Linker
 			}
 			else
 			{
-				$linker = $packageSpace . '\Linker';
+				$linker = $packageSpace . 'Linker';
 
-				if(!class_exists($linker))
+				if($linker !== __CLASS__ && !class_exists($linker))
 				{
 					continue;
 				}

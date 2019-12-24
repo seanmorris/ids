@@ -192,7 +192,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 					continue;
 				}
 
-				$testClass = $packageName . '\\Test\\' . $m[1];
+				$testClass = $packageName . 'Test\\' . $m[1];
 				$test = new $testClass;
 				$test->run(new \TextReporter());
 				echo PHP_EOL;

@@ -124,15 +124,22 @@ class Package
 			{
 				if(strtolower($packageName . '\\') === strtolower($namespace))
 				{
-					$packageName = substr($namespace, 0, -1);
+					$packageName = substr($namespace, 0, -2);
 				}
 			}
 		}
 
-		// Got compose to load the same class twice here:
-		// PHP does not like that.
+		while(strstr($packageClass, '\\\\'))
+		{
+			$packageClass = str_replace('\\\\', '\\', $packageClass);
+		}
 
-		if(class_exists($packageClass))
+		while($packageClass[strlen($packageClass)-1] == '\\')
+		{
+			$packageClass = substr($packageClass, 0, -1);
+		}
+
+		if($packageClass == __CLASS__ || class_exists($packageClass))
 		{
 			return new $packageClass($packageName, $root);
 		}
@@ -150,9 +157,9 @@ class Package
 		$packageName = static::name($package);
 		$packageDir = static::dir($package);
 
-		$packageClass = $packageName . '\Package';
+		$packageClass = $packageName . 'Package';
 
-		if(class_exists($packageClass))
+		if($packageClass === __CLASS__ || class_exists($packageClass))
 		{
 			$reflection = new \ReflectionClass($packageClass);
 			$classFile = $reflection->getFileName();
@@ -1301,7 +1308,6 @@ class Package
 
 	public function exportModels($model, $function, $args)
 	{
-		// var_dump($model::getGenerator($function));
 		if(! $model::getGenerator($function))
 		{
 			$function = 'ByNull';
