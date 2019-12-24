@@ -7,4 +7,9 @@ install:
   - make @prod run CMD="idilic info"
   - make @test run CMD="idilic info"
   - make @dev  run CMD="idilic info"
-script: make test
+script: |
+  make ct b t;
+  make stay@dev ct b t;
+  make @prod ct b;
+  make ct b t;
+  make @test ct b t;

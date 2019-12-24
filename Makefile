@@ -192,7 +192,8 @@ PREBUILD= .env .lock_env
 build b: ${PREBUILD}
 	@ echo Building ${FULLNAME}
 	@ chmod ug+s . && umask 770
-	@ export TAG=latest-${TARGET} && ${DCOMPOSE} -f ${COMPOSE_TARGET} build idilic
+	@ export TAG=latest-${if ${TARGET},${TARGET},base} && ${DCOMPOSE} \
+		-f ${COMPOSE_TARGET} build idilic
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} build --parallel
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up --no-start
 	@ ${WHILE_IMAGES} \
@@ -214,14 +215,15 @@ test t: ${PREBUILD}
 		run --rm ${NO_TTY} ${PASS_ENV} \
 		idilic -vv SeanMorris/Ids runTests
 
-clean:
+clean: .env
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
+	@ docker volume prune -f;
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app          \
 		debian:buster-20191118-slim bash -c "           \
 			rm -f .env .env.${TARGET} .var;             \
 			rm -f .env.default .env.default.${TARGET};  \
 			rm -rf  .lock_env vendor/;                  \
 		"
-	docker volume prune -a;
 
 SEP=
 env e:
@@ -257,10 +259,10 @@ kill k: ${PREBUILD}
 kill-all:
 	@ ${WHILE_IMAGES} echo docker kill -9 $$IMAGE_HASH; done;
 
-current-tag ct:
+current-tag ct: ${COMPOSE_TARGET}
 	@ echo ${TAG}
 
-current-target ctr:
+current-target ctr: ${COMPOSE_TARGET}
 	@ [[ "${TARGET}" != "" ]] || (echo "No target set." && false)
 	@ echo ${TARGET}
 
