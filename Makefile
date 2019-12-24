@@ -15,8 +15,10 @@ MAKEDIR  ?=${REALDIR}
 VAR_FILE ?=${MAKEDIR}.var
 
 MAIN_ENV ?=${MAKEDIR}.env
+MAIN_DLT ?=${MAKEDIR}.env
 TRGT_ENV ?=${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)
-ENV_LOCK ?=${MAKEDIR}.env_lock
+TRGT_DLT ?=${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)
+ENV_LOCK ?=${MAKEDIR}.lock_env
 
 -include ${MAIN_ENV}
 -include ${TRGT_ENV}
@@ -145,14 +147,20 @@ define NEWTARGET:
 
 	$(eval COMPOSE_TARGET=infra/compose/${TARGET}.yml)
 
+	$(foreach SETTING, $(shell $(call UNINCLUDE,${MAIN_DLT})), $(eval ${SETTING}))
+	$(foreach SETTING, $(shell $(call UNINCLUDE,${TRGT_DLT})), $(eval ${SETTING}))
 	$(foreach SETTING, $(shell $(call UNINCLUDE,${MAIN_ENV})), $(eval ${SETTING}))
 	$(foreach SETTING, $(shell $(call UNINCLUDE,${TRGT_ENV})), $(eval ${SETTING}))
 
-	$(eval MAIN_ENV ?=${MAKEDIR}.env)
-	$(eval TRGT_ENV ?=${MAKEDIR}.env.${TARGET})
+	$(eval MAIN_ENV =${MAKEDIR}.env)
+	$(eval TRGT_ENV =${MAKEDIR}.env.${TARGET})
+	$(eval MAIN_DLT =${MAKEDIR}.env.default)
+	$(eval TRGT_DLT =${MAKEDIR}.env.default.${TARGET})
 
 	$(eval -include ${MAIN_ENV})
 	$(eval -include ${TRGT_ENV})
+	$(eval -include ${MAIN_DLT}).default
+	$(eval -include ${TRGT_DLT}).default
 endef
 
 ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP}  \
@@ -160,8 +168,14 @@ ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP}  \
 	${XDEBUG_ENV} NPX="${NPX}" MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV}    \
 	PROJECT_FULLNAME=${FULLNAME} REALDIR=${REALDIR}                         \
 	$$(cat ${MAKEDIR}.env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)   \
+	$$(cat ${MAKEDIR}.env.default 2>/dev/null                               \
+	$$(cat ${MAKEDIR}.env.default.$(if ${TARGET},${TARGET},base)            \
+		| ${INTERPOLATE_ENV} | grep -v ^\#)                                 \
+		| ${INTERPOLATE_ENV} | grep -v ^\#)                                 \
 	$$(cat ${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)                    \
-	| ${INTERPOLATE_ENV} | grep -v ^\#)
+		| ${INTERPOLATE_ENV} | grep -v ^\#)                                 \
+	$$(cat ${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)                    \
+		| ${INTERPOLATE_ENV} | grep -v ^\#)
 
 DCOMPOSE=export ${ENV} && docker-compose -p ${PROJECT}_${TARGET}
 
@@ -170,7 +184,7 @@ DRUN=docker run --rm \
 	-env-file=.env.${TARGET} \
 	-v $$PWD:/app
 
-PREBUILD= _env .env_lock
+PREBUILD= .env .lock_env
 
 build b: ${PREBUILD}
 	@ echo Building ${FULLNAME}
@@ -201,10 +215,11 @@ clean:
 	docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c " \
 			rm -f .env .env.* .var;   \
-			rm -rf  .env_lock vendor/;        \
+			rm -rf  .lock_env vendor/;        \
 		"
 SEP=
 env e:
+	@ echo ${ENV} && env ${SEP};
 	@ export ${ENV} && env ${SEP};
 
 start s: ${PREBUILD}
@@ -293,14 +308,14 @@ npm-install ni: ${PREBUILD}
 		${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node npm i ${PKG}
 
 dcompose-config dcc: ${PREBUILD}
-	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} config
+	${DCOMPOSE} -f ${COMPOSE_TARGET} config
 
-dcompose dc: _env
+dcompose dc: env
 	${DCOMPOSE} -f ${COMPOSE_TARGET}
 
-.env_lock:
+.lock_env:
 	$(shell)
-	@ [[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
+	[[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
 		${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
 			`${ISDEV} || echo "--no-dev"`;          \
 		REALDIR=${REALDIR} docker-compose           \
@@ -322,14 +337,23 @@ stay@%:
 	@ echo Setting current target ${TARGET}...
 	${NEWTARGET}
 
-_env:
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+.env%:
+	docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
 			mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}; \
 			FILE=.`basename ${@} | cut -c 2-`;                   \
+			                                                     \
+			FROM=config/$$FILE.default TO=$$FILE.default         \
+				&& ${STITCH_ENTROPY};                            \
+			                                                     \
 			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY};   \
+			                                                     \
 			TARGET=$(if ${TARGET},${TARGET},base);               \
 			FROM=config/$$FILE.$$TARGET TO=$$FILE.$$TARGET       \
+				&& ${STITCH_ENTROPY};                            \
+			                                                     \
+			FROM=config/$$FILE.default.$$TARGET                  \
+			TO=$$FILE.default.$$TARGET                           \
 				&& ${STITCH_ENTROPY};                            \
 			(shopt -s nullglob; rm -rf ${ENTROPY_DIR});          \
 		}'

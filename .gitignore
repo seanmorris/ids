@@ -1,6 +1,7 @@
 .env
 .var
 .env.*
+.lock_env
 vendor/*
 !./config/.env
 !./config/.env.*
