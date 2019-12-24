@@ -117,19 +117,28 @@ class Settings
 				static::$currentSite = $hostname;
 				static::$currentPort = $port;
 
+				$settings = [];
+				$defaults = [];
+
 				if(preg_match('/\.ya?ml$/', $settingsFile) && function_exists('yaml_parse_file'))
 				{
 					$settings = json_decode(json_encode(yaml_parse_file(
 						$settingsFile
 					)));
+				}
+				else if($settingsFile)
+				{
+					$settings = json_decode(file_get_contents($settingsFile));
+				}
 
+				if(preg_match('/\.ya?ml$/', $defaultsFile) && function_exists('yaml_parse_file'))
+				{
 					$defaults = json_decode(json_encode(yaml_parse_file(
 						$defaultsFile
 					)));
 				}
-				else
+				else if($defaultsFile)
 				{
-					$settings = json_decode(file_get_contents($settingsFile));
 					$defaults = json_decode(file_get_contents($defaultsFile));
 				}
 

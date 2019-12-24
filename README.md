@@ -36,15 +36,10 @@ export PATH="$HOME/.composer/vendor/bin:$PATH"
 
 ## Creating a New Ids Project
 
-Create a new project with composer
+Create a new project with composer, enter the directory and start php, apache & mysql:
 
 ```bash
 $ composer create-project seanmorris/ids-project -s dev --remove-vcs
-```
-
-Enter the directory and start php, apache & mysql:
-
-```bash
 $ cd ids-project
 $ make start-bg
 ```

@@ -386,3 +386,27 @@ run-phar: ${PREBUILD}
 dirs:
 	@ echo ${MAKEDIR}
 	@ echo ${REALDIR}
+
+graylog-start gls:
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up -d
+
+graylog-start-fg glsf:
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up
+
+graylog-start-bg glsb:
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up &
+
+graylog-restart glr:
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up -d
+
+graylog-restart-fg glrf:
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up
+
+graylog-restart-bg glrb:
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up &
+
+graylog-stop gld:
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down

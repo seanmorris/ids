@@ -262,13 +262,13 @@ class Log
 		{
 			foreach($loggers as $logger)
 			{
-// 				if(!is_a($logger, 'SeanMorris\Ids\Logger', TRUE))
-// 				{
-// 					throw new \Exception(sprintf(
-// 						'Settings file specifies non-Logger as Logger: %s'
-// 						, $logger
-// 					));
-// 				}
+				if(!is_a($logger, \SeanMorris\Ids\Logger\Gelf::class, TRUE))
+				{
+					throw new \Exception(sprintf(
+						'Settings specifiy non-Logger as Logger: %s'
+						, $logger
+					));
+				}
 
 				$logger::log($logBlob);
 			}
