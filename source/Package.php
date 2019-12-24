@@ -81,7 +81,6 @@ class Package
 		$vendorRoot = new \SeanMorris\Ids\Disk\Directory(IDS_VENDOR_ROOT);
 		$appRoot    = $vendorRoot->parent();
 
-
 		$dirFrag    = strtolower(preg_replace('/\\\\/', '/', $packageName));
 		$spaceFrag  = strtolower(preg_replace('/\//', '\\', $packageName));
 
@@ -124,7 +123,7 @@ class Package
 			{
 				if(strtolower($packageName . '\\') === strtolower($namespace))
 				{
-					$packageName = substr($namespace, 0, -2);
+					$packageName = substr($namespace, 0, -1);
 				}
 			}
 		}
