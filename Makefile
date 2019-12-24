@@ -12,21 +12,18 @@ MAKEFLAGS += --no-builtin-rules --always-make
 SHELL    =/bin/bash
 REALDIR  :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 MAKEDIR  ?=${REALDIR}
-
 VAR_FILE ?=${MAKEDIR}.var
-MAIN_ENV ?=${MAKEDIR}.env
-TRGT_ENV ?=${MAKEDIR}.env.${TARGET}
-ENV_LOCK ?=${MAKEDIR}.env_lock
 
-$(shell [ -f ${VAR_FILE} ] || echo "TARGET=${TARGET:-base}" > ${VAR_FILE})
-# $(shell [ -f ${ENV_LOCK} ] || )
+MAIN_ENV ?=${MAKEDIR}.env
+TRGT_ENV ?=${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)
+ENV_LOCK ?=${MAKEDIR}.env_lock
 
 -include ${MAIN_ENV}
 -include ${TRGT_ENV}
 -include ${VAR_FILE}
 -include ${ENV_LOCK}
 
-COMPOSE_FILE =infra/compose/${TARGET}.yml
+COMPOSE_TARGET =infra/compose/$(if ${TARGET},${TARGET},base).yml
 COMPOSE_TOOLS=infra/compose/tools
 
 PROJECT  ?=ids
@@ -34,7 +31,7 @@ REPO     ?=seanmorris
 BRANCH   :=$(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo nobranch)
 HASH     :=$(shell echo _$$(git rev-parse --short HEAD 2>/dev/null) || echo init)
 DESC     :=$(shell git describe --tags 2>/dev/null || echo ${HASH})
-SUFFIX   =-${TARGET}$$([ ${BRANCH} = master ] && echo "" || echo "-${BRANCH}")
+SUFFIX   =-$(if ${TARGET},${TARGET},base)$$([ ${BRANCH} = master ] && echo "" || echo "-${BRANCH}")
 TAG      ?=${DESC}${SUFFIX}
 FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
@@ -72,7 +69,7 @@ endef
 define XDEBUG_ENV
 	XDEBUG_CONFIG="`\
 		test -f ${MAKEDIR}.env \
-		&& cat ${MAKEDIR}.env.${TARGET} \
+		&& cat ${MAKEDIR}.env.$(if ${TARGET},${TARGET},'base') \
 		| ${INTERPOLATE_ENV} \
 		| grep ^XDEBUG_CONFIG_ \
 		| while read VAR; do echo $$VAR | { \
@@ -146,7 +143,7 @@ define NEWTARGET:
 		&& false \
 	) && echo Using target $$NEWTARGET...
 
-	$(eval COMPOSE_FILE=infra/compose/${TARGET}.yml)
+	$(eval COMPOSE_TARGET=infra/compose/${TARGET}.yml)
 
 	$(foreach SETTING, $(shell $(call UNINCLUDE,${MAIN_ENV})), $(eval ${SETTING}))
 	$(foreach SETTING, $(shell $(call UNINCLUDE,${TRGT_ENV})), $(eval ${SETTING}))
@@ -158,33 +155,32 @@ define NEWTARGET:
 	$(eval -include ${TRGT_ENV})
 endef
 
-ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP} \
+ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP}  \
 	PROJECT=${PROJECT} TARGET=${TARGET} MAKEDIR=${MAKEDIR} DOCKER=${DOCKER} \
-	${XDEBUG_ENV} NPX="${NPX}" MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV} \
-	PROJECT_FULLNAME=${FULLNAME} REALDIR=${REALDIR}\
-	$$(cat ${MAKEDIR}.env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#) \
-	$$(cat ${MAKEDIR}.env.${TARGET} 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)
+	${XDEBUG_ENV} NPX="${NPX}" MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV}    \
+	PROJECT_FULLNAME=${FULLNAME} REALDIR=${REALDIR}                         \
+	$$(cat ${MAKEDIR}.env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)   \
+	$$(cat ${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)                    \
+	| ${INTERPOLATE_ENV} | grep -v ^\#)
 
-DCOMPOSE=export ${ENV} && docker-compose \
-	-p ${PROJECT}_${TARGET} \
-	-f ${COMPOSE_FILE}
+DCOMPOSE=export ${ENV} && docker-compose -p ${PROJECT}_${TARGET}
 
 DRUN=docker run --rm \
 	-env-file=.env \
 	-env-file=.env.${TARGET} \
 	-v $$PWD:/app
 
-PREBUILD=${COMPOSE_FILE} _env ${ENV_LOCK}
+PREBUILD= _env ${ENV_LOCK}
 
 build b: ${PREBUILD}
 	@ echo Building ${FULLNAME}
 	@ chmod ug+s . && umask 770
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
 		`${ISDEV} || echo "--no-dev"`
-	@ ${DCOMPOSE} -f ${REALDIR}/${COMPOSE_TOOLS}/node.yml build node
-	@ export TAG=latest-${TARGET} && ${DCOMPOSE} build idilic
-	@ ${DCOMPOSE} build
-	@ ${DCOMPOSE} up --no-start
+	@ ${DCOMPOSE}  -f ${REALDIR}/${COMPOSE_TOOLS}/node.yml build  node
+	@ export TAG=latest-${TARGET} && ${DCOMPOSE} -f ${COMPOSE_TARGET} build idilic
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} build
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up --no-start
 	@ ${WHILE_IMAGES} \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
 		| while read IMAGE_NAME; do \
@@ -200,46 +196,46 @@ build b: ${PREBUILD}
 	done;
 
 test t: ${PREBUILD}
-	@ export TARGET=${TARGET} && ${DCOMPOSE} \
+	@ export TARGET=${TARGET} && ${DCOMPOSE} -f ${COMPOSE_TARGET} \
 		run --rm ${NO_TTY} ${PASS_ENV} \
 		idilic -vv SeanMorris/Ids runTests
 
 clean:
 	docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c " \
-			rm -f _env _env.${TARGET} .var;   \
-			rm -rf vendor/;                   \
+			rm -f .env .env.* .var;   \
+			rm -rf  .env_lock vendor/;        \
 		"
 SEP=
 env e:
 	@ export ${ENV} && env ${SEP};
 
 start s: ${PREBUILD}
-	@ ${DCOMPOSE} up -d
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up -d
 
 start-fg sf: ${PREBUILD}
-	@ ${DCOMPOSE} up
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up
 
 start-bg sb: ${PREBUILD}
-	@ ${DCOMPOSE} up &
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up &
 
 stop d: ${PREBUILD}
-	@ ${DCOMPOSE} down
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down
 
 stop-all da: ${PREBUILD}
-	@ ${DCOMPOSE} down --remove-orphans
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
 
 restart r: ${PREBUILD}
-	@ ${DCOMPOSE} down && ${DCOMPOSE} up -d
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down && ${DCOMPOSE} -f ${COMPOSE_TARGET} up -d
 
 restart-fg rf: ${PREBUILD}
-	@ ${DCOMPOSE} down && ${DCOMPOSE} up
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down && ${DCOMPOSE} -f ${COMPOSE_TARGET} up
 
 restart-bg rb: ${PREBUILD}
-	@ ${DCOMPOSE} down && ${DCOMPOSE} up &
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down && ${DCOMPOSE} -f ${COMPOSE_TARGET} up &
 
-kill k: ${PREBUILD} ${ENV_LOCK}
-	@ ${DCOMPOSE} kill -s 9
+kill k: ${PREBUILD}
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} kill -s 9
 
 current-tag ct:
 	@ echo ${TAG}
@@ -248,7 +244,7 @@ current-target ctr:
 	@ [[ "${TARGET}" != "" ]] || (echo "No target set." && false)
 	@ echo ${TARGET}
 
-list-images li: ${COMPOSE_FILE}
+list-images li:${PREBUILD}
 	@ ${WHILE_IMAGES} \
 		echo $$(docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH) \
 		$$(docker image inspect --format="{{ .Size }}" $$IMAGE_HASH  \
@@ -256,29 +252,27 @@ list-images li: ${COMPOSE_FILE}
 		); \
 	done;
 
-list-tags lt: ${COMPOSE_FILE}
-	@ ${WHILE_TAGS} \
-		echo $$TAG_NAME; \
-	done;done;
+list-tags lt:
+	@ ${WHILE_TAGS} echo $$TAG_NAME; done;done;
 
-push-images psi: ${COMPOSE_FILE}
+push-images psi: ${COMPOSE_TARGET}
 	@ echo Pushing ${PROJECT}:${TAG}
 	@ ${WHILE_TAGS} \
 		docker push $$TAG_NAME; \
 	done;done;
 
 pull-images pli: ${PREBUILD}
-	${DCOMPOSE} pull
+	${DCOMPOSE} -f ${COMPOSE_TARGET} pull
 
-hooks: ${COMPOSE_FILE}
+hooks: ${COMPOSE_TARGET}
 	@ git config core.hooksPath githooks
 
 run: ${PREBUILD}
-	@ ${DCOMPOSE} run --rm ${NO_TTY} \
+	${DCOMPOSE} -f ${COMPOSE_TARGET} run --rm ${NO_TTY} \
 		${PASS_ENV} ${CMD}
 
 bash sh: ${PREBUILD}
-	@ ${DCOMPOSE} run --rm ${NO_TTY} \
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} run --rm ${NO_TTY} \
 		${PASS_ENV} --entrypoint=bash idilic
 
 composer-install ci:
@@ -293,31 +287,33 @@ composer-dump-autoload cda:
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer dump-autoload
 
 node n: ${PREBUILD}
-	@ ${DCOMPOSE} -f \
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} -f \
 		${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node
 
 PKG=
 npm-install ni: ${PREBUILD}
-	${DCOMPOSE} -f \
-	${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node npm i ${PKG}
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} -f \
+		${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node npm i ${PKG}
 
-dcompose-config dcc: ${COMPOSE_FILE} _env _env.${TARGET}
-	${DCOMPOSE} config
+dcompose-config dcc: ${PREBUILD}
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} config
 
-dcompose dc: ${COMPOSE_FILE} _env _env.${TARGET}
-	${DCOMPOSE}
+dcompose dc: _env
+	${DCOMPOSE} -f ${COMPOSE_TARGET}
 
 ${ENV_LOCK}:
-	[[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
+	@ [[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
 		${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
-			`${ISDEV} || echo "--no-dev"`;                                   \
-		${DCOMPOSE} -f ${REALDIR}/${COMPOSE_TOOLS}/node.yml build node;      \
+			`${ISDEV} || echo "--no-dev"`;          \
+		REALDIR=${REALDIR} docker-compose           \
+			-f ${REALDIR}${COMPOSE_TOOLS}/node.yml  \
+			build node;                             \
 	);
-	@ echo ENV_LOCK_STATE=${TAG} > ${ENV_LOCK}
+	@ test ! -z "${TAG}" && echo ENV_LOCK_STATE=${TAG} > ${ENV_LOCK} || true;
 
 ##
 
-stay@%:
+stay@%: ${PREBUILD}
 	$(eval TARGET=$(shell echo ${@} | cut -c 6-))
 	@ echo TARGET=${TARGET} > ${VAR_FILE};
 	@ echo Setting persistent target ${TARGET}...
@@ -329,26 +325,30 @@ stay@%:
 	${NEWTARGET}
 
 _env:
-	docker run --rm -v ${MAKEDIR}:/app -w=/app \
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
 			mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}; \
 			FILE=.`basename ${@} | cut -c 2-`;                   \
 			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY};   \
-			FROM=config/$$FILE.${TARGET} TO=$$FILE.${TARGET} && ${STITCH_ENTROPY};   \
+			TARGET=$(if ${TARGET},${TARGET},base);               \
+			FROM=config/$$FILE.$$TARGET TO=$$FILE.$$TARGET       \
+				&& ${STITCH_ENTROPY};                            \
 			(shopt -s nullglob; rm -rf ${ENTROPY_DIR});          \
-		}' || true;                                              \
+		}'
 
 infra/compose/%yml:
+	echo ${TARGET};
+	echo infra/compose/${TARGET}.yml;
 	@ test -z "${TARGET}" || test -f infra/compose/${TARGET}.yml;
 
 ###
 
-babel: ${COMPOSE_FILE} _env _env.${TARGET}
-	${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml \
+babel: ${PREBUILD}
+	${DCOMPOSE} -f ${COMPOSE_TARGET} -f ${COMPOSE_TOOLS}/node.yml \
 		run --rm ${PASS_ENV} node npx babel
 
-run-phar: ${COMPOSE_FILE} _env _env.${TARGET}
-	${DCOMPOSE} run --rm \
+run-phar: ${PREBUILD}
+	${DCOMPOSE} -f ${COMPOSE_TARGET} run --rm \
 		--entrypoint='php SeanMorris_Ids.phar' \
 		${PASS_ENV} ${CMD}
 

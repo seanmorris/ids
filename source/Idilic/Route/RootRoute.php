@@ -898,6 +898,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 	public function info()
 	{
+		$env = (object) getenv();
+		$project   = $env->PROJECT_FULLNAME ?? NULL;;
 		$databases = \SeanMorris\Ids\Settings::read('databases');
 
 		$dbs = NULL;
@@ -922,7 +924,11 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			}
 		}
 
-		return sprintf(<<<EOT
+		return sprintf(
+		'        Project: %s'
+			, $project
+		) . PHP_EOL
+		. sprintf(<<<EOT
 		Root Package: %s
 		      Domain: %s
 		     RootDir: %s
