@@ -166,10 +166,10 @@ class Log
 		{
 			if(!isset(static::$also))
 			{
-				static::$also = Settings::read('logAlso') ?: [];
+				static::$also = (object) Settings::read('logAlso') ?: [];
 			}
 
-			if(!in_array($levelString, static::$also))
+			if(!isset(static::$also->$levelString))
 			{
 				return;
 			}
