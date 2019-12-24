@@ -3,4 +3,8 @@ services:
   - docker
 install:
   - make stay@test build
+  - make @test info
+  - make @prod info
+  - make @dev  info
+  - make @test info
 script: make test
