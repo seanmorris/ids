@@ -6,7 +6,7 @@ services:
     restart: on-failure
     build:
       context: ../../
-      dockerfile: infra/docker/tools/node.dockerfile
+      dockerfile: ${REALDIR}/infra/docker/tools/node.dockerfile
     volumes:
       - ../../:/app
       - ../../vendor/_node_modules:/build/node_modules
