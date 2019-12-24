@@ -285,8 +285,8 @@ composer-dump-autoload cda:
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer dump-autoload
 
 node n: .env .env.${TARGET} ${COMPOSE_FILE}
-	${DCOMPOSE} -f \
-	${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node
+	@ ${DCOMPOSE} -f \
+		${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node
 
 PKG=
 npm-install ni: ${COMPOSE_FILE} .env .env.${TARGET}
@@ -309,9 +309,8 @@ stay@%:
 
 .env%:
 	@ mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}
-	@ set -eux; docker run --rm -v ${MAKEDIR}:/app -w=/app \
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
-			set -eux; \
 			FILE=`basename ${@}`; \
 			[[ $$FILE == .env. ]] && FILE="$${FILE}${TARGET}"; \
 			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY}; \
@@ -320,9 +319,8 @@ stay@%:
 
 .env:
 	@ mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}
-	@ set -eux; docker run --rm -v ${MAKEDIR}:/app -w=/app \
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
-			set -eux; \
 			FILE=`basename ${@}`; \
 			[[ $$FILE == ".env." ]] || FILE=.env \
 			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY}; \
