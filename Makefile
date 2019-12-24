@@ -175,7 +175,7 @@ PREBUILD= _env .env_lock
 build b: ${PREBUILD}
 	@ echo Building ${FULLNAME}
 	@ chmod ug+s . && umask 770
-	export TAG=latest-${TARGET} && ${DCOMPOSE} -f ${COMPOSE_TARGET} build idilic
+	@ export TAG=latest-${TARGET} && ${DCOMPOSE} -f ${COMPOSE_TARGET} build idilic
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} build
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up --no-start
 	@ ${WHILE_IMAGES} \
@@ -265,7 +265,7 @@ hooks: ${COMPOSE_TARGET}
 	@ git config core.hooksPath githooks
 
 run: ${PREBUILD}
-	${DCOMPOSE} -f ${COMPOSE_TARGET} run --rm ${NO_TTY} \
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} run --rm ${NO_TTY} \
 		${PASS_ENV} ${CMD}
 
 bash sh: ${PREBUILD}
