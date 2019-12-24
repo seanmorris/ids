@@ -170,15 +170,12 @@ DRUN=docker run --rm \
 	-env-file=.env.${TARGET} \
 	-v $$PWD:/app
 
-PREBUILD= _env ${ENV_LOCK}
+PREBUILD= _env .env_lock
 
 build b: ${PREBUILD}
 	@ echo Building ${FULLNAME}
 	@ chmod ug+s . && umask 770
-	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
-		`${ISDEV} || echo "--no-dev"`
-	@ ${DCOMPOSE}  -f ${REALDIR}/${COMPOSE_TOOLS}/node.yml build  node
-	@ export TAG=latest-${TARGET} && ${DCOMPOSE} -f ${COMPOSE_TARGET} build idilic
+	export TAG=latest-${TARGET} && ${DCOMPOSE} -f ${COMPOSE_TARGET} build idilic
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} build
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up --no-start
 	@ ${WHILE_IMAGES} \
@@ -301,19 +298,20 @@ dcompose-config dcc: ${PREBUILD}
 dcompose dc: _env
 	${DCOMPOSE} -f ${COMPOSE_TARGET}
 
-${ENV_LOCK}:
+.env_lock:
+	$(shell)
 	@ [[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
 		${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
 			`${ISDEV} || echo "--no-dev"`;          \
 		REALDIR=${REALDIR} docker-compose           \
 			-f ${REALDIR}${COMPOSE_TOOLS}/node.yml  \
-			build node;                             \
+			run node npm install                    \
 	);
 	@ test ! -z "${TAG}" && echo ENV_LOCK_STATE=${TAG} > ${ENV_LOCK} || true;
 
 ##
 
-stay@%: ${PREBUILD}
+stay@%:
 	$(eval TARGET=$(shell echo ${@} | cut -c 6-))
 	@ echo TARGET=${TARGET} > ${VAR_FILE};
 	@ echo Setting persistent target ${TARGET}...
