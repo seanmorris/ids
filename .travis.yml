@@ -3,8 +3,8 @@ services:
   - docker
 install:
   - make stay@test build
-  - make @test idilic CMD=info
-  - make @prod idilic CMD=info
-  - make @test idilic CMD=info
-  - make @dev  idilic CMD=info
+  - make @test run CMD="idilic info"
+  - make @prod run CMD="idilic info"
+  - make @test run CMD="idilic info"
+  - make @dev  run CMD="idilic info"
 script: make test
