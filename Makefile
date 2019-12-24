@@ -331,7 +331,6 @@ stay@%:
 _env:
 	docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
-			set -ux; \
 			mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}; \
 			FILE=.`basename ${@} | cut -c 2-`;                   \
 			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY};   \
