@@ -16,9 +16,14 @@ MAKEDIR  ?=${REALDIR}
 VAR_FILE ?=${MAKEDIR}.var
 MAIN_ENV ?=${MAKEDIR}.env
 TRGT_ENV ?=${MAKEDIR}.env.${TARGET}
+ENV_LOCK ?=${MAKEDIR}.env_lock
+
+$(shell [ -f ${VAR_FILE} ] || echo "TARGET=base" > ${VAR_FILE})
+# $(shell [ -f ${ENV_LOCK} ] || )
 
 -include ${MAIN_ENV}
 -include ${TRGT_ENV}
+-include ${VAR_FILE}
 -include ${VAR_FILE}
 
 COMPOSE_FILE =infra/compose/${TARGET}.yml
@@ -169,8 +174,9 @@ DRUN=docker run --rm \
 	-env-file=.env.${TARGET} \
 	-v $$PWD:/app
 
+PREBUILD=${COMPOSE_FILE} _env _env.${TARGET} ${ENV_LOCK}
 
-build b: _env _env.${TARGET} ${COMPOSE_FILE}
+build b: ${PREBUILD}
 	@ echo Building ${FULLNAME}
 	@ chmod ug+s . && umask 770
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
@@ -193,7 +199,7 @@ build b: _env _env.${TARGET} ${COMPOSE_FILE}
 		done; \
 	done;
 
-test t: _env _env.${TARGET} ${COMPOSE_FILE}
+test t: ${PREBUILD}
 	@ export TARGET=${TARGET} && ${DCOMPOSE} \
 		run --rm ${NO_TTY} ${PASS_ENV} \
 		idilic -vv SeanMorris/Ids runTests
@@ -205,34 +211,34 @@ clean:
 			rm -rf vendor/;                   \
 		"
 SEP=
-env e: _env _env.${TARGET} ${COMPOSE_FILE}
+env e: ${PREBUILD}
 	@ export ${ENV} && env ${SEP};
 
-start s: _env _env.${TARGET} ${COMPOSE_FILE}
+start s: ${PREBUILD}
 	@ ${DCOMPOSE} up -d
 
-start-fg sf: _env _env.${TARGET} ${COMPOSE_FILE}
+start-fg sf: ${PREBUILD}
 	@ ${DCOMPOSE} up
 
-start-bg sb: _env _env.${TARGET} ${COMPOSE_FILE}
+start-bg sb: ${PREBUILD}
 	@ ${DCOMPOSE} up &
 
-stop d: _env _env.${TARGET} ${COMPOSE_FILE}
+stop d: ${PREBUILD}
 	@ ${DCOMPOSE} down
 
-stop-all da: _env _env.${TARGET} ${COMPOSE_FILE}
+stop-all da: ${PREBUILD}
 	@ ${DCOMPOSE} down --remove-orphans
 
-restart r: _env _env.${TARGET} ${COMPOSE_FILE}
+restart r: ${PREBUILD}
 	@ ${DCOMPOSE} down && ${DCOMPOSE} up -d
 
-restart-fg rf: _env _env.${TARGET} ${COMPOSE_FILE}
+restart-fg rf: ${PREBUILD}
 	@ ${DCOMPOSE} down && ${DCOMPOSE} up
 
-restart-bg rb: _env _env.${TARGET} ${COMPOSE_FILE}
+restart-bg rb: ${PREBUILD}
 	@ ${DCOMPOSE} down && ${DCOMPOSE} up &
 
-kill k: _env _env.${TARGET} ${COMPOSE_FILE}
+kill k: ${PREBUILD} ${ENV_LOCK}
 	@ ${DCOMPOSE} kill -s 9
 
 current-tag ct:
@@ -261,17 +267,17 @@ push-images psi: ${COMPOSE_FILE}
 		docker push $$TAG_NAME; \
 	done;done;
 
-pull-images pli: _env _env.${TARGET} ${COMPOSE_FILE}
+pull-images pli: ${PREBUILD}
 	${DCOMPOSE} pull
 
 hooks: ${COMPOSE_FILE}
 	@ git config core.hooksPath githooks
 
-run: _env _env.${TARGET} ${COMPOSE_FILE}
+run: ${PREBUILD}
 	@ ${DCOMPOSE} run --rm ${NO_TTY} \
 		${PASS_ENV} ${CMD}
 
-bash sh: _env _env.${TARGET} ${COMPOSE_FILE}
+bash sh: ${PREBUILD}
 	@ ${DCOMPOSE} run --rm ${NO_TTY} \
 		${PASS_ENV} --entrypoint=bash idilic
 
@@ -286,12 +292,12 @@ composer-update cu:
 composer-dump-autoload cda:
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer dump-autoload
 
-node n: _env _env.${TARGET} ${COMPOSE_FILE}
+node n: ${PREBUILD}
 	@ ${DCOMPOSE} -f \
 		${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node
 
 PKG=
-npm-install ni: ${COMPOSE_FILE} _env _env.${TARGET}
+npm-install ni: ${PREBUILD}
 	${DCOMPOSE} -f \
 	${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node npm i ${PKG}
 
@@ -300,6 +306,14 @@ dcompose-config dcc: ${COMPOSE_FILE} _env _env.${TARGET}
 
 dcompose dc: ${COMPOSE_FILE} _env _env.${TARGET}
 	${DCOMPOSE}
+
+${ENV_LOCK}:
+	@ [[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
+		${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
+			`${ISDEV} || echo "--no-dev"`;                                   \
+		${DCOMPOSE} -f ${REALDIR}/${COMPOSE_TOOLS}/node.yml build node;      \
+	);
+	@ echo ENV_LOCK_STATE=${TAG} > ${ENV_LOCK}
 
 ##
 
@@ -349,5 +363,5 @@ run-phar: ${COMPOSE_FILE} _env _env.${TARGET}
 		${PASS_ENV} ${CMD}
 
 dirs:
-	echo ${MAKEDIR}
-	echo ${REALDIR}
+	@ echo ${MAKEDIR}
+	@ echo ${REALDIR}
