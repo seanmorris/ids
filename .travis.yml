@@ -2,5 +2,5 @@ language: minimal
 services:
   - docker
 install:
-  - make stay@test
+  - make stay@test build
 script: make test
