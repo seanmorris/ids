@@ -128,19 +128,9 @@ class Package
 			}
 		}
 
-		while(strstr($packageClass, '\\\\'))
+		if($packageName == __CLASS__ || class_exists($packageName))
 		{
-			$packageClass = str_replace('\\\\', '\\', $packageClass);
-		}
-
-		while($packageClass[strlen($packageClass)-1] == '\\')
-		{
-			$packageClass = substr($packageClass, 0, -1);
-		}
-
-		if($packageClass == __CLASS__ || class_exists($packageClass))
-		{
-			return new $packageClass($packageName, $root);
+			return new $packageName($packageName, $root);
 		}
 
 		return new class($packageName, $root) extends Package {
@@ -250,7 +240,7 @@ class Package
 
 	public static function name($package = NULL)
 	{
-		return str_replace(
+		$name = str_replace(
 			'/', '\\'
 			, $package ?? substr(
 				static::class
@@ -262,6 +252,18 @@ class Package
 				)
 			)
 		);
+
+		while(strstr($name, '\\\\'))
+		{
+			$name = str_replace('\\\\', '\\', $name);
+		}
+
+		while($name[strlen($name)-1] == '\\')
+		{
+			$name = substr($name, 0, -1);
+		}
+
+		return $name;
 	}
 
 	public static function dir($package)

@@ -211,7 +211,7 @@ clean:
 			rm -rf vendor/;                   \
 		"
 SEP=
-env e: ${PREBUILD}
+env e:
 	@ export ${ENV} && env ${SEP};
 
 start s: ${PREBUILD}

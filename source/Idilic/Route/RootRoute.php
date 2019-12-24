@@ -182,6 +182,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		{
 			$packageName = str_replace('/', '\\', $packageName);
 			$package     = \SeanMorris\Ids\Package::get($packageName);
+			$packageName = $package::name($packageName);
 			$tests       = $package->testDir();
 			$packageName = $package->packageSpace();
 
