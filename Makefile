@@ -36,9 +36,16 @@ FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 IMAGE    ?=
 DHOST_IP :=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
 NO_TTY   ?=-T
-NO_DEV   ?=--no-dev
 
+ifneq ($(filter ${TARGET},"target dev"),)
+	NO_DEV=
+else
+	NO_DEV=--no-dev
+endif
 DOCKER   :=$$(which docker)
+
+DEVTARGETS=test dev
+ISDEV     =echo "${DEVTARGETS}" | grep -wq "${TARGET}"
 
 define NPX
 	cp  -n /app/package-lock.json /build; \
@@ -160,19 +167,11 @@ define UNINCLUDE
 		done;
 endef
 
-ifeq (${TARGET},test)
-	NO_DEV=
-endif
-
-ifeq (${TARGET},dev)
-	NO_DEV=
-endif
-
 build b: .env .env.${TARGET} ${COMPOSE_FILE}
 	@ echo Building ${FULLNAME}
 	@ chmod ug+s . && umask 770
-	@ [[ "${TARGET}" != "" ]] || (echo "No target set." && false)
-	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install ${NO_DEV}
+	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
+		`${ISDEV} || echo "--no-dev"`
 	@ ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml build node
 	@ export TAG=latest-${TARGET} && ${DCOMPOSE} build idilic
 	@ ${DCOMPOSE} build
@@ -237,7 +236,6 @@ current-tag ct:
 	@ echo ${TAG}
 
 current-target ctr:
-	@ echo ${IDS_LOGLEVEL}
 	@ [[ "${TARGET}" != "" ]] || (echo "No target set." && false)
 	@ echo ${TARGET}
 
@@ -275,10 +273,12 @@ bash sh: .env .env.${TARGET} ${COMPOSE_FILE}
 		${PASS_ENV} --entrypoint=bash idilic
 
 composer-install ci:
-	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer update ${NO_DEV}
+	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
+		`${ISDEV} || echo "--no-dev"`
 
 composer-update cu:
-	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer update ${NO_DEV}
+	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer update \
+		`${ISDEV} || echo "--no-dev"`
 
 composer-dump-autoload cda:
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer dump-autoload
@@ -299,11 +299,12 @@ dcompose-config dcc: ${COMPOSE_FILE} .env .env.${TARGET}
 
 stay@%:
 	$(eval TARGET=$(shell echo ${@} | cut -b 6-))
-	@ echo Setting persistent target ${TARGET}...
 	@ echo TARGET=${TARGET} > ${VAR_FILE};
+	@ echo Setting persistent target ${TARGET}...
 	${NEWTARGET}
 @%:
 	$(eval TARGET=$(shell echo ${@} | cut -b 2-))
+	@ echo Setting current target ${TARGET}...
 	${NEWTARGET}
 
 .env%:
@@ -340,3 +341,4 @@ run-phar: ${COMPOSE_FILE} .env .env.${TARGET}
 	${DCOMPOSE} run --rm \
 		--entrypoint='php SeanMorris_Ids.phar' \
 		${PASS_ENV} ${CMD}
+
