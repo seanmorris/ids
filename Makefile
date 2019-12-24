@@ -26,15 +26,15 @@ COMPOSE_TOOLS=infra/compose/tools
 
 PROJECT  ?=ids
 REPO     ?=seanmorris
-BRANCH   :=$$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo nobranch)
-HASH     :=$$(echo _$$(git rev-parse --short HEAD 2>/dev/null) || echo init)
-DESC     :=$$(git describe --tags 2>/dev/null || echo ${HASH})
+BRANCH   :=$(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo nobranch)
+HASH     :=$(shell echo _$$(git rev-parse --short HEAD 2>/dev/null) || echo init)
+DESC     :=$(shell git describe --tags 2>/dev/null || echo ${HASH})
 SUFFIX   =-${TARGET}$$([ ${BRANCH} = master ] && echo "" || echo "-${BRANCH}")
 TAG      ?=${DESC}${SUFFIX}
 FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
 IMAGE    ?=
-DHOST_IP :=$$(docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
+DHOST_IP :=$(shell docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
 NO_TTY   ?=-T
 
 ifneq ($(filter ${TARGET},"target dev"),)
@@ -294,6 +294,9 @@ npm-install ni: ${COMPOSE_FILE} .env .env.${TARGET}
 
 dcompose-config dcc: ${COMPOSE_FILE} .env .env.${TARGET}
 	${DCOMPOSE} config
+
+dcompose dc: ${COMPOSE_FILE} .env .env.${TARGET}
+	${DCOMPOSE}
 
 ##
 
