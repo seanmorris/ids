@@ -52,6 +52,8 @@ ENTRYPOINT ["idilic"]
 
 CMD ["-d=;", "info"]
 
+COPY ./ /app
+
 FROM base AS test
 FROM base AS dev
 
@@ -63,5 +65,3 @@ RUN set -eux; \
 COPY ./infra/xdebug/30-xdebug-cli.ini /etc/php/7.3/cli/conf.d/30-xdebug-cli.ini
 
 FROM base AS prod
-
-COPY ./ /app

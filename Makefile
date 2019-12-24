@@ -42,6 +42,7 @@ ifneq ($(filter ${TARGET},"target dev"),)
 else
 	NO_DEV=--no-dev
 endif
+
 DOCKER   :=$$(which docker)
 
 DEVTARGETS=test dev
@@ -124,6 +125,15 @@ define STITCH_ENTROPY
 	};}; done; done < $$FROM > $$TO
 endef
 
+define UNINCLUDE
+	cat ${1} | grep -v ^\# \
+		| grep "^[A-Z_]\+=" \
+		| sed -e 's/\=.\+$$//' \
+		| while read OLD_VAR; do \
+			echo -e "$$OLD_VAR=DELETED"; \
+		done;
+endef
+
 define NEWTARGET:
 	NEWTARGET=`echo ${@} | cut -c 3-`; \
 	test -f infra/compose/$$NEWTARGET.yml || (\
@@ -138,6 +148,7 @@ define NEWTARGET:
 
 	$(eval MAIN_ENV ?=${MAKEDIR}.env)
 	$(eval TRGT_ENV ?=${MAKEDIR}.env.${TARGET})
+
 	$(eval -include ${MAIN_ENV})
 	$(eval -include ${TRGT_ENV})
 endef
@@ -158,14 +169,6 @@ DRUN=docker run --rm \
 	-env-file=.env.${TARGET} \
 	-v $$PWD:/app
 
-define UNINCLUDE
-	cat ${1} | grep -v ^\# \
-		| grep "^[A-Z_]\+=" \
-		| sed -e 's/\=.\+$$//' \
-		| while read OLD_VAR; do \
-			echo -e "$$OLD_VAR=DELETED"; \
-		done;
-endef
 
 build b: _env _env.${TARGET} ${COMPOSE_FILE}
 	@ echo Building ${FULLNAME}
@@ -305,13 +308,13 @@ stay@%:
 	@ echo TARGET=${TARGET} > ${VAR_FILE};
 	@ echo Setting persistent target ${TARGET}...
 	${NEWTARGET}
+
 @%:
 	$(eval TARGET=$(shell echo ${@} | cut -c 2-))
 	@ echo Setting current target ${TARGET}...
 	${NEWTARGET}
 
 _env%:
-	@ mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}
 	@ [[ ! -z "${TARGET}" ]] && docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
 			mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}; \
@@ -319,7 +322,7 @@ _env%:
 			[[ $$FILE == .env. ]] && FILE="$${FILE}${TARGET}";   \
 			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY};   \
 			(shopt -s nullglob; rm -rf ${ENTROPY_DIR});          \
-		}'
+		}' || true;                                              \
 
 _env:
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
@@ -332,7 +335,7 @@ _env:
 		}'
 
 infra/compose/%yml:
-	@ test -f infra/compose/${TARGET}.yml;
+	@ test -z "${TARGET}" || test -f infra/compose/${TARGET}.yml;
 
 ###
 

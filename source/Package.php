@@ -70,12 +70,17 @@ class Package
 
 	public static function get($packageName = NULL)
 	{
-		if(! $packageName)
-		{
-			$packageName = preg_replace('/\\\(?:\w+$)/', '', get_called_class());
-		}
+		$packageName =str_replace('\\/', '\\', $packageName);
+
+		$packageNameParts = explode('/\\', $packageName);
+
+		$packageName = array_shift($packageNameParts);
+
+		$packageName .= '\\' . array_shift($packageNameParts);
+
 		$vendorRoot = new \SeanMorris\Ids\Disk\Directory(IDS_VENDOR_ROOT);
 		$appRoot    = $vendorRoot->parent();
+
 
 		$dirFrag    = strtolower(preg_replace('/\\\\/', '/', $packageName));
 		$spaceFrag  = strtolower(preg_replace('/\//', '\\', $packageName));
@@ -115,7 +120,7 @@ class Package
 				$composerData->autoload->{'psr-4'}
 		));
 
-		foreach($namespaces as $namespace)
+			foreach($namespaces as $namespace)
 			{
 				if(strtolower($packageName . '\\') === strtolower($namespace))
 				{
@@ -123,6 +128,9 @@ class Package
 				}
 			}
 		}
+
+		// Got compose to load the same class twice here:
+		// PHP does not like that.
 
 		if(class_exists($packageClass))
 		{

@@ -7,7 +7,7 @@ done < <(make env SEP=-0);
 
 echo Pushing $BRANCH;
 
-[[ "$TARGET" == "test" ]] && set +x;
+[[ "$TARGET" == "dev" ]] && set +x;
 
 while read LINE; do echo $LINE | {
 	IFS=":" read BRANCH TARGET
