@@ -18,7 +18,7 @@ MAIN_ENV ?=${MAKEDIR}.env
 TRGT_ENV ?=${MAKEDIR}.env.${TARGET}
 ENV_LOCK ?=${MAKEDIR}.env_lock
 
-$(shell [ -f ${VAR_FILE} ] || echo "TARGET=base" > ${VAR_FILE})
+$(shell [ -f ${VAR_FILE} ] || echo "TARGET=${TARGET:-base}" > ${VAR_FILE})
 # $(shell [ -f ${ENV_LOCK} ] || )
 
 -include ${MAIN_ENV}
