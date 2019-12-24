@@ -2,14 +2,14 @@ language: minimal
 services:
   - docker
 install:
-  - make stay@test build
+  - make stay@test ct b t lt li;
   - make @test run CMD="idilic info"
   - make @prod run CMD="idilic info"
   - make @test run CMD="idilic info"
   - make @dev  run CMD="idilic info"
 script: |
-  make ct b t;
-  make stay@dev ct b t;
+  make ct b t lt li
+  make stay@dev ct b lt li
   make @prod ct b;
   make ct b t;
   make @test ct b t;

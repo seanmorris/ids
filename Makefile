@@ -318,14 +318,14 @@ npm-install ni: ${PREBUILD}
 		${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node npm i ${PKG}
 
 dcompose-config dcc: ${PREBUILD}
-	${DCOMPOSE} -f ${COMPOSE_TARGET} config
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} config
 
 dcompose dc: env
-	${DCOMPOSE} -f ${COMPOSE_TARGET}
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET}
 
 .lock_env:
 	$(shell)
-	[[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
+	@ [[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
 		${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
 			`${ISDEV} || echo "--no-dev"`;          \
 			                                        \
