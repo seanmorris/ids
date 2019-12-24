@@ -410,3 +410,11 @@ graylog-restart-bg glrb:
 
 graylog-stop gld:
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
+
+graylog-backup glbak:
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml run --rm mongo bash -c \
+		'mongodump -h localhost --db graylog --out /settings; ls /; ls /settings'
+
+graylog-restore glres:
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml run --rm mongo bash -c \
+		'mongorestore -h localhost --db graylog /settings/graylog'

@@ -12,6 +12,8 @@ services:
       memlock:
         soft: -1
         hard: -1
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
 
   graylog:
     image:   graylog/graylog:3.1
@@ -22,11 +24,32 @@ services:
       - 5555:5555
       - 12201:12201
       - 12201:12201/udp
+    volumes:
+      - graylog_journal:/usr/share/graylog/data/journal
+      - graylog_config:/usr/share/graylog/data/config
     environment:
       GRAYLOG_ROOT_PASSWORD_SHA2: 8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
       GRAYLOG_HTTP_EXTERNAL_URI:  http://127.0.0.1:19000/
       GRAYLOG_PASSWORD_SECRET:    ${GRAYLOG_PASSWORD_SECRET}
+    depends_on:
+      - elasticsearch
+      - mongo
 
   mongo:
     image:   mongo:3
     restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo_data:/data/db
+      - ../../../infra/graylog/settings:/settings
+
+volumes:
+  mongo_data:
+    driver: local
+  es_data:
+    driver: local
+  graylog_journal:
+    driver: local
+  graylog_config:
+    driver: local
