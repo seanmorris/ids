@@ -7,7 +7,7 @@ done < <(make env SEP=-0);
 
 echo Committing to $BRANCH;
 
-[[ "$TARGET" == "test" ]] && set +x;
+[[ "$TARGET" == "dev" ]] && set +eux;
 
 PHP_ERROR=0;
 

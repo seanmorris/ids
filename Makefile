@@ -101,6 +101,10 @@ ifeq (${TARGET},test)
 	NO_DEV=
 endif
 
+ifeq (${TARGET},dev)
+	NO_DEV=
+endif
+
 ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP} \
 	PROJECT=${PROJECT} TARGET=${TARGET} MAKEDIR=${MAKEDIR} DOCKER=${DOCKER} \
 	${XDEBUG_ENV} NPX="${NPX}" MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV} \
@@ -126,11 +130,9 @@ define UNINCLUDE
 		done;
 endef
 
-$(eval X=G)
-
 build b: .env .env.${TARGET} ${COMPOSE_FILE}
-	@ chmod ug+s . && umask 770
 	@ echo Building ${FULLNAME}
+	@ chmod ug+s . && umask 770
 	@ [[ "${TARGET}" != "" ]] || (echo "No target set." && false)
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install ${NO_DEV}
 	@ ${DCOMPOSE} -f ${COMPOSE_TOOLS}/node.yml build node
@@ -280,7 +282,8 @@ stay@%: @%
 	@ $(eval -include ${MAIN_ENV})
 	@ $(eval -include ${TRGT_ENV})
 
-.env%: entropy-dir
+.env%:
+	@ mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
 			FILE=`basename ${@}`; \
@@ -289,7 +292,8 @@ stay@%: @%
 			(shopt -s nullglob; rm -rf ${ENTROPY_DIR}); \
 		}'
 
-.env: entropy-dir
+.env:
+	@ mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
 			FILE=`basename ${@}`; \
@@ -301,8 +305,6 @@ stay@%: @%
 infra/compose/%yml:
 	@ test -f infra/compose/${TARGET}.yml;
 
-entropy-dir: ${ENTROPY_DIR}
-	@ mkdir -p ${ENTROPY_DIR} && chmod 700 ${ENTROPY_DIR}
 ###
 
 babel: ${COMPOSE_FILE} .env .env.${TARGET}

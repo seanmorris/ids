@@ -14,7 +14,7 @@ while read LINE; do echo $LINE | {
 
 	echo "$BRANCH:$TARGET found in .publishing file. Ids is building & pushing now.";
 
-	make TARGET=$TARGET;
-	make TARGET=$TARGET push-images;
+	make @$TARGET build;
+	make @$TARGET push-images;
 
 }; done < <(grep ^$BRANCH\: .publishing);
