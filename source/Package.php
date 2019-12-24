@@ -259,7 +259,7 @@ class Package
 				, strpos(
 					static::class
 					, '\\'
-					, strpos(static::class, '\\') + 1
+					, strpos(static::class, '\\') + 2
 				)
 			)
 		);
