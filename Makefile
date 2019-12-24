@@ -24,7 +24,7 @@ $(shell [ -f ${VAR_FILE} ] || echo "TARGET=${TARGET:-base}" > ${VAR_FILE})
 -include ${MAIN_ENV}
 -include ${TRGT_ENV}
 -include ${VAR_FILE}
--include ${VAR_FILE}
+-include ${ENV_LOCK}
 
 COMPOSE_FILE =infra/compose/${TARGET}.yml
 COMPOSE_TOOLS=infra/compose/tools
@@ -174,7 +174,7 @@ DRUN=docker run --rm \
 	-env-file=.env.${TARGET} \
 	-v $$PWD:/app
 
-PREBUILD=${COMPOSE_FILE} _env _env.${TARGET} ${ENV_LOCK}
+PREBUILD=${COMPOSE_FILE} _env ${ENV_LOCK}
 
 build b: ${PREBUILD}
 	@ echo Building ${FULLNAME}
@@ -308,7 +308,7 @@ dcompose dc: ${COMPOSE_FILE} _env _env.${TARGET}
 	${DCOMPOSE}
 
 ${ENV_LOCK}:
-	@ [[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
+	[[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
 		${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
 			`${ISDEV} || echo "--no-dev"`;                                   \
 		${DCOMPOSE} -f ${REALDIR}/${COMPOSE_TOOLS}/node.yml build node;      \
@@ -328,25 +328,16 @@ stay@%:
 	@ echo Setting current target ${TARGET}...
 	${NEWTARGET}
 
-_env%:
-	@ [[ ! -z "${TARGET}" ]] && docker run --rm -v ${MAKEDIR}:/app -w=/app \
+_env:
+	docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
+			set -ux; \
 			mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}; \
 			FILE=.`basename ${@} | cut -c 2-`;                   \
-			[[ $$FILE == .env. ]] && FILE="$${FILE}${TARGET}";   \
 			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY};   \
+			FROM=config/$$FILE.${TARGET} TO=$$FILE.${TARGET} && ${STITCH_ENTROPY};   \
 			(shopt -s nullglob; rm -rf ${ENTROPY_DIR});          \
 		}' || true;                                              \
-
-_env:
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		debian:buster-20191118-slim bash -c '{\
-			mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}; \
-			FILE=.`basename ${@} | cut -c 2-`;                   \
-			[[ $$FILE == ".env." ]] && FILE=.env;                \
-			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY};   \
-			(shopt -s nullglob; rm -rf ${ENTROPY_DIR});          \
-		}'
 
 infra/compose/%yml:
 	@ test -z "${TARGET}" || test -f infra/compose/${TARGET}.yml;
