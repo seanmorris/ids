@@ -308,14 +308,14 @@ npm-install ni: ${PREBUILD}
 		${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node npm i ${PKG}
 
 dcompose-config dcc: ${PREBUILD}
-	${DCOMPOSE} -f ${COMPOSE_TARGET} config
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} config
 
 dcompose dc: env
-	${DCOMPOSE} -f ${COMPOSE_TARGET}
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET}
 
 .lock_env:
 	$(shell)
-	[[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
+	@ [[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
 		${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
 			`${ISDEV} || echo "--no-dev"`;          \
 		REALDIR=${REALDIR} docker-compose           \
@@ -338,7 +338,7 @@ stay@%:
 	${NEWTARGET}
 
 .env%:
-	docker run --rm -v ${MAKEDIR}:/app -w=/app \
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
 			mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}; \
 			FILE=.`basename ${@} | cut -c 2-`;                   \
