@@ -2,7 +2,7 @@
 namespace SeanMorris\Ids;
 class SettingsReader implements \Iterator, \ArrayAccess
 {
-	protected $root, $keys, $names = [], $i = 0;
+	protected $root, $keys, $names = [], $i = 0, $isArray = false;
 
 	public function __construct($root, $names)
 	{
@@ -16,6 +16,9 @@ class SettingsReader implements \Iterator, \ArrayAccess
 		$keys = array_flip($names);
 
 		[$this->root, $this->names, $this->keys] = [$root, $names, $keys];
+
+		$this->isArray = $root[ strlen($root) -1 ] === '_';
+
 	}
 
 	public function __get($name)

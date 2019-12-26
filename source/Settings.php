@@ -35,7 +35,14 @@ class Settings
 		{
 			$env = static::getenv();
 
-			return $env[$envName];
+			$envVar = $env[$envName];
+
+			if($envName[strlen($envName)-1] === '_')
+			{
+				$envVar = str_getcsv($envVar, ' ');
+			}
+
+			return $cache[$cacheKey] = $envVar;
 		}
 
 		$settings = static::load(
@@ -210,8 +217,8 @@ class Settings
 		$env = static::getenv();
 
 		[$name, $host] = preg_replace(
-			['/\W/']
-			, ['_']
+			'/\W/'
+			, '_'
 			, [strtoupper($name), strtoupper($host)]
 		);
 
@@ -285,7 +292,11 @@ class Settings
 		$globalName = 'IDS_' . $name;
 
 		return $cache[$cacheKey] = array_filter(
-			[$portName, $hostName, $globalName]
+			[
+				$portName,     $portName   ? $portName   . '_' : NULL
+				, $hostName,   $hostName   ? $hostName   . '_' : NULL
+				, $globalName, $globalName ? $globalName . '_' : NULL
+			]
 		);
 	}
 

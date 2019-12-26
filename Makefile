@@ -72,8 +72,8 @@ endef
 
 define XDEBUG_ENV
 	XDEBUG_CONFIG="`\
-		test -f ${MAKEDIR}.env \
-		&& cat ${MAKEDIR}.env.$(if ${TARGET},${TARGET},'base') \
+		test -f ${MAKEDIR}.env.$(if ${TARGET},${TARGET},'base') \
+		&& cat ${MAKEDIR}.env.$(if ${TARGET},${TARGET},'base')  \
 		| ${INTERPOLATE_ENV} \
 		| grep ^XDEBUG_CONFIG_ \
 		| while read VAR; do echo $$VAR | { \
@@ -169,16 +169,17 @@ ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP}  \
 	PROJECT=${PROJECT} TARGET=${TARGET} MAKEDIR=${MAKEDIR} DOCKER=${DOCKER} \
 	${XDEBUG_ENV} NPX="${NPX}" MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV}    \
 	MAIN_DLT=${MAIN_DLT} TRGT_DLT=${TRGT_DLT} REALDIR=${REALDIR}            \
-	PROJECT_FULLNAME=${FULLNAME}                                            \
-	$$(cat ${MAKEDIR}.env 2>/dev/null | ${INTERPOLATE_ENV} | grep -v ^\#)   \
-	$$(cat ${MAKEDIR}.env.default 2>/dev/null                               \
-		| ${INTERPOLATE_ENV} | grep -v ^\#)                                 \
-	$$(cat ${MAKEDIR}.env.default.$(if ${TARGET},${TARGET},base)            \
-		| ${INTERPOLATE_ENV} | grep -v ^\#)                                 \
-	$$(cat ${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)                    \
-		| ${INTERPOLATE_ENV} | grep -v ^\#)                                 \
-	$$(cat ${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)                    \
-		| ${INTERPOLATE_ENV} | grep -v ^\#)
+	PROJECT_FULLNAME=${FULLNAME}                                  \
+	$$(cat ${MAKEDIR}.env 2>/dev/null                             \
+		| ${INTERPOLATE_ENV} | grep -v ^\# | echo)                \
+	$$(cat ${MAKEDIR}.env.default 2>/dev/null                     \
+		| ${INTERPOLATE_ENV} | grep -v ^\# | echo)                \
+	$$(cat ${MAKEDIR}.env.default.$(if ${TARGET},${TARGET},base) \
+		| ${INTERPOLATE_ENV} | grep -v ^\# | echo)                \
+	$$(cat ${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)         \
+		| ${INTERPOLATE_ENV} | grep -v ^\# | echo)                \
+	$$(cat ${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)         \
+		| ${INTERPOLATE_ENV} | grep -v ^\# | echo)
 
 DCOMPOSE=export ${ENV} && docker-compose -p ${PROJECT}_${TARGET}
 
@@ -216,13 +217,12 @@ test t: ${PREBUILD}
 		idilic -vv SeanMorris/Ids runTests
 
 clean: .env
-	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
+	@-${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
 	@ docker volume prune -f;
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app          \
-		debian:buster-20191118-slim bash -c "           \
-			rm -f .env .env.${TARGET} .var;             \
-			rm -f .env.default .env.default.${TARGET};  \
-			rm -rf  .lock_env vendor/;                  \
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+		debian:buster-20191118-slim bash -c "    \
+			rm -f .env .env.* .var;              \
+			rm -rf  .lock_env ;                  \
 		"
 
 SEP=
@@ -290,7 +290,7 @@ hooks: ${COMPOSE_TARGET}
 	@ git config core.hooksPath githooks
 
 run: ${PREBUILD}
-	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} run --rm ${NO_TTY} \
+	${DCOMPOSE} -f ${COMPOSE_TARGET} run --rm ${NO_TTY} \
 		${PASS_ENV} ${CMD}
 
 bash sh: ${PREBUILD}
@@ -348,7 +348,7 @@ stay@%:
 	@ echo Setting current target ${TARGET}...
 	${NEWTARGET}
 
-.env:
+.env: config/.env*
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{\
 			mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}; \
@@ -357,10 +357,14 @@ stay@%:
 			FROM=config/$$FILE.default TO=$$FILE.default         \
 				&& ${STITCH_ENTROPY};                            \
 			                                                     \
-			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY};   \
+			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY};  \
 			                                                     \
 			TARGET=$(if ${TARGET},${TARGET},base);               \
-			FROM=config/$$FILE.$$TARGET TO=$$FILE.$$TARGET       \
+			                                                     \
+			test -f $$FILE.$$TARGET ||                          \
+				echo "target=$$TARGET" > $$FILE.$$TARGET;       \
+			                                                     \
+			FROM=config/$$FILE.$$TARGET TO=$$FILE.$$TARGET      \
 				&& ${STITCH_ENTROPY};                            \
 			                                                     \
 			FROM=config/$$FILE.default.$$TARGET                  \

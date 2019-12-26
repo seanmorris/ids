@@ -238,8 +238,9 @@ use \SeanMorris\Ids\Settings;
 
 $someVar = Settings::read('some', 'var');
 $someOtherVar = Settings::read('some', 'otherVar');
-
 ```
+
+### Configuration Objects
 
 They'd also both be accessible as an object, which can be iterated:
 
@@ -256,6 +257,30 @@ foreach($some as $configKey => $value)
 
 }
 
+```
+
+### Configuration Arrays
+
+Arrays can be created by adding a `_` to the end of the environment variable name. The value will be split on whitespace.
+
+```
+IDS_ARRAY=first second third
+```
+
+```php
+<?php
+$array = Settings::read('ARRAY');
+```
+
+Whitespace will be preserved if the value is quotes:
+
+```
+IDS_ARRAY=first "second element" third
+```
+
+Quotes can be escaped by doubling:
+```
+IDS_ARRAY=first "second element ""with quotes inside""." third
 ```
 
 ### Hostname & Port based configuration
@@ -528,7 +553,7 @@ $file->write($content, FALSE);
 ## IPC / AMPQ*
 ### Idilic CLI
 
-Idilic commands can be run from the CLI in the form `idilic command` or `idilic Vendor/Package command`. Note that on the CLI package names can be separated by a forward slash (`/`). This is done to prevent the user from being forced to remember to escape backslashes (`\\`). 
+Idilic commands can be run from the CLI in the form `idilic command` or `idilic Vendor/Package command`. Note that on the CLI package names can be separated by a forward slash (`/`). This is done to prevent the user from being forced to remember to escape backslashes (`\\`).
 
 Run `idilic help` to get a list of available idilic commands.
 

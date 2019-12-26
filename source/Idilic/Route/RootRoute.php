@@ -973,9 +973,12 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 	public function config($router)
 	{
-		$args = $router->path()->consumeNodes();
+		$args   = $router->path()->consumeNodes();
+		$config = \SeanMorris\Ids\Settings::read(...$args);
 
-		return \SeanMorris\Ids\Settings::read(...$args);
+		// var_dump($config);
+
+		return $config;
 	}
 
 	public function pack()
