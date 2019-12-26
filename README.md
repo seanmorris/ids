@@ -360,27 +360,194 @@ Ensure you've installed the `idilic` cli tool from the start of the document. Us
 
 The schema will be stored in `data/global/schema.json`.
 
-## PHP Facilities
+## Routing
 
-### Routing
-### Modeling / ORM
-### Configuration
-### Migrations*
-### Asset Management
-### Linking
-### HTTP API*
-### IPC / AMPQ*
-### Solr & Redis*
+```
+IDS_ENTRYPOINT=SeanMorris\Ids\Test\Route
+```
+
+```php
+<?php
+namespace SeanMorris\Ids\Test\Route;
+class RootRoute implements \SeanMorris\Ids\Routable
+{
+	public
+		$routes = [
+			'foo' => 'SeanMorris\Ids\Test\Route\FooRoute'
+		]
+		, $alias = [
+			'bar' => 'foo'
+		];
+
+	public function index($router)
+	{
+		return 'index';
+	}
+
+	public function otherPage($router)
+	{
+		return 'not index';
+	}
+}
+```
+
+## Modeling / ORM
+
+```php
+<?php
+namespace SeanMorris\Ids\Test\Model;
+class Foozle extends \SeanMorris\Ids\Model
+{
+	use Common;
+
+	protected
+		$id
+		, $class
+		, $publicId
+		, $value
+	;
+
+	protected static
+		$table = 'Foozle'
+		, $createColumns = [
+			'publicId' => 'UNHEX(REPLACE(UUID(), "-", ""))'
+		]
+		, $readColumns = [
+			'publicId' => 'HEX(%s)'
+		]
+		, $updateColumns = [
+			'publicId' => 'UNHEX(%s)'
+		]
+	;
+}
+```
+## Logging*
+
+```
+IDS_LOG=php://stderr
+
+IDS_LOGLEVEL=trace
+IDS_LOGLEVEL=query
+IDS_LOGLEVEL=info
+IDS_LOGLEVEL=debug
+IDS_LOGLEVEL=warn
+IDS_LOGLEVEL=error
+IDS_LOGLEVEL=off
+```
+
+```php
+<?php
+use \SeanMorris\Ids\Log;
+
+Log::trace(...$messages);
+Log::query(...$messages);
+Log::info(...$messages);
+Log::warn(...$messages);
+Log::error(...$messages);
+Log::debug(...$messages);
+```
+
+## Debugging
+
+```
+XDEBUG_CONFIG_REMOTE_HOST=${DHOST_IP}
+XDEBUG_CONFIG_REMOTE_PORT=9000
+
+XDEBUG_CONFIG_PROFILER_ENABLE=0
+XDEBUG_CONFIG_REMOTE_ENABLE=1
+```
+
+## Linking
+
+```bash
+$ make composer-dumpautoload
+$ idilic link
+```
+## Testing
+
+```bash
+$ make @test build test
+```
+
+```bash
+$ idilic runTests
+```
+```php
+<?php
+namespace SeanMorris\ExamplePackage\Test;
+class ExampleTest extends \UnitTestCase
+{
+	public function testSomething()
+	{
+		// ...
+	}
+}
+```
+
+## File Access
+
+```php
+<?php
+use \SeanMorris\Ids\Disk;
+
+$file = new File($filename);
+
+//Check if file exists
+if($file->check())
+{
+	// ...
+}
+
+//Get the path to the file
+$path = $file->name();
+
+//Copy the file to another location.
+$copiedFile = $file->copy($newLocation);
+
+// Read byte-by-byte
+while(!$file->eof())
+{
+	$byte = $file->read(1);
+}
+
+// Read entire file:
+$content = $file->slurp();
+
+// Append
+$file->write($content);
+
+// Overwrite
+$file->write($content, FALSE);
+```
+
+## Migrations*
+## Asset Management
+## HTTP API*
+## IPC / AMPQ*
 ### Idilic CLI
-### Logging*
-### Dependency Injection*
-### File Access
-### Sessions
-### Email+
-### Debugging
-### Testing
-### Theming / Frontends
-### Existing Ids Projects
+
+Idilic commands can be run from the CLI in the form `idilic command` or `idilic Vendor/Package command`. Note that on the CLI package names can be separated by a forward slash (`/`). This is done to prevent the user from being forced to remember to escape backslashes (`\\`). 
+
+Run `idilic help` to get a list of available idilic commands.
+
+New commands can be implemented by adding a route class named `RootRoute` under the namespace `Vendor\Package\Idilic\Route` like so:
+
+```php
+<?php
+namespace SeanMorris\ExamplePackage\Idilic\Route;
+class RootRoute implements \SeanMorris\Ids\Routable
+{
+	/** Help text goes here. */
+	public function commandName($router)
+	{}
+}
+```
+
+## Dependency Injection*
+## Sessions
+## Email*
+## Theming / Frontends
+## Existing Ids Projects
 
 ## Make Commands
 
