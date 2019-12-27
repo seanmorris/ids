@@ -354,7 +354,7 @@ stay@%:
 	$(call ${NEWTARGET},${TARGET})
 
 .env: config/.env
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+	docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{            \
 			mkdir -p ${ENTROPY_DIR}-${TARGET};            \
 			chmod 770 ${ENTROPY_DIR}-${TARGET};           \
@@ -363,7 +363,7 @@ stay@%:
 				&& ${STITCH_ENTROPY};                     \
 		}'
 .env.default: config/.env.default
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+	docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{            \
 			mkdir -p ${ENTROPY_DIR}-${TARGET};            \
 			chmod 770 ${ENTROPY_DIR}-${TARGET};           \
@@ -373,7 +373,7 @@ stay@%:
 		}'
 
 .env_${TARGET}: config/.env_${TARGET}
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+	docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{            \
 			mkdir -p ${ENTROPY_DIR}-${TARGET};            \
 			chmod 770 ${ENTROPY_DIR}-${TARGET};           \
@@ -386,7 +386,7 @@ stay@%:
 		}'
 
 .env_${TARGET}.default: config/.env_${TARGET}.default
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+	docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c '{            \
 			mkdir -p ${ENTROPY_DIR}-${TARGET};            \
 			chmod 770 ${ENTROPY_DIR}-${TARGET};           \
