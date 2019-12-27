@@ -114,6 +114,8 @@ class Log
 
 	protected static function log($levelString, ...$data)
 	{
+		global $switches;
+
 		$output   = null;
 		$level    = 0;
 		$maxLevel = NULL;
@@ -169,8 +171,11 @@ class Log
 				static::$also = (object) Settings::read('logAlso') ?: [];
 			}
 
-			if(!isset(static::$also->$levelString))
-			{
+			if(
+				!isset(static::$also->$levelString)
+				 && !isset($switches['vv'])
+				 || !$switches['vv']
+			){
 				return;
 			}
 		}
@@ -190,27 +195,9 @@ class Log
 			);
 		}
 
-		if(static::showErrors($level))
-		{
-			foreach($data as $d)
-			{
-				if($d instanceof LogMeta)
-				{
-					continue;
-				}
-				if(is_scalar($d))
-				{
-					print $d . PHP_EOL;
-					continue;
-				}
-
-				fwrite(fopen('php://stderr', 'w'), static::dump($d));
-			}
-		}
-
 		if(!static::$censor)
 		{
-			static::$censor = (object) Settings::read('logCensor');
+			static::loadCensors();
 		}
 
 		$logBlob = static::logBlob(0, $level < static::$levels['warn']);
@@ -249,6 +236,26 @@ class Log
 			$output .= static::dump($datum, [], static::$colors);
 		}
 
+		$logLocation = ini_get('error_log');
+
+		if($logLocation !== 'php://stderr' && static::showErrors($level))
+		{
+			foreach($data as $d)
+			{
+				if($d instanceof LogMeta)
+				{
+					continue;
+				}
+				if(is_scalar($d))
+				{
+					print $d . PHP_EOL;
+					continue;
+				}
+
+				fwrite(fopen('php://stderr', 'w'), $output);
+			}
+		}
+
 		$logBlob->type         = $levelString;
 		$logBlob->level        = $level;
 		$logBlob->fullMessage  = $output;
@@ -275,7 +282,7 @@ class Log
 		}
 
 		file_put_contents(
-			ini_get('error_log')
+			$logLocation
 			, PHP_EOL . $output
 			, FILE_APPEND
 		);
@@ -431,7 +438,7 @@ class Log
 	{
 		if(!static::$censor)
 		{
-			static::$censor = (object) Settings::read('logCensor');
+			static::loadCensors();
 		}
 
 		$indent = '  ';
@@ -815,7 +822,7 @@ class Log
 	{
 		if(!static::$censor)
 		{
-			static::$censor = (object) Settings::read('logCensor');
+			static::loadCensors();
 		}
 
 		$superTrace = [];
@@ -1023,6 +1030,11 @@ class Log
 
 	public static function color($string, $foreground = NULL, $background = NULL, $terminate = TRUE)
 	{
+		if(Settings::read('logColor') !== NULL && !Settings::read('logColor'))
+		{
+			return $string;
+		}
+
 		if(!static::$colorOutput)
 		{
 			return $string;
@@ -1085,7 +1097,7 @@ class Log
 		global $switches;
 
 		return (php_sapi_name() == 'cli'
-			&& ($switches['vv']??0
+			&& (($switches['vv'] ?? 0)
 				|| ($level <= static::$levels['warn']
 					&&
 					($switches['verbose']
@@ -1096,5 +1108,28 @@ class Log
 				)
 			)
 		);
+	}
+
+	protected static function loadCensors()
+	{
+		if(static::$censor)
+		{
+			return;
+		}
+
+		static::$censor = (object) [];
+
+		$censorConfig = Settings::read('logCensor');
+
+		foreach($censorConfig as $censorKey => $censorVal)
+		{
+			if(is_numeric($censorKey))
+			{
+				$censorKey = $censorVal;
+				$censorVal = TRUE;
+			}
+
+			static::$censor->$censorKey = $censorVal;
+		}
 	}
 }

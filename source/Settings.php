@@ -369,7 +369,7 @@ class Settings
 				{
 					if($switches['verbose'] ?? $switches['v'] ?? FALSE)
 					{
-						fwrite(fopen('php://stderr'), sprintf(
+						fwrite(fopen('php://stderr', 'w'), sprintf(
 							'Using settings file: %s'
 							, $filepath
 						));

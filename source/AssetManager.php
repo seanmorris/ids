@@ -59,7 +59,7 @@ class AssetManager
 			}
 
 			static::$builtAssets[$asset] = TRUE;
-			
+
 			if($fullPackageName !== 'Static/Dynamic')
 			{
 				$assetName = implode('/', $chunks);
@@ -127,7 +127,7 @@ class AssetManager
 					'Age'    => $outputFile->age(),
 					'Expiry' => $cacheAssets
 				]);
-				
+
 				if($outputFile->check() && $cacheAssets > $outputFile->age())
 				{
 					\SeanMorris\Ids\Log::debug('Returning cached asset: '  . $filename);
@@ -191,7 +191,7 @@ class AssetManager
 				else
 				{
 					$build();
-				}			
+				}
 
 				\SeanMorris\Ids\Log::debug('Built asset: '  . $filename);
 
@@ -216,7 +216,6 @@ class AssetManager
 		}
 		else
 		{
-			var_dump($publicDir);
 			$publicDir->create(NULL, 0777, TRUE);
 		}
 

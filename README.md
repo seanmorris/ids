@@ -262,12 +262,12 @@ Settings may be provided in environment variables, .env files, or yml files.
 
 #### Environment Variable & Target Files
 
-The following files may be created/modified to configure the system. When the project is built, restarted, etc, they will be checked for modification, and re-built to the root of th projct if need be.
+The following files may be created/modified to configure the system. When the project is built, restarted, etc, they will be checked for modification, and re-built to the root of the projct if need be. The files generated to the root of the project should not be committed to version control.
 
-* 'config/.env' - Should not be committed to version control. Contains configuration that applies to the system regardles of the system's target.
-* 'config/.env.default' - Should be committed to version control. Contains non-secret configurations file and blank/dfault values for variables to be set in `config/.env`.
-* 'config/.env_TARGET' - Should not be committed to version control. Contains configuration based the system's target.
-* 'config/.env_TARGET.default' - Should be committed to version control. Contains non-secret configurations file and blank/dfault values for variables to be set in `config/.env_TARGET`.
+* `config/.env` - Should not be committed to version control. Contains configuration that applies to the system regardles of the system's target.
+* `config/.env.default` - Should be committed to version control. Contains non-secret configurations file and blank/dfault values for variables to be set in `config/.env`.
+* `config/.env_TARGET` - Should not be committed to version control. Contains configuration based the system's target.
+* `config/.env_TARGET.default` - Should be committed to version control. Contains non-secret configurations file and blank/dfault values for variables to be set in `config/.env_TARGET`.
 
 The values set will be read according to the following precedence (higher takes precedence over lower):
 
@@ -276,7 +276,7 @@ The values set will be read according to the following precedence (higher takes 
 * `.env`
 * `.env.default`
 
-Environment variables should have the the prefix `IDS_`. An environment variable with the name IDS_SOME_VAR and IDS_SOME_OTHERVAR would be accessible within the system with:
+Environment variables to be used in configuration should have the the prefix `IDS_`. An environment variable with the name IDS_SOME_VAR and IDS_SOME_OTHERVAR would be accessible within the system with:
 
 ```bash
 IDS_SOME_VAR=value
@@ -507,12 +507,12 @@ Logs can be written from anywhere in the system by calling a function corespongi
 <?php
 use \SeanMorris\Ids\Log;
 
-Log::trace(...$messages);
-Log::query(...$messages);
-Log::info(...$messages);
-Log::warn(...$messages);
-Log::error(...$messages);
-Log::debug(...$messages);
+Log::trace(...$messages); # Log a message along with a stacktrace.
+Log::query(...$messages); # Log query-level information
+Log::debug(...$messages); # Log debug information
+Log::info(...$messages);  # Log general information
+Log::warn(...$messages);  # Issue a warning
+Log::error(...$messages); # Issue an error
 ```
 
 Ids will write logs to a file or handle specified by the `IDS_LOG` config:
@@ -525,6 +525,8 @@ IDS_LOG=/tmp/ids.log
 
 The current level of verbosity can be configured with the `IDS_LOGLEVEL` variable.
 
+**NOTE**: If `LOGLEVEL` is set to `trace`, **every single log entry** will be accompanied by a stack trace. Thic can fill a disk quickly. Use with caution!
+
 ```
 IDS_LOGLEVEL=trace
 IDS_LOGLEVEL=query
@@ -534,6 +536,74 @@ IDS_LOGLEVEL=warn
 IDS_LOGLEVEL=error
 IDS_LOGLEVEL=off
 ```
+
+### ANSI Colors
+
+Logging comes with ANSI color turned on by default. Set the following config to disable it if thats causing problems for whatever you're using to read the logs:
+
+```
+IDS_LOGCOLOR=0
+```
+
+### Censoring Logs
+
+Set the `IDS_LOGCENSOR_` array in your config to define an array of values that should not appear in log files. If these values are found as function arguments, array keys, or object properties, they will be logged as `* censored *` rather than their actual value.
+
+The default censor filter is:
+
+```
+IDS_LOGCENSOR_=router password passwd
+```
+
+You can test censor filters. Issuing the following command will output your database settings, with no censorship applied:
+
+```bash
+$ idilic config databases
+```
+
+Adding -vv to the idilic command will force it to print its logs to `STDERR` (without verbosity checks).
+
+```bash
+$ idilic -vv config databases
+```
+We can drop the original output of the command as follows to declutter the terminal:
+
+```bash
+$ idilic -vv config databases 1 > /dev/null
+```
+We can also extract the original output with:
+
+```bash
+$ idilic -vv config databases 2 > /dev/null
+```
+
+### Redirecting / Forcing CLI Logs
+
+Logging can be forced on the command line with `-v` and `-vv`.
+
+* `-v` will print any logs within the current verbosity thesholds to `STDERR`.
+* `-vv` will print any logs REGARDLESS of verbosity thesholds to `STDERR`.
+
+```bash
+$ idilic -v  info
+$ idilic -vv info
+```
+
+Logs of individual commands can be redirected to files or handles with `2>`.
+
+```bash
+$ idilic -v  info 2> /tmp/summary$(date +%Y%m%d).log
+$ idilic -vv info 2> /tmp/details$(date +%Y%m%d).log
+```
+
+If you're more interested in the logs than the output, you can discard the output with:
+
+```bash
+$ idilic -v  command 1> /dev/null
+$ idilic -vv command 1> /dev/null
+```
+
+### Graylog
 
 Logs may be sent to Graylog by providing a custom log handler in the config
 

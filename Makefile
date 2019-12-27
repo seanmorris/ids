@@ -21,7 +21,6 @@ MAIN_DLT ?=${MAKEDIR}.env.default
 
 -include ${MAIN_ENV}
 -include ${VAR_FILE}
--include ${ENV_LOCK}
 
 ifeq ($(filter @%,$(firstword ${MAKECMDGOALS})),)
 ifeq ($(filter stay@%,$(firstword ${MAKECMDGOALS})),)
@@ -46,6 +45,8 @@ $(shell >&2 echo Starting with target: ${TARGET})
 PREBUILD =.env .env.default .env_$${TARGET} .env_$${TARGET}.default .lock_env
 
 ENV_LOCK ?=${MAKEDIR}.lock_env
+
+-include ${ENV_LOCK}
 
 COMPOSE_TARGET =infra/compose/${TARGET}.yml
 COMPOSE_TOOLS=infra/compose/tools
@@ -75,11 +76,11 @@ DEVTARGETS=test dev
 ISDEV     =echo "${DEVTARGETS}" | grep -wq "${TARGET}"
 
 define NPX
-cp  -n /app/package-lock.json /build; \
-	cat /app/composer.json            \
-		| tr '[:upper:]' '[:lower:]'  \
-		| tr '/' '-'                  \
-		> package.json;               \
+cp  -n /app/package-lock.json /build;   \
+	cat /app/composer.json              \
+		| tr '[:upper:]' '[:lower:]'    \
+		| tr '/' '-'                    \
+		> package.json;                 \
 	npx
 endef
 
@@ -144,7 +145,7 @@ endef
 define STITCH_ENTROPY
 test -d ${ENTROPY_DIR}                       \
 	|| mkdir -m 700 -p ${ENTROPY_DIR};       \
-test -f $$TO && test -s $$TO || while read -r ENV_LINE; do \
+while read -r ENV_LINE; do                   \
 	test -n "$$ENV_LINE" || continue;        \
 	echo -n "$$ENV_LINE" | ${PARSE_ENV}      \
 		grep $$ENV_NAME .entropy | {         \
@@ -216,26 +217,31 @@ build b: ${PREBUILD}
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
 		| while read IMAGE_NAME; do                                          \
 			IMAGE_PREFIX=`echo "$$IMAGE_NAME" | sed -e "s/\:.*\$$//"`;       \
-			echo "$$IMAGE_HASH $$IMAGE_PREFIX":${TAG};                       \
-			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":${HASH}${SUFFIX};     \
-			echo "$$IMAGE_HASH $$IMAGE_PREFIX":${HASH}${SUFFIX};             \
-			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":`date '+%Y%m%d'`${SUFFIX}; \
-			echo "$$IMAGE_HASH $$IMAGE_PREFIX":`date '+%Y%m%d'`${SUFFIX};    \
+			                                                                 \
+			echo "original:$$IMAGE_HASH $$IMAGE_PREFIX":${TAG};              \
+			                                                                 \
 			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":latest${SUFFIX};      \
-			echo "$$IMAGE_HASH $$IMAGE_PREFIX":latest${SUFFIX};              \
+			echo "  latest:$$IMAGE_HASH $$IMAGE_PREFIX":latest${SUFFIX};     \
+			                                                                 \
+			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":${HASH}${SUFFIX};     \
+			echo "    hash:$$IMAGE_HASH $$IMAGE_PREFIX":${HASH}${SUFFIX};    \
+			                                                                 \
+			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":`date '+%Y%m%d'`${SUFFIX};  \
+			echo "    date:$$IMAGE_HASH $$IMAGE_PREFIX":`date '+%Y%m%d'`${SUFFIX}; \
 		done; \
 	done;
 
 test t: ${PREBUILD}
 	@ export TARGET=${TARGET} && ${DCOMPOSE} -f ${COMPOSE_TARGET} \
 		run --rm ${NO_TTY} ${PASS_ENV}                            \
-		idilic -vv SeanMorris/Ids runTests
+		idilic SeanMorris/Ids runTests
 
 clean: ${PREBUILD}
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
 	@ docker volume prune -f;
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app     \
 		debian:buster-20191118-slim bash -c "        \
+			set -o noglob;                           \
 			rm -f .env .env_${TARGET} .var;          \
 			rm -rf  .lock_env .env_${TARGET}.default \
 			cat data/global/_schema.json > data/global/schema.json ;"

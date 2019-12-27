@@ -103,7 +103,7 @@ class SettingsReader implements \Iterator, \ArrayAccess
 		{
 			if(method_exists($v, __FUNCTION__))
 			{
-				$r[$k] = $v->__FUNCTION__();
+				$r[$k] = $v->{__FUNCTION__}();
 				continue;
 			}
 
