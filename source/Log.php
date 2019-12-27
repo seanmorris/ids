@@ -262,10 +262,10 @@ class Log
 		{
 			foreach($loggers as $logger)
 			{
-				if(!is_a($logger, \SeanMorris\Ids\Logger\Gelf::class, TRUE))
+				if(!is_subclass_of($logger, \SeanMorris\Ids\Logger::class))
 				{
 					throw new \Exception(sprintf(
-						'Settings specifiy non-Logger as Logger: %s'
+						'Settings specifiy non-Logger as Logger: "%s"'
 						, $logger
 					));
 				}

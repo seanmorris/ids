@@ -8,8 +8,8 @@ services:
     env_file:
       - ${MAIN_DLT}
       - ${MAIN_ENV}
-      - ${TRGT_ENV}
       - ${TRGT_DLT}
+      - ${TRGT_ENV}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /usr/bin/docker:${DOCKER}
@@ -24,8 +24,8 @@ services:
     env_file:
       - ${MAIN_DLT}
       - ${MAIN_ENV}
-      - ${TRGT_ENV}
       - ${TRGT_DLT}
+      - ${TRGT_ENV}
     build:
       context: ../../
       dockerfile: infra/docker/server.dockerfile
@@ -39,8 +39,8 @@ services:
     env_file:
       - ${MAIN_DLT}
       - ${MAIN_ENV}
-      - ${TRGT_ENV}
       - ${TRGT_DLT}
+      - ${TRGT_ENV}
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: 1
       MYSQL_USER:     ${IDS_DATABASES_MAIN_USERNAME}

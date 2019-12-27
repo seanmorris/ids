@@ -1,6 +1,6 @@
 <?php
 namespace SeanMorris\Ids\Logger;
-class Gelf implements \SeanMorris\Ids\Logger
+class Plain implements \SeanMorris\Ids\Logger
 {
 	public static function start($logBlob)
 	{
