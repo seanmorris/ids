@@ -249,10 +249,10 @@ class Log
 			$output .= static::dump($datum, [], static::$colors);
 		}
 
-		$logBlob->type          = $levelString;
-		$logBlob->level         = $level;
-		$logBlob->full_message  = $output;
-		$logBlob->short_message = is_string($data[0] ?? NULL)
+		$logBlob->type         = $levelString;
+		$logBlob->level        = $level;
+		$logBlob->fullMessage  = $output;
+		$logBlob->shortMessage = is_string($data[0] ?? NULL)
 			? $data[0]
 			: strtok($output, "\n")
 				. PHP_EOL

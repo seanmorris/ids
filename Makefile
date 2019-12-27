@@ -2,10 +2,10 @@
 
 .PHONY: @% b babel bash build cda ci clean composer-dump-autoload composer-install \
 	composer-update composer-update-no-dev ct ctr cu current-tag current-target d  \
-	da dcc dcompose-config e entropy-dir_env _env..env% hooks init it k kill li \
+	da dcc dcompose-config e entropy-dir_env hooks init it k kill li \
 	list-images list-tags lt n ni node npm-install pli psi pull-images push-images \
 	r rb restart restart-bg restart-fg rf run run-phar s sb sf sh start start-bg \
-	start-fg stay@% stop stop-all t tag-images test
+	start-fg stay@% stop stop-all t tag-images test .lock_env
 
 .SECONDEXPANSION:
 
@@ -234,11 +234,12 @@ test t: ${PREBUILD}
 clean: ${PREBUILD}
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
 	@ docker volume prune -f;
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		debian:buster-20191118-slim bash -c "    \
-			rm -f .env .env* .var;               \
-			rm -rf  .lock_env ;                  \
-		"
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app     \
+		debian:buster-20191118-slim bash -c "        \
+			rm -f .env .env_${TARGET} .var;          \
+			rm -rf  .lock_env .env_${TARGET}.default \
+			cat data/global/_schema.json > data/global/schema.json ;"
+
 SEP=
 env e:
 	@ export ${ENV} && env ${SEP};
@@ -338,7 +339,6 @@ dcompose dc:
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET}
 
 .lock_env:
-	$(shell)
 	@ [[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || (    \
 		${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
 			--ignore-platform-reqs                  \
@@ -422,34 +422,34 @@ dirs:
 	@ echo ${MAKEDIR}
 	@ echo ${REALDIR}
 
-graylog-start gls:
+graylog-start gls: ${PREBUILD}
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up -d
 
-graylog-start-fg glsf:
+graylog-start-fg glsf: ${PREBUILD}
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up
 
-graylog-start-bg glsb:
+graylog-start-bg glsb: ${PREBUILD}
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up &
 
-graylog-restart glr:
+graylog-restart glr: ${PREBUILD}
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up -d
 
-graylog-restart-fg glrf:
+graylog-restart-fg glrf: ${PREBUILD}
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up
 
-graylog-restart-bg glrb:
+graylog-restart-bg glrb: ${PREBUILD}
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up &
 
-graylog-stop gld:
+graylog-stop gld: ${PREBUILD}
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
 
 graylog-backup glbak:
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml run --rm mongo bash -c \
-		'mongodump -h localhost --db graylog --out /settings; ls /; ls /settings'
+		'mongodump -h mongo --db graylog --out /settings; ls /; ls /settings'
 
 graylog-restore glres:
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml run --rm mongo bash -c \
-		'mongorestore -h localhost --db graylog /settings/graylog'
+		'mongorestore -h mongo --db graylog /settings/graylog'

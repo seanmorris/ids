@@ -17,14 +17,16 @@ class Gelf implements \SeanMorris\Ids\Logger
 		$logBlob->short_message = preg_replace(
 			'/\e\[[0-9;]*m(?:\e\[K)?/i'
 			, ''
-			, $logBlob->short_message ?? ''
+			, $logBlob->shortMessage ?? ''
 		);
 
 		$logBlob->full_message = preg_replace(
 			'/\e\[[0-9;]*m(?:\e\[K)?/i'
 			, ''
-			, $logBlob->full_message ?? ''
+			, $logBlob->fullMessage ?? ''
 		);
+
+		unset($logBlob->fullMessage, $logBlob->shortMessage);
 
 		$logBlob->trace = preg_replace(
 			'/\e\[[0-9;]*m(?:\e\[K)?/'
@@ -33,12 +35,12 @@ class Gelf implements \SeanMorris\Ids\Logger
 		);
 
 		$gelf = [
-			'version'          => '1.1'
-			, 'host'           => $_SERVER['SERVER_NAME'] ?? gethostname()
-			, 'short_message'  => 'short_message'
-			, 'full_message'   => 'full_message'
-			, 'timestamp'      => microtime(true)
-			, 'level'          => 0
+			'version'         => '1.1'
+			, 'host'          => $_SERVER['SERVER_NAME'] ?? gethostname()
+			, 'short_message' => 'short_message'
+			, 'full_message'  => 'full_message'
+			, 'timestamp'     => microtime(true)
+			, 'level'         => 0
 		];
 
 		$blob = [];
@@ -72,14 +74,8 @@ class Gelf implements \SeanMorris\Ids\Logger
 		if($socket = static::socket())
 		{
 			$payload = json_encode($gelf);
-			try
-			{
-				socket_write($socket, $payload . "\0", strlen($payload) + 1);
-			}
-			catch(\Exception $exception)
-			{
 
-			}
+			socket_write($socket, $payload . "\0", strlen($payload) + 1);
 		}
 	}
 
@@ -87,21 +83,21 @@ class Gelf implements \SeanMorris\Ids\Logger
 	{
 		static $socket;
 
+		$graylogConfig = \SeanMorris\Ids\Settings::read('graylog');
+
+		if(!isset($graylogConfig->host, $graylogConfig->port))
+		{
+			return;
+		}
+
 		if($socket)
 		{
 			return $socket;
 		}
 
-		try
-		{
-			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+		$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
-			socket_connect($socket, 'graylog', 12201);
-		}
-		catch(\Exception $exception)
-		{
-
-		}
+		socket_connect($socket, $graylogConfig->host, $graylogConfig->port);
 
 		return $socket;
 	}

@@ -43,7 +43,7 @@ Create a new project with composer, enter the directory and start php, apache & 
 ```bash
 $ composer create-project seanmorris/ids-project -s dev --remove-vcs
 $ cd ids-project
-$ make start-bg
+$ make @dev start-bg
 ```
 
 Thats it!
@@ -73,6 +73,41 @@ The `dev` build target provides facilities for connecting to xdebug and graylog.
 XDebug is built into the `dev` images by default. You can configure it by setting `XDEBUG_CONFIG_` environment variables in `.env.dev`. By default it will attempt to connect to port 9000 on `${DHOST_IP}`, which is the machine runing the project.
 
 ### GrayLog
+
+`\SeanMorris\Ids\Logger\Gelf` provides a simple interface to graylog. Just add it to the `IDS_LOGGERS_` environment variable to enable it. So long as there is a graylog server available , it will send all logs that meet the verbosity threshold.
+
+
+The default graylog config for the `dev` target looks like:
+
+```
+IDS_LOGGERS_=\SeanMorris\Ids\Logger\Gelf
+IDS_GRAYLOG_HOST=graylog
+IDS_GRAYLOG_PORT=12201
+```
+
+This package comes with a default GELF TCP input in its graylog config backup. You can run `make graylog-restore` after starting graylog for the first time to create the input.
+
+The graylog config can be backed up and restored with the following commands:
+
+```bash
+$ make graylog-backup     # alias glbak
+$ make graylog-restore    # alias glres
+```
+
+Graylog can be started and stopped with the following commands:
+
+```bash
+$ make graylog-start      # alias gls
+$ make graylog-start-fg   # alias glsf
+$ make graylog-start-bg   # alias glsb
+
+
+$ make graylog-stop       # alias gld
+
+$ make graylog-restart    # alias glr
+$ make graylog-restart-fg # alias glrf
+$ make graylog-start-bg   # alias glrb
+```
 
 ## Idilc CLI
 
@@ -448,19 +483,9 @@ class Foozle extends \SeanMorris\Ids\Model
 	;
 }
 ```
-## Logging*
+## Logging
 
-```
-IDS_LOG=php://stderr
-
-IDS_LOGLEVEL=trace
-IDS_LOGLEVEL=query
-IDS_LOGLEVEL=info
-IDS_LOGLEVEL=debug
-IDS_LOGLEVEL=warn
-IDS_LOGLEVEL=error
-IDS_LOGLEVEL=off
-```
+Logs can be written from anywhere in the system by calling a function coresponging to the desied level of verbosity. There are 6 levels of verbosity available.
 
 ```php
 <?php
@@ -472,6 +497,48 @@ Log::info(...$messages);
 Log::warn(...$messages);
 Log::error(...$messages);
 Log::debug(...$messages);
+```
+
+Ids will write logs to a file or handle specified by the `IDS_LOG` config:
+
+```
+IDS_LOG=php://stderr
+# can also be a file
+IDS_LOG=/tmp/ids.log
+```
+
+The current level of verbosity can be configured with the `IDS_LOGLEVEL` variable.
+
+```
+IDS_LOGLEVEL=trace
+IDS_LOGLEVEL=query
+IDS_LOGLEVEL=info
+IDS_LOGLEVEL=debug
+IDS_LOGLEVEL=warn
+IDS_LOGLEVEL=error
+IDS_LOGLEVEL=off
+```
+
+Logs may be sent to Graylog by providing a custom log handler in the config
+
+```
+IDS_LOGGERS_=\SeanMorris\Ids\Logger\Gelf
+```
+
+Custom loggers may created by implemeting the `\SeanMorris\Ids\Logger` interface.
+
+```php
+<?php
+namespace SeanMorris\Ids\Logger;
+class AdditionalLogger implements \SeanMorris\Ids\Logger
+{
+	public static function start($logBlob)
+	{/* ... */}
+
+	public static function log($logBlob)
+	{/* ... */}
+}
+
 ```
 
 ## Debugging
