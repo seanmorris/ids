@@ -10,7 +10,7 @@ The PHP/Docker Framework
 
 The Ids library provides general domain-primitives for developing web based applications. Routing, requests, modeling configuration, logging, sessions, and database access are all abstracted behind simple, expressive interfaces to efficient and powerful code.
 
-To prevent unexpected behaviro, the system is set to die on all errors down to `E_NOTICE`, excluding `E_DEPRECATED` errors generated from the vendor directory.
+To prevent unexpected behavior, the system is set to die on all errors down to `E_NOTICE`, excluding `E_DEPRECATED` errors generated from the vendor directory.
 
 The project is made to run in docker but doesn't require it. It can be included in any composer project, and used in part or in whole easily.
 
