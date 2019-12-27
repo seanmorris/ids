@@ -1,4 +1,4 @@
-#make!make
+#!make
 
 .PHONY: @% b babel bash build cda ci clean composer-dump-autoload composer-install \
 	composer-update composer-update-no-dev ct ctr cu current-tag current-target d  \
@@ -14,20 +14,30 @@ REALDIR  :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 MAKEDIR  ?=${REALDIR}
 VAR_FILE ?=${MAKEDIR}.var
 
-MAIN_DLT ?=${MAKEDIR}.env.default
-TRGT_DLT ?=${MAKEDIR}.env.default$(if ${TARGET},${TARGET},base)
-
 MAIN_ENV ?=${MAKEDIR}.env
-TRGT_ENV ?=${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)
-
-ENV_LOCK ?=${MAKEDIR}.lock_env
+MAIN_DLT ?=${MAKEDIR}.env.default
 
 -include ${MAIN_ENV}
--include ${TRGT_ENV}
 -include ${VAR_FILE}
 -include ${ENV_LOCK}
 
-COMPOSE_TARGET =infra/compose/$(if ${TARGET},${TARGET},base).yml
+ifeq (${TARGET},)
+# $(error Please set a target with @target or stay@target.)
+else
+TRGT_ENV =${MAKEDIR}.env_${TARGET}
+TRGT_DLT =${MAKEDIR}.env_${TARGET}.default
+
+-include ${TRGT_ENV}
+-include ${TRGT_DLT}
+$(info Starting with target: ${TARGET})
+
+PREBUILD=.env .env.default .env_${TARGET} .env_${TARGET}.default .lock_env
+
+endif
+
+ENV_LOCK ?=${MAKEDIR}.lock_env
+
+COMPOSE_TARGET =infra/compose/${TARGET}.yml
 COMPOSE_TOOLS=infra/compose/tools
 
 PROJECT  ?=ids
@@ -55,54 +65,54 @@ DEVTARGETS=test dev
 ISDEV     =echo "${DEVTARGETS}" | grep -wq "${TARGET}"
 
 define NPX
-	cp  -n /app/package-lock.json /build; \
-		cat /app/composer.json            \
-			| tr '[:upper:]' '[:lower:]'  \
-			| tr '/' '-'                  \
-			> package.json;               \
-		npx
+cp  -n /app/package-lock.json /build; \
+	cat /app/composer.json            \
+		| tr '[:upper:]' '[:lower:]'  \
+		| tr '/' '-'                  \
+		> package.json;               \
+	npx
 endef
 
 define INTERPOLATE_ENV
-	env -i DHOST_IP=${DHOST_IP} \
-		TAG=${TAG} REPO=${REPO} TARGET=${TARGET} \
-		PROJECT=${PROJECT} \
-		envsubst
+env -i DHOST_IP=${DHOST_IP} \
+	TAG=${TAG} REPO=${REPO} TARGET=${TARGET} \
+	PROJECT=${PROJECT} \
+	envsubst
 endef
 
 define XDEBUG_ENV
-	XDEBUG_CONFIG="`\
-		test -f ${MAKEDIR}.env.$(if ${TARGET},${TARGET},'base') \
-		&& cat ${MAKEDIR}.env.$(if ${TARGET},${TARGET},'base')  \
-		| ${INTERPOLATE_ENV} \
-		| grep ^XDEBUG_CONFIG_ \
-		| while read VAR; do echo $$VAR | { \
-			IFS='\=' read -r NAME VALUE; \
-			echo -En $$NAME \
-				| sed -e 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
-			echo -En "=$$VALUE ";\
-		} done`"
+XDEBUG_CONFIG="`\
+	test -f ${MAKEDIR}.env_${TARGET} \
+	&& cat ${MAKEDIR}.env_${TARGET}  \
+	| ${INTERPOLATE_ENV} \
+	| grep ^XDEBUG_CONFIG_ \
+	| while read VAR; do echo $$VAR | { \
+		IFS='\=' read -r NAME VALUE; \
+		echo -En $$NAME \
+			| sed -e 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
+		echo -En "=$$VALUE ";\
+	} done`"
 endef
 
 PASS_ENV=$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /')
 
 define WHILE_IMAGES
-	docker images ${REPO}/${PROJECT}.*:${TAG} -q \
-	| while read IMAGE_HASH; do
+docker images ${REPO}/${PROJECT}.*:${TAG} -q \
+| while read IMAGE_HASH; do
 endef
 
 define WHILE_TAGS
-	${WHILE_IMAGES} \
-		docker image inspect --format="{{ index .RepoTags }}" $$IMAGE_HASH \
-		| sed -e 's/[][]//g' \
-		| sed -e 's/\s/\n/g' \
-		| while read TAG_NAME; do
+${WHILE_IMAGES} \
+	docker image inspect --format="{{ index .RepoTags }}" $$IMAGE_HASH \
+	| sed -e 's/[][]//g' \
+	| sed -e 's/\s/\n/g' \
+	| while read TAG_NAME; do
 endef
 
 define PARSE_ENV
-	grep -v ^\# \
-		| while read -r ENV; do echo $$ENV | { \
-			IFS='\=' read -r ENV_NAME ENV_VALUE;
+grep -v ^\# \
+	| while read -r ENV; do echo $$ENV | { \
+		IFS='\=' read -r ENV_NAME ENV_VALUE;
 endef
 
 ENTROPY_DIR?=/tmp/IDS_ENTROPY
@@ -115,7 +125,7 @@ test -e ${ENTROPY_DIR}/$$ENTROPY_KEY \
 		| tr -dc 'a-zA-Z0-9' \
 		| fold -w 32 \
 		| head -n 1 \
-		| tee ${ENTROPY_DIR}/$$ENTROPY_KEY
+		| tee ${ENTROPY_DIR}-${TARGET}/$$ENTROPY_KEY
 endef
 
 define STITCH_ENTROPY
@@ -140,55 +150,50 @@ define UNINCLUDE
 		done;
 endef
 
-define NEWTARGET:
-	NEWTARGET=`echo ${@} | cut -c 3-`; \
+define NEWTARGET
+	NEWTARGET=`echo ${1} | cut -c 3-`; \
 	test -f infra/compose/$$NEWTARGET.yml || (\
 		echo "No yml for target '$$NEWTARGET' found in config/ dir." \
 		&& false \
-	) && echo Using target $$NEWTARGET...
-
+	) && echo Using target ${1}...;\
 	$(eval COMPOSE_TARGET=infra/compose/${TARGET}.yml)
-
 	$(foreach SETTING, $(shell $(call UNINCLUDE,${MAIN_DLT})), $(eval ${SETTING}))
 	$(foreach SETTING, $(shell $(call UNINCLUDE,${TRGT_DLT})), $(eval ${SETTING}))
 	$(foreach SETTING, $(shell $(call UNINCLUDE,${MAIN_ENV})), $(eval ${SETTING}))
 	$(foreach SETTING, $(shell $(call UNINCLUDE,${TRGT_ENV})), $(eval ${SETTING}))
-
-	$(eval MAIN_ENV =${MAKEDIR}.env)
-	$(eval TRGT_ENV =${MAKEDIR}.env.${TARGET})
-	$(eval MAIN_DLT =${MAKEDIR}.env.default)
-	$(eval TRGT_DLT =${MAKEDIR}.env.default.${TARGET})
-
+	$(eval MAIN_ENV=${MAKEDIR}.env)
+	$(eval MAIN_DLT=${MAKEDIR}.env.default)
+	$(eval TRGT_ENV=${MAKEDIR}.env_${TARGET})
+	$(eval TRGT_DLT=${MAKEDIR}.env_${TARGET}.default)
 	$(eval -include ${MAIN_ENV})
 	$(eval -include ${TRGT_ENV})
-	$(eval -include ${MAIN_DLT}).default
-	$(eval -include ${TRGT_DLT}).default
+	$(eval -include ${MAIN_DLT})
+	$(eval -include ${TRGT_DLT})
 endef
 
 ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP}  \
 	PROJECT=${PROJECT} TARGET=${TARGET} MAKEDIR=${MAKEDIR} DOCKER=${DOCKER} \
-	${XDEBUG_ENV} NPX="${NPX}" MAIN_ENV=${MAIN_ENV} TRGT_ENV=${TRGT_ENV}    \
-	MAIN_DLT=${MAIN_DLT} TRGT_DLT=${TRGT_DLT} REALDIR=${REALDIR}            \
-	PROJECT_FULLNAME=${FULLNAME}                                  \
-	$$(cat ${MAKEDIR}.env 2>/dev/null                             \
-		| ${INTERPOLATE_ENV} | grep -v ^\# | echo)                \
-	$$(cat ${MAKEDIR}.env.default 2>/dev/null                     \
-		| ${INTERPOLATE_ENV} | grep -v ^\# | echo)                \
-	$$(cat ${MAKEDIR}.env.default.$(if ${TARGET},${TARGET},base) \
-		| ${INTERPOLATE_ENV} | grep -v ^\# | echo)                \
-	$$(cat ${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)         \
-		| ${INTERPOLATE_ENV} | grep -v ^\# | echo)                \
-	$$(cat ${MAKEDIR}.env.$(if ${TARGET},${TARGET},base)         \
-		| ${INTERPOLATE_ENV} | grep -v ^\# | echo)
+	MAIN_ENV=${MAIN_ENV}  MAIN_DLT=${MAIN_DLT}     \
+	TRGT_DLT=${TRGT_DLT} TRGT_ENV=${TRGT_ENV}      \
+	REALDIR=${REALDIR} ${XDEBUG_ENV}               \
+	PROJECT_FULLNAME=${FULLNAME}                   \
+	$$(cat ${MAIN_DLT}                             \
+		| ${INTERPOLATE_ENV} | grep -v ^\# | sed 's/\\n/ /g') \
+	$$(cat ${MAIN_ENV} 2>/dev/null                 \
+		| ${INTERPOLATE_ENV} | grep -v ^\# | sed 's/\\n/ /g') \
+	$$(cat ${TRGT_ENV}                             \
+		| ${INTERPOLATE_ENV} | grep -v ^\# | sed 's/\\n/ /g') \
+	$$(cat ${TRGT_DLT}                             \
+		| ${INTERPOLATE_ENV} | grep -v ^\# | sed 's/\\n/ /g')
 
 DCOMPOSE=export ${ENV} && docker-compose -p ${PROJECT}_${TARGET}
 
 DRUN=docker run --rm \
+	-env-file=.env.default \
 	-env-file=.env \
-	-env-file=.env.${TARGET} \
+	-env-file=.env_${TARGET} \
+	-env-file=.env_${TARGET}.default \
 	-v $$PWD:/app
-
-PREBUILD= .env .lock_env
 
 build b: ${PREBUILD}
 	@ echo Building ${FULLNAME}
@@ -217,14 +222,13 @@ test t: ${PREBUILD}
 		idilic -vv SeanMorris/Ids runTests
 
 clean: .env
-	@-${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
 	@ docker volume prune -f;
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c "    \
-			rm -f .env .env.* .var;              \
+			rm -f .env .env* .var;               \
 			rm -rf  .lock_env ;                  \
 		"
-
+	${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
 SEP=
 env e:
 	@ export ${ENV} && env ${SEP};
@@ -318,9 +322,9 @@ npm-install ni: ${PREBUILD}
 		${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node npm i ${PKG}
 
 dcompose-config dcc: ${PREBUILD}
-	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} config
+	echo ${ENV}; ${DCOMPOSE} -f ${COMPOSE_TARGET} config
 
-dcompose dc: env
+dcompose dc:
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET}
 
 .lock_env:
@@ -339,40 +343,63 @@ dcompose dc: env
 ##
 
 stay@%:
+	echo Setting persistent target ${TARGET}...
 	$(eval TARGET=$(shell echo ${@} | cut -c 6-))
-	@ echo TARGET=${TARGET} > ${VAR_FILE};
-	@ echo Setting persistent target ${TARGET}...
-	${NEWTARGET}
+	echo TARGET=${TARGET} > ${VAR_FILE};
+	$(call ${NEWTARGET},${TARGET})
 
 @%:
-	$(eval TARGET=$(shell echo ${@} | cut -c 2-))
-	@ echo Setting current target ${TARGET}...
-	${NEWTARGET}
+	echo Setting current target ${TARGET}...
+	$(eval TARGET=$(shell echo ${@} | cut -c 6-))
+	$(call ${NEWTARGET},${TARGET})
 
-.env: config/.env*
+.env: config/.env
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		debian:buster-20191118-slim bash -c '{\
-			mkdir -p ${ENTROPY_DIR} && chmod 770 ${ENTROPY_DIR}; \
-			FILE=.`basename ${@} | cut -c 2-`;                   \
-			                                                     \
-			FROM=config/$$FILE.default TO=$$FILE.default         \
-				&& ${STITCH_ENTROPY};                            \
-			                                                     \
-			FROM=config/$$FILE TO=$$FILE && ${STITCH_ENTROPY};  \
-			                                                     \
-			TARGET=$(if ${TARGET},${TARGET},base);               \
-			                                                     \
-			test -f $$FILE.$$TARGET ||                          \
-				echo "target=$$TARGET" > $$FILE.$$TARGET;       \
-			                                                     \
-			FROM=config/$$FILE.$$TARGET TO=$$FILE.$$TARGET      \
-				&& ${STITCH_ENTROPY};                            \
-			                                                     \
-			FROM=config/$$FILE.default.$$TARGET                  \
-			TO=$$FILE.default.$$TARGET                           \
-				&& ${STITCH_ENTROPY};                            \
-			(shopt -s nullglob; rm -rf ${ENTROPY_DIR});          \
+		debian:buster-20191118-slim bash -c '{            \
+			mkdir -p ${ENTROPY_DIR}-${TARGET};            \
+			chmod 770 ${ENTROPY_DIR}-${TARGET};           \
+			FROM=config/.env                              \
+			TO=.env                                       \
+				&& ${STITCH_ENTROPY};                     \
 		}'
+.env.default: config/.env.default
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+		debian:buster-20191118-slim bash -c '{            \
+			mkdir -p ${ENTROPY_DIR}-${TARGET};            \
+			chmod 770 ${ENTROPY_DIR}-${TARGET};           \
+			FROM=config/.env.default                      \
+			TO=.env.default                               \
+				&& ${STITCH_ENTROPY};                     \
+		}'
+
+.env_${TARGET}: config/.env_${TARGET}
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+		debian:buster-20191118-slim bash -c '{            \
+			mkdir -p ${ENTROPY_DIR}-${TARGET};            \
+			chmod 770 ${ENTROPY_DIR}-${TARGET};           \
+			FROM=config/.env_${TARGET}                    \
+			TO=.env_${TARGET}                             \
+				&& ${STITCH_ENTROPY};                     \
+			FROM=config/.env_${TARGET}.default            \
+			TO=.env_${TARGET}.default                     \
+				&& ${STITCH_ENTROPY};                     \
+		}'
+
+.env_${TARGET}.default: config/.env_${TARGET}.default
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+		debian:buster-20191118-slim bash -c '{            \
+			mkdir -p ${ENTROPY_DIR}-${TARGET};            \
+			chmod 770 ${ENTROPY_DIR}-${TARGET};           \
+			FROM=config/.env_${TARGET}                    \
+			TO=.env_${TARGET}                             \
+				&& ${STITCH_ENTROPY};                     \
+			FROM=config/.env_${TARGET}.default            \
+			TO=.env_${TARGET}.default                     \
+				&& ${STITCH_ENTROPY};                     \
+		}'
+
+config/.env config/.env.default  config/.env_${TARGET} config/.env_${TARGET}.default:
+	test -z `basename ${@}` || test -f ${@};
 
 infra/compose/%yml:
 	@ test -z "${TARGET}" || test -f infra/compose/${TARGET}.yml;

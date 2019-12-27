@@ -5,7 +5,11 @@ services:
   idilic:
     image:    ${REPO}/${PROJECT}.idilic:${TAG}
     restart:  on-failure
-    env_file: ['${MAIN_ENV}', '${TRGT_ENV}']
+    env_file:
+      - ${MAIN_DLT}
+      - ${MAIN_ENV}
+      - ${TRGT_ENV}
+      - ${TRGT_DLT}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /usr/bin/docker:${DOCKER}
@@ -17,7 +21,11 @@ services:
   server:
     image:    ${REPO}/${PROJECT}.server:${TAG}
     restart:  always
-    env_file: ['${MAIN_ENV}', '${TRGT_ENV}']
+    env_file:
+      - ${MAIN_DLT}
+      - ${MAIN_ENV}
+      - ${TRGT_ENV}
+      - ${TRGT_DLT}
     build:
       context: ../../
       dockerfile: infra/docker/server.dockerfile
@@ -28,6 +36,11 @@ services:
     image:   mysql:5.7.28
     restart: always
     volumes: ['schema:/var/lib/mysql']
+    env_file:
+      - ${MAIN_DLT}
+      - ${MAIN_ENV}
+      - ${TRGT_ENV}
+      - ${TRGT_DLT}
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: 1
       MYSQL_USER:     ${IDS_DATABASES_MAIN_USERNAME}

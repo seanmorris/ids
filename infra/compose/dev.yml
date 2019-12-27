@@ -24,7 +24,7 @@ services:
       DHOST_IP: ${DHOST_IP}
 
   database:
-    ports: ['${IDS_EXPOSE_SQL:-0}:${IDS_DATABASES_MAIN_PORT}']
+    ports: ['${IDS_EXPOSE_SQL:-0}:${IDS_DATABASES_MAIN_PORT:-0}']
     extends:
       file: base.yml
       service: database
