@@ -256,9 +256,25 @@ FROM seanmorris/ids.server:TAGNAME
 
 ## Configuration / Environment Variables / Secrets
 
-### Loading settings
+### Loading Settings
 
 Settings may be provided in environment variables, .env files, or yml files.
+
+#### Environment Variable & Target Files
+
+The following files may be created/modified to configure the system. When the project is built, restarted, etc, they will be checked for modification, and re-built to the root of th projct if need be.
+
+* 'config/.env' - Should not be committed to version control. Contains configuration that applies to the system regardles of the system's target.
+* 'config/.env.default' - Should be committed to version control. Contains non-secret configurations file and blank/dfault values for variables to be set in `config/.env`.
+* 'config/.env_TARGET' - Should not be committed to version control. Contains configuration based the system's target.
+* 'config/.env_TARGET.default' - Should be committed to version control. Contains non-secret configurations file and blank/dfault values for variables to be set in `config/.env_TARGET`.
+
+The values set will be read according to the following precedence (higher takes precedence over lower):
+
+* `.env_TARGET`
+* `.env_TARGET.default`
+* `.env`
+* `.env.default`
 
 Environment variables should have the the prefix `IDS_`. An environment variable with the name IDS_SOME_VAR and IDS_SOME_OTHERVAR would be accessible within the system with:
 
