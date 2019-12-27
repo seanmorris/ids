@@ -299,11 +299,11 @@ bash sh: ${PREBUILD}
 
 composer-install ci:
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
-		`${ISDEV} || echo "--no-dev"`
+		--ignore-platform-reqs `${ISDEV} || echo "--no-dev"`
 
 composer-update cu:
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer update \
-		`${ISDEV} || echo "--no-dev"`
+		--ignore-platform-reqs `${ISDEV} || echo "--no-dev"`
 
 composer-dump-autoload cda:
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer dump-autoload
@@ -327,6 +327,7 @@ dcompose dc: env
 	$(shell)
 	@ [[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || ( \
 		${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
+			--ignore-platform-reqs \
 			`${ISDEV} || echo "--no-dev"`;          \
 			                                        \
 		${DCOMPOSE}                                 \
