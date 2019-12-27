@@ -176,15 +176,28 @@ ENV=TAG=$${TAG:-${TAG}} REPO=${REPO} BRANCH=${BRANCH} DHOST_IP=${DHOST_IP}  \
 	MAIN_ENV=${MAIN_ENV}  MAIN_DLT=${MAIN_DLT}     \
 	TRGT_DLT=${TRGT_DLT} TRGT_ENV=${TRGT_ENV}      \
 	REALDIR=${REALDIR} ${XDEBUG_ENV}               \
-	PROJECT_FULLNAME=${FULLNAME}                   \
-	$$(cat ${MAIN_DLT}                             \
-		| ${INTERPOLATE_ENV} | grep -v ^\# | sed 's/\\n/ /g') \
-	$$(cat ${MAIN_ENV} 2>/dev/null                 \
-		| ${INTERPOLATE_ENV} | grep -v ^\# | sed 's/\\n/ /g') \
-	$$(cat ${TRGT_ENV}                             \
-		| ${INTERPOLATE_ENV} | grep -v ^\# | sed 's/\\n/ /g') \
-	$$(cat ${TRGT_DLT}                             \
+	PROJECT_FULLNAME=${FULLNAME}
+
+ifneq (${MAIN_DLT},)
+	ENV+=$$(cat ${MAIN_DLT} \
 		| ${INTERPOLATE_ENV} | grep -v ^\# | sed 's/\\n/ /g')
+endif
+
+ifneq (${MAIN_ENV},)
+	ENV+=$$(cat ${MAIN_ENV} \
+		| ${INTERPOLATE_ENV} | grep -v ^\# | sed 's/\\n/ /g')
+endif
+
+# ifneq (${TRGT_ENV},)
+# 	$(info ${TRGT_ENV})
+# 	ENV+=$$(cat ${TRGT_ENV} \
+# 		| ${INTERPOLATE_ENV} | grep -v ^\# | sed 's/\\n/ /g')
+# endif
+
+# ifneq (${TRGT_DLT},)
+# 	$$(cat ${TRGT_DLT} \
+# 		| ${INTERPOLATE_ENV} | grep -v ^\# | sed 's/\\n/ /g')
+# endif
 
 DCOMPOSE=export ${ENV} && docker-compose -p ${PROJECT}_${TARGET}
 
@@ -221,14 +234,14 @@ test t: ${PREBUILD}
 		run --rm ${NO_TTY} ${PASS_ENV} \
 		idilic -vv SeanMorris/Ids runTests
 
-clean: .env
+clean: .env .env.default
 	@ docker volume prune -f;
+	${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		debian:buster-20191118-slim bash -c "    \
 			rm -f .env .env* .var;               \
 			rm -rf  .lock_env ;                  \
 		"
-	${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
 SEP=
 env e:
 	@ export ${ENV} && env ${SEP};
