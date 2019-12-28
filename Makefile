@@ -44,7 +44,6 @@ TRGT_DLT =${MAKEDIR}.env_${TARGET}.default
 
 $(shell >&2 echo Starting with target: ${TARGET})
 
-DOCKDIR  ?=infra/docker/
 DOCKDIR  ?=${REALDIR}infra/docker/
 
 DOCKER_TEMPLATES=$(shell ls ${DOCKDIR}*.template)
@@ -280,7 +279,7 @@ start-fg sf: ${PREBUILD}
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up
 
 start-bg sb: ${PREBUILD}
-	@ (${DCOMPOSE} -f ${COMPOSE_TARGET} up &)
+	(${DCOMPOSE} -f ${COMPOSE_TARGET} up &)
 
 stop d: ${PREBUILD}
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down
@@ -490,6 +489,6 @@ ${DOCKDIR}%.${PHP}-${DEBIAN_ESC}.dockerfile: ${DOCKDIR}%.dockerfile.template
 	TEMPLATE=`dirname ${@}`/`basename ${@}     \
 		| cut -f 1 -d '.'`.dockerfile.template \
 		&& test -f $$TEMPLATE && (             \
-			export ${ENV} && env -i cat $$TEMPLATE | envsubst > ${MAKEDIR}${@} \
-			&& echo "# built by `whoami` @ `date '+%Y-%m-%d %R:%S %Z'`" >> ${MAKEDIR}${@}; \
+			export ${ENV} && env -i cat $$TEMPLATE | envsubst > ${@} \
+			&& echo "# built by `whoami` @ `date '+%Y-%m-%d %R:%S %Z'`" >> ${@}; \
 		) || true
