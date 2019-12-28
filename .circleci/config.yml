@@ -6,26 +6,38 @@ workflows:
   build_and_test:
     jobs:
       - test
-      - test-7.1
-      - test-7.2
-      - test-7.3
-      - test-7.4
-      - test-7.4
       - build:
           requires:
           - test
+
+  build_and_test-7.1:
+    jobs:
+      - test-7.1
       - build-7.1:
           requires:
             - test-7.1
+
+  build_and_test-7.2:
+    jobs:
+      - test-7.2
       - build-7.2:
           requires:
             - test-7.2
+
+  build_and_test-7.3:
+    jobs:
+      - test-7.3
       - build-7.3:
           requires:
             - test-7.3
+
+  build_and_test-7.4:
+    jobs:
+      - test-7.4
       - build-7.4:
           requires:
             - test-7.4
+
 jobs:
   test:
     parallelism: 1
