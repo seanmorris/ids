@@ -1,7 +1,7 @@
  version: 2
  jobs:
    build:
-    parallelism: 10
+    parallelism: 4
     machine:
       image: ubuntu-1604:201903-01
     steps:
