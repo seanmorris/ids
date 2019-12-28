@@ -157,50 +157,50 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
     steps:
-      install-composer
-      composer create-project seanmorris/ids-project -s dev --remove-vcs
-      cd ids-project
-      make @test start-bg t
+      - install-composer
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
+      - run: cd ids-project
+      - run: make @test start-bg t
 
   init-test-7_1:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
     steps:
-      install-composer
-      composer create-project seanmorris/ids-project -s dev --remove-vcs
-      cd ids-project
-      PHP=7.1 make @test start-bg t
+      - install-composer
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
+      - run: cd ids-project
+      - run: PHP=7.1 make @test start-bg t
 
   init-test-7_2:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
     steps:
-      install-composer
-      composer create-project seanmorris/ids-project -s dev --remove-vcs
-      cd ids-project
-      PHP=7.2 make @test start-bg t
+      - install-composer
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
+      - run: cd ids-project
+      - run: make PHP=7.2 make @test start-bg t
 
   init-test-7_3:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
     steps:
-      install-composer
-      composer create-project seanmorris/ids-project -s dev --remove-vcs
-      cd ids-project
-      PHP=7.3 make @test start-bg t
+      - install-composer
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
+      - run: cd ids-project
+      - run: PHP=7.3 make @test start-bg t
 
   init-test-7_4:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
     steps:
-      install-composer
-      composer create-project seanmorris/ids-project -s dev --remove-vcs
-      cd ids-project
-      PHP=7.4 make @test start-bg t
+      - install-composer
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
+      - run: cd ids-project
+      - run: PHP=7.4 make @test start-bg t
 
   build-and-push:
     parallelism: 1
