@@ -109,6 +109,8 @@ jobs:
       - run: PHP=7.4 make ct b
 
   build:
+    requires:
+      - test
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -121,6 +123,8 @@ jobs:
       - run: make @test ct b psi
 
   build-7.1:
+    requires:
+      - test-7.1
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -133,6 +137,8 @@ jobs:
       - run: PHP=7.1 make @test ct b psi
 
   build-7.2:
+    requires:
+      - test-7.2
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -145,6 +151,8 @@ jobs:
       - run: PHP=7.2 make @test ct b psi
 
   build-7.3:
+    requires:
+      - test-7.3
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -157,6 +165,8 @@ jobs:
       - run: PHP=7.3 make @test ct b psi
 
   build-7.4:
+    requires:
+      - test-7.4
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
