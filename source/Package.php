@@ -626,7 +626,9 @@ class Package
 
 			while($varName = array_shift($varPath))
 			{
-				$currentVar = & $currentVar->$varName;
+				$currentVar = & $currentVar
+					? $currentVar->$varName ?? NULL
+					: (object) [];
 			}
 
 			return $currentVar;

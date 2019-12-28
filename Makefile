@@ -11,6 +11,8 @@
 
 MAKEFLAGS += --no-builtin-rules
 
+DEBIAN   ?= debian:buster-20191118-slim
+PHP      ?= 7.4
 SHELL    =/bin/bash
 REALDIR  :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 MAKEDIR  ?=${REALDIR}
@@ -42,21 +44,40 @@ TRGT_DLT =${MAKEDIR}.env_${TARGET}.default
 
 $(shell >&2 echo Starting with target: ${TARGET})
 
-PREBUILD =.env .env.default .env_$${TARGET} .env_$${TARGET}.default .lock_env
+DOCKDIR  ?=infra/docker/
+DOCKDIR  ?=${REALDIR}infra/docker/
+
+DOCKER_TEMPLATES=$(shell ls ${DOCKDIR}*.template)
+
+DEBIAN_ESC=$(shell echo ${DEBIAN} | sed -e 's/\:/__/gi')
+
+PREBUILD =.env                       \
+	.env.default                     \
+	.env_$${TARGET}                  \
+	.env_$${TARGET}.default          \
+	.lock_env                        \
+	$(shell ls ${DOCKDIR}*.template  \
+		| sed -e 's/\.[a-z]\+$$//gi' \
+		| sed -e 's/\(\..\+\)/.${PHP}-${DEBIAN_ESC}\1/gi' \
+	)
 
 ENV_LOCK ?=${MAKEDIR}.lock_env
 
 -include ${ENV_LOCK}
 
+COMPOSE_BASE   =infra/compose/base.yml
 COMPOSE_TARGET =infra/compose/${TARGET}.yml
-COMPOSE_TOOLS=infra/compose/tools
+COMPOSE_TOOLS  =infra/compose/tools
 
 PROJECT  ?=ids
 REPO     ?=seanmorris
 BRANCH   :=$(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo nobranch)
 HASH     :=$(shell echo _$$(git rev-parse --short HEAD 2>/dev/null) || echo init)
 DESC     :=$(shell git describe --tags 2>/dev/null || echo ${HASH})
-SUFFIX   =-${TARGET}$(shell [ ${BRANCH} = master ] && echo "" || echo "-${BRANCH}")
+SUFFIX   =-${TARGET}$(shell \
+[[ ${PHP} = 7.3  ]]        || echo -${PHP})$(shell \
+[[ ${BRANCH} = "master" ]] && echo -${BRANCH})
+
 TAG      ?=${DESC}${SUFFIX}
 FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
@@ -177,9 +198,12 @@ $(eval TRGT_DLT:=$(shell echo ${MAKEDIR}.env_${TARGET}.default))
 endef
 
 define ENV=
-TAG=${TAG} REPO=${REPO} BRANCH=${BRANCH} PROJECT=${PROJECT} PROJECT_FULLNAME=${FULLNAME}     \
-TARGET=${TARGET} MAKEDIR=${MAKEDIR} DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR} \
-MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT} TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT}
+TAG=${TAG} REPO=${REPO} BRANCH=${BRANCH} PROJECT=${PROJECT}      \
+PROJECT_FULLNAME=${FULLNAME} TARGET=${TARGET} MAKEDIR=${MAKEDIR} \
+DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}         \
+MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT} TRGT_ENV=${TRGT_ENV}   \
+TRGT_DLT=${TRGT_DLT} DEBIAN=${DEBIAN} DEBIAN_ESC=${DEBIAN_ESC}   \
+PHP=${PHP}
 endef
 
 ifneq (${MAIN_DLT},)
@@ -209,9 +233,8 @@ DRUN=docker run --rm         \
 
 build b: ${PREBUILD}
 	@ echo Building ${FULLNAME}
-	@ export TAG=latest-${TARGET} && ${DCOMPOSE} \
-		-f ${COMPOSE_TARGET} build idilic
-	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} build --parallel
+	@ export TAG=latest-base && ${DCOMPOSE} -f ${COMPOSE_BASE} build idilic
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} build --parallel --compress
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up --no-start
 	@ ${WHILE_IMAGES} \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
@@ -240,7 +263,7 @@ clean: ${PREBUILD}
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
 	@ docker volume prune -f;
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app     \
-		debian:buster-20191118-slim bash -c "        \
+		${DEBIAN} bash -c "        \
 			set -o noglob;                           \
 			rm -f .env .env_${TARGET} .var;          \
 			rm -rf  .lock_env .env_${TARGET}.default \
@@ -371,7 +394,7 @@ stay@%:
 
 .env: config/.env
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		debian:buster-20191118-slim bash -c '{   \
+		${DEBIAN} bash -c '{   \
 			FROM=config/.env                     \
 			TO=.env                              \
 				&& ${STITCH_ENTROPY};            \
@@ -379,7 +402,7 @@ stay@%:
 
 .env.default: config/.env.default
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		debian:buster-20191118-slim bash -c '{   \
+		${DEBIAN} bash -c '{   \
 			FROM=config/.env.default             \
 			TO=.env.default                      \
 				&& ${STITCH_ENTROPY};            \
@@ -387,7 +410,7 @@ stay@%:
 
 .env_${TARGET}: config/.env_${TARGET}
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		debian:buster-20191118-slim bash -c '{   \
+		${DEBIAN} bash -c '{   \
 			FROM=config/.env_${TARGET}           \
 			TO=.env_${TARGET}                    \
 				&& ${STITCH_ENTROPY};            \
@@ -398,7 +421,7 @@ stay@%:
 
 .env_${TARGET}.default: config/.env_${TARGET}.default
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		debian:buster-20191118-slim bash -c '{   \
+		${DEBIAN} bash -c '{   \
 			FROM=config/.env_${TARGET}           \
 			TO=.env_${TARGET}                    \
 				&& ${STITCH_ENTROPY};            \
@@ -407,7 +430,10 @@ stay@%:
 				&& ${STITCH_ENTROPY};            \
 		}'
 
-config/.env config/.env.default  config/.env_${TARGET} config/.env_${TARGET}.default:
+config/.env   config/.env_${TARGET}:
+	@ test -f ${@} || touch ${@};
+
+config/.env.default config/.env_${TARGET}.default:
 	@ test -f ${@};
 
 infra/compose/%yml:
@@ -459,3 +485,11 @@ graylog-backup glbak:
 graylog-restore glres:
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml run --rm mongo bash -c \
 		'mongorestore -h mongo --db graylog /settings/graylog'
+
+${DOCKDIR}%.${PHP}-${DEBIAN_ESC}.dockerfile: ${DOCKDIR}%.dockerfile.template
+	TEMPLATE=`dirname ${@}`/`basename ${@}     \
+		| cut -f 1 -d '.'`.dockerfile.template \
+		&& test -f $$TEMPLATE && (             \
+			export ${ENV} && env -i cat $$TEMPLATE | envsubst > ${MAKEDIR}${@} \
+			&& echo "# built by `whoami` @ `date '+%Y-%m-%d %R:%S %Z'`" >> ${MAKEDIR}${@}; \
+		) || true

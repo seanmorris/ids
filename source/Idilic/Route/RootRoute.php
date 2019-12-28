@@ -929,13 +929,13 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			, $project
 		) . PHP_EOL
 		. sprintf(<<<EOT
-		Root Package: %s
-		      Domain: %s
-		     RootDir: %s
-		  Entrypoint: %s
-		   Log Level: %s
+Root Package: %s
+      Domain: %s
+     RootDir: %s
+  Entrypoint: %s
+   Log Level: %s
 
-		EOT
+EOT
 			, \SeanMorris\Ids\Package::getRoot()->packageSpace()
 			, $_SERVER['HTTP_HOST']
 			, IDS_ROOT

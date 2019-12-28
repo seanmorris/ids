@@ -15,7 +15,7 @@ services:
       - /usr/bin/docker:${DOCKER}
     build:
       context: ../../
-      dockerfile: infra/docker/idilic.dockerfile
+      dockerfile: infra/docker/idilic.${PHP}-${DEBIAN_ESC}.dockerfile
       target: ${TARGET}
 
   server:
@@ -28,7 +28,7 @@ services:
       - ${TRGT_ENV}
     build:
       context: ../../
-      dockerfile: infra/docker/server.dockerfile
+      dockerfile: infra/docker/server.${PHP}-${DEBIAN_ESC}.dockerfile
       target: ${TARGET}
 
   database:
