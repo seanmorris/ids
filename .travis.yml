@@ -12,7 +12,7 @@ script: |
   PHP=7.1 make @prod ct b
   PHP=7.1 make @test ct b
   PHP=7.1 make @base ct b
-  PHP=7.1 make ct b t lt li
+  PHP=7.1 make @test ct b t lt li
   PHP=7.1 make stay@dev ct b lt li
   PHP=7.1 make @prod ct b
   PHP=7.1 make ct b
@@ -24,7 +24,7 @@ script: |
   PHP=7.2 make @prod ct b
   PHP=7.2 make @test ct b
   PHP=7.2 make @base ct b
-  PHP=7.2 make ct b t lt li
+  PHP=7.2 make @test ct b t lt li
   PHP=7.2 make stay@dev ct b lt li
   PHP=7.2 make @prod ct b
   PHP=7.2 make ct b
@@ -36,7 +36,7 @@ script: |
   PHP=7.3 make @prod ct b
   PHP=7.3 make @test ct b
   PHP=7.3 make @base ct b
-  PHP=7.3 make ct b t lt li
+  PHP=7.3 make @test ct b t lt li
   PHP=7.3 make stay@dev ct b lt li
   PHP=7.3 make @prod ct b
   PHP=7.3 make ct b
@@ -48,7 +48,7 @@ script: |
   PHP=7.4 make @prod ct b
   PHP=7.4 make @test ct b
   PHP=7.4 make @base ct b
-  PHP=7.4 make ct b t lt li
+  PHP=7.4 make @test ct b t lt li
   PHP=7.4 make stay@dev ct b lt li
   PHP=7.4 make @prod ct b
   PHP=7.4 make ct b
