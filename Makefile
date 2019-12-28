@@ -504,14 +504,12 @@ ${DOCKDIR}%._gen.dockerfile: ${DOCKDIR}%.dockerfile.template
 		echo `dirname ${@}`/`basename ${@}`          \
 		| sed -e 's/\._gen\.\(.\+\?\)/.\1.template/' \
 	))
-# 	$(eval SOURCE:=$(shell printf "%q\n" "$$(ls -al)"))
-	$(eval OUT:=$(shell printf %q "`cat ${IN}`" | tr \', \\))
-	$(eval OUT:=$(shell printf %q "`cat ${IN}`" | tr \', \\))
-	echo -e '${OUT}'
-# 	$(eval SOURCE:= ' $(shell printf "%q" "$$(cat ${TEMPLATE})") ')
-# 	$(info ${SOURCE})
-# 	printf "%b" ${SOURCE};
 
-# 	printf "%b" "${SOURCE}"
+	@ $(eval OUT:=$(shell printf "%q" "`cat ${IN}`" \
+		| rev | cut -b 2-     \
+		| rev | cut -b 3-     \
+		| sed "s/'/'\\\\''/g" \
+	))
 
-	false
+	@ set -eux; printf "%b" '${OUT}' | sed "s/\\\'/'/g";
+	@ set -eux; printf "%b" '${OUT}' | sed "s/\\\'/'/g" > ${@};
