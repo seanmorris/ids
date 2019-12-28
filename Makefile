@@ -75,7 +75,7 @@ HASH     :=$(shell echo _$$(git rev-parse --short HEAD 2>/dev/null) || echo init
 DESC     :=$(shell git describe --tags 2>/dev/null || echo ${HASH})
 SUFFIX   =-${TARGET}$(shell [[ ${PHP} = 7.3  ]] || echo -${PHP})
 
-TAG      ?=${DESC}${SUFFIX}$(shell [[ ${BRANCH} = "master" ]] && echo -${BRANCH})
+TAG      ?=${DESC}${SUFFIX}$(shell [[ ${BRANCH} == "master" ]] || echo -${BRANCH})
 FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
 IMAGE    ?=
