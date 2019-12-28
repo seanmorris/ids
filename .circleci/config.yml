@@ -114,6 +114,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: make @base ct b psi
       - run: make @dev ct b  psi
       - run: make @prod ct b psi
@@ -125,6 +126,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.4 make @base ct b psi
       - run: PHP=7.4 make @dev ct b  psi
       - run: PHP=7.4 make @prod ct b psi
@@ -136,6 +138,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.4 make @base ct b psi
       - run: PHP=7.4 make @dev ct b  psi
       - run: PHP=7.4 make @prod ct b psi
@@ -147,6 +150,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.4 make @base ct b psi
       - run: PHP=7.4 make @dev ct b  psi
       - run: PHP=7.4 make @prod ct b psi
@@ -158,6 +162,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.4 make @base ct b psi
       - run: PHP=7.4 make @dev ct b  psi
       - run: PHP=7.4 make @prod ct b psi
