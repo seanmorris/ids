@@ -10,20 +10,20 @@ workflows:
       - test-7.4
       - test-7.4
       - build
-      - requires:
+          requires:
           - test
       - build-7.1
-      -requires:
-          - test-7.1
+          requires:
+            - test-7.1
       - build-7.2
-      - requires:
-          - test-7.2
+          requires:
+            - test-7.2
       - build-7.3
-      - requires:
-          - test-7.3
+          requires:
+            - test-7.3
       - build-7.4
-      - requires:
-          - test-7.4
+          requires:
+            - test-7.4
 jobs:
   test:
     parallelism: 1
