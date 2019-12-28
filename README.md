@@ -108,7 +108,7 @@ $ make graylog-stop       # alias gld
 
 $ make graylog-restart    # alias glr
 $ make graylog-restart-fg # alias glrf
-$ make graylog-start-bg   # alias glrb
+$ make graylog-restart-bg # alias glrb
 ```
 
 ## Idilc CLI
