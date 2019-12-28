@@ -500,13 +500,14 @@ graylog-restore glres:
 
 ${MAKEDIR}%._gen.dockerfile: ${MAKEDIR}%.dockerfile.template
 ${DOCKDIR}%._gen.dockerfile: ${DOCKDIR}%.dockerfile.template
-	@ $(eval TEMPLATE:=$(shell                         \
+	@ $(eval IN:=$(shell                         \
 		echo `dirname ${@}`/`basename ${@}`          \
 		| sed -e 's/\._gen\.\(.\+\?\)/.\1.template/' \
 	))
 # 	$(eval SOURCE:=$(shell printf "%q\n" "$$(ls -al)"))
-	$(eval SOURCE:=$(shell printf "%q\n" $$(cat ${TEMPLATE}) | tr "'", "\\\\'"))
-	@ printf "%b" '${SOURCE}'
+	$(eval OUT:=$(shell printf %q "`cat ${IN}`" | tr \', \\))
+	$(eval OUT:=$(shell printf %q "`cat ${IN}`" | tr \', \\))
+	@ echo -e '${OUT}'
 # 	$(eval SOURCE:= ' $(shell printf "%q" "$$(cat ${TEMPLATE})") ')
 # 	$(info ${SOURCE})
 # 	printf "%b" ${SOURCE};
