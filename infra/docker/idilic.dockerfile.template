@@ -57,7 +57,7 @@ COPY ./ /app
 FROM base AS test
 FROM base AS dev
 
-RUN set -eux; \
+RUN set -eux;       \
 	apt-get update; \
 	apt-get install -y --no-install-recommends php${PHP}-xdebug; \
 	apt-get clean;

@@ -44,7 +44,7 @@ TRGT_DLT =${MAKEDIR}.env_${TARGET}.default
 
 $(shell >&2 echo Starting with target: ${TARGET})
 
-DOCKDIR  ?=${REALDIR}infra/docker/
+DOCKDIR ?=${REALDIR}infra/docker/
 
 DOCKER_TEMPLATES=$(shell ls ${DOCKDIR}*.template)
 
@@ -57,7 +57,7 @@ PREBUILD =.env                       \
 	.lock_env                        \
 	$(shell ls ${DOCKDIR}*.template  \
 		| sed -e 's/\.[a-z]\+$$//gi' \
-		| sed -e 's/\(\..\+\)/.${PHP}-${DEBIAN_ESC}\1/gi' \
+		| sed -e 's/\(\..\+\)/._gen\1/gi' \
 	)
 
 ENV_LOCK ?=${MAKEDIR}.lock_env
@@ -73,11 +73,9 @@ REPO     ?=seanmorris
 BRANCH   :=$(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo nobranch)
 HASH     :=$(shell echo _$$(git rev-parse --short HEAD 2>/dev/null) || echo init)
 DESC     :=$(shell git describe --tags 2>/dev/null || echo ${HASH})
-SUFFIX   =-${TARGET}$(shell \
-[[ ${PHP} = 7.3  ]]        || echo -${PHP})$(shell \
-[[ ${BRANCH} = "master" ]] && echo -${BRANCH})
+SUFFIX   =-${TARGET}$(shell [[ ${PHP} = 7.3  ]] || echo -${PHP})
 
-TAG      ?=${DESC}${SUFFIX}
+TAG      ?=${DESC}${SUFFIX}$(shell [[ ${BRANCH} = "master" ]] && echo -${BRANCH})
 FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
 IMAGE    ?=
@@ -197,11 +195,11 @@ $(eval TRGT_DLT:=$(shell echo ${MAKEDIR}.env_${TARGET}.default))
 endef
 
 define ENV=
-TAG=${TAG} REPO=${REPO} BRANCH=${BRANCH} PROJECT=${PROJECT}      \
-PROJECT_FULLNAME=${FULLNAME} TARGET=${TARGET} MAKEDIR=${MAKEDIR} \
-DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}         \
-MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT} TRGT_ENV=${TRGT_ENV}   \
-TRGT_DLT=${TRGT_DLT} DEBIAN=${DEBIAN} DEBIAN_ESC=${DEBIAN_ESC}   \
+TAG=${TAG} REPO=${REPO} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME} \
+PROJECT=${PROJECT} MAKEDIR=${MAKEDIR} TARGET=$${TARGET:=${TARGET}}    \
+DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}       \
+MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT} TRGT_ENV=${TRGT_ENV} \
+TRGT_DLT=${TRGT_DLT} DEBIAN=${DEBIAN} DEBIAN_ESC=${DEBIAN_ESC} \
 PHP=${PHP}
 endef
 
@@ -232,7 +230,8 @@ DRUN=docker run --rm         \
 
 build b: ${PREBUILD}
 	@ echo Building ${FULLNAME}
-	@ export TAG=latest-base && ${DCOMPOSE} -f ${COMPOSE_BASE} build idilic
+	@ export TARGET=base && \
+		${DCOMPOSE} -f ${COMPOSE_BASE} build idilic
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} build --parallel --compress
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up --no-start
 	@ ${WHILE_IMAGES} \
@@ -261,11 +260,18 @@ test t: ${PREBUILD}
 clean: ${PREBUILD}
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
 	@ docker volume prune -f;
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app     \
-		${DEBIAN} bash -c "        \
-			set -o noglob;                           \
-			rm -f .env .env_${TARGET} .var;          \
-			rm -rf  .lock_env .env_${TARGET}.default \
+
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app      \
+		${DEBIAN} bash -c "                           \
+			rm -f infra/docker/*._gen.*;              \
+			set -o noglob;                            \
+			rm -f .env.default;                       \
+			rm -f .env .env_${TARGET} .var;           \
+			rm -f .lock_env .env_${TARGET}.default;"
+
+	@ docker run --rm -v ${REALDIR}:/app -w=/app      \
+		${DEBIAN} bash -c "                           \
+			rm -f infra/docker/*._gen.*;              \
 			cat data/global/_schema.json > data/global/schema.json ;"
 
 SEP=
@@ -485,10 +491,10 @@ graylog-restore glres:
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml run --rm mongo bash -c \
 		'mongorestore -h mongo --db graylog /settings/graylog'
 
-${DOCKDIR}%.${PHP}-${DEBIAN_ESC}.dockerfile: ${DOCKDIR}%.dockerfile.template
-	TEMPLATE=`dirname ${@}`/`basename ${@}     \
-		| cut -f 1 -d '.'`.dockerfile.template \
-		&& test -f $$TEMPLATE && (             \
-			export ${ENV} && env -i cat $$TEMPLATE | envsubst > ${@} \
-			&& echo "# built by `whoami` @ `date '+%Y-%m-%d %R:%S %Z'`" >> ${@}; \
-		) || true
+${MAKEDIR}%._gen.dockerfile: ${MAKEDIR}%.dockerfile.template
+${DOCKDIR}%._gen.dockerfile: ${DOCKDIR}%.dockerfile.template
+	@ TEMPLATE=`dirname ${@}`/`basename ${@} | cut -f 1 -d '.'`.dockerfile.template \
+		&& test -f $$TEMPLATE && (                                                \
+			export ${ENV} && env -i cat $$TEMPLATE | envsubst > ${@}              \
+			&& echo "# built by `whoami` @ `date '+%Y-%m-%d %R:%S %Z'`" >> ${@};  \
+		) || test -f ${@};
