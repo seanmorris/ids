@@ -8,7 +8,7 @@ install
   - make @dev  run CMD="idilic info"
 script: |
   make @base ct b
-  make ct b t lt li
+  make @test ct b t lt li
   make stay@dev ct b lt li
   make @prod ct b
   make ct b
