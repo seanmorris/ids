@@ -82,7 +82,7 @@ jobs:
       - run: PHP=7.4 make @test ct b t
       - run: PHP=7.4 make stay@base ct b
       - run: PHP=7.4 make ct b
-  test:
+  test-osx:
     parallelism: 4
     machine:
       image: ubuntu-1604:201903-01
@@ -96,7 +96,7 @@ jobs:
       - run: make @test ct b t
       - run: make stay@base ct b
       - run: make ct b
-  test-7.1:
+  test-7.1-osx:
     parallelism: 4
     macos:
       xcode: "10.0.0"
@@ -113,7 +113,7 @@ jobs:
       - run: PHP=7.1 make @test ct b t
       - run: PHP=7.1 make stay@base ct b
       - run: PHP=7.1 make ct b
-  test-7.2:
+  test-7.2-osx:
     parallelism: 4
     machine:
       image: ubuntu-1604:201903-01
@@ -130,7 +130,7 @@ jobs:
       - run: PHP=7.2 make @test ct b t
       - run: PHP=7.2 make stay@base ct b
       - run: PHP=7.2 make ct b
-  test-7.3:
+  test-7.3-osx:
     parallelism: 4
     machine:
       image: ubuntu-1604:201903-01
@@ -147,7 +147,7 @@ jobs:
       - run: PHP=7.3 make @test ct b t
       - run: PHP=7.3 make stay@base ct b
       - run: PHP=7.3 make ct b
-  test-7.4:
+  test-7.4-osx:
     parallelism: 4
     machine:
       image: ubuntu-1604:201903-01
