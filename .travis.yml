@@ -2,10 +2,10 @@ language: minimal
 services
   - docker
 install
-  - make @test run CMD="idilic info";
-  - make @prod run CMD="idilic info";
-  - make @test run CMD="idilic info";
-  - make @dev  run CMD="idilic info";
+  - make @test run CMD="idilic info"
+  - make @prod run CMD="idilic info"
+  - make @test run CMD="idilic info"
+  - make @dev  run CMD="idilic info"
 script: |
   PHP=7.1 make @base ct b;
   PHP=7.1 make @dev  ct b;
