@@ -505,7 +505,7 @@ ${DOCKDIR}%._gen.dockerfile: ${DOCKDIR}%.dockerfile.template
 		| sed -e 's/\._gen\.\(.\+\?\)/.\1.template/' \
 	))
 # 	$(eval SOURCE:=$(shell printf "%q\n" "$$(ls -al)"))
-	$(eval SOURCE:=$(shell printf "%q\n" "$$(cat ${TEMPLATE})" | tr "'", "\\\\'"))
+	$(eval SOURCE:=$(shell printf "%q\n" $$(cat ${TEMPLATE}) | tr "'", "\\\\'"))
 	@ printf "%b" '${SOURCE}'
 # 	$(eval SOURCE:= ' $(shell printf "%q" "$$(cat ${TEMPLATE})") ')
 # 	$(info ${SOURCE})
