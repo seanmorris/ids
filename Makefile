@@ -150,14 +150,17 @@ endef
 ENTROPY_DIR=/tmp/IDS_ENTROPY-${TARGET}
 ENTROPY_KEY=default
 
+define RANDOM_STRING
+cat /dev/urandom         \
+	| tr -dc 'a-zA-Z0-9' \
+	| fold -w 32         \
+	| head -n 1
+endef
+
 define GET_ENTROPY
 test -e ${ENTROPY_DIR}/$$ENTROPY_KEY    \
 	&& cat ${ENTROPY_DIR}/$$ENTROPY_KEY \
-	|| cat /dev/urandom                 \
-		| tr -dc 'a-zA-Z0-9'            \
-		| fold -w 32                    \
-		| head -n 1                     \
-		| tee ${ENTROPY_DIR}/$$ENTROPY_KEY
+	|| ${RANDOM_STRING} | tee ${ENTROPY_DIR}/$$ENTROPY_KEY
 endef
 
 define STITCH_ENTROPY
@@ -195,12 +198,16 @@ $(eval TRGT_DLT:=$(shell echo ${MAKEDIR}.env_${TARGET}.default))
 endef
 
 define ENV=
-TAG=${TAG} REPO=${REPO} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME} \
-PROJECT=${PROJECT} MAKEDIR=${MAKEDIR} TARGET=$${TARGET:=${TARGET}}    \
-DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}       \
-MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT} TRGT_ENV=${TRGT_ENV} \
-TRGT_DLT=${TRGT_DLT} DEBIAN=${DEBIAN} DEBIAN_ESC=${DEBIAN_ESC} \
-PHP=${PHP}
+TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}  \
+MAKEDIR=${MAKEDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}} \
+DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}           \
+REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT}             \
+TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${DEBIAN}         \
+DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}
+endef
+
+define ENVSUBST
+
 endef
 
 ifneq (${MAIN_DLT},)
@@ -230,9 +237,9 @@ DRUN=docker run --rm         \
 
 build b: ${PREBUILD}
 	@ echo Building ${FULLNAME}
-	@ export TARGET=base && \
+	export TARGET=base TAG=_latest_local && \
 		${DCOMPOSE} -f ${COMPOSE_BASE} build idilic
-	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} build --parallel --compress
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} build
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up --no-start
 	@ ${WHILE_IMAGES} \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
@@ -493,8 +500,17 @@ graylog-restore glres:
 
 ${MAKEDIR}%._gen.dockerfile: ${MAKEDIR}%.dockerfile.template
 ${DOCKDIR}%._gen.dockerfile: ${DOCKDIR}%.dockerfile.template
-	@ TEMPLATE=`dirname ${@}`/`basename ${@} | cut -f 1 -d '.'`.dockerfile.template \
-		&& test -f $$TEMPLATE && (                                                \
-			export ${ENV} && env -i cat $$TEMPLATE | envsubst > ${@}              \
-			&& echo "# built by `whoami` @ `date '+%Y-%m-%d %R:%S %Z'`" >> ${@};  \
-		) || test -f ${@};
+	@ $(eval TEMPLATE:=$(shell                         \
+		echo `dirname ${@}`/`basename ${@}`          \
+		| sed -e 's/\._gen\.\(.\+\?\)/.\1.template/' \
+	))
+# 	$(eval SOURCE:=$(shell printf "%q\n" "$$(ls -al)"))
+	$(eval SOURCE:=$(shell printf "%q\n" "$$(cat ${TEMPLATE})" | tr "'", "\\\\'"))
+	@ printf "%b" '${SOURCE}'
+# 	$(eval SOURCE:= ' $(shell printf "%q" "$$(cat ${TEMPLATE})") ')
+# 	$(info ${SOURCE})
+# 	printf "%b" ${SOURCE};
+
+# 	printf "%b" "${SOURCE}"
+
+	false

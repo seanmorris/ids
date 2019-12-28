@@ -1,9 +1,11 @@
-FROM seanmorris/ids.idilic:latest-base AS base
+FROM seanmorris/ids.idilic:_latest_local AS base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
 RUN set -eux;                        \
 	apt-get update;                  \
-	apt-get install -y --no-install-recommends apache2 libapache2-mod-php${PHP}; \
+	apt-get install -y --no-install-recommends \
+		apache2                      \
+		libapache2-mod-php${PHP};    \
 	a2dismod mpm_event;              \
 	a2enmod rewrite ssl php${PHP};   \
 	apt-get remove -y software-properties-common \
