@@ -507,7 +507,7 @@ ${DOCKDIR}%._gen.dockerfile: ${DOCKDIR}%.dockerfile.template
 # 	$(eval SOURCE:=$(shell printf "%q\n" "$$(ls -al)"))
 	$(eval OUT:=$(shell printf %q "`cat ${IN}`" | tr \', \\))
 	$(eval OUT:=$(shell printf %q "`cat ${IN}`" | tr \', \\))
-	@ echo -e '${OUT}'
+	echo -e '${OUT}'
 # 	$(eval SOURCE:= ' $(shell printf "%q" "$$(cat ${TEMPLATE})") ')
 # 	$(info ${SOURCE})
 # 	printf "%b" ${SOURCE};
