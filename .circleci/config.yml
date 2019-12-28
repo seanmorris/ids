@@ -127,10 +127,10 @@ jobs:
     steps:
       - checkout
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=7.4 make @base ct b psi
-      - run: PHP=7.4 make @dev ct b  psi
-      - run: PHP=7.4 make @prod ct b psi
-      - run: PHP=7.4 make @test ct b psi
+      - run: PHP=7.1 make @base ct b psi
+      - run: PHP=7.1 make @dev ct b  psi
+      - run: PHP=7.1 make @prod ct b psi
+      - run: PHP=7.1 make @test ct b psi
 
   build-7.2:
     parallelism: 4
@@ -139,10 +139,10 @@ jobs:
     steps:
       - checkout
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=7.4 make @base ct b psi
-      - run: PHP=7.4 make @dev ct b  psi
-      - run: PHP=7.4 make @prod ct b psi
-      - run: PHP=7.4 make @test ct b psi
+      - run: PHP=7.2 make @base ct b psi
+      - run: PHP=7.2 make @dev ct b  psi
+      - run: PHP=7.2 make @prod ct b psi
+      - run: PHP=7.2 make @test ct b psi
 
   build-7.3:
     parallelism: 4
@@ -151,10 +151,10 @@ jobs:
     steps:
       - checkout
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=7.4 make @base ct b psi
-      - run: PHP=7.4 make @dev ct b  psi
-      - run: PHP=7.4 make @prod ct b psi
-      - run: PHP=7.4 make @test ct b psi
+      - run: PHP=7.3 make @base ct b psi
+      - run: PHP=7.3 make @dev ct b  psi
+      - run: PHP=7.3 make @prod ct b psi
+      - run: PHP=7.3 make @test ct b psi
 
   build-7.4:
     parallelism: 4
