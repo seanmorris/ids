@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test:
+  build:
     parallelism: 4
     machine:
       image: ubuntu-1604:201903-01
