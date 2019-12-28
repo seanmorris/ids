@@ -25,41 +25,41 @@ workflows:
           - self-test
           - init-test
 
-  build-test-push-7.1:
+  build-test-push-7_1:
     jobs:
-      - self-test-7.1
-      - init-test-7.1
-      - build-and-push-7.1:
+      - self-test-7_1
+      - init-test-7_1
+      - build-and-push-7_1:
           requires:
-            - self-test-7.1
-            - init-test-7.1
+            - self-test-7_1
+            - init-test-7_1
 
-  build-test-push-7.2:
+  build-test-push-7_2:
     jobs:
-      - self-test-7.2
-      - init-test-7.2
-      - build-and-push-7.2:
+      - self-test-7_2
+      - init-test-7_2
+      - build-and-push-7_2:
           requires:
-            - self-test-7.2
-            - init-test-7.2
+            - self-test-7_2
+            - init-test-7_2
 
-  build-test-push-7.3:
+  build-test-push-7_3:
     jobs:
-      - self-test-7.3
-      - init-test-7.3
-      - build-and-push-7.3:
+      - self-test-7_3
+      - init-test-7_3
+      - build-and-push-7_3:
           requires:
-            - self-test-7.3
-            - init-test-7.3
+            - self-test-7_3
+            - init-test-7_3
 
-  build-test-push-7.4:
+  build-test-push-7_4:
     jobs:
-      - self-test-7.4
-      - init-test-7.4
-      - build-and-push-7.4:
+      - self-test-7_4
+      - init-test-7_4
+      - build-and-push-7_4:
           requires:
-            - self-test-7.4
-            - init-test-7.4
+            - self-test-7_4
+            - init-test-7_4
 
 jobs:
   self-test:
@@ -81,7 +81,7 @@ jobs:
       - run: make stay@base ct b
       - run: make ct b
 
-  self-test-7.1:
+  self-test-7_1:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -100,7 +100,7 @@ jobs:
       - run: PHP=7.1 make stay@base ct b
       - run: PHP=7.1 make ct b
 
-  self-test-7.2:
+  self-test-7_2:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -119,7 +119,7 @@ jobs:
       - run: PHP=7.2 make stay@base ct b
       - run: PHP=7.2 make ct b
 
-  self-test-7.3:
+  self-test-7_3:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -138,7 +138,7 @@ jobs:
       - run: PHP=7.3 make stay@base ct b
       - run: PHP=7.3 make ct b
 
-  self-test-7.4:
+  self-test-7_4:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -167,7 +167,7 @@ jobs:
       - run: cd ids-project
       - run: make @test start-bg t
 
-  init-test-7.1:
+  init-test-7_1:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -177,7 +177,7 @@ jobs:
       - run: cd ids-project
       - run: PHP=7.1 make @test start-bg t
 
-  init-test-7.2:
+  init-test-7_2:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -187,7 +187,7 @@ jobs:
       - run: cd ids-project
       - run: make PHP=7.2 make @test start-bg t
 
-  init-test-7.3:
+  init-test-7_3:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -197,7 +197,7 @@ jobs:
       - run: cd ids-project
       - run: PHP=7.3 make @test start-bg t
 
-  init-test-7.4:
+  init-test-7_4:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -219,7 +219,7 @@ jobs:
       - run: make @prod ct b psi
       - run: make @test ct b psi
 
-  build-and-push-7.1:
+  build-and-push-7_1:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -231,7 +231,7 @@ jobs:
       - run: PHP=7.1 make @prod ct b psi
       - run: PHP=7.1 make @test ct b psi
 
-  build-and-push-7.2:
+  build-and-push-7_2:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -243,7 +243,7 @@ jobs:
       - run: PHP=7.2 make @prod ct b psi
       - run: PHP=7.2 make @test ct b psi
 
-  build-and-push-7.3:
+  build-and-push-7_3:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -255,7 +255,7 @@ jobs:
       - run: PHP=7.3 make @prod ct b psi
       - run: PHP=7.3 make @test ct b psi
 
-  build-and-push-7.4:
+  build-and-push-7_4:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
