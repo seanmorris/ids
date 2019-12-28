@@ -7,7 +7,7 @@
       - checkout
       - run: make @base ct b
       - run: make stay@dev ct b lt li
-      - run: make ct b t lt li
+      - run: make @test ct b t lt li
       - run: make @prod ct b
       - run: make ct b
       - run: make @test ct b t
