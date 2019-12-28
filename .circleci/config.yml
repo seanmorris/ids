@@ -20,7 +20,7 @@ workflows:
     jobs:
       - self-test
       - init-test
-      - build:
+      - build-and-push:
           requires:
           - self-test
           - init-test
@@ -29,7 +29,7 @@ workflows:
     jobs:
       - self-test-7_1
       - init-test-7_1
-      - build-7_1:
+      - build-and-push-7_1:
           requires:
             - self-test-7_1
             - init-test-7_1
@@ -38,7 +38,7 @@ workflows:
     jobs:
       - self-test-7_2
       - init-test-7_2
-      - build-7_2:
+      - build-and-push-7_2:
           requires:
             - self-test-7_2
             - init-test-7_2
@@ -47,7 +47,7 @@ workflows:
     jobs:
       - self-test-7_3
       - init-test-7_3
-      - build-7_3:
+      - build-and-push-7_3:
           requires:
             - self-test-7_3
             - init-test-7_3
@@ -56,7 +56,7 @@ workflows:
     jobs:
       - self-test-7_4
       - init-test-7_4
-      - build-7_4:
+      - build-and-push-7_4:
           requires:
             - self-test-7_4
             - init-test-7_4
