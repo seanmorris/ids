@@ -12,7 +12,7 @@
 MAKEFLAGS += --no-builtin-rules
 
 DEBIAN   ?= debian:buster-20191118-slim
-PHP      ?= 7.4
+PHP      ?= 7.3
 SHELL    =/bin/bash
 REALDIR  :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 MAKEDIR  ?=${REALDIR}
