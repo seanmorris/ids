@@ -8,7 +8,7 @@ The PHP/Docker Framework
 
 ![seanmorris/ids](https://img.shields.io/packagist/v/seanmorris/ids?color=900&label=SeanMorris%2Fids&style=for-the-badge) [![Travis (.org)](https://img.shields.io/travis/seanmorris/ids?style=for-the-badge)](https://travis-ci.org/seanmorris/ids) [![Apache-2.0 Licence Badge](https://img.shields.io/npm/l/cv3-inject?color=338800&style=for-the-badge)](https://github.com/seanmorris/cv3-inject/blob/master/LICENSE)
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/seanmorris/ids.server?color=600&label=ids.server%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.idilic) [![Docker Pulls](https://img.shields.io/docker/pulls/seanmorris/ids.server?color=960&label=ids.server%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.server) ![Size badge](https://img.shields.io/github/languages/code-size/seanmorris/ids?style=for-the-badge)
+[![Docker Pulls](https://img.shields.io/docker/pulls/seanmorris/ids.server?color=600&label=ids.idilic%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.idilic) [![Docker Pulls](https://img.shields.io/docker/pulls/seanmorris/ids.server?color=960&label=ids.server%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.server) ![Size badge](https://img.shields.io/github/languages/code-size/seanmorris/ids?style=for-the-badge)
 
 The Ids library provides general domain-primitives for developing web based applications. Routing, requests, modeling configuration, logging, sessions, and database access are all abstracted behind simple, expressive interfaces to efficient and powerful code.
 
