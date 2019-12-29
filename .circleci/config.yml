@@ -163,6 +163,7 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project
+      - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: make @test start-bg test
 
   init-test-7_1:
@@ -173,6 +174,7 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project
+      - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: PHP=7.1 make @test start-bg test
 
   init-test-7_2:
@@ -183,6 +185,7 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project
+      - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: PHP=7.2 make @test start-bg test
 
   init-test-7_3:
@@ -193,6 +196,7 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project
+      - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: PHP=7.3 make @test start-bg test
 
   init-test-7_4:
@@ -203,6 +207,7 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project
+      - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: PHP=7.4 make @test start-bg test
 
   build-and-push:
