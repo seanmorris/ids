@@ -15,7 +15,7 @@ services:
       - /usr/bin/docker:${DOCKER}
     build:
       context: ../../
-      dockerfile: infra/docker/idilic._gen.dockerfile
+      dockerfile: infra/docker/idilic.___gen.dockerfile
       target: ${TARGET}
 
   server:
@@ -28,7 +28,7 @@ services:
       - ${TRGT_ENV}
     build:
       context: ../../
-      dockerfile: infra/docker/server._gen.dockerfile
+      dockerfile: infra/docker/server.___gen.dockerfile
       target: ${TARGET}
 
   database:

@@ -27,6 +27,6 @@ set -eu;
 	) \
 	|| echo No php errors found.;
 
-make @test b t;
+make @test t;
 
 echo Committing to $BRANCH;

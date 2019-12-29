@@ -525,7 +525,7 @@ IDS_LOG=/tmp/ids.log
 
 The current level of verbosity can be configured with the `IDS_LOGLEVEL` variable.
 
-**NOTE**: If `LOGLEVEL` is set to `trace`, **every single log entry** will be accompanied by a stack trace. Thic can fill a disk quickly. Use with caution!
+**NOTE**: If `LOGLEVEL` is set to `trace`, **every single log entry** will be accompanied by a stack trace. This can fill a disk quickly. Use with caution!
 
 ```
 IDS_LOGLEVEL=trace
@@ -611,6 +611,8 @@ Logs may be sent to Graylog by providing a custom log handler in the config
 IDS_LOGGERS_=\SeanMorris\Ids\Logger\Gelf
 ```
 
+### Custom Loggers
+
 Custom loggers may created by implemeting the `\SeanMorris\Ids\Logger` interface.
 
 ```php
@@ -625,6 +627,12 @@ class AdditionalLogger implements \SeanMorris\Ids\Logger
 	{/* ... */}
 }
 
+```
+
+Add them to the `IDS_LOGGERS_` array to activate them:
+
+```
+IDS_LOGGERS_=\SeanMorris\Ids\Logger\AdditionalLogger
 ```
 
 ## Debugging
@@ -668,7 +676,7 @@ class ExampleTest extends \UnitTestCase
 
 ```php
 <?php
-use \SeanMorris\Ids\Disk;
+use \SeanMorris\Ids\Disk\File;
 
 $file = new File($filename);
 
