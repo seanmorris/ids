@@ -404,8 +404,13 @@ dcompose-config dcc: ${PREBUILD} ## Print the current docker-compose configurati
 dcompose dc: ### Install an NPM package.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET}
 
-.lock_env: ### Lock the environment target
-	@ [[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || (    \
+.lock_env: .env ### Lock the environment target
+	@ [[ "${ENV_LOCK_TRGT_SVC}" == "${TAG}" ]] \
+	||(                                        \
+		echo "Rebuild service templates".      \
+	);
+	@[[ "${ENV_LOCK_TAG}" == "${TAG}" ]] \
+	|| (    \
 		${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
 			--ignore-platform-reqs                  \
 			`${ISDEV} || echo "--no-dev"`;          \
@@ -414,7 +419,10 @@ dcompose dc: ### Install an NPM package.
 			-f ${REALDIR}${COMPOSE_TOOLS}/node.yml  \
 			run node npm install                    \
 	);
-	@ test ! -z "${TAG}" && echo ENV_LOCK_STATE=${TAG} > ${ENV_LOCK} || true;
+	@ test ! -z "${TAG}" \
+		&& echo ENV_LOCK_STATE=${TGT_SCV}_${TAG} \
+			> ${ENV_LOCK} \
+			|| true;
 
 ##
 
@@ -438,7 +446,7 @@ stay@%: ### Set the current target and persist for later invocations.
 		}'
 
 .env.default: config/.env.default
-	docker run --rm -v ${MAKEDIR}:/app -w=/app \
+	docker run --rm -v ${MAKEDIR}:/app -w=/app   \
 		${DEBIAN} bash -c '{                     \
 			FROM=config/.env.default             \
 			TO=.env.default                      \

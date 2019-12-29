@@ -54,15 +54,15 @@ https://github.com/seanmorris/ids-project
 
 ## Dependencies
 
-* Composer
-* Docker
-* Docker Compose
-* GNU Make
-* Git
-* Linux or Compatible OS
-* PHP
-* SimpleTest/SimpleTest
-* Minikube (required for kubernetes targets only)
+*  Composer
+*  Docker
+*  Docker Compose
+*  GNU Make
+*  Git
+*  Linux or Compatible OS
+*  PHP
+*  SimpleTest/SimpleTest
+*  Minikube (required for kubernetes targets only)
 
 ## Dev Tools
 
@@ -123,13 +123,13 @@ Run `idilic help` to see actions exposed by any installed packages.
 
 By default Ids provides 4 build targets: base, prod, dev, and test. Each exposes different ports, so they may run without conflict in parallel.
 
-* **base** exposes no ports and builds **without** require-dev.
+*  **base** exposes no ports and builds **without** require-dev.
 
-* **prod** exposes port 80 (configurable by `IDS_EXPOSE_HTTP`) and port 443* ( configurable by `IDS_EXPOSE_HTTPS` ) and builds **without** require-dev.
+*  **prod** exposes port 80 (configurable by `IDS_EXPOSE_HTTP`) and port 443* ( configurable by `IDS_EXPOSE_HTTPS` ) and builds **without** require-dev.
 
-* **test** exposes port 2021 (configurable by `IDS_EXPOSE_HTTP`) and port 3031 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
+*  **test** exposes port 2021 (configurable by `IDS_EXPOSE_HTTP`) and port 3031 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
 
-* **dev** exposes port 2020 ( configurable by `IDS_EXPOSE_HTTP` ) and port 3030 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
+*  **dev** exposes port 2020 ( configurable by `IDS_EXPOSE_HTTP` ) and port 3030 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
 
 \*Not yet implemented.
 
@@ -139,10 +139,10 @@ The system will use the TARGET environment variable to decide which build target
 
 If youre on the BASH shell simply run one of the following commands to set the target:
 
-* `make stay@base`
-* `make stay@dev`
-* `make stay@test`
-* `make stay@prod`
+*  `make stay@base`
+*  `make stay@dev`
+*  `make stay@test`
+*  `make stay@prod`
 
 ### Extending Environments
 
@@ -741,44 +741,44 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 Run these from the project root to build and control the project infrastructure.
 
- * `make build` `make b` - Build the project
- * `make env` `make e` - Print the project's environment config.
- * `make test` `make t`- Run tests.
- * `make test` `make t`- Remove the generated configs, **even if they have been altered.**
- * `make start` `make s`- Start the project services.
- * `make start-fg` `make sf`- Start the project services, hold control of the terminal and stream output.
- * `make start-bg` `make sb`- Start the project services, hold control of the terminal and stream output.
- * `make restart-fg` `make rf` - Restart the project services, hold control of the terminal and stream output.
- * `make restart-bg` `make rb`- Restart the project services, hold control of the terminal and stream output.
- * `make stop` `make d`- Stop the project services.
- * `make stop-all` `make da`- Stop the project services, including any that no longer appear in the compose file.
- * `make kill` `make k`- Immediately kill the project services.
- * `make nuke` `make nk`* - Immediately kill all containers on the host. Not yet implemented.
- * `make current-tag` `ct`- Output the project tag for the current target & branch.
- * `make list-tags` `make lt`- List image tags for the current target & branch.
- * `make list-images` `make li`- List images for the current target & branch.
- * `make push-images` `make psi`- List images for the current target & branch.
- * `make pull-images` `make pli`- List images for the current target & branch.
- * `make hooks` - Initialize git hooks.
- * `make composer-install` `make ci`- Install composer packages.
- * `make composer-update` `make co`- Update composer packages.
- * `make composer-dump-autoload` `make cda`- Regenerate and dump composer autoload files..
- * `make npm install PKG="[PACKAGE]"` `make ni`- Run `npm install` inside the project.
- * `make bash` `make sh`- Get a bash prompt to an `idilic` container.
- * `make run CMD="SERVICE [COMMAND]"` `make r`- Run a command in a service container.
- *
+*  `make build` `make b` - Build the project
+*  `make env` `make e` - Print the project's environment config.
+*  `make test` `make t`- Run tests.
+*  `make test` `make t`- Remove the generated configs,* *even if they have been altered.**
+*  `make start` `make s`- Start the project services.
+*  `make start-fg` `make sf`- Start the project services, hold control of the terminal and stream output.
+*  `make start-bg` `make sb`- Start the project services, hold control of the terminal and stream output.
+*  `make restart-fg` `make rf` - Restart the project services, hold control of the terminal and stream output.
+*  `make restart-bg` `make rb`- Restart the project services, hold control of the terminal and stream output.
+*  `make stop` `make d`- Stop the project services.
+*  `make stop-all` `make da`- Stop the project services, including any that no longer appear in the compose file.
+*  `make kill` `make k`- Immediately kill the project services.
+*  `make nuke` `make nk`* - Immediately kill all containers on the host. Not yet implemented.
+*  `make current-tag` `ct`- Output the project tag for the current target & branch.
+*  `make list-tags` `make lt`- List image tags for the current target & branch.
+*  `make list-images` `make li`- List images for the current target & branch.
+*  `make push-images` `make psi`- List images for the current target & branch.
+*  `make pull-images` `make pli`- List images for the current target & branch.
+*  `make hooks` - Initialize git hooks.
+*  `make composer-install` `make ci`- Install composer packages.
+*  `make composer-update` `make co`- Update composer packages.
+*  `make composer-dump-autoload` `make cda`- Regenerate and dump composer autoload files..
+*  `make npm install PKG="[PACKAGE]"` `make ni`- Run `npm install` inside the project.
+*  `make bash` `make sh`- Get a bash prompt to an `idilic` container.
+*  `make run CMD="SERVICE [COMMAND]"` `make r`- Run a command in a service container.
+
 ## Dependencies
 
-* Bash
-* Composer
-* Docker
-* Docker Compose
-* GNU Make
-* Git
-* Linux or Compatible OS
-* Node
-* PHP
-* SimpleTest/SimpleTest
+*  Bash
+*  Composer
+*  Docker
+*  Docker Compose
+*  GNU Make
+*  Git
+*  Linux or Compatible OS
+*  Node
+*  PHP
+*  SimpleTest/SimpleTest
 
 ## SeanMorris/Ids
 
