@@ -50,14 +50,16 @@ DOCKER_TEMPLATES=$(shell ls ${DOCKDIR}*.template)
 
 DEBIAN_ESC=$(shell echo ${DEBIAN} | sed 's/\:/__/gi')
 
+GEN_EXT='___gen'
+
 PREBUILD =.env                       \
 	.env.default                     \
 	.env_$${TARGET}                  \
 	.env_$${TARGET}.default          \
 	.lock_env                        \
 	$(shell ls ${DOCKDIR}*.template  \
-		| sed 's/\.[a-z]\+$$//gi' \
-		| sed 's/\(\..\+\)/._gen\1/gi' \
+		| sed 's/\.[a-z]\+$$//gi'    \
+		| sed 's/\(\..\+\)/.${GEN_EXT}\1/gi' \
 	)
 
 ENV_LOCK ?=${MAKEDIR}.lock_env
@@ -151,16 +153,16 @@ ENTROPY_DIR=/tmp/IDS_ENTROPY-${TARGET} ## %var entropy directory for current tar
 ENTROPY_KEY=default ## %var default entropy key.
 
 define TEMP_TO_GEN ## %func convert a template name to a generatable name.
-$(shell                                          \
-	echo `dirname ${1}`/`basename ${1}`          \
-	| sed 's/\.\([a-z]\+\?\)\.template$$/._gen.\1/gi' \
+$(shell \
+	echo `dirname ${1}`/`basename ${1}` \
+	| sed 's/\.\([a-z]\+\?\)\.template$$/.${GEN_EXT}.\1/gi' \
 )
 endef
 
 define GEN_TO_TEMP ## %func convert a generatable name to a template name.
-$(shell                                          \
-	echo `dirname ${1}`/`basename ${1}`          \
-	| sed 's/\._gen\.\(.\+\?\)/.\1.template/' \
+$(shell                                             \
+	echo `dirname ${1}`/`basename ${1}`             \
+	| sed 's/\.${GEN_EXT}\.\(.\+\?\)/.\1.template/' \
 )
 endef
 
@@ -296,7 +298,7 @@ clean: ${PREBUILD} ## Clean the project. Only applies to files from the current 
 
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app      \
 		${DEBIAN} bash -c "                           \
-			rm -f infra/docker/*._gen.*;              \
+			rm -f infra/docker/*.${GEN_EXT}.*;        \
 			set -o noglob;                            \
 			rm -f .env.default;                       \
 			rm -f .env .env_${TARGET} .var;           \
@@ -304,7 +306,7 @@ clean: ${PREBUILD} ## Clean the project. Only applies to files from the current 
 
 	@ docker run --rm -v ${REALDIR}:/app -w=/app      \
 		${DEBIAN} bash -c "                           \
-			rm -f infra/docker/*._gen.*;              \
+			rm -f infra/docker/*.${GEN_EXT}.*;        \
 			cat data/global/_schema.json > data/global/schema.json ;"
 
 SEP=
@@ -479,9 +481,9 @@ infra/compose/%yml:
 
 .SECONDEXPANSION:
 
-templates: ${GENERABLE}
+templates: .lock_env ${GENERABLE}
 
-${GENERABLE}: $$(call GEN_TO_TEMP,$${@})
+${GENERABLE}: .lock_env $$(call GEN_TO_TEMP,$${@})
 	test -w ${@} || test -w `dirname ${@}`;
 	echo -e "$(call SHELLOUT,cat ${<})" > ${@}
 	test -f ${@};
@@ -493,7 +495,7 @@ babel: ${PREBUILD} ### Dry-run babel
 		run --rm ${PASS_ENV} node npx babel
 
 run-phar: ${PREBUILD} ### Run a phar'd package.
-	${DCOMPOSE} -f ${COMPOSE_TARGET} run --rm  \
+	${DCOMPOSE} -f ${COMPOSE_TARGET} run --rm   \
 		--entrypoint='php SeanMorris_Ids.phar' \
 		${PASS_ENV} ${CMD}
 
