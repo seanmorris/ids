@@ -206,8 +206,13 @@ TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${DEBIAN}         \
 DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}
 endef
 
-define ENVSUBST
 
+define SHELLOUT
+$(eval OUT:=$(shell printf "%q" "$$(${1})" \
+	| sed "s/^$$'//g" \
+	| sed "s/'$$//g" \
+	| sed "s/'/'\\\\''/g" \
+))$$(printf "%b" '${OUT}' | sed "s/\\\'/'/g")
 endef
 
 ifneq (${MAIN_DLT},)
@@ -500,16 +505,12 @@ graylog-restore glres:
 
 ${MAKEDIR}%._gen.dockerfile: ${MAKEDIR}%.dockerfile.template
 ${DOCKDIR}%._gen.dockerfile: ${DOCKDIR}%.dockerfile.template
-	@ $(eval IN:=$(shell                         \
+	@ $(eval IN:=$(shell                             \
 		echo `dirname ${@}`/`basename ${@}`          \
 		| sed -e 's/\._gen\.\(.\+\?\)/.\1.template/' \
 	))
 
-	@ $(eval OUT:=$(shell printf "%q" "`cat ${IN}`" \
-		| rev | cut -b 2-     \
-		| rev | cut -b 3-     \
-		| sed "s/'/'\\\\''/g" \
-	))
-
-	@ set -eux; printf "%b" '${OUT}' | sed "s/\\\'/'/g";
-	@ set -eux; printf "%b" '${OUT}' | sed "s/\\\'/'/g" > ${@};
+	echo ${IN};
+	echo -e "$(call SHELLOUT,cat ${IN})"
+	echo -e "$(call SHELLOUT,cat ${IN})" > ${@}
+	test -f ${@};
