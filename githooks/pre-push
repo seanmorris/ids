@@ -1,16 +1,15 @@
 #!/bin/bash
 set -eu;
 
-[[ "$TARGET" == "dev" ]] && set -x;
-
 while read -d $'\0' VAR; do
 	[[ ! -z "$VAR" ]] && declare "$VAR";
 done < <(make @base env SEP=-0);
 
-make @base b;
+[[ "$TARGET" == "dev" ]] && set -x;
 
 echo Pushing $BRANCH;
 
+# make @base b;
 # while read LINE; do echo $LINE | {
 # 	IFS=":" read BRANCH TARGET
 
