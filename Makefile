@@ -58,7 +58,7 @@ PREBUILD =.env                       \
 	.env_$${TARGET}.default          \
 	.lock_env                        \
 	$(shell ls ${DOCKDIR}*.template  \
-		| sed 's/\.[a-z]\+$$//gi'    \
+		| sed 's/\.[a-z]\+$$//gi'      \
 		| sed 's/\(\..\+\)/.${GEN_EXT}\1/gi' \
 	)
 
@@ -219,11 +219,8 @@ endef
 define ENV ## %var List of environment vars to pass to sub commands.
 TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}  \
 MAKEDIR=${MAKEDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}} \
-DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}          \
-REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT}            \
-TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${DEBIAN}         \
-DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}
-endef
+DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}           \
+REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT}             \
 
 define EXTRACT_TARGET_SERVICES ENV ## %frag extract the target & optional service configs from args.
 $(eval TGT_SCV:=$(subst -, -,$(subst +, +,${1})))
@@ -231,12 +228,13 @@ $(eval TARGET=$(lastword $(subst @, ,$(firstword ${TGT_SCV}))))
 endef
 
 define SHELLOUT ## %func Get a multiline return value from the shell.
+
+define SHELLOUT
 $(eval OUT:=$(shell printf "%q" "$$(${1})" \
 	| sed "s/^$$'//g" \
 	| sed "s/'$$//g" \
 	| sed "s/'/'\\\\''/g" \
 ))$$(printf "%b" '${OUT}' | sed "s/\\\'/'/g")
-endef
 
 ifneq (${MAIN_DLT},)
 ENV+=$(shell cat ${MAIN_DLT} | ${INTERPOLATE_ENV} | ${QUOTE_ENV} | grep -v ^\#)
