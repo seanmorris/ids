@@ -1,6 +1,8 @@
 #!/bin/bash
 set -eu;
 
+[[ "$TARGET" == "dev" ]] && set -x;
+
 while read -d $'\0' VAR; do
 	[[ ! -z "$VAR" ]] && declare "$VAR";
 done < <(make @base env SEP=-0);
@@ -9,14 +11,12 @@ make @base b;
 
 echo Pushing $BRANCH;
 
-[[ "$TARGET" == "dev" ]] && set +x;
+# while read LINE; do echo $LINE | {
+# 	IFS=":" read BRANCH TARGET
 
-while read LINE; do echo $LINE | {
-	IFS=":" read BRANCH TARGET
+# 	echo "$BRANCH:$TARGET found in .publishing file. Ids is building & pushing now.";
 
-	echo "$BRANCH:$TARGET found in .publishing file. Ids is building & pushing now.";
+# 	make @$TARGET build;
+# 	make @$TARGET push-images;
 
-	make @$TARGET build;
-	make @$TARGET push-images;
-
-}; done < <(grep ^$BRANCH\: .publishing);
+# }; done < <(grep ^$BRANCH\: .publishing);

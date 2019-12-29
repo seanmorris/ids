@@ -42,7 +42,7 @@ TRGT_DLT =${MAKEDIR}.env_${TARGET}.default
 -include ${TRGT_ENV}
 -include ${TRGT_DLT}
 
-$(shell >&2 echo Starting with target: ${TARGET})
+$(shell >&2 echo Starting with target: \"${TARGET}\")
 
 DOCKDIR ?=${REALDIR}infra/docker/
 
@@ -52,15 +52,29 @@ DEBIAN_ESC=$(shell echo ${DEBIAN} | sed 's/\:/__/gi')
 
 GEN_EXT='___gen'
 
-PREBUILD =.env                       \
-	.env.default                     \
-	.env_$${TARGET}                  \
-	.env_$${TARGET}.default          \
-	.lock_env                        \
-	$(shell ls ${DOCKDIR}*.template  \
-		| sed 's/\.[a-z]\+$$//gi'    \
-		| sed 's/\(\..\+\)/.${GEN_EXT}\1/gi' \
-	)
+define TEMP_TO_GEN ## %func convert a template name to a generatable name.
+$(shell \
+	echo `dirname ${1}`/`basename ${1}` \
+	| sed 's/\.\([a-z]\+\?\)\.template$$/.${GEN_EXT}.\1/gi' \
+)
+endef
+
+define GEN_TO_TEMP ## %func convert a generatable name to a template name.
+$(shell                                             \
+	echo `dirname ${1}`/`basename ${1}`             \
+	| sed 's/\.${GEN_EXT}\.\(.\+\?\)/.\1.template/' \
+)
+endef
+
+TEMPLATES:=$(shell find | grep .template$$)## %var List of available templates.
+GENERABLE:=$(foreach TEMPLATE,${TEMPLATES},$(call TEMP_TO_GEN,${TEMPLATE}))## %var List of prospective generatables..
+
+PREBUILD =.env         \
+	.env.default       \
+	.env_$${TARGET}    \
+	.env_$${TARGET}.default \
+	.lock_env          \
+	${GENERABLE}
 
 ENV_LOCK ?=${MAKEDIR}.lock_env
 
@@ -118,7 +132,7 @@ XDEBUG_CONFIG="`\
 	| ${INTERPOLATE_ENV}                \
 	| grep ^XDEBUG_CONFIG_              \
 	| while read VAR; do echo $$VAR | { \
-		IFS='\=' read -r NAME VALUE;    \
+		IFS="="" read -r NAME VALUE;    \
 		echo -En $$NAME                 \
 			| sed 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
 		echo -En "=$$VALUE ";           \
@@ -149,25 +163,7 @@ define QUOTE_ENV ## %frag quotes environment vara:
 	${PARSE_ENV} echo -n " $$ENV_NAME="; printf %q "$$ENV_VALUE"; }; done
 endef
 
-ENTROPY_DIR=/tmp/IDS_ENTROPY-${TARGET} ## %var entropy directory for current target.
-ENTROPY_KEY=default ## %var default entropy key.
-
-define TEMP_TO_GEN ## %func convert a template name to a generatable name.
-$(shell \
-	echo `dirname ${1}`/`basename ${1}` \
-	| sed 's/\.\([a-z]\+\?\)\.template$$/.${GEN_EXT}.\1/gi' \
-)
-endef
-
-define GEN_TO_TEMP ## %func convert a generatable name to a template name.
-$(shell                                             \
-	echo `dirname ${1}`/`basename ${1}`             \
-	| sed 's/\.${GEN_EXT}\.\(.\+\?\)/.\1.template/' \
-)
-endef
-
-TEMPLATES:=$(shell find | grep .template$$)  ## %var List of available templates.
-GENERABLE:=$(foreach TEMPLATE,${TEMPLATES},$(call TEMP_TO_GEN,${TEMPLATE})) ## %var List of prospective generatables..
+ENTROPY_DIR=/tmp/IDS_ENTROPY-${TARGET}## %var entropy directory for current target.
 
 define RANDOM_STRING ## %func Generate a random 32 character alphanumeric string.
 cat /dev/urandom         \
@@ -176,23 +172,24 @@ cat /dev/urandom         \
 	| head -n 1
 endef
 
-define GET_ENTROPY ## %frag Return entropy value for a given key.
-test -e ${ENTROPY_DIR}/$$ENTROPY_KEY    \
-	&& cat ${ENTROPY_DIR}/$$ENTROPY_KEY \
-	|| ${RANDOM_STRING} | tee ${ENTROPY_DIR}/$$ENTROPY_KEY
+define GET_ENTROPY ## %func Return entropy value for a given key.
+test -w "${ENTROPY_DIR}/${1}"  \
+	&& cat ${ENTROPY_DIR}/${1} \
+	|| ${RANDOM_STRING} | tee ${ENTROPY_DIR}/${1}
 endef
 
 define STITCH_ENTROPY ## %func Return entropy value for a given key.
-test -d ${ENTROPY_DIR}                       \
+test -d "${ENTROPY_DIR}"                     \
 	|| mkdir -m 700 -p ${ENTROPY_DIR};       \
 while read -r ENV_LINE; do                   \
-	test -n "$$ENV_LINE" || continue;        \
 	echo -n "$$ENV_LINE" | ${PARSE_ENV}      \
+		echo -n $$ENV_NAME=;                 \
 		grep $$ENV_NAME .entropy | {         \
 		IFS=":" read -r ENV_KEY ENTROPY_KEY; \
-		echo -n $$ENV_NAME=;                 \
 		test -n "$$ENTROPY_KEY"              \
-			&& echo $$(ENTROPY_KEY=$$ENTROPY_KEY && ${GET_ENTROPY}) \
+			&& echo $$(ENTROPY_KEY=$$ENTROPY_KEY \
+				$(call GET_ENTROPY,$$ENTROPY_KEY) \
+			)                                \
 			|| echo -E $$ENV_VALUE;          \
 };}; done; done < $$FROM > $$TO
 endef
@@ -219,8 +216,8 @@ endef
 define ENV ## %var List of environment vars to pass to sub commands.
 TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}  \
 MAKEDIR=${MAKEDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}} \
-DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}          \
-REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT}            \
+DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}           \
+REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT}             \
 TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${DEBIAN}         \
 DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}
 endef
@@ -293,20 +290,20 @@ test t: ${PREBUILD} ## Run the tests
 		idilic SeanMorris/Ids runTests
 
 clean: ${PREBUILD} ## Clean the project. Only applies to files from the current target.
-	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
-	@ docker volume prune -f;
+	@- ${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
+	@- docker volume prune -f;
 
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app      \
-		${DEBIAN} bash -c "                           \
-			rm -f infra/docker/*.${GEN_EXT}.*;        \
-			set -o noglob;                            \
-			rm -f .env.default;                       \
-			rm -f .env .env_${TARGET} .var;           \
+	@- docker run --rm -v ${MAKEDIR}:/app -w=/app \
+		${DEBIAN} bash -c "                       \
+			rm -f infra/docker/*.${GEN_EXT}.*;    \
+			set -o noglob;                        \
+			rm -f .env.default;                   \
+			rm -f .env .env_${TARGET} .var;       \
 			rm -f .lock_env .env_${TARGET}.default;"
 
-	@ docker run --rm -v ${REALDIR}:/app -w=/app      \
-		${DEBIAN} bash -c "                           \
-			rm -f infra/docker/*.${GEN_EXT}.*;        \
+	@- docker run --rm -v ${REALDIR}:/app -w=/app \
+		${DEBIAN} bash -c "                       \
+			rm -f ${GENERABLE};                   \
 			cat data/global/_schema.json > data/global/schema.json ;"
 
 SEP=
@@ -441,7 +438,7 @@ stay@%: ### Set the current target and persist for later invocations.
 		}'
 
 .env.default: config/.env.default
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+	docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		${DEBIAN} bash -c '{                     \
 			FROM=config/.env.default             \
 			TO=.env.default                      \
@@ -476,17 +473,18 @@ config/.env   config/.env_${TARGET}:
 config/.env.default config/.env_${TARGET}.default:
 	@ test -f ${@};
 
-infra/compose/%yml:
+infra/compose/%yml: env .env.default .env_$${TARGET} .env_$${TARGET}.default .lock_env
 	@ test -f infra/compose/${TARGET}.yml;
 
 .SECONDEXPANSION:
 
-templates: .lock_env ${GENERABLE}
+templates: ${GENERABLE}
 
-${GENERABLE}: .lock_env $$(call GEN_TO_TEMP,$${@})
-	test -w ${@} || test -w `dirname ${@}`;
-	echo -e "$(call SHELLOUT,cat ${<})" > ${@}
-	test -f ${@};
+${GENERABLE}:$$(call GEN_TO_TEMP,$${@})
+	@ echo Rebuilding template `basename ${@}`;
+	@ test -w ${@} || test -w `dirname ${@}`;
+	@ echo -e "$(call SHELLOUT,cat ${<})" > ${@}
+	@ test -f ${@};
 
 ###
 
@@ -495,7 +493,7 @@ babel: ${PREBUILD} ### Dry-run babel
 		run --rm ${PASS_ENV} node npx babel
 
 run-phar: ${PREBUILD} ### Run a phar'd package.
-	${DCOMPOSE} -f ${COMPOSE_TARGET} run --rm   \
+	${DCOMPOSE} -f ${COMPOSE_TARGET} run --rm  \
 		--entrypoint='php SeanMorris_Ids.phar' \
 		${PASS_ENV} ${CMD}
 
