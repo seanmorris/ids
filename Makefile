@@ -44,8 +44,7 @@ TRGT_DLT =${MAKEDIR}.env_${TARGET}.default
 
 $(shell >&2 echo Starting with target: ${TARGET})
 
-DOCKDIR  ?=infra/docker/
-DOCKDIR  ?=${REALDIR}infra/docker/
+DOCKDIR ?=${REALDIR}infra/docker/
 
 DOCKER_TEMPLATES=$(shell ls ${DOCKDIR}*.template)
 
@@ -58,7 +57,7 @@ PREBUILD =.env                       \
 	.lock_env                        \
 	$(shell ls ${DOCKDIR}*.template  \
 		| sed -e 's/\.[a-z]\+$$//gi' \
-		| sed -e 's/\(\..\+\)/.${PHP}-${DEBIAN_ESC}\1/gi' \
+		| sed -e 's/\(\..\+\)/._gen\1/gi' \
 	)
 
 ENV_LOCK ?=${MAKEDIR}.lock_env
@@ -74,11 +73,9 @@ REPO     ?=seanmorris
 BRANCH   :=$(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo nobranch)
 HASH     :=$(shell echo _$$(git rev-parse --short HEAD 2>/dev/null) || echo init)
 DESC     :=$(shell git describe --tags 2>/dev/null || echo ${HASH})
-SUFFIX   =-${TARGET}$(shell \
-[[ ${PHP} = 7.3  ]]        || echo -${PHP})$(shell \
-[[ ${BRANCH} = "master" ]] && echo -${BRANCH})
+SUFFIX   =-${TARGET}$(shell [[ ${PHP} = 7.3  ]] || echo -${PHP})
 
-TAG      ?=${DESC}${SUFFIX}
+TAG      ?=${DESC}${SUFFIX}$(shell [[ ${BRANCH} == "master" ]] || echo -${BRANCH})
 FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
 IMAGE    ?=
@@ -153,14 +150,17 @@ endef
 ENTROPY_DIR=/tmp/IDS_ENTROPY-${TARGET}
 ENTROPY_KEY=default
 
+define RANDOM_STRING
+cat /dev/urandom         \
+	| tr -dc 'a-zA-Z0-9' \
+	| fold -w 32         \
+	| head -n 1
+endef
+
 define GET_ENTROPY
 test -e ${ENTROPY_DIR}/$$ENTROPY_KEY    \
 	&& cat ${ENTROPY_DIR}/$$ENTROPY_KEY \
-	|| cat /dev/urandom                 \
-		| tr -dc 'a-zA-Z0-9'            \
-		| fold -w 32                    \
-		| head -n 1                     \
-		| tee ${ENTROPY_DIR}/$$ENTROPY_KEY
+	|| ${RANDOM_STRING} | tee ${ENTROPY_DIR}/$$ENTROPY_KEY
 endef
 
 define STITCH_ENTROPY
@@ -198,12 +198,21 @@ $(eval TRGT_DLT:=$(shell echo ${MAKEDIR}.env_${TARGET}.default))
 endef
 
 define ENV=
-TAG=${TAG} REPO=${REPO} BRANCH=${BRANCH} PROJECT=${PROJECT}      \
-PROJECT_FULLNAME=${FULLNAME} TARGET=${TARGET} MAKEDIR=${MAKEDIR} \
-DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}         \
-MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT} TRGT_ENV=${TRGT_ENV}   \
-TRGT_DLT=${TRGT_DLT} DEBIAN=${DEBIAN} DEBIAN_ESC=${DEBIAN_ESC}   \
-PHP=${PHP}
+TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}  \
+MAKEDIR=${MAKEDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}} \
+DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}           \
+REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT}             \
+TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${DEBIAN}         \
+DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}
+endef
+
+
+define SHELLOUT
+$(eval OUT:=$(shell printf "%q" "$$(${1})" \
+	| sed "s/^$$'//g" \
+	| sed "s/'$$//g" \
+	| sed "s/'/'\\\\''/g" \
+))$$(printf "%b" '${OUT}' | sed "s/\\\'/'/g")
 endef
 
 ifneq (${MAIN_DLT},)
@@ -233,8 +242,9 @@ DRUN=docker run --rm         \
 
 build b: ${PREBUILD}
 	@ echo Building ${FULLNAME}
-	@ export TAG=latest-base && ${DCOMPOSE} -f ${COMPOSE_BASE} build idilic
-	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} build --parallel --compress
+	export TARGET=base TAG=_latest_local && \
+		${DCOMPOSE} -f ${COMPOSE_BASE} build idilic
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} build
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up --no-start
 	@ ${WHILE_IMAGES} \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
@@ -262,11 +272,18 @@ test t: ${PREBUILD}
 clean: ${PREBUILD}
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
 	@ docker volume prune -f;
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app     \
-		${DEBIAN} bash -c "        \
-			set -o noglob;                           \
-			rm -f .env .env_${TARGET} .var;          \
-			rm -rf  .lock_env .env_${TARGET}.default \
+
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app      \
+		${DEBIAN} bash -c "                           \
+			rm -f infra/docker/*._gen.*;              \
+			set -o noglob;                            \
+			rm -f .env.default;                       \
+			rm -f .env .env_${TARGET} .var;           \
+			rm -f .lock_env .env_${TARGET}.default;"
+
+	@ docker run --rm -v ${REALDIR}:/app -w=/app      \
+		${DEBIAN} bash -c "                           \
+			rm -f infra/docker/*._gen.*;              \
 			cat data/global/_schema.json > data/global/schema.json ;"
 
 SEP=
@@ -280,7 +297,7 @@ start-fg sf: ${PREBUILD}
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up
 
 start-bg sb: ${PREBUILD}
-	@ (${DCOMPOSE} -f ${COMPOSE_TARGET} up &)
+	(${DCOMPOSE} -f ${COMPOSE_TARGET} up &)
 
 stop d: ${PREBUILD}
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down
@@ -486,10 +503,14 @@ graylog-restore glres:
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml run --rm mongo bash -c \
 		'mongorestore -h mongo --db graylog /settings/graylog'
 
-${DOCKDIR}%.${PHP}-${DEBIAN_ESC}.dockerfile: ${DOCKDIR}%.dockerfile.template
-	TEMPLATE=`dirname ${@}`/`basename ${@}     \
-		| cut -f 1 -d '.'`.dockerfile.template \
-		&& test -f $$TEMPLATE && (             \
-			export ${ENV} && env -i cat $$TEMPLATE | envsubst > ${MAKEDIR}${@} \
-			&& echo "# built by `whoami` @ `date '+%Y-%m-%d %R:%S %Z'`" >> ${MAKEDIR}${@}; \
-		) || true
+${MAKEDIR}%._gen.dockerfile: ${MAKEDIR}%.dockerfile.template
+${DOCKDIR}%._gen.dockerfile: ${DOCKDIR}%.dockerfile.template
+	@ $(eval IN:=$(shell                             \
+		echo `dirname ${@}`/`basename ${@}`          \
+		| sed -e 's/\._gen\.\(.\+\?\)/.\1.template/' \
+	))
+
+	echo ${IN};
+	echo -e "$(call SHELLOUT,cat ${IN})"
+	echo -e "$(call SHELLOUT,cat ${IN})" > ${@}
+	test -f ${@};

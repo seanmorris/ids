@@ -1,60 +1,95 @@
-version: 2
+version: 2.1
+
+commands:
+  install-composer:
+    steps:
+      - run: |
+          sudo apt install -y software-properties-common
+          sudo add-apt-repository -y ppa:ondrej/php
+          sudo apt-get update
+          sudo apt-get install -y php7.4-cli php7.4-common php7.4-mbstring php7.4-intl php7.4-zip php7.4-bcmath php7.4-dom
+          curl -s https://getcomposer.org/installer | php
+          sudo mv composer.phar /usr/local/bin/composer
 
 workflows:
   version: 2
 
-  build_and_test:
+  build-test-push:
     jobs:
-      - test
-      - build:
+      - init-test
+      - self-test:
           requires:
-          - test
+            - init-test
+      - build-and-push:
+          requires:
+            - self-test
+            - init-test
 
-  build_and_test-7.1:
+  build-test-push-7_1:
     jobs:
-      - test-7.1
-      - build-7.1:
+      - init-test-7_1
+      - self-test-7_1:
           requires:
-            - test-7.1
+            - init-test-7_1
+      - build-and-push-7_1:
+          requires:
+            - self-test-7_1
+            - init-test-7_1
 
-  build_and_test-7.2:
+  build-test-push-7_2:
     jobs:
-      - test-7.2
-      - build-7.2:
+      - init-test-7_2
+      - self-test-7_2:
           requires:
-            - test-7.2
+            - init-test-7_2
+      - build-and-push-7_2:
+          requires:
+            - self-test-7_2
+            - init-test-7_2
 
-  build_and_test-7.3:
+  build-test-push-7_3:
     jobs:
-      - test-7.3
-      - build-7.3:
+      - init-test-7_3
+      - self-test-7_3:
           requires:
-            - test-7.3
+            - init-test-7_3
+      - build-and-push-7_3:
+          requires:
+            - self-test-7_3
+            - init-test-7_3
 
-  build_and_test-7.4:
+  build-test-push-7_4:
     jobs:
-      - test-7.4
-      - build-7.4:
+      - init-test-7_4
+      - self-test-7_4:
           requires:
-            - test-7.4
+            - init-test-7_4
+      - build-and-push-7_4:
+          requires:
+            - self-test-7_4
+            - init-test-7_4
 
 jobs:
-  test:
+  self-test:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
       - run: make @base ct b
-      - run: make stay@dev ct b lt li
+      - run: make @dev ct b
+      - run: make @prod ct b
+      - run: make @test ct b
+      - run: make @base ct b
       - run: make @test ct b t lt li
+      - run: make stay@dev ct b lt li
       - run: make @prod ct b
       - run: make ct b
       - run: make @test ct b t
       - run: make stay@base ct b
       - run: make ct b
 
-  test-7.1:
+  self-test-7_1:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -73,7 +108,7 @@ jobs:
       - run: PHP=7.1 make stay@base ct b
       - run: PHP=7.1 make ct b
 
-  test-7.2:
+  self-test-7_2:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -92,7 +127,7 @@ jobs:
       - run: PHP=7.2 make stay@base ct b
       - run: PHP=7.2 make ct b
 
-  test-7.3:
+  self-test-7_3:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -111,7 +146,7 @@ jobs:
       - run: PHP=7.3 make stay@base ct b
       - run: PHP=7.3 make ct b
 
-  test-7.4:
+  self-test-7_4:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -130,7 +165,57 @@ jobs:
       - run: PHP=7.4 make stay@base ct b
       - run: PHP=7.4 make ct b
 
-  build:
+  init-test:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - install-composer
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
+      - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
+      - run: make @test start-bg test
+
+  init-test-7_1:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - install-composer
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
+      - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
+      - run: PHP=7.1 make @test start-bg test
+
+  init-test-7_2:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - install-composer
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
+      - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
+      - run: PHP=7.2 make @test start-bg test
+
+  init-test-7_3:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - install-composer
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
+      - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
+      - run: PHP=7.3 make @test start-bg test
+
+  init-test-7_4:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - install-composer
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
+      - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
+      - run: PHP=7.4 make @test start-bg test
+
+  build-and-push:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -138,11 +223,11 @@ jobs:
       - checkout
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: make @base ct b psi
-      - run: make @dev ct b  psi
+      - run: make @dev  ct b psi
       - run: make @prod ct b psi
       - run: make @test ct b psi
 
-  build-7.1:
+  build-and-push-7_1:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -150,11 +235,11 @@ jobs:
       - checkout
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.1 make @base ct b psi
-      - run: PHP=7.1 make @dev ct b  psi
+      - run: PHP=7.1 make @dev  ct b psi
       - run: PHP=7.1 make @prod ct b psi
       - run: PHP=7.1 make @test ct b psi
 
-  build-7.2:
+  build-and-push-7_2:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -162,11 +247,11 @@ jobs:
       - checkout
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.2 make @base ct b psi
-      - run: PHP=7.2 make @dev ct b  psi
+      - run: PHP=7.2 make @dev  ct b psi
       - run: PHP=7.2 make @prod ct b psi
       - run: PHP=7.2 make @test ct b psi
 
-  build-7.3:
+  build-and-push-7_3:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -174,11 +259,11 @@ jobs:
       - checkout
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.3 make @base ct b psi
-      - run: PHP=7.3 make @dev ct b  psi
+      - run: PHP=7.3 make @dev  ct b psi
       - run: PHP=7.3 make @prod ct b psi
       - run: PHP=7.3 make @test ct b psi
 
-  build-7.4:
+  build-and-push-7_4:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -186,6 +271,6 @@ jobs:
       - checkout
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.4 make @base ct b psi
-      - run: PHP=7.4 make @dev ct b  psi
+      - run: PHP=7.4 make @dev  ct b psi
       - run: PHP=7.4 make @prod ct b psi
       - run: PHP=7.4 make @test ct b psi
