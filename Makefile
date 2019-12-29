@@ -5,13 +5,13 @@
 	da dcc dcompose-config e entropy-dir_env hooks init it k kill li \
 	list-images list-tags lt n ni node npm-install pli psi pull-images push-images \
 	r rb restart restart-bg restart-fg rf run run-phar s sb sf sh start start-bg \
-	start-fg stay@% stop stop-all t tag-images test .lock_env
+	start-fg stay@% stop stop-all t tag-images test .lock_env help
 
 .SECONDEXPANSION:
 
 MAKEFLAGS += --no-builtin-rules
 
-DEBIAN   ?= debian:buster-20191118-slim
+DEBIAN   ?= debian:buster-20191118-slim## %var The BASE base image.
 PHP      ?= 7.3
 SHELL    =/bin/bash
 REALDIR  :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
@@ -48,7 +48,7 @@ DOCKDIR ?=${REALDIR}infra/docker/
 
 DOCKER_TEMPLATES=$(shell ls ${DOCKDIR}*.template)
 
-DEBIAN_ESC=$(shell echo ${DEBIAN} | sed -e 's/\:/__/gi')
+DEBIAN_ESC=$(shell echo ${DEBIAN} | sed 's/\:/__/gi')
 
 PREBUILD =.env                       \
 	.env.default                     \
@@ -56,8 +56,8 @@ PREBUILD =.env                       \
 	.env_$${TARGET}.default          \
 	.lock_env                        \
 	$(shell ls ${DOCKDIR}*.template  \
-		| sed -e 's/\.[a-z]\+$$//gi' \
-		| sed -e 's/\(\..\+\)/._gen\1/gi' \
+		| sed 's/\.[a-z]\+$$//gi' \
+		| sed 's/\(\..\+\)/._gen\1/gi' \
 	)
 
 ENV_LOCK ?=${MAKEDIR}.lock_env
@@ -100,7 +100,7 @@ cp  -n /app/package-lock.json /build;   \
 		| tr '/' '-'                    \
 		> package.json;                 \
 	npx
-endef
+endef ## %var Perform some magic for NPM
 
 define INTERPOLATE_ENV
 env -i DHOST_IP=${DHOST_IP}             \
@@ -118,52 +118,69 @@ XDEBUG_CONFIG="`\
 	| while read VAR; do echo $$VAR | { \
 		IFS='\=' read -r NAME VALUE;    \
 		echo -En $$NAME                 \
-			| sed -e 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
+			| sed 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
 		echo -En "=$$VALUE ";           \
 	} done`"
 endef
 
 PASS_ENV=$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /')
 
-define WHILE_IMAGES
+define WHILE_IMAGES ## %frag Loop over images. Provides $$IMAGE_HASH. Finish with "done;"
 docker images ${REPO}/${PROJECT}.*:${TAG} -q | while read IMAGE_HASH; do
 endef
 
-define WHILE_TAGS
+define WHILE_TAGS ## %frag Loop over tags. Provides $$TAG_NAME and $$IMAGE_HASH. Finish with "done;done;"
 ${WHILE_IMAGES} \
 	docker image inspect --format="{{ index .RepoTags }}" $$IMAGE_HASH \
-	| sed -e 's/[][]//g' \
-	| sed -e 's/\s/\n/g' \
+	| sed 's/[][]//g' \
+	| sed 's/\s/\n/g' \
 	| while read TAG_NAME; do
 endef
 
-define PARSE_ENV
+define PARSE_ENV ## %frag Loop over environment files. Provides $$ENV_NAME and $$ENV_VALUE. Finish with "done;"
 grep -v ^\# \
 	| while read -r ENV; do echo $$ENV | { \
 		IFS='\=' read -r ENV_NAME ENV_VALUE;
 endef
 
-define QUOTE_ENV
-	${PARSE_ENV} echo   -n " $$ENV_NAME="; printf %q "$$ENV_VALUE"; }; done
+define QUOTE_ENV ## %frag quotes environment vara:
+	${PARSE_ENV} echo -n " $$ENV_NAME="; printf %q "$$ENV_VALUE"; }; done
 endef
 
-ENTROPY_DIR=/tmp/IDS_ENTROPY-${TARGET}
-ENTROPY_KEY=default
+ENTROPY_DIR=/tmp/IDS_ENTROPY-${TARGET} ## %var entropy directory for current target.
+ENTROPY_KEY=default ## %var default entropy key.
 
-define RANDOM_STRING
+define TEMP_TO_GEN ## %func convert a template name to a generatable name.
+$(shell                                          \
+	echo `dirname ${1}`/`basename ${1}`          \
+	| sed 's/\.\([a-z]\+\?\)\.template$$/._gen.\1/gi' \
+)
+endef
+
+define GEN_TO_TEMP ## %func convert a generatable name to a template name.
+$(shell                                          \
+	echo `dirname ${1}`/`basename ${1}`          \
+	| sed 's/\._gen\.\(.\+\?\)/.\1.template/' \
+)
+endef
+
+TEMPLATES:=$(shell find | grep .template$$)  ## %var List of available templates.
+GENERABLE:=$(foreach TEMPLATE,${TEMPLATES},$(call TEMP_TO_GEN,${TEMPLATE})) ## %var List of prospective generatables..
+
+define RANDOM_STRING ## %func Generate a random 32 character alphanumeric string.
 cat /dev/urandom         \
 	| tr -dc 'a-zA-Z0-9' \
 	| fold -w 32         \
 	| head -n 1
 endef
 
-define GET_ENTROPY
+define GET_ENTROPY ## %frag Return entropy value for a given key.
 test -e ${ENTROPY_DIR}/$$ENTROPY_KEY    \
 	&& cat ${ENTROPY_DIR}/$$ENTROPY_KEY \
 	|| ${RANDOM_STRING} | tee ${ENTROPY_DIR}/$$ENTROPY_KEY
 endef
 
-define STITCH_ENTROPY
+define STITCH_ENTROPY ## %func Return entropy value for a given key.
 test -d ${ENTROPY_DIR}                       \
 	|| mkdir -m 700 -p ${ENTROPY_DIR};       \
 while read -r ENV_LINE; do                   \
@@ -178,16 +195,16 @@ while read -r ENV_LINE; do                   \
 };}; done; done < $$FROM > $$TO
 endef
 
-define UNINCLUDE
+define UNINCLUDE ## %func Overwrite all values from given environment file.
 cat ${1} | grep -v ^\#       \
 	| grep "^[A-Z_]\+="      \
-	| sed -e 's/\=.\+$$//'   \
+	| sed 's/\=.\+$$//'      \
 	| while read OLD_VAR; do \
 		echo -e "$$OLD_VAR=DELETED"; \
 	done;
 endef
 
-define NEWTARGET
+define NEWTARGET ## %frag Set up environment for new target.
 test -f infra/compose/${TARGET}.yml;
 $(eval COMPOSE_TARGET:=$(shell echo infra/compose/${TARGET}.yml))
 $(eval PREBUILD:=$(shell echo env .env.default .env_${TARGET} .env_${TARGET}.default .lock_env))
@@ -197,17 +214,21 @@ $(eval TRGT_ENV:=$(shell echo ${MAKEDIR}.env_${TARGET}))
 $(eval TRGT_DLT:=$(shell echo ${MAKEDIR}.env_${TARGET}.default))
 endef
 
-define ENV=
+define ENV ## %var List of environment vars to pass to sub commands.
 TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}  \
 MAKEDIR=${MAKEDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}} \
-DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}           \
-REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT}             \
+DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}          \
+REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT}            \
 TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${DEBIAN}         \
 DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}
 endef
 
+define EXTRACT_TARGET_SERVICES ENV ## %frag extract the target & optional service configs from args.
+$(eval TGT_SCV:=$(subst -, -,$(subst +, +,${1})))
+$(eval TARGET=$(lastword $(subst @, ,$(firstword ${TGT_SCV}))))
+endef
 
-define SHELLOUT
+define SHELLOUT ## %func Get a multiline return value from the shell.
 $(eval OUT:=$(shell printf "%q" "$$(${1})" \
 	| sed "s/^$$'//g" \
 	| sed "s/'$$//g" \
@@ -240,7 +261,7 @@ DRUN=docker run --rm         \
 	-env-file=.env_${TARGET}.default \
 	-v $$PWD:/app
 
-build b: ${PREBUILD}
+build b: ${PREBUILD} ## Build the project.
 	@ echo Building ${FULLNAME}
 	export TARGET=base TAG=_latest_local && \
 		${DCOMPOSE} -f ${COMPOSE_BASE} build idilic
@@ -249,7 +270,7 @@ build b: ${PREBUILD}
 	@ ${WHILE_IMAGES} \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
 		| while read IMAGE_NAME; do                                          \
-			IMAGE_PREFIX=`echo "$$IMAGE_NAME" | sed -e "s/\:.*\$$//"`;       \
+			IMAGE_PREFIX=`echo "$$IMAGE_NAME" | sed "s/\:.*\$$//"`;          \
 			                                                                 \
 			echo "original:$$IMAGE_HASH $$IMAGE_PREFIX":${TAG};              \
 			                                                                 \
@@ -264,12 +285,12 @@ build b: ${PREBUILD}
 		done; \
 	done;
 
-test t: ${PREBUILD}
+test t: ${PREBUILD} ## Run the tests
 	@ export TARGET=${TARGET} && ${DCOMPOSE} -f ${COMPOSE_TARGET} \
 		run --rm ${NO_TTY} ${PASS_ENV}                            \
 		idilic SeanMorris/Ids runTests
 
-clean: ${PREBUILD}
+clean: ${PREBUILD} ## Clean the project. Only applies to files from the current target.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
 	@ docker volume prune -f;
 
@@ -287,47 +308,47 @@ clean: ${PREBUILD}
 			cat data/global/_schema.json > data/global/schema.json ;"
 
 SEP=
-env e:
+env e: ## Export the environment as seen from MAKE.
 	@ export ${ENV} && env ${SEP};
 
-start s: ${PREBUILD}
+start s: ${PREBUILD} ## Start the project services.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up -d
 
-start-fg sf: ${PREBUILD}
+start-fg sf: ${PREBUILD} ## Start the project services in the foreground.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up
 
-start-bg sb: ${PREBUILD}
+start-bg sb: ${PREBUILD} ## Start the project services in the background, streaming output to terminal.
 	(${DCOMPOSE} -f ${COMPOSE_TARGET} up &)
 
-stop d: ${PREBUILD}
+stop d: ${PREBUILD} ## Stop the current project services on the current target.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down
 
-stop-all da: ${PREBUILD}
+stop-all da: ${PREBUILD} ## Stop the all project services on the current target. including orphans.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down --remove-orphans
 
-restart r: ${PREBUILD}
+restart r: ${PREBUILD} ## Restart the project services in the foreground.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down && ${DCOMPOSE} -f ${COMPOSE_TARGET} up -d
 
-restart-fg rf: ${PREBUILD}
+restart-fg rf: ${PREBUILD} ## Start the project services in the foreground.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} down && ${DCOMPOSE} -f ${COMPOSE_TARGET} up
 
-restart-bg rb: ${PREBUILD}
+restart-bg rb: ${PREBUILD}## Start the project services in the background, streaming output to terminal.
 	@ (${DCOMPOSE} -f ${COMPOSE_TARGET} down && ${DCOMPOSE} -f ${COMPOSE_TARGET} up &)
 
-kill k: ${PREBUILD}
+kill k: ${PREBUILD} ## Kill current project services.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} kill -s 9
 
-kill-all:
+kill-all: ## Kill all project services.
 	@ ${WHILE_IMAGES} echo docker kill -9 $$IMAGE_HASH; done;
 
-current-tag ct: ${COMPOSE_TARGET}
+current-tag ct: ${COMPOSE_TARGET} ## Get the current project tag.
 	@ echo ${TAG}
 
-current-target ctr: ${COMPOSE_TARGET}
+current-target ctr: ${COMPOSE_TARGET} ## Get the current target.
 	@ [[ "${TARGET}" != "" ]] || (echo "No target set." && false)
 	@ echo ${TARGET}
 
-list-images li:${PREBUILD}
+list-images li:${PREBUILD} ## List available images from current target.
 	@ ${WHILE_IMAGES} \
 		echo $$(docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH) \
 		$$(docker image inspect --format="{{ .Size }}" $$IMAGE_HASH  \
@@ -335,56 +356,56 @@ list-images li:${PREBUILD}
 		); \
 	done;
 
-list-tags lt:
+list-tags lt: ## List the images tagged from the current target.
 	@ ${WHILE_TAGS} echo $$TAG_NAME; done;done;
 
-push-images psi: ${COMPOSE_TARGET}
+push-images psi: ${COMPOSE_TARGET} ## Push locally built images.
 	@ echo Pushing ${PROJECT}:${TAG}
 	@ ${WHILE_TAGS} \
 		docker push $$TAG_NAME; \
 	done;done;
 
-pull-images pli: ${PREBUILD}
+pull-images pli: ${PREBUILD} ## Pull remotely hosted images.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} pull
 
-hooks: ${COMPOSE_TARGET}
+hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 	@ git config core.hooksPath githooks
 
-run: ${PREBUILD}
+run: ${PREBUILD} ## CMD= 'SERVICE COMMAND' Run a command in a given service's container.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} run --rm ${NO_TTY} \
 		${PASS_ENV} ${CMD}
 
-bash sh: ${PREBUILD}
+bash sh: ${PREBUILD} ## Get a bash propmpt to an idilic container.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} run --rm ${NO_TTY} \
 		${PASS_ENV} --entrypoint=bash idilic
 
-composer-install ci:
+composer-install ci: ## Run composer install. Will download composer docker image if not available..
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
 		--ignore-platform-reqs `${ISDEV} || echo "--no-dev"`
 
-composer-update cu:
+composer-update cu: ## Run composer update. Will download docker image if not available.
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer update \
 		--ignore-platform-reqs `${ISDEV} || echo "--no-dev"`
 
-composer-dump-autoload cda:
+composer-dump-autoload cda:## Run composer dump-autoload. Will download composer docker image if not available..
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer dump-autoload
 
-node n: ${PREBUILD}
+node n: ${PREBUILD} ## Run a command in a node container.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} -f \
 		${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node
 
 PKG=
-npm-install ni: ${PREBUILD}
+npm-install ni: ${PREBUILD} ## PKG= Install an NPM package.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} -f \
 		${COMPOSE_TOOLS}/node.yml run --rm ${PASS_ENV} node npm i ${PKG}
 
-dcompose-config dcc: ${PREBUILD}
+dcompose-config dcc: ${PREBUILD} ## Print the current docker-compose configuration.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} config
 
-dcompose dc:
+dcompose dc: ### Install an NPM package.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET}
 
-.lock_env:
+.lock_env: ### Lock the environment target
 	@ [[ "${ENV_LOCK_STATE}" == "${TAG}" ]] || (    \
 		${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
 			--ignore-platform-reqs                  \
@@ -398,20 +419,20 @@ dcompose dc:
 
 ##
 
-stay@%:
-	$(eval TARGET=$(shell echo ${@} | cut -c 6-))
-	@ >&2 echo Setting current target ${TARGET}...
-	echo TARGET=${TARGET} > ${VAR_FILE};
+stay@%: ### Set the current target and persist for later invocations.
+	@ >&2 echo Setting persistent target ${TARGET}...
+	@ $(call EXTRACT_TARGET_SERVICES, ${@})
+	@ echo TARGET=${TARGET} > ${VAR_FILE};
 	@ ${NEWTARGET}
 
-@%:
-	$(eval TARGET=$(shell echo ${@} | cut -c 2-))
+@%:### Set the current target for one invocation.
 	@ >&2 echo Setting current target ${TARGET}...
+	@ $(call EXTRACT_TARGET_SERVICES, ${@})
 	@ ${NEWTARGET}
 
 .env: config/.env
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		${DEBIAN} bash -c '{   \
+		${DEBIAN} bash -c '{                     \
 			FROM=config/.env                     \
 			TO=.env                              \
 				&& ${STITCH_ENTROPY};            \
@@ -419,7 +440,7 @@ stay@%:
 
 .env.default: config/.env.default
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		${DEBIAN} bash -c '{   \
+		${DEBIAN} bash -c '{                     \
 			FROM=config/.env.default             \
 			TO=.env.default                      \
 				&& ${STITCH_ENTROPY};            \
@@ -427,7 +448,7 @@ stay@%:
 
 .env_${TARGET}: config/.env_${TARGET}
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		${DEBIAN} bash -c '{   \
+		${DEBIAN} bash -c '{                     \
 			FROM=config/.env_${TARGET}           \
 			TO=.env_${TARGET}                    \
 				&& ${STITCH_ENTROPY};            \
@@ -438,7 +459,7 @@ stay@%:
 
 .env_${TARGET}.default: config/.env_${TARGET}.default
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		${DEBIAN} bash -c '{   \
+		${DEBIAN} bash -c '{                     \
 			FROM=config/.env_${TARGET}           \
 			TO=.env_${TARGET}                    \
 				&& ${STITCH_ENTROPY};            \
@@ -456,61 +477,74 @@ config/.env.default config/.env_${TARGET}.default:
 infra/compose/%yml:
 	@ test -f infra/compose/${TARGET}.yml;
 
+.SECONDEXPANSION:
+
+templates: ${GENERABLE}
+
+${GENERABLE}: $$(call GEN_TO_TEMP,$${@})
+	test -w ${@} || test -w `dirname ${@}`;
+	echo -e "$(call SHELLOUT,cat ${<})" > ${@}
+	test -f ${@};
+
 ###
 
-babel: ${PREBUILD}
+babel: ${PREBUILD} ### Dry-run babel
 	${DCOMPOSE} -f ${COMPOSE_TARGET} -f ${COMPOSE_TOOLS}/node.yml \
 		run --rm ${PASS_ENV} node npx babel
 
-run-phar: ${PREBUILD}
+run-phar: ${PREBUILD} ### Run a phar'd package.
 	${DCOMPOSE} -f ${COMPOSE_TARGET} run --rm  \
 		--entrypoint='php SeanMorris_Ids.phar' \
 		${PASS_ENV} ${CMD}
 
-dirs:
+dirs: ### Show the root project dir and the core project dir respectively
 	@ echo ${MAKEDIR}
 	@ echo ${REALDIR}
 
-graylog-start gls: ${PREBUILD}
+graylog-start gls: ${PREBUILD} ### Start graylog.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up -d
 
-graylog-start-fg glsf: ${PREBUILD}
+graylog-start-fg glsf: ${PREBUILD} ### start-fg for graylog.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up
 
-graylog-start-bg glsb: ${PREBUILD}
+graylog-start-bg glsb: ${PREBUILD} ### start-bg for graylog.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up &
 
-graylog-restart glr: ${PREBUILD}
+graylog-restart glr: ${PREBUILD} ### Restart graylog.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up -d
 
-graylog-restart-fg glrf: ${PREBUILD}
+graylog-restart-fg glrf: ${PREBUILD} ### restart-fg for graylog.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up
 
-graylog-restart-bg glrb: ${PREBUILD}
+graylog-restart-bg glrb: ${PREBUILD} ### restart-bg for graylog.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up &
 
-graylog-stop gld: ${PREBUILD}
+graylog-stop gld: ${PREBUILD} ### Stop graylog.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
 
-graylog-backup glbak:
+graylog-backup glbak: ### Backup graylog config to files.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml run --rm mongo bash -c \
 		'mongodump -h mongo --db graylog --out /settings; ls /; ls /settings'
 
-graylog-restore glres:
+graylog-restore glres: ### Restore graylog config from files.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml run --rm mongo bash -c \
 		'mongorestore -h mongo --db graylog /settings/graylog'
 
-${MAKEDIR}%._gen.dockerfile: ${MAKEDIR}%.dockerfile.template
-${DOCKDIR}%._gen.dockerfile: ${DOCKDIR}%.dockerfile.template
-	@ $(eval IN:=$(shell                             \
-		echo `dirname ${@}`/`basename ${@}`          \
-		| sed -e 's/\._gen\.\(.\+\?\)/.\1.template/' \
-	))
-
-	echo ${IN};
-	echo -e "$(call SHELLOUT,cat ${IN})"
-	echo -e "$(call SHELLOUT,cat ${IN})" > ${@}
-	test -f ${@};
+help: ## print this message
+	@ $(eval HELPTYPE:= echo ${@} | cut -d - -f 2)
+	@ $(foreach MKFL,${MAKEFILE_LIST}, \
+		cat "${MKFL}" | grep '\:.*\#\#' | grep -v '###'\
+		| while read -r LINE; do        \
+			NAME=`echo $$LINE | sed -r 's/[:= ].*//'`;  \
+			DESC=`echo $$LINE | sed -r 's/.*\#\#//'`;   \
+			TYPE=`echo $$DESC                           \
+				| grep '%'                              \
+				| sed -r 's/.*(%[a-z]*).*/\1/;'`;       \
+			DESC=`echo $$DESC | sed -r 's/^%[a-z]*//'`; \
+			[[ -z "$$TYPE" ]] || continue;              \
+			echo -e "$$NAME: $$DESC";                   \
+		done | column -ts:;                             \
+	)
