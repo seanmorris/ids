@@ -182,6 +182,7 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
     steps:
+      - checkout
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project
