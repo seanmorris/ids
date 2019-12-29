@@ -171,7 +171,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - install-composer
-      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
       - run: cd ids-project
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: make @test start-bg test
@@ -182,7 +182,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - install-composer
-      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
       - run: cd ids-project
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: PHP=7.1 make @test start-bg test
@@ -193,7 +193,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - install-composer
-      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
       - run: cd ids-project
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: PHP=7.2 make @test start-bg test
@@ -204,7 +204,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - install-composer
-      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
       - run: cd ids-project
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: PHP=7.3 make @test start-bg test
@@ -215,7 +215,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - install-composer
-      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
       - run: cd ids-project
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: PHP=7.4 make @test start-bg test
