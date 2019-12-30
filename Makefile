@@ -34,9 +34,11 @@ $(error Please set a target with @target or stay@target.)
 endif
 else
 $(eval TARGET=$(shell echo ${firstword ${MAKECMDGOALS}} | ${CUT_TARGET} ))
+$(eval TGT_STR=$(firstword ${MAKECMDGOALS}))
 endif
 else
 $(eval TARGET=$(shell echo ${firstword ${MAKECMDGOALS}} | ${CUT_TARGET} ))
+$(eval TGT_STR=$(firstword ${MAKECMDGOALS}))
 endif
 
 TRGT_ENV =${MAKEDIR}.env_${TARGET}
@@ -118,12 +120,6 @@ cat /dev/urandom         \
 	| head -n 1
 endef
 
-ifneq ($(filter ${ENV_LOCK_LOCALBASE},),)
-$(eval LOCALBASE:=${ENV_LOCK_LOCALBASE})
-else
-LOCALBASE:=$(shell ${RANDOM_STRING})
-endif
-
 define NPX
 cp  -n /app/package-lock.json /build;   \
 	cat /app/composer.json              \
@@ -153,6 +149,9 @@ XDEBUG_CONFIG="`\
 		echo -En "=$$VALUE ";           \
 	} done`"
 endef
+
+YQ=${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm \
+	--entrypoint yq idilic
 
 PASS_ENV=$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /')
 
@@ -220,21 +219,25 @@ $(eval MAIN_DLT:=$(shell echo ${MAKEDIR}.env.default))
 $(eval TRGT_ENV:=$(shell echo ${MAKEDIR}.env_${TARGET}))
 $(eval TRGT_DLT:=$(shell echo ${MAKEDIR}.env_${TARGET}.default))
 
-$(eval DCOMPOSE_FILES:=-f ${COMPOSE_TARGET})
-$(eval DCOMPOSE_FILES+= $(and         \
-	$(filter +aptcache,${TGT_SVC}),   \
-	-f ${COMPOSE_TOOLS}/aptcache.yml  \
+$(eval DCOMPOSE_FILES:=)
+
+$(eval DCOMPOSE_FILES+= $(and        \
+	$(filter +aptcache,${TGT_SVC}),  \
+	-f ${COMPOSE_TOOLS}/aptcache.yml \
 ))
 
-$(eval DCOMPOSE_FILES+=$(and          \
-	$(filter +graylog,${TGT_SVC}),    \
-	-f ${COMPOSE_TOOLS}/graylog.yml   \
+$(eval DCOMPOSE_FILES+=$(and         \
+	$(filter +graylog,${TGT_SVC}),   \
+	-f ${COMPOSE_TOOLS}/graylog.yml  \
 ))
 
-$(eval DCOMPOSE_FILES+=$(and          \
-	$(filter +inotify,${TGT_SVC}),    \
-	-f ${COMPOSE_TOOLS}/inotify.yml   \
+$(eval DCOMPOSE_FILES+=$(and         \
+	$(filter +inotify,${TGT_SVC}),   \
+	-f ${COMPOSE_TOOLS}/inotify.yml  \
 ))
+
+$(eval DCOMPOSE_TARGET_STACK:= -f ${COMPOSE_TARGET} ${DCOMPOSE_FILES})
+$(eval DCOMPOSE_BASE_STACK  := -f ${COMPOSE_TARGET} -f ${COMPOSE_BASE})
 endef
 
 define ENV ## %var List of environment vars to pass to sub commands.
@@ -292,8 +295,6 @@ endif
 
 DCOMPOSE= export ${ENV} && docker-compose -p ${PROJECT}_${TARGET}
 
-DCOMPOSE_FILES:= ${COMPOSE_TARGET}
-
 DRUN=docker run --rm         \
 	-env-file=.env.default   \
 	-env-file=.env           \
@@ -301,10 +302,9 @@ DRUN=docker run --rm         \
 	-env-file=.env_${TARGET}.default \
 	-v $$PWD:/app
 
-build b: templates localbase ${PREBUILD} .lock_env ## Build the project.
-	@sleep 5;
-	@ ${DCOMPOSE} ${DCOMPOSE_FILES} build
-	@ ${DCOMPOSE} ${DCOMPOSE_FILES} up --no-start
+build b: retarget .lock_env templates localbase ${PREBUILD} ## Build the project.
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start
 	@ ${WHILE_IMAGES}                           \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
 		| while read IMAGE_NAME; do                                          \
@@ -323,13 +323,13 @@ build b: templates localbase ${PREBUILD} .lock_env ## Build the project.
 		done; \
 	done;
 
-test t:.lock_env ${PREBUILD} ${TEMPLATES} ## Run the tests
-	@ export TARGET=${TARGET} && ${DCOMPOSE} ${DCOMPOSE_FILES} \
+test t: .lock_env ${PREBUILD} ${TEMPLATES} ## Run the tests
+	@ export TARGET=${TARGET} && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} \
 		run --rm ${NO_TTY} ${PASS_ENV}                            \
 		idilic SeanMorris/Ids runTests
 
 clean: ${PREBUILD} ## Clean the project. Only applies to files from the current target.
-	@- ${DCOMPOSE} ${DCOMPOSE_FILES} down --remove-orphans
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
 	@- docker volume prune -f;
 
 	@- docker run --rm -v ${MAKEDIR}:/app -w=/app \
@@ -345,41 +345,41 @@ clean: ${PREBUILD} ## Clean the project. Only applies to files from the current 
 			rm -f ${GENERABLE};                   \
 			cat data/global/_schema.json > data/global/schema.json ;"
 
-localbase:
+localbase: ${ENVBUILD} .lock_env
 	@ echo Building ${FULLNAME} \(Local ${LOCALBASE}\);
-	@ export TARGET=base TAG=${LOCALBASE} \
-		&& ${DCOMPOSE} -f ${COMPOSE_BASE} build idilic
+	export TARGET=base TAG=${LOCALBASE} \
+		&& ${DCOMPOSE} ${DCOMPOSE_BASE_STACK} build idilic
 
 SEP=
 env e: ## Export the environment as seen from MAKE.
 	@ export ${ENV} && env ${SEP};
 
 start s: ${PREBUILD} ## Start the project services.
-	@ ${DCOMPOSE} ${DCOMPOSE_FILES} up -d
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d
 
 start-fg sf: ${PREBUILD} ## Start the project services in the foreground.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up
 
 start-bg sb: ${PREBUILD} ## Start the project services in the background, streaming output to terminal.
-	(${DCOMPOSE} ${DCOMPOSE_FILES} up &)
+	(${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up &)
 
 stop d: ${PREBUILD} ## Stop the current project services on the current target.
-	@ ${DCOMPOSE} ${DCOMPOSE_FILES} down
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down
 
 stop-all da: ${PREBUILD} ## Stop the all project services on the current target. including orphans.
-	@ ${DCOMPOSE} ${DCOMPOSE_FILES} down --remove-orphans
+	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
 
 restart r: ${PREBUILD} ## Restart the project services in the foreground.
-	@ ${DCOMPOSE} ${DCOMPOSE_FILES} down && ${DCOMPOSE} ${DCOMPOSE_FILES} up -d
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d
 
 restart-fg rf: ${PREBUILD} ## Start the project services in the foreground.
-	@ ${DCOMPOSE} ${DCOMPOSE_FILES} down && ${DCOMPOSE} ${DCOMPOSE_FILES} up
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up
 
 restart-bg rb: ${PREBUILD}## Start the project services in the background, streaming output to terminal.
-	@ (${DCOMPOSE} ${DCOMPOSE_FILES} down && ${DCOMPOSE} ${DCOMPOSE_FILES} up &)
+	@ (${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up &)
 
 kill k: ${PREBUILD} ## Kill current project services.
-	@ ${DCOMPOSE} ${DCOMPOSE_FILES} kill -s 9
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} kill -s 9
 
 kill-all: ## Kill all project services.
 	@ ${WHILE_IMAGES} echo docker kill -9 $$IMAGE_HASH; done;
@@ -409,17 +409,17 @@ push-images psi: ${COMPOSE_TARGET} ## Push locally built images.
 	done;done;
 
 pull-images pli: ${PREBUILD} ## Pull remotely hosted images.
-	@ ${DCOMPOSE} ${DCOMPOSE_FILES} pull
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull
 
 hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 	@ git config core.hooksPath githooks
 
 run: ${PREBUILD} ## CMD= 'SERVICE COMMAND' Run a command in a given service's container.
-	@ ${DCOMPOSE} ${DCOMPOSE_FILES} run --rm ${NO_TTY} \
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
 		${PASS_ENV} ${CMD}
 
 bash sh: ${PREBUILD} ## Get a bash propmpt to an idilic container.
-	@ ${DCOMPOSE} ${DCOMPOSE_FILES} run --rm ${NO_TTY} \
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
 		${PASS_ENV} --entrypoint=bash idilic
 
 composer-install ci: ## Run composer install. Will download composer docker image if not available..
@@ -434,13 +434,20 @@ composer-dump-autoload cda:## Run composer dump-autoload. Will download composer
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer dump-autoload
 
 dcompose-config dcc: ${PREBUILD} ## Print the current docker-compose configuration.
-	${DCOMPOSE} ${DCOMPOSE_FILES} config
+	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} config 2>&1
 
 dcompose-version dcv: ${PREBUILD} ## Print the current docker-compose configuration.
-	${DCOMPOSE} ${DCOMPOSE_FILES} version
+	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} version
 
-.lock_env: ### Lock the environment target
-	@[[ "${ENV_LOCK_TAG}" == "${TAG}" ]] \
+.lock_env: retarget ### Lock the environment target
+	touch .lock_env
+	$(eval LOCALBASE:=$(or    \
+		, ${LOCALBASE}        \
+		, $(shell ${RANDOM_STRING} ) \
+	))
+
+	@ [[ "${ENV_LOCK_TAG}" != "${TAG}" ]] \
+	||[[ "${ENV_LOCK_TGT_SVC}" != "${TGT_SVC}" ]] \
 	|| ( \
 		 ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
 			--ignore-platform-reqs                  \
@@ -448,30 +455,25 @@ dcompose-version dcv: ${PREBUILD} ## Print the current docker-compose configurat
 			                                        \
 	);
 
-	@ test ! -z "${TAG}"                         \
-		&& test ! -z "${ENV_LOCK_LOCALBASE}"     \
-		&& [[ "${TGT_SVC}" != "${ENV_LOCK_TGT_SVC}"  ]] \
-		&& echo ENV_LOCK_LOCALBASE=${LOCALBASE} >  ${ENV_LOCK} \
-		&& echo ENV_LOCK_TGT_SVC=${TGT_SVC}     >> ${ENV_LOCK} \
-		&& echo ENV_LOCK_TAG=${TAG}             >> ${ENV_LOCK} \
+	@ test ! -z "${TAG}"      \
+		&& echo ENV_LOCK_TGT_SVC=${TGT_SVC} > ${ENV_LOCK} \
+		&& echo LOCALBASE=${LOCALBASE} >> ${ENV_LOCK} \
+		&& echo ENV_LOCK_TAG=${TAG}    >> ${ENV_LOCK} \
 		|| true;
 
 # 	@[[ "${ENV_LOCK_LOCALBASE}" == "${LOCALBASE}" ]] \
 # 	|| ( \
 # 	);
 
-stay@%: ### Set the current target and persist for later invocations.
-	@ >&2 echo Setting persistent target ${@}...
-	@ $(call EXTRACT_TARGET_SERVICES, ${@})
-	@ echo TARGET=${TARGET} > ${VAR_FILE};
-	@ ${NEWTARGET}
+stay@%: retarget ### Set the current target and persist for later invocations.
+	@ >&2 echo Setting persistent target ${TARGET}...
 
-@%: ### Set the current target for one invocation.
-	@ >&2 echo Setting current target ${@}...
-	@ $(call EXTRACT_TARGET_SERVICES, ${@})
-	@ ${NEWTARGET}
+@%: retarget
+	@ >&2 echo Setting current target ${TARGET}...
 
-retarget:
+retarget: ### Set the current target for one invocation.
+	@ $(call EXTRACT_TARGET_SERVICES, $(or ${TGT_STR},${TARGET}))
+	@ >&2 echo Checking current target ${TARGET}...
 	@ ${NEWTARGET}
 
 .env: config/.env
@@ -596,11 +598,15 @@ inotify-stop: ${PREBUILD} ### Stop inotify.
 inotify-build: ${PREBUILD} ### Stop inotify.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/inotify.yml build
 
-apt-cache-start: ${PREBUILD} ### Start apt-cache.
-	${DCOMPOSE} -f ${COMPOSE_TOOLS}/inotify.yml up
+aptcache-start: ${PREBUILD} ### Start apt-cache.
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/aptcache.yml up
 
-apt-cache-stop: ${PREBUILD} ### Stop apt-cache.
-	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
+aptcache-stop: ${PREBUILD} ### Stop apt-cache.
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/aptcache.yml down
 
-apt-cache-build: ${PREBUILD} ### Stop apt-cache.
-	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml build
+aptcache-build: ${PREBUILD} ### Stop apt-cache.
+	${DCOMPOSE} -f ${COMPOSE_TOOLS}/aptcache.yml build
+
+###
+yq:
+	${YQ}

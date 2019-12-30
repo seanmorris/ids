@@ -5,7 +5,7 @@ services:
   inotify:
     restart:     always
     build:
-      context: ../../../
+      context: ../../
       dockerfile: ${REALDIR}infra/docker/tools/inotify.___gen.dockerfile
     volumes:
-      - ../../../:/app
+      - ../../:/app

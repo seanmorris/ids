@@ -4,5 +4,6 @@
 .env_*
 .lock_env
 vendor/*
+infra/apt/cache
 !./config/.env*.default
 *.___gen.*

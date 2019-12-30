@@ -1,28 +1,31 @@
 ---
-asset:
+asset/:
 	%idstmp%: %___idsgen%
-bin:
-	%idstmp%: %___idsgen%
-
-config:
+bin/:
 	%idstmp%: %___idsgen%
 
-data:
+config/:
+
+	base.idstmp.yml: %
+
 	%idstmp%: %___idsgen%
 
-githooks:
+data/:
 	%idstmp%: %___idsgen%
 
-infra:
+githooks/:
 	%idstmp%: %___idsgen%
 
-public:
+infra/:
 	%idstmp%: %___idsgen%
 
-source:
+public/:
 	%idstmp%: %___idsgen%
 
-test:
+source/:
+	%idstmp%: %___idsgen%
+
+test/:
 	%idstmp%: %___idsgen%
 
 vendor: false

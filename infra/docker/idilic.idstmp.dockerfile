@@ -1,12 +1,14 @@
 FROM ${BASELINUX} as base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
+ARG IDS_APT_PROXY_HOST
+ARG IDS_APT_PROXY_PORT
+
 COPY ./infra/apt/proxy-detect.sh /usr/bin/proxy-detect
 
 RUN set -eux;                  \
 	echo 'Acquire::HTTP::Proxy-Auto-Detect /usr/bin/proxy-detect;' \
 		>> /etc/apt/apt.conf.d/01proxy; \
-	sleep 5;                   \
 	echo "HTTP Proxy:" `/usr/bin/proxy-detect`; \
 	apt-get update;            \
 	apt-get install -y --no-install-recommends software-properties-common \

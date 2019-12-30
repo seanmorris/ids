@@ -1,0 +1,20 @@
+version: '2.4'
+
+services:
+
+  yq:
+    image:    $${REPO}/${PROJECT}.server:$${TAG}
+    restart:  on-failure
+    env_file:
+      - $${MAIN_DLT}
+      - $${MAIN_ENV}
+      - $${TRGT_DLT}
+      - $${TRGT_ENV}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/bin/docker:$${DOCKER}
+    build:
+      context: ../../
+      dockerfile: infra/docker/idilic.___gen.dockerfile
+      target: $${TARGET}
+      network: $${PROJECT}_${TARGET}_build

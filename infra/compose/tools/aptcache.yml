@@ -7,10 +7,15 @@ x-aptcached:
 services:
 
   aptcache:
+    networks:
+        - bridge
     restart: always
     build:
-      context: ../../../
-      dockerfile: ${REALDIR}infra/docker/tools/apt-cache.___gen.dockerfile
+      context: ../../
+      dockerfile: ${REALDIR}infra/docker/tools/aptcache.___gen.dockerfile
     volumes:
-      - ../../../:/app
-      - ../../../infra/apt/cache/:/var/cache/apt-cacher-ng
+      - ../../:/app
+      - ../../infra/apt/cache/:/var/cache/apt-cacher-ng
+
+networks:
+  bridge: {}

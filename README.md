@@ -72,6 +72,18 @@ The `dev` build target provides facilities for connecting to xdebug and graylog.
 
 XDebug is built into the `dev` images by default. You can configure it by setting `XDEBUG_CONFIG_` environment variables in `.env.dev`. By default it will attempt to connect to port 9000 on `${DHOST_IP}`, which is the machine runing the project.
 
+### Apt Cache
+
+*Rebuild your images offline*
+
+Build the project with `+aptcache` with an internet connection to populate your cache.
+
+```bash
+$ make @dev+aptcache build
+```
+
+... to be continued
+
 ### GrayLog
 
 `\SeanMorris\Ids\Logger\Gelf` provides a simple interface to graylog. Just add it to the `IDS_LOGGERS_` environment variable to enable it. So long as there is a graylog server available , it will send all logs that meet the verbosity threshold.

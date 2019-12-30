@@ -16,8 +16,11 @@ services:
     build:
       context: ../../
       dockerfile: infra/docker/idilic.___gen.dockerfile
-      target: ${TARGET}
-      network: ${PROJECT}_test_default
+      target:  ${TARGET}
+      network: bridge
+      args:
+        IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST}
+        IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT}
 
   server:
     image:    ${REPO}/${PROJECT}.server:${TAG}
@@ -30,8 +33,11 @@ services:
     build:
       context: ../../
       dockerfile: infra/docker/server.___gen.dockerfile
-      target: ${TARGET}
-      network: ${PROJECT}_test_default
+      target:  ${TARGET}
+      network: bridge
+      args:
+        IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST}
+        IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT}
 
   database:
     command: ['mysqld', '--character-set-server=utf8mb4']
@@ -53,3 +59,6 @@ services:
 volumes:
   schema:
     driver: local
+
+networks:
+  bridge: {}

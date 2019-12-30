@@ -8,7 +8,8 @@ RUN set -eux;               \
 	apt-get autoremove -y;  \
 	apt-get clean
 
-CMD /etc/init.d/apt-cacher-ng start \
+CMD /etc/init.d/apt-cacher-ng start   \
+	&& ls -al /var/log/apt-cacher-ng/ \
 	&& tail -f /var/log/apt-cacher-ng/*
 
 # generated @ $(shell date)
