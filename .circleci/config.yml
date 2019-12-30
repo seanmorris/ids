@@ -104,6 +104,7 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - run: composer install
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
           cd ids-project \
