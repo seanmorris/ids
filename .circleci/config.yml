@@ -10,7 +10,6 @@ commands:
           sudo apt-get install -y php7.4-cli php7.4-common php7.4-mbstring php7.4-intl php7.4-zip php7.4-bcmath php7.4-dom
           curl -s https://getcomposer.org/installer | php
           sudo mv composer.phar /usr/local/bin/composer
-          test -f composer.json && composer install || true
 
 workflows:
   version: 2
@@ -238,6 +237,7 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - run: composer install
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: make @base ct b psi
       - run: make @dev  ct b psi
@@ -251,6 +251,7 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - run: composer install
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.1 make @base ct b psi
       - run: PHP=7.1 make @dev  ct b psi
@@ -264,6 +265,7 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - run: composer install
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.2 make @base ct b psi
       - run: PHP=7.2 make @dev  ct b psi
@@ -277,6 +279,7 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - run: composer install
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.3 make @base ct b psi
       - run: PHP=7.3 make @dev  ct b psi
@@ -290,6 +293,7 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - run: composer install
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.4 make @base ct b psi
       - run: PHP=7.4 make @dev  ct b psi
