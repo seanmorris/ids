@@ -70,100 +70,6 @@ workflows:
             - init-test-7_4
 
 jobs:
-  self-test:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
-    steps:
-      - checkout
-      - run: make @base ct b
-      - run: make @dev ct b
-      - run: make @prod ct b
-      - run: make @test ct b
-      - run: make @base ct b
-      - run: make @test ct b t lt li
-      - run: make stay@dev ct b lt li
-      - run: make @prod ct b
-      - run: make ct b
-      - run: make @test ct b t
-      - run: make stay@base ct b
-      - run: make ct b
-
-  self-test-7_1:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
-    steps:
-      - checkout
-      - run: PHP=7.1 make @base ct b
-      - run: PHP=7.1 make @dev ct b
-      - run: PHP=7.1 make @prod ct b
-      - run: PHP=7.1 make @test ct b
-      - run: PHP=7.1 make @base ct b
-      - run: PHP=7.1 make @test ct b t lt li
-      - run: PHP=7.1 make stay@dev ct b lt li
-      - run: PHP=7.1 make @prod ct b
-      - run: PHP=7.1 make ct b
-      - run: PHP=7.1 make @test ct b t
-      - run: PHP=7.1 make stay@base ct b
-      - run: PHP=7.1 make ct b
-
-  self-test-7_2:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
-    steps:
-      - checkout
-      - run: PHP=7.2 make @base ct b
-      - run: PHP=7.2 make @dev ct b
-      - run: PHP=7.2 make @prod ct b
-      - run: PHP=7.2 make @test ct b
-      - run: PHP=7.2 make @base ct b
-      - run: PHP=7.2 make @test ct b t lt li
-      - run: PHP=7.2 make stay@dev ct b lt li
-      - run: PHP=7.2 make @prod ct b
-      - run: PHP=7.2 make ct b
-      - run: PHP=7.2 make @test ct b t
-      - run: PHP=7.2 make stay@base ct b
-      - run: PHP=7.2 make ct b
-
-  self-test-7_3:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
-    steps:
-      - checkout
-      - run: PHP=7.3 make @base ct b
-      - run: PHP=7.3 make @dev ct b
-      - run: PHP=7.3 make @prod ct b
-      - run: PHP=7.3 make @test ct b
-      - run: PHP=7.3 make @base ct b
-      - run: PHP=7.3 make @test ct b t lt li
-      - run: PHP=7.3 make stay@dev ct b lt li
-      - run: PHP=7.3 make @prod ct b
-      - run: PHP=7.3 make ct b
-      - run: PHP=7.3 make @test ct b t
-      - run: PHP=7.3 make stay@base ct b
-      - run: PHP=7.3 make ct b
-
-  self-test-7_4:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
-    steps:
-      - checkout
-      - run: PHP=7.4 make @base ct b
-      - run: PHP=7.4 make @dev ct b
-      - run: PHP=7.4 make @prod ct b
-      - run: PHP=7.4 make @test ct b
-      - run: PHP=7.4 make @base ct b
-      - run: PHP=7.4 make @test ct b t lt li
-      - run: PHP=7.4 make stay@dev ct b lt li
-      - run: PHP=7.4 make @prod ct b
-      - run: PHP=7.4 make ct b
-      - run: PHP=7.4 make @test ct b t
-      - run: PHP=7.4 make stay@base ct b
-      - run: PHP=7.4 make ct b
 
   init-test:
     parallelism: 1
@@ -238,6 +144,105 @@ jobs:
       - run: PHP=7.1 make @dev  ct b psi
       - run: PHP=7.1 make @prod ct b psi
       - run: PHP=7.1 make @test ct b psi
+
+  self-test:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - run: composer install
+      - run: make @base ct b
+      - run: make @dev ct b
+      - run: make @prod ct b
+      - run: make @test ct b
+      - run: make @base ct b
+      - run: make @test ct b t lt li
+      - run: make stay@dev ct b lt li
+      - run: make @prod ct b
+      - run: make ct b
+      - run: make @test ct b t
+      - run: make stay@base ct b
+      - run: make ct b
+
+  self-test-7_1:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - run: composer install
+      - run: PHP=7.1 make @base ct b
+      - run: PHP=7.1 make @dev ct b
+      - run: PHP=7.1 make @prod ct b
+      - run: PHP=7.1 make @test ct b
+      - run: PHP=7.1 make @base ct b
+      - run: PHP=7.1 make @test ct b t lt li
+      - run: PHP=7.1 make stay@dev ct b lt li
+      - run: PHP=7.1 make @prod ct b
+      - run: PHP=7.1 make ct b
+      - run: PHP=7.1 make @test ct b t
+      - run: PHP=7.1 make stay@base ct b
+      - run: PHP=7.1 make ct b
+
+  self-test-7_2:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - run: PHP=7.2 make @base ct b
+      - run: PHP=7.2 make @dev ct b
+      - run: PHP=7.2 make @prod ct b
+      - run: PHP=7.2 make @test ct b
+      - run: PHP=7.2 make @base ct b
+      - run: PHP=7.2 make @test ct b t lt li
+      - run: PHP=7.2 make stay@dev ct b lt li
+      - run: PHP=7.2 make @prod ct b
+      - run: PHP=7.2 make ct b
+      - run: PHP=7.2 make @test ct b t
+      - run: PHP=7.2 make stay@base ct b
+      - run: PHP=7.2 make ct b
+
+  self-test-7_3:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - run: composer install
+      - run: PHP=7.3 make @base ct b
+      - run: PHP=7.3 make @dev ct b
+      - run: PHP=7.3 make @prod ct b
+      - run: PHP=7.3 make @test ct b
+      - run: PHP=7.3 make @base ct b
+      - run: PHP=7.3 make @test ct b t lt li
+      - run: PHP=7.3 make stay@dev ct b lt li
+      - run: PHP=7.3 make @prod ct b
+      - run: PHP=7.3 make ct b
+      - run: PHP=7.3 make @test ct b t
+      - run: PHP=7.3 make stay@base ct b
+      - run: PHP=7.3 make ct b
+
+  self-test-7_4:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - run: composer install
+      - run: PHP=7.4 make @base ct b
+      - run: PHP=7.4 make @dev ct b
+      - run: PHP=7.4 make @prod ct b
+      - run: PHP=7.4 make @test ct b
+      - run: PHP=7.4 make @base ct b
+      - run: PHP=7.4 make @test ct b t lt li
+      - run: PHP=7.4 make stay@dev ct b lt li
+      - run: PHP=7.4 make @prod ct b
+      - run: PHP=7.4 make ct b
+      - run: PHP=7.4 make @test ct b t
+      - run: PHP=7.4 make stay@base ct b
+      - run: PHP=7.4 make ct b
 
   build-and-push-7_2:
     parallelism: 1
