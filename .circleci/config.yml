@@ -77,6 +77,7 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
     steps:
+      - checkout
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
@@ -87,6 +88,7 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
     steps:
+      - checkout
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
@@ -97,6 +99,7 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
     steps:
+      - checkout
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
@@ -107,6 +110,7 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
     steps:
+      - checkout
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
@@ -117,34 +121,11 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
     steps:
+      - checkout
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs .
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: PHP=7.4 make @test start-bg test
-
-  build-and-push:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
-    steps:
-      - checkout
-      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: make @base ct b psi
-      - run: make @dev  ct b psi
-      - run: make @prod ct b psi
-      - run: make @test ct b psi
-
-  build-and-push-7_1:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
-    steps:
-      - checkout
-      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=7.1 make @base ct b psi
-      - run: PHP=7.1 make @dev  ct b psi
-      - run: PHP=7.1 make @prod ct b psi
-      - run: PHP=7.1 make @test ct b psi
 
   self-test:
     parallelism: 1
@@ -250,12 +231,39 @@ jobs:
       - run: PHP=7.4 make stay@base ct b
       - run: PHP=7.4 make ct b
 
+  build-and-push:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - install-composer
+      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+      - run: make @base ct b psi
+      - run: make @dev  ct b psi
+      - run: make @prod ct b psi
+      - run: make @test ct b psi
+
+  build-and-push-7_1:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - install-composer
+      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+      - run: PHP=7.1 make @base ct b psi
+      - run: PHP=7.1 make @dev  ct b psi
+      - run: PHP=7.1 make @prod ct b psi
+      - run: PHP=7.1 make @test ct b psi
+
   build-and-push-7_2:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - install-composer
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.2 make @base ct b psi
       - run: PHP=7.2 make @dev  ct b psi
@@ -268,6 +276,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - install-composer
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.3 make @base ct b psi
       - run: PHP=7.3 make @dev  ct b psi
@@ -280,6 +289,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - install-composer
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=7.4 make @base ct b psi
       - run: PHP=7.4 make @dev  ct b psi
