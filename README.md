@@ -296,6 +296,13 @@ For example: *infra/docker/aptcache.idstmp.dockerfile* starts off with the follo
 FROM ${BASELINUX}
 ```
 
+The follwing lines from the end of the file show how one can use the shell to track who generated the file and when:
+
+```dockerfile
+# generated @ $(shell date)
+# by ${shell whoami} @ ${shell hostname}
+```
+
 Although Varibles are not normally allowed in the `FROM` section of dockerfile. This however will be preprocessed by make before it is used. So long as the file extenstion begins with `.idstmp.`, we can count on a `.___gen.` file being produced. This allows us to keep all the images and containers synced to one base image.
 
 The resulting files should be excluded from version control, as they may contain artifacts from one target that should not exist in another,
