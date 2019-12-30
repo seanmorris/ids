@@ -80,9 +80,9 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
-        cd ids-project \
-        && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
-        && make @test start-bg test
+          cd ids-project \
+          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
+          && make @test start-bg test
 
   init-test-7_1:
     parallelism: 1
@@ -93,9 +93,9 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
-        cd ids-project \
-        && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
-        && PHP=7.1 make @test start-bg test
+          cd ids-project \
+          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
+          && PHP=7.1 make @test start-bg test
 
   init-test-7_2:
     parallelism: 1
@@ -106,9 +106,9 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
-        cd ids-project \
-        && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
-        && PHP=7.2 make @test start-bg test
+          cd ids-project \
+          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
+          && PHP=7.2 make @test start-bg test
 
   init-test-7_3:
     parallelism: 1
@@ -119,10 +119,10 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
-        cd ids-project \
-        && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
-        && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
-        && PHP=7.3 make @test start-bg test
+          cd ids-project \
+          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
+          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
+          && PHP=7.3 make @test start-bg test
 
   init-test-7_4:
     parallelism: 1
@@ -133,9 +133,9 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
-        cd ids-project \
-        && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
-        && PHP=7.4 make @test start-bg test
+          cd ids-project \
+          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
+          && PHP=7.4 make @test start-bg test
 
 
   self-test:
