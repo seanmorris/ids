@@ -289,7 +289,6 @@ Make allows for recursive variable expansion, conditionals, loops, and even call
 
 Simply put the extension `*.idstmp.*` *before* your existing file extension. Ids will look for these files in all subdirectories of the prohect and rebuild them on startup. The resulting file will have the extension `*.___gen.*` where the `*.idstmp.*` is in the source file.
 
-
 The resulting files should be excluded from version control, as they may contain artifacts from one target that should not exist in another.
 
 For example: *infra/docker/aptcache.idstmp.dockerfile* starts off with the following line:
@@ -297,6 +296,8 @@ For example: *infra/docker/aptcache.idstmp.dockerfile* starts off with the follo
 ```dockerfile
 FROM ${BASELINUX}
 ```
+Varibles are not normally allowed in the `FROM` section of dockerfile,  preprocessed by make before it is used. So long as the file extenstion begins with `.idstmp.`, we can count on a `.___gen.` file being produced. This allows us to keep all the images and containers synced to one base image.
+
 
 The follwing lines from the end of the file show how one can use the shell to track who generated the file and when:
 
@@ -305,7 +306,7 @@ The follwing lines from the end of the file show how one can use the shell to tr
 # by ${shell whoami} @ ${shell hostname}
 ```
 
-Although Varibles are not normally allowed in the `FROM` section of dockerfile. This however will be preprocessed by make before it is used. So long as the file extenstion begins with `.idstmp.`, we can count on a `.___gen.` file being produced. This allows us to keep all the images and containers synced to one base image.
+See [Functions for Transforming Text](https://www.gnu.org/software/make/manual/html_node/Functions.html#Functions) for more information.
 
 ## Configuration / Environment Variables / Secrets
 
