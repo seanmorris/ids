@@ -12,14 +12,3 @@ RUN set -eux;              \
 	apt-get purge -y --auto-remove; \
 	apt-get autoremove -y; \
 	apt-get clean;
-
-CMD cp -n /app/package-lock.json /build; \
-	NAME=jq '.name' /app/composer.json \
-	jq '.name |= (sub("/"; "_") | ascii_downcase)' /app/composer.json \
-	> package.json;        \
-	cat package.json;      \
-	npm install;           \
-	cp package-lock.json /app; \
-	jq '.name |= "$NAME")' package.json \
-	> /app/composer.json;  \
-	echo Done!;            \

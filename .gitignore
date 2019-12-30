@@ -5,3 +5,4 @@
 .lock_env
 vendor/*
 !./config/.env*.default
+*.___gen.*

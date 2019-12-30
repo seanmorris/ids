@@ -1,0 +1,5 @@
+#!/bin/bash
+test ! -z $IDS_APT_PROXY_HOST $IDS_APT_PROXY_PORT  \
+&& nc -w1 -z $IDS_APT_PROXY_HOST $IDS_APT_PROXY_PORT \
+&& echo $IDS_APT_PROXY_HOST $IDS_APT_PROXY_PORT      \
+|| echo DIRECT;

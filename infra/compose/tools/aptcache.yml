@@ -1,0 +1,16 @@
+version: '2.4'
+
+x-aptcached:
+  depends-on:
+    - aptcache
+
+services:
+
+  aptcache:
+    restart: always
+    build:
+      context: ../../../
+      dockerfile: ${REALDIR}infra/docker/tools/apt-cache.___gen.dockerfile
+    volumes:
+      - ../../../:/app
+      - ../../../infra/apt/cache/:/var/cache/apt-cacher-ng

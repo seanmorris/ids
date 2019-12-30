@@ -1,16 +1,25 @@
-FROM ${DEBIAN} as base
+FROM ${BASELINUX} as base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
+COPY ./infra/apt/proxy-detect.sh /usr/bin/proxy-detect
+
 RUN set -eux;                  \
+	echo 'Acquire::HTTP::Proxy-Auto-Detect /usr/bin/proxy-detect;' \
+		>> /etc/apt/apt.conf.d/01proxy; \
+	sleep 5;                   \
+	echo "HTTP Proxy:" `/usr/bin/proxy-detect`; \
 	apt-get update;            \
 	apt-get install -y --no-install-recommends software-properties-common \
 		ca-certificates        \
 		gnupg                  \
 		lsb-release            \
 		wget;                  \
-	wget -qO /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg; \
+	wget -qO /usr/bin/yq       \
+		https://github.com/mikefarah/yq/releases/download/2.4.1/yq_linux_arm64; \
+	wget -qO /etc/apt/trusted.gpg.d/php.gpg        \
+		https://packages.sury.org/php/apt.gpg;     \
 	sh -c "echo 'deb https://packages.sury.org/php/ $$(lsb_release -sc) main' \
-		 > /etc/apt/sources.list.d/sury-php.list"; \
+		 | tee /etc/apt/sources.list.d/sury-php.list"; \
 	apt-get update;            \
 	apt-get install -y --no-install-recommends \
 		libargon2-0            \

@@ -1,0 +1,29 @@
+---
+asset:
+	%idstmp%: %___idsgen%
+bin:
+	%idstmp%: %___idsgen%
+
+config:
+	%idstmp%: %___idsgen%
+
+data:
+	%idstmp%: %___idsgen%
+
+githooks:
+	%idstmp%: %___idsgen%
+
+infra:
+	%idstmp%: %___idsgen%
+
+public:
+	%idstmp%: %___idsgen%
+
+source:
+	%idstmp%: %___idsgen%
+
+test:
+	%idstmp%: %___idsgen%
+
+vendor: false
+---

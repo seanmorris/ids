@@ -76,7 +76,6 @@ XDebug is built into the `dev` images by default. You can configure it by settin
 
 `\SeanMorris\Ids\Logger\Gelf` provides a simple interface to graylog. Just add it to the `IDS_LOGGERS_` environment variable to enable it. So long as there is a graylog server available , it will send all logs that meet the verbosity threshold.
 
-
 The default graylog config for the `dev` target looks like:
 
 ```
@@ -137,7 +136,14 @@ By default Ids provides 4 build targets: base, prod, dev, and test. Each exposes
 
 The system will use the TARGET environment variable to decide which build target to use.
 
-If youre on the BASH shell simply run one of the following commands to set the target:
+If youre on the BASH shell simply run one of the following commands to set the target for the context of a single command:
+
+*  `make @base start`
+*  `make @dev build`
+*  `make @test test`
+*  `make @prod push-images`
+
+If you don't feek like typing `@target` for every command, you can ask the system to remember a target with:
 
 *  `make stay@base`
 *  `make stay@dev`
@@ -166,10 +172,12 @@ $ make @dev start # start the services
 
 Docker & docker-compose are available here:
 
-* https://docs.docker.com/install/
-* https://docs.docker.com/compose/install/
+*  https://docs.docker.com/install/
+*  https://docs.docker.com/compose/install/
 
 ## Start / Stop / Restart
+
+Make sure to set a target with `make stay@target` before issuing any commands. Alternatively you can run commands in the form `make @target command`.
 
 ```bash
 $ make start      # Start the project in the background,
@@ -247,12 +255,50 @@ $ docker pull seanmorris/ids.server:latest
 
 or extend in a dockerfile with one of the following:
 
+(it is not recommended to use `latest` in `FROM`)
+
 ```Dockerfile
 FROM seanmorris/ids.idilic:TAGNAME
 FROM seanmorris/ids.server:TAGNAME
 ```
 
-(it is not recommended to use `latest` in `FROM`)
+## Service Switches
+
+Additional services can be included when running Ids. Simply add +toolname to your @target when issing a make command, and the necessary composer files will be included in the comtext of your command. For example, to start the system with graylog in dev mode:
+
+```bash
+make @dev+graylog start
+```
+Or inotify
+
+```bash
+make @dev+inotify start
+```
+Or both
+
+```bash
+make @dev+graylog+inotify start
+```
+## Templating
+
+*This ain't your granpappy's makefile.*
+
+GNU Make has a distinct and powerful syntax. It borrows, or in some instances outright uses the underlying bash engine to allow a user to define complex build steps and track the relationships between them to ensure everything is up to date.
+
+Make allows for recursive variable expansion, conditionals, loops, and even calls out to the shell. This syntax is no longer limted to the Makefile.
+
+Simply put the extension `*.idstmp.*` *before* your existing file extension. Ids will look for these files in all subdirectories of the prohect and rebuild them on startup. The resulting file will have the extension `*.___gen.*` where the `*.idstmp.*` is in the source file.
+
+
+For example: *infra/docker/aptcache.idstmp.dockerfile* starts off with the following line:
+
+```dockerfile
+FROM ${BASELINUX}
+```
+
+Although Varibles are not normally allowed in the `FROM` section of dockerfile. This however will be preprocessed by make before it is used. So long as the file extenstion begins with `.idstmp.`, we can count on a `.___gen.` file being produced. This allows us to keep all the images and containers synced to one base image.
+
+The resulting files should be excluded from version control, as they may contain artifacts from one target that should not exist in another,
 
 ## Configuration / Environment Variables / Secrets
 
@@ -733,7 +779,26 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 ## Dependency Injection*
 ## Sessions
-## Email*
+## Email
+
+```php
+<?php
+use \SeanMorris\Ids\Mail;
+
+$mail = new \SeanMorris\Ids\Mail;
+$mail->body(<<<EOM
+	Message body here.
+EOM);
+
+$mail->from(\SeanMorris\Ids\Settings::read('noreply'));
+
+$mail->subject('Hello from Ids!');
+
+$mail->to($recipientEmail);
+
+$mail->send(TRUE);
+```
+
 ## Theming / Frontends
 ## Existing Ids Projects
 
@@ -778,7 +843,7 @@ Run these from the project root to build and control the project infrastructure.
 *  Linux or Compatible OS
 *  Node
 *  PHP
-*  SimpleTest/SimpleTest
+*  SimpleTest
 
 ## SeanMorris/Ids
 

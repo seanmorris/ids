@@ -1,0 +1,5 @@
+.publishing: yml
+.entropy:    yml
+.syntax:     yml
+.watch:      yml
+.env*:       bash

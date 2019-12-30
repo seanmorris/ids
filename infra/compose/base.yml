@@ -17,6 +17,7 @@ services:
       context: ../../
       dockerfile: infra/docker/idilic.___gen.dockerfile
       target: ${TARGET}
+      network: ${PROJECT}_test_default
 
   server:
     image:    ${REPO}/${PROJECT}.server:${TAG}
@@ -30,6 +31,7 @@ services:
       context: ../../
       dockerfile: infra/docker/server.___gen.dockerfile
       target: ${TARGET}
+      network: ${PROJECT}_test_default
 
   database:
     command: ['mysqld', '--character-set-server=utf8mb4']
