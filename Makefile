@@ -467,6 +467,7 @@ dcompose-version dcv: ${PREBUILD} ## Print the current docker-compose configurat
 
 stay@%: retarget ### Set the current target and persist for later invocations.
 	@ >&2 echo Setting persistent target ${TARGET}...
+	@ echo TARGET=${TARGET} > ${VAR_FILE}
 
 @%: retarget
 	@ >&2 echo Setting current target ${TARGET}...
