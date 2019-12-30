@@ -152,6 +152,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - install-composer
       - run: composer install
       - run: make @base ct b
       - run: make @dev ct b
@@ -172,6 +173,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - install-composer
       - run: composer install
       - run: PHP=7.1 make @base ct b
       - run: PHP=7.1 make @dev ct b
@@ -192,6 +194,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - install-composer
       - run: PHP=7.2 make @base ct b
       - run: PHP=7.2 make @dev ct b
       - run: PHP=7.2 make @prod ct b
@@ -211,6 +214,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - install-composer
       - run: composer install
       - run: PHP=7.3 make @base ct b
       - run: PHP=7.3 make @dev ct b
@@ -231,6 +235,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - install-composer
       - run: composer install
       - run: PHP=7.4 make @base ct b
       - run: PHP=7.4 make @dev ct b
