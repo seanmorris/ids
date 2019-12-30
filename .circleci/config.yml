@@ -10,7 +10,7 @@ commands:
           sudo apt-get install -y php7.4-cli php7.4-common php7.4-mbstring php7.4-intl php7.4-zip php7.4-bcmath php7.4-dom
           curl -s https://getcomposer.org/installer | php
           sudo mv composer.phar /usr/local/bin/composer
-          test -f composer.json && composer install
+          test -f composer.json && composer install || true
 
 workflows:
   version: 2
