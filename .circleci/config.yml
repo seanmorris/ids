@@ -121,7 +121,6 @@ jobs:
       - run: |
           cd ids-project \
           && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
-          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
           && PHP=7.3 make @test start-bg test
 
   init-test-7_4:
