@@ -151,7 +151,7 @@ XDEBUG_CONFIG="`\
 endef
 
 YQ=${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm \
-	--entrypoint /usr/bin/yq idilic
+	--entrypoint yq idilic
 
 PASS_ENV=$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /')
 
