@@ -121,18 +121,18 @@ cat /dev/urandom         \
 endef
 
 define NPX
-cp  -n /app/package-lock.json /build;   \
-	cat /app/composer.json              \
-		| tr '[:upper:]' '[:lower:]'    \
-		| tr '/' '-'                    \
-		> package.json;                 \
+cp  -n /app/package-lock.json /build;  \
+	cat /app/composer.json               \
+		| tr '[:upper:]' '[:lower:]'       \
+		| tr '/' '-'                       \
+		> package.json;                    \
 	npx
 endef ## %var Perform some magic for NPM
 
 define INTERPOLATE_ENV
-env -i DHOST_IP=${DHOST_IP}             \
-	TAG=${TAG} REPO=${REPO}             \
-	TARGET=${TARGET} PROJECT=${PROJECT} \
+env -i DHOST_IP=${DHOST_IP}            \
+	TAG=${TAG} REPO=${REPO}              \
+	TARGET=${TARGET} PROJECT=${PROJECT}  \
 	envsubst
 endef
 
@@ -143,10 +143,10 @@ XDEBUG_CONFIG="`\
 	| ${INTERPOLATE_ENV}                \
 	| grep ^XDEBUG_CONFIG_              \
 	| while read VAR; do echo $$VAR | { \
-		IFS="="" read -r NAME VALUE;    \
-		echo -En $$NAME                 \
+		IFS="="" read -r NAME VALUE;      \
+		echo -En $$NAME                   \
 			| sed 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
-		echo -En "=$$VALUE ";           \
+		echo -En "=$$VALUE ";             \
 	} done`"
 endef
 
@@ -177,8 +177,6 @@ define QUOTE_ENV ## %frag quotes environment vara:
 	${PARSE_ENV} echo -n " $$ENV_NAME="; printf %q "$$ENV_VALUE"; }; done
 endef
 
-ENTROPY_DIR=/tmp/IDS_ENTROPY-${TARGET}## %var entropy directory for current target.
-
 define GET_ENTROPY ## %func Return entropy value for a given key.
 test -w "${ENTROPY_DIR}/${1}"  \
 	&& cat ${ENTROPY_DIR}/${1} \
@@ -186,23 +184,23 @@ test -w "${ENTROPY_DIR}/${1}"  \
 endef
 
 define STITCH_ENTROPY ## %func Return entropy value for a given key.
-test -d "${ENTROPY_DIR}"                     \
+test -d "${ENTROPY_DIR}"                   \
 	|| mkdir -m 700 -p ${ENTROPY_DIR};       \
-while read -r ENV_LINE; do                   \
+while read -r ENV_LINE; do                 \
 	echo -n "$$ENV_LINE" | ${PARSE_ENV}      \
-		echo -n $$ENV_NAME=;                 \
-		grep $$ENV_NAME .entropy | {         \
-		IFS=":" read -r ENV_KEY ENTROPY_KEY; \
-		test -n "$$ENTROPY_KEY"              \
+		echo -n $$ENV_NAME=;                   \
+		grep $$ENV_NAME .entropy | {           \
+		IFS=":" read -r ENV_KEY ENTROPY_KEY;   \
+		test -n "$$ENTROPY_KEY"                \
 			&& echo $$(ENTROPY_KEY=$$ENTROPY_KEY \
-				$(call GET_ENTROPY,$$ENTROPY_KEY) \
-			)                                \
-			|| echo -E $$ENV_VALUE;          \
+				$(call GET_ENTROPY,$$ENTROPY_KEY)  \
+			)                                    \
+			|| echo -E $$ENV_VALUE;              \
 };}; done; done < $$FROM > $$TO
 endef
 
 define UNINCLUDE ## %func Overwrite all values from given environment file.
-cat ${1} | grep -v ^\#       \
+cat ${1} | grep -v ^\#     \
 	| grep "^[A-Z_]\+="      \
 	| sed 's/\=.\+$$//'      \
 	| while read OLD_VAR; do \
@@ -221,17 +219,17 @@ $(eval TRGT_DLT:=$(shell echo ${MAKEDIR}.env_${TARGET}.default))
 
 $(eval DCOMPOSE_FILES:=)
 
-$(eval DCOMPOSE_FILES+= $(and        \
+$(eval DCOMPOSE_FILES+= $(and      \
 	$(filter +aptcache,${TGT_SVC}),  \
 	-f ${COMPOSE_TOOLS}/aptcache.yml \
 ))
 
-$(eval DCOMPOSE_FILES+=$(and         \
+$(eval DCOMPOSE_FILES+=$(and       \
 	$(filter +graylog,${TGT_SVC}),   \
 	-f ${COMPOSE_TOOLS}/graylog.yml  \
 ))
 
-$(eval DCOMPOSE_FILES+=$(and         \
+$(eval DCOMPOSE_FILES+=$(and       \
 	$(filter +inotify,${TGT_SVC}),   \
 	-f ${COMPOSE_TOOLS}/inotify.yml  \
 ))
@@ -295,7 +293,7 @@ endif
 
 DCOMPOSE= export ${ENV} && docker-compose -p ${PROJECT}_${TARGET}
 
-DRUN=docker run --rm         \
+DRUN=docker run --rm       \
 	-env-file=.env.default   \
 	-env-file=.env           \
 	-env-file=.env_${TARGET} \
@@ -307,7 +305,7 @@ build b: retarget .lock_env templates localbase ${PREBUILD} ## Build the project
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start
 	@ ${WHILE_IMAGES}                           \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
-		| while read IMAGE_NAME; do                                          \
+		| while read IMAGE_NAME; do                                        \
 			IMAGE_PREFIX=`echo "$$IMAGE_NAME" | sed "s/\:.*\$$//"`;          \
 			                                                                 \
 			echo "original:$$IMAGE_HASH $$IMAGE_PREFIX":${TAG};              \
@@ -333,7 +331,7 @@ clean: ${PREBUILD} ## Clean the project. Only applies to files from the current 
 	@- docker volume prune -f;
 
 	@- docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		${BASELINUX} bash -c "                       \
+		${BASELINUX} bash -c "                  \
 			rm -f infra/docker/*.${GEN_EXT}.*;    \
 			set -o noglob;                        \
 			rm -f .env.default;                   \
@@ -341,8 +339,8 @@ clean: ${PREBUILD} ## Clean the project. Only applies to files from the current 
 			rm -f .lock_env .env_${TARGET}.default;"
 
 	@- docker run --rm -v ${REALDIR}:/app -w=/app \
-		${BASELINUX} bash -c "                       \
-			rm -f ${GENERABLE};                   \
+		${BASELINUX} bash -c "                      \
+			rm -f ${GENERABLE};                       \
 			cat data/global/_schema.json > data/global/schema.json ;"
 
 localbase: ${ENVBUILD} .lock_env
@@ -467,6 +465,7 @@ dcompose-version dcv: ${PREBUILD} ## Print the current docker-compose configurat
 
 stay@%: retarget ### Set the current target and persist for later invocations.
 	@ >&2 echo Setting persistent target ${TARGET}...
+	@ echo TARGET=${TARGET} > ${VAR_FILE}
 
 @%: retarget
 	@ >&2 echo Setting current target ${TARGET}...
@@ -477,41 +476,40 @@ retarget: ### Set the current target for one invocation.
 	@ ${NEWTARGET}
 
 .env: config/.env
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app  \
 		${BASELINUX} bash -c '{                     \
-			FROM=config/.env                     \
-			TO=.env                              \
-				&& ${STITCH_ENTROPY};            \
+			FROM=config/.env                          \
+			TO=.env                                   \
+				&& ${STITCH_ENTROPY};                   \
 		}'
 
-.env.default: config/.env.default
-	docker run --rm -v ${MAKEDIR}:/app -w=/app   \
+	docker run --rm -v ${MAKEDIR}:/app -w=/app    \
 		${BASELINUX} bash -c '{                     \
-			FROM=config/.env.default             \
-			TO=.env.default                      \
-				&& ${STITCH_ENTROPY};            \
+			FROM=config/.env.default                  \
+			TO=.env.default                           \
+				&& ${STITCH_ENTROPY};                   \
 		}'
 
 .env_${TARGET}: config/.env_${TARGET}
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		${BASELINUX} bash -c '{                     \
-			FROM=config/.env_${TARGET}           \
-			TO=.env_${TARGET}                    \
-				&& ${STITCH_ENTROPY};            \
-			FROM=config/.env_${TARGET}.default   \
-			TO=.env_${TARGET}.default            \
-				&& ${STITCH_ENTROPY};            \
+		${BASELINUX} bash -c '{                    \
+			FROM=config/.env_${TARGET}               \
+			TO=.env_${TARGET}                        \
+				&& ${STITCH_ENTROPY};                  \
+			FROM=config/.env_${TARGET}.default       \
+			TO=.env_${TARGET}.default                \
+				&& ${STITCH_ENTROPY};                  \
 		}'
 
 .env_${TARGET}.default: config/.env_${TARGET}.default
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		${BASELINUX} bash -c '{                     \
-			FROM=config/.env_${TARGET}           \
-			TO=.env_${TARGET}                    \
-				&& ${STITCH_ENTROPY};            \
-			FROM=config/.env_${TARGET}.default   \
-			TO=.env_${TARGET}.default            \
-				&& ${STITCH_ENTROPY};            \
+		${BASELINUX} bash -c '{                    \
+			FROM=config/.env_${TARGET}               \
+			TO=.env_${TARGET}                        \
+				&& ${STITCH_ENTROPY};                  \
+			FROM=config/.env_${TARGET}.default       \
+			TO=.env_${TARGET}.default                \
+				&& ${STITCH_ENTROPY};                  \
 		}'
 
 config/.env   config/.env_${TARGET}:
@@ -536,11 +534,11 @@ help-%:
 			DESC=`echo $$LINE | sed -r 's/.*\#\#//'`;   \
 			TYPE=`echo $$DESC \
 				| grep '%'    \
-				| sed -r 's/.*(%[a-z]*).*/\1/;'`;       \
+				| sed -r 's/.*(%[a-z]*).*/\1/;'`;         \
 			DESC=`echo $$DESC | sed -r 's/^%[a-z]*//'`; \
 			[[ -z "$$TYPE" ]] || continue;              \
 			echo -e "$$NAME: $$DESC";                   \
-		done | column -ts:;                             \
+		done | column -ts:;                           \
 	)
 	@ echo SeanMorris/Ids/Makefile generated its own helpfile @`date`
 

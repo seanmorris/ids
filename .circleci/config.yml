@@ -104,6 +104,7 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - run: composer install
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
           cd ids-project \
@@ -186,6 +187,7 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - run: composer install
       - run: PHP=7.2 make @base ct b
       - run: PHP=7.2 make @dev ct b
       - run: PHP=7.2 make @prod ct b
