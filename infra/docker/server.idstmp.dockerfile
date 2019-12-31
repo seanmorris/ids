@@ -27,7 +27,7 @@ FROM base AS dev
 RUN set -eux;       \
 	apt-get update; \
 	apt-get install -y --no-install-recommends php${PHP}-xdebug; \
-	apt-get clean   \
+	apt-get clean;  \
 	rm -rf /var/lib/apt/lists/*;
 
 COPY ./infra/xdebug/30-xdebug-apache.ini /etc/php/${PHP}/apache2/conf.d/30-xdebug-apache.ini
