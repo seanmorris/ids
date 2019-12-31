@@ -8,8 +8,9 @@ SHELL ["/bin/bash", "-c"]
 RUN set -eux;              \
 	mkdir -p /build;       \
 	apt-get update;        \
-	apt-get install jq -y --no-install-recommends;  \
-	apt-get purge -y --auto-remove; \
+	apt-get install jq:1.5+dfsg-1.3  \
+		 -y --no-install-recommends; \
+	apt-get purge -y --auto-remove;  \
 	apt-get autoremove -y; \
 	apt-get clean;         \
 	rm -rf /var/lib/apt/lists/*;
