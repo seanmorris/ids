@@ -6,12 +6,11 @@ RUN set -eux;               \
 	apt-get install -y apt-cacher-ng; \
 	apt-get purge   -y --auto-remove; \
 	apt-get autoremove -y;  \
-	apt-get clean
+	apt-get clean;          \
+	rm -rf /var/lib/apt/lists/*
 
 CMD /etc/init.d/apt-cacher-ng start     \
-	&& ls -al /var/log/apt-cacher-ng/   \
 	&& tail -f /var/log/apt-cacher-ng/* \
-	rm -rf /var/lib/apt/lists/*
 
 # generated @ $(shell date)
 # by ${shell whoami} @ ${shell hostname}

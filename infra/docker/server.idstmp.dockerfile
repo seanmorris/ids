@@ -16,8 +16,8 @@ RUN set -eux;                        \
 	rm -rfv /var/www/html;           \
 	ln -s /app/public /var/www/html; \
 	ln -sf /proc/self/fd/1 /var/log/apache2/access.log; \
-    ln -sf /proc/self/fd/1 /var/log/apache2/error.log;  \
-    rm -rf /var/lib/apt/lists/*;
+	ln -sf /proc/self/fd/1 /var/log/apache2/error.log;  \
+	rm -rf /var/lib/apt/lists/*;
 
 ENTRYPOINT ["apachectl", "-D", "FOREGROUND"]
 

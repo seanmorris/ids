@@ -81,7 +81,6 @@ Build the project with `+aptcache` with an internet connection to populate your 
 ```bash
 $ make @dev+aptcache build
 ```
-
 ... to be continued
 
 ### GrayLog
@@ -406,7 +405,6 @@ Hostname specific environment variables are prefixed with an extra underscore: `
 
 The above environment variables could be overridden for example.com with: `IDS__EXAMPLE_COM__SOME_VAR` and `IDS__EXAMPLE_COM__SOME_OTHERVAR`. They would be accessed in the same way as above:
 
-
 ```
 IDS__EXAMPLE_COM__SOME_VAR=overridden value
 IDS_SOME_OTHERVAR=other overridden value
@@ -500,7 +498,6 @@ Ensure you've installed the `idilic` cli tool from the start of the document. Us
 `idilic applySchema [PACKAGE]` - Apply the stored schema.
 
 `idilic applySchemas` - Apply the stored schema for all installed packages.
-
 
 The schema will be stored in `data/global/schema.json`.
 
@@ -863,7 +860,6 @@ Run these from the project root to build and control the project infrastructure.
  * Linux or Compatible OS
  * Node
  * PHP
- * SimpleTest
 
 ## SeanMorris/Ids
 
