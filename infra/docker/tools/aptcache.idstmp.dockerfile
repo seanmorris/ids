@@ -8,9 +8,10 @@ RUN set -eux;               \
 	apt-get autoremove -y;  \
 	apt-get clean
 
-CMD /etc/init.d/apt-cacher-ng start   \
-	&& ls -al /var/log/apt-cacher-ng/ \
-	&& tail -f /var/log/apt-cacher-ng/*
+CMD /etc/init.d/apt-cacher-ng start     \
+	&& ls -al /var/log/apt-cacher-ng/   \
+	&& tail -f /var/log/apt-cacher-ng/* \
+	rm -rf /var/lib/apt/lists/*
 
 # generated @ $(shell date)
 # by ${shell whoami} @ ${shell hostname}

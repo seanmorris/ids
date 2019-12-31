@@ -11,4 +11,5 @@ RUN set -eux;              \
 	apt-get install jq -y --no-install-recommends;  \
 	apt-get purge -y --auto-remove; \
 	apt-get autoremove -y; \
-	apt-get clean;
+	apt-get clean;         \
+	rm -rf /var/lib/apt/lists/*;
