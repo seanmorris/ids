@@ -1,4 +1,4 @@
-FROM seanmorris/ids.idilic:_latest_local AS base
+FROM seanmorris/ids.idilic:${LOCALBASE} AS base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
 RUN set -eux;                        \
@@ -16,7 +16,8 @@ RUN set -eux;                        \
 	rm -rfv /var/www/html;           \
 	ln -s /app/public /var/www/html; \
 	ln -sf /proc/self/fd/1 /var/log/apache2/access.log; \
-    ln -sf /proc/self/fd/1 /var/log/apache2/error.log;
+	ln -sf /proc/self/fd/1 /var/log/apache2/error.log;  \
+	rm -rf /var/lib/apt/lists/*;
 
 ENTRYPOINT ["apachectl", "-D", "FOREGROUND"]
 
@@ -26,7 +27,8 @@ FROM base AS dev
 RUN set -eux;       \
 	apt-get update; \
 	apt-get install -y --no-install-recommends php${PHP}-xdebug; \
-	apt-get clean;
+	apt-get clean;  \
+	rm -rf /var/lib/apt/lists/*;
 
 COPY ./infra/xdebug/30-xdebug-apache.ini /etc/php/${PHP}/apache2/conf.d/30-xdebug-apache.ini
 

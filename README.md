@@ -54,15 +54,15 @@ https://github.com/seanmorris/ids-project
 
 ## Dependencies
 
-* Composer
-* Docker
-* Docker Compose
-* GNU Make
-* Git
-* Linux or Compatible OS
-* PHP
-* SimpleTest/SimpleTest
-* Minikube (required for kubernetes targets only)
+ * Composer
+ * Docker
+ * Docker Compose
+ * GNU Make
+ * Git
+ * Linux or Compatible OS
+ * PHP
+ * SimpleTest
+ * Minikube (required for kubernetes targets only)
 
 ## Dev Tools
 
@@ -72,10 +72,20 @@ The `dev` build target provides facilities for connecting to xdebug and graylog.
 
 XDebug is built into the `dev` images by default. You can configure it by setting `XDEBUG_CONFIG_` environment variables in `.env.dev`. By default it will attempt to connect to port 9000 on `${DHOST_IP}`, which is the machine runing the project.
 
+### Apt Cache
+
+*Rebuild your images offline*
+
+Build the project with `+aptcache` with an internet connection to populate your cache.
+
+```bash
+$ make @dev+aptcache build
+```
+... to be continued
+
 ### GrayLog
 
 `\SeanMorris\Ids\Logger\Gelf` provides a simple interface to graylog. Just add it to the `IDS_LOGGERS_` environment variable to enable it. So long as there is a graylog server available , it will send all logs that meet the verbosity threshold.
-
 
 The default graylog config for the `dev` target looks like:
 
@@ -123,13 +133,13 @@ Run `idilic help` to see actions exposed by any installed packages.
 
 By default Ids provides 4 build targets: base, prod, dev, and test. Each exposes different ports, so they may run without conflict in parallel.
 
-* **base** exposes no ports and builds **without** require-dev.
+ * **base** exposes no ports and builds **without** require-dev.
 
-* **prod** exposes port 80 (configurable by `IDS_EXPOSE_HTTP`) and port 443* ( configurable by `IDS_EXPOSE_HTTPS` ) and builds **without** require-dev.
+ * **prod** exposes port 80 (configurable by `IDS_EXPOSE_HTTP`) and port 443* ( configurable by `IDS_EXPOSE_HTTPS` ) and builds **without** require-dev.
 
-* **test** exposes port 2021 (configurable by `IDS_EXPOSE_HTTP`) and port 3031 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
+ * **test** exposes port 2021 (configurable by `IDS_EXPOSE_HTTP`) and port 3031 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
 
-* **dev** exposes port 2020 ( configurable by `IDS_EXPOSE_HTTP` ) and port 3030 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
+ * **dev** exposes port 2020 ( configurable by `IDS_EXPOSE_HTTP` ) and port 3030 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
 
 \*Not yet implemented.
 
@@ -137,12 +147,19 @@ By default Ids provides 4 build targets: base, prod, dev, and test. Each exposes
 
 The system will use the TARGET environment variable to decide which build target to use.
 
-If youre on the BASH shell simply run one of the following commands to set the target:
+If youre on the BASH shell simply run one of the following commands to set the target for the context of a single command:
 
-* `make stay@base`
-* `make stay@dev`
-* `make stay@test`
-* `make stay@prod`
+ * `make @base start`
+ * `make @dev build`
+ * `make @test test`
+ * `make @prod push-images`
+
+If you don't feek like typing `@target` for every command, you can ask the system to remember a target with:
+
+ * `make stay@base`
+ * `make stay@dev`
+ * `make stay@test`
+ * `make stay@prod`
 
 ### Extending Environments
 
@@ -166,10 +183,12 @@ $ make @dev start # start the services
 
 Docker & docker-compose are available here:
 
-* https://docs.docker.com/install/
-* https://docs.docker.com/compose/install/
+ * https://docs.docker.com/install/
+ * https://docs.docker.com/compose/install/
 
 ## Start / Stop / Restart
+
+Make sure to set a target with `make stay@target` before issuing any commands. Alternatively you can run commands in the form `make @target command`.
 
 ```bash
 $ make start      # Start the project in the background,
@@ -214,15 +233,15 @@ Image tags are generated automatically on build based on the date, current git t
 
 The master branch will generate:
 
-*  repository/project:gitTag-target
-*  repository/project:date-target
-*  repository/project:latest-target
+ * repository/project:gitTag-target
+ * repository/project:date-target
+ * repository/project:latest-target
 
 Branches other than master will generate:
 
-*  repository/project:gitTag-target-branch
-*  repository/project:date-target-branch
-*  repository/project:latest-target-branch
+ * repository/project:gitTag-target-branch
+ * repository/project:date-target-branch
+ * repository/project:latest-target-branch
 
 Images will be built on `git commit` and pushed on `git push` if the current branch appears in the project root `.publishing` file in the form: `BRANCH:TARGET`. For example this file would push images for prod & test when `git push` is run for the master branch:
 
@@ -247,12 +266,58 @@ $ docker pull seanmorris/ids.server:latest
 
 or extend in a dockerfile with one of the following:
 
+(it is not recommended to use `latest` in `FROM`)
+
 ```Dockerfile
 FROM seanmorris/ids.idilic:TAGNAME
 FROM seanmorris/ids.server:TAGNAME
 ```
 
-(it is not recommended to use `latest` in `FROM`)
+## Service Switches
+
+Additional services can be included when running Ids. Simply add +toolname to your @target when issing a make command, and the necessary composer files will be included in the comtext of your command. For example, to start the system with graylog in dev mode:
+
+```bash
+make @dev+graylog start
+```
+Or inotify
+
+```bash
+make @dev+inotify start
+```
+Or both
+
+```bash
+make @dev+graylog+inotify start
+```
+## Templating
+
+*This ain't your granpappy's makefile.*
+
+GNU Make has a distinct and powerful syntax. It borrows, or in some instances outright uses the underlying bash engine to allow a user to define complex build steps and track the relationships between them to ensure everything is up to date.
+
+Make allows for recursive variable expansion, conditionals, loops, and even calls out to the shell. This syntax is no longer limted to the Makefile.
+
+Simply put the extension `*.idstmp.*` *before* your existing file extension. Ids will look for these files in all subdirectories of the prohect and rebuild them on startup. The resulting file will have the extension `*.___gen.*` where the `*.idstmp.*` is in the source file.
+
+The resulting files should be excluded from version control, as they may contain artifacts from one target that should not exist in another.
+
+For example: *infra/docker/aptcache.idstmp.dockerfile* starts off with the following line:
+
+```dockerfile
+FROM ${BASELINUX}
+```
+Varibles are not normally allowed in the `FROM` section of dockerfile,  preprocessed by make before it is used. So long as the file extenstion begins with `.idstmp.`, we can count on a `.___gen.` file being produced. This allows us to keep all the images and containers synced to one base image.
+
+
+The follwing lines from the end of the file show how one can use the shell to track who generated the file and when:
+
+```dockerfile
+# generated @ $(shell date)
+# by ${shell whoami} @ ${shell hostname}
+```
+
+See [Functions for Transforming Text](https://www.gnu.org/software/make/manual/html_node/Functions.html#Functions) for more information.
 
 ## Configuration / Environment Variables / Secrets
 
@@ -271,10 +336,10 @@ The following files may be created/modified to configure the system. When the pr
 
 The values set will be read according to the following precedence (higher takes precedence over lower):
 
-* `.env_TARGET`
-* `.env_TARGET.default`
-* `.env`
-* `.env.default`
+ * `.env_TARGET`
+ * `.env_TARGET.default`
+ * `.env`
+ * `.env.default`
 
 Environment variables to be used in configuration should have the the prefix `IDS_`. An environment variable with the name IDS_SOME_VAR and IDS_SOME_OTHERVAR would be accessible within the system with:
 
@@ -339,7 +404,6 @@ IDS_ARRAY=first "second element ""with quotes inside""." third
 Hostname specific environment variables are prefixed with an extra underscore: `IDS__`. Dots and other non-word charaters in the hostname are placed by a single underscore, **except for the hyhpen which is replaced by 3 underscores.** Another double underscore finishes the hostname, and the variable name comes next.
 
 The above environment variables could be overridden for example.com with: `IDS__EXAMPLE_COM__SOME_VAR` and `IDS__EXAMPLE_COM__SOME_OTHERVAR`. They would be accessed in the same way as above:
-
 
 ```
 IDS__EXAMPLE_COM__SOME_VAR=overridden value
@@ -434,7 +498,6 @@ Ensure you've installed the `idilic` cli tool from the start of the document. Us
 `idilic applySchema [PACKAGE]` - Apply the stored schema.
 
 `idilic applySchemas` - Apply the stored schema for all installed packages.
-
 
 The schema will be stored in `data/global/schema.json`.
 
@@ -733,7 +796,26 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 ## Dependency Injection*
 ## Sessions
-## Email*
+## Email
+
+```php
+<?php
+use \SeanMorris\Ids\Mail;
+
+$mail = new \SeanMorris\Ids\Mail;
+$mail->body(<<<EOM
+	Message body here.
+EOM);
+
+$mail->from(\SeanMorris\Ids\Settings::read('noreply'));
+
+$mail->subject('Hello from Ids!');
+
+$mail->to($recipientEmail);
+
+$mail->send(TRUE);
+```
+
 ## Theming / Frontends
 ## Existing Ids Projects
 
@@ -744,7 +826,7 @@ Run these from the project root to build and control the project infrastructure.
  * `make build` `make b` - Build the project
  * `make env` `make e` - Print the project's environment config.
  * `make test` `make t`- Run tests.
- * `make test` `make t`- Remove the generated configs, **even if they have been altered.**
+ * `make test` `make t`- Remove the generated configs,* *even if they have been altered.**
  * `make start` `make s`- Start the project services.
  * `make start-fg` `make sf`- Start the project services, hold control of the terminal and stream output.
  * `make start-bg` `make sb`- Start the project services, hold control of the terminal and stream output.
@@ -766,19 +848,18 @@ Run these from the project root to build and control the project infrastructure.
  * `make npm install PKG="[PACKAGE]"` `make ni`- Run `npm install` inside the project.
  * `make bash` `make sh`- Get a bash prompt to an `idilic` container.
  * `make run CMD="SERVICE [COMMAND]"` `make r`- Run a command in a service container.
- *
+
 ## Dependencies
 
-* Bash
-* Composer
-* Docker
-* Docker Compose
-* GNU Make
-* Git
-* Linux or Compatible OS
-* Node
-* PHP
-* SimpleTest/SimpleTest
+ * Bash
+ * Composer
+ * Docker
+ * Docker Compose
+ * GNU Make
+ * Git
+ * Linux or Compatible OS
+ * Node
+ * PHP
 
 ## SeanMorris/Ids
 
