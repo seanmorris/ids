@@ -336,10 +336,10 @@ The following files may be created/modified to configure the system. When the pr
 
 The values set will be read according to the following precedence (higher takes precedence over lower):
 
-* `.env_TARGET`
-* `.env_TARGET.default`
-* `.env`
-* `.env.default`
+ * `.env_TARGET`
+ * `.env_TARGET.default`
+ * `.env`
+ * `.env.default`
 
 Environment variables to be used in configuration should have the the prefix `IDS_`. An environment variable with the name IDS_SOME_VAR and IDS_SOME_OTHERVAR would be accessible within the system with:
 
