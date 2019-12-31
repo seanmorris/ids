@@ -16,10 +16,10 @@ RUN set -eux;                  \
 		gnupg                  \
 		lsb-release            \
 		wget;                  \
-	wget -qO /usr/bin/yq       \
+	wget -O /usr/bin/yq        \
 		https://github.com/mikefarah/yq/releases/download/2.4.1/yq_linux_amd64; \
 	chmod +x /usr/bin/yq;      \
-	wget -qO /etc/apt/trusted.gpg.d/php.gpg            \
+	wget -O /etc/apt/trusted.gpg.d/php.gpg             \
 		https://packages.sury.org/php/apt.gpg;         \
 	sh -c "echo 'deb https://packages.sury.org/php/ $$(lsb_release -sc) main' \
 		 | tee /etc/apt/sources.list.d/sury-php.list"; \

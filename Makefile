@@ -219,19 +219,24 @@ $(eval TRGT_DLT:=$(shell echo ${MAKEDIR}.env_${TARGET}.default))
 
 $(eval DCOMPOSE_FILES:=)
 
-$(eval DCOMPOSE_FILES+= $(and      \
+$(eval DCOMPOSE_FILES+= $(and        \
 	$(filter +aptcache,${TGT_SVC}),  \
 	-f ${COMPOSE_TOOLS}/aptcache.yml \
 ))
 
-$(eval DCOMPOSE_FILES+=$(and       \
+$(eval DCOMPOSE_FILES+=$(and         \
 	$(filter +graylog,${TGT_SVC}),   \
 	-f ${COMPOSE_TOOLS}/graylog.yml  \
 ))
 
-$(eval DCOMPOSE_FILES+=$(and       \
+$(eval DCOMPOSE_FILES+=$(and         \
 	$(filter +inotify,${TGT_SVC}),   \
 	-f ${COMPOSE_TOOLS}/inotify.yml  \
+))
+
+$(eval DCOMPOSE_FILES+=$(and         \
+	$(filter +make,${TGT_SVC}),      \
+	-f ${COMPOSE_TOOLS}/make.yml     \
 ))
 
 $(eval DCOMPOSE_TARGET_STACK:= -f ${COMPOSE_TARGET} ${DCOMPOSE_FILES})

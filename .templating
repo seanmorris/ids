@@ -1,6 +1,6 @@
----
-asset/:
+ asset/:
 	%idstmp%: %___idsgen%
+
 bin/:
 	%idstmp%: %___idsgen%
 
