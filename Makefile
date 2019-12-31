@@ -151,7 +151,7 @@ XDEBUG_CONFIG="`\
 endef
 
 YQ=${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm \
-	--entrypoint yq idilic
+	--entrypoint /usr/bin/yq idilic
 
 PASS_ENV=$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /')
 
@@ -607,4 +607,4 @@ aptcache-build: ${PREBUILD} ### Stop apt-cache.
 
 ###
 yq:
-	${YQ}
+	${YQ} ${CMD}
