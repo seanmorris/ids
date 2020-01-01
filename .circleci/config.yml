@@ -428,6 +428,84 @@ jobs:
       - run: composer install
       - run: sudo PHP=7.4 make @test+inotify+graylog+aptcache run CMD="make run CMD=\"make CMD=\\\"make run\\\"\""
 
+  add-on-test:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - install-composer
+      - run: composer install
+      - run: make @base+aptcache ct b psi
+      - run: make @dev+aptcache+graylog+inotify ct b psi
+      - run: make @test+aptcache ct b psi
+      - run: make @prod+aptcache ct b psi
+
+  add-on-test_7-1:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - install-composer
+      - run: PHP=7.1 composer install
+      - run: PHP=7.1 make @base+aptcache ct b psi
+      - run: PHP=7.1 make @dev+aptcache+graylog+inotify ct b psi
+      - run: PHP=7.1 make @test+aptcache ct b psi
+      - run: PHP=7.1 make @prod+aptcache ct b psi
+
+  add-on-test_7-2:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - install-composer
+      - run: PHP=7.2 composer install
+      - run: PHP=7.2 make @base+aptcache ct b psi
+      - run: PHP=7.2 make @dev+aptcache+graylog+inotify ct b psi
+      - run: PHP=7.2 make @test+aptcache ct b psi
+      - run: PHP=7.2 make @prod+aptcache ct b psi
+
+  add-on-test_7-3:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - install-composer
+      - run: PHP=7.3 composer install
+      - run: PHP=7.3 make @base+aptcache ct b psi
+      - run: PHP=7.3 make @dev+aptcache+graylog+inotify ct b psi
+      - run: PHP=7.3 make @test+aptcache ct b psi
+      - run: PHP=7.3 make @prod+aptcache ct b psi
+
+  add-on-test_7-4:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - install-composer
+      - run: PHP=7.3 composer install
+      - run: PHP=7.3 make @base+aptcache ct b psi
+      - run: PHP=7.3 make @dev+aptcache+graylog+inotify ct b psi
+      - run: PHP=7.3 make @test+aptcache ct b psi
+      - run: PHP=7.3 make @prod+aptcache ct b psi
+
+  add-on-test_7-1:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - install-composer
+      - run: PHP=7.1 composer install
+      - run: PHP=7.1 make @base+aptcache ct b psi
+      - run: PHP=7.1 make @dev+aptcache+graylog+inotify ct b psi
+      - run: PHP=7.1 make @test+aptcache ct b psi
+      - run: PHP=7.1 make @prod+aptcache ct b psi
+
   build-and-push:
     parallelism: 1
     machine:
@@ -497,3 +575,73 @@ jobs:
       - run: PHP=7.4 make @dev  ct b psi
       - run: PHP=7.4 make @prod ct b psi
       - run: PHP=7.4 make @test ct b psi
+
+  build-and-push-addons:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - install-composer
+      - run: composer install
+      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+      - run: make @base ct b psi
+      - run: make @dev  ct b psi
+      - run: make @prod ct b psi
+      - run: make @test ct b psi
+
+  build-and-push-addons7_1:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - install-composer
+      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+      - run: PHP=7.1 composer install
+      - run: PHP=7.1 make @base+aptcache ct b psi
+      - run: PHP=7.1 make @dev+aptcache+graylog+inotify ct b psi
+      - run: PHP=7.1 make @test+aptcache ct b psi
+      - run: PHP=7.1 make @prod+aptcache ct b psi
+
+  build-and-push-addons7_2:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - install-composer
+      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+      - run: PHP=7.2 composer install
+      - run: PHP=7.2 make @base+aptcache ct b psi
+      - run: PHP=7.2 make @dev+aptcache+graylog+inotify ct b psi
+      - run: PHP=7.2 make @test+aptcache ct b psi
+      - run: PHP=7.2 make @prod+aptcache ct b psi
+
+  build-and-push-addons7_3:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - install-composer
+      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+      - run: PHP=7.3 composer install
+      - run: PHP=7.3 make @base+aptcache ct b psi
+      - run: PHP=7.3 make @dev+aptcache+graylog+inotify ct b psi
+      - run: PHP=7.3 make @test+aptcache ct b psi
+      - run: PHP=7.3 make @prod+aptcache ct b psi
+
+  build-and-push-addons7_4:
+    parallelism: 1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - install-composer
+      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+      - run: PHP=7.4 composer install
+      - run: PHP=7.4 make @base+aptcache ct b psi
+      - run: PHP=7.4 make @dev+aptcache+graylog+inotify ct b psi
+      - run: PHP=7.4 make @test+aptcache ct b psi
+      - run: PHP=7.4 make @prod+aptcache ct b psi
