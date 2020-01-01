@@ -6,6 +6,7 @@ commands:
       - run: |
           curl -s https://getcomposer.org/installer | php
           sudo mv composer.phar /usr/local/bin/composer
+
   docker-permissions:
     steps:
       - run: |
@@ -83,8 +84,8 @@ jobs:
 
   init-test:
     parallelism: 1
-      docker:
-        - image: circleci/php:7.4.1
+    machine:
+      image: ubuntu-1604:201903-01
     steps:
       - checkout
       - install-composer
