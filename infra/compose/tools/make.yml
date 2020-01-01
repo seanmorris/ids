@@ -4,6 +4,7 @@ services:
 
   make:
     restart:     always
+    image:   ${REPO}/${PROJECT}.make:${TAG}
     build:
       context: ../../
       dockerfile: ${REALDIR}infra/docker/tools/make.___gen.dockerfile

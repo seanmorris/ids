@@ -4,6 +4,7 @@ services:
 
   inotify:
     restart:     always
+    image:   ${REPO}/${PROJECT}.inotify:${TAG}
     build:
       context: ../../
       dockerfile: ${REALDIR}infra/docker/tools/inotify.___gen.dockerfile
