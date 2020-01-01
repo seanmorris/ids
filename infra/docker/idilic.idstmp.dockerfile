@@ -7,6 +7,7 @@ ARG IDS_APT_PROXY_PORT
 COPY ./infra/apt/proxy-detect.sh /usr/bin/proxy-detect
 
 RUN set -eux;                  \
+	chmod ugo+rx /usr/bin/proxy-detect;         \
 	echo 'Acquire::HTTP::Proxy-Auto-Detect /usr/bin/proxy-detect;' \
 		> /etc/apt/apt.conf.d/02proxy;          \
 	echo "HTTP Proxy:" `/usr/bin/proxy-detect`; \
