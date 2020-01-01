@@ -7,6 +7,7 @@ RUN set -eux;               \
 		bsdmainutils        \
 		build-essential     \
 		ca-certificates     \
+		gettext-base        \
 		wget;               \
 	wget -O /usr/bin/docker-compose               \
 		https://github.com/docker/compose/releases/download/1.25.0/docker-compose-$$(uname -s)-$$(uname -m); \

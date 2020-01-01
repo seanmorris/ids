@@ -16,11 +16,13 @@ MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 BASELINUX ?= debian:buster-20191118-slim## %var The BASE base image.
 PHP       ?= 7.3
 REALDIR   :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-MAKEDIR   ?=${REALDIR}
+OUTREALDIR?=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+MAKEDIR   :=${REALDIR}
+OUTMAKEDIR?=${REALDIR}
 VAR_FILE  ?=${MAKEDIR}.var
 
-MAIN_ENV  ?=${MAKEDIR}.env
-MAIN_DLT  ?=${MAKEDIR}.env.default
+MAIN_ENV  :=${MAKEDIR}.env
+MAIN_DLT  :=${MAKEDIR}.env.default
 
 -include ${MAIN_ENV}
 -include ${VAR_FILE}
@@ -41,8 +43,8 @@ $(eval TARGET=$(shell echo ${firstword ${MAKECMDGOALS}} | ${CUT_TARGET} ))
 $(eval TGT_STR=$(firstword ${MAKECMDGOALS}))
 endif
 
-TRGT_ENV =${MAKEDIR}.env_${TARGET}
-TRGT_DLT =${MAKEDIR}.env_${TARGET}.default
+TRGT_ENV :=${MAKEDIR}.env_${TARGET}
+TRGT_DLT :=${MAKEDIR}.env_${TARGET}.default
 
 -include ${TRGT_ENV}
 -include ${TRGT_DLT}
@@ -84,8 +86,8 @@ ENV_LOCK ?=${MAKEDIR}.lock_env
 
 -include ${ENV_LOCK}
 
-COMPOSE_BASE   =infra/compose/base.yml
-COMPOSE_TARGET =infra/compose/${TARGET}.yml
+COMPOSE_BASE   =infra/compose/base.__gen.yml
+COMPOSE_TARGET =infra/compose/${TARGET}.__gen.yml
 COMPOSE_TOOLS  =infra/compose/tools
 
 PROJECT  ?=ids
@@ -177,6 +179,8 @@ define QUOTE_ENV ## %frag quotes environment vara:
 	${PARSE_ENV} echo -n " $$ENV_NAME="; printf %q "$$ENV_VALUE"; }; done
 endef
 
+ENTROPY_DIR=/tmp/IDS_ENTROPY
+
 define GET_ENTROPY ## %func Return entropy value for a given key.
 test -w "${ENTROPY_DIR}/${1}"  \
 	&& cat ${ENTROPY_DIR}/${1} \
@@ -208,6 +212,8 @@ cat ${1} | grep -v ^\#     \
 	done;
 endef
 
+DCOMPOSE_TARGET_STACK:= -f ${COMPOSE_TARGET}
+
 define NEWTARGET ## %frag Set up environment for new target.
 test -f infra/compose/${TARGET}.yml;
 $(eval COMPOSE_TARGET:=$(shell echo infra/compose/${TARGET}.yml))
@@ -221,7 +227,7 @@ $(eval DCOMPOSE_FILES:=)
 
 $(eval DCOMPOSE_FILES+= $(and        \
 	$(filter +aptcache,${TGT_SVC}),  \
-	-f ${COMPOSE_TOOLS}/aptcache.yml \
+	-f ${COMPOSE_TOOLS}/aptcach.yml \
 ))
 
 $(eval DCOMPOSE_FILES+=$(and         \
@@ -249,7 +255,8 @@ MAKEDIR=${MAKEDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}} \
 DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}           \
 DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP} LOCALBASE=${LOCALBASE}         \
 TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${BASELINUX}      \
-REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT}
+REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT}             \
+OUTMAKEDIR=${OUTMAKEDIR} OUTREALDIR=${OUTREALDIR}
 endef
 
 define EXTRACT_TARGET_SERVICES ## %frag extract the target & optional service configs from args.
@@ -303,7 +310,7 @@ DRUN=docker run --rm       \
 	-env-file=.env           \
 	-env-file=.env_${TARGET} \
 	-env-file=.env_${TARGET}.default \
-	-v $$PWD:/app
+	-v ${OUTMAKEDIR}:/app
 
 build b: retarget .lock_env templates localbase ${PREBUILD} ## Build the project.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build
@@ -418,7 +425,8 @@ hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 	@ git config core.hooksPath githooks
 
 run: ${PREBUILD} ## CMD= 'SERVICE COMMAND' Run a command in a given service's container.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
+	ls -al infra/compose/tools/make.yml
+	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
 		${PASS_ENV} ${CMD}
 
 bash sh: ${PREBUILD} ## Get a bash propmpt to an idilic container.
@@ -437,7 +445,7 @@ composer-dump-autoload cda:## Run composer dump-autoload. Will download composer
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer dump-autoload
 
 dcompose-config dcc: ${PREBUILD} ## Print the current docker-compose configuration.
-	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} config 2>&1
+	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} config
 
 dcompose-version dcv: ${PREBUILD} ## Print the current docker-compose configuration.
 	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} version
@@ -449,13 +457,14 @@ dcompose-version dcv: ${PREBUILD} ## Print the current docker-compose configurat
 		, $(shell ${RANDOM_STRING} ) \
 	))
 
-	@ [[ "${ENV_LOCK_TAG}" != "${TAG}" ]] \
+	[[ "${ENV_LOCK_TAG}" != "${TAG}" ]] \
 	||[[ "${ENV_LOCK_TGT_SVC}" != "${TGT_SVC}" ]] \
 	|| ( \
-		 ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
+		 ${DRUN}                                    \
+		 	 -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
+		 	 composer install                       \
 			--ignore-platform-reqs                  \
 			`${ISDEV} || echo "--no-dev"`;          \
-			                                        \
 	);
 
 	@ test ! -z "${TAG}"      \

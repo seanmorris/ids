@@ -11,13 +11,13 @@ services:
   server:
     ports: ['${IDS_EXPOSE_HTTP:-0}:80']
     extends:
-      file: base.yml
+      file: base.___gen.yml
       service: server
     depends_on: [database]
 
   database:
     extends:
-      file: base.yml
+      file: base.___gen.yml
       service: database
 
 volumes:
