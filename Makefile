@@ -16,11 +16,13 @@ MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 BASELINUX ?= debian:buster-20191118-slim## %var The BASE base image.
 PHP       ?= 7.3
 REALDIR   :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-MAKEDIR   ?=${REALDIR}
+OUTREALDIR?=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+MAKEDIR   :=${REALDIR}
+OUTMAKEDIR?=${REALDIR}
 VAR_FILE  ?=${MAKEDIR}.var
 
-MAIN_ENV  ?=${MAKEDIR}.env
-MAIN_DLT  ?=${MAKEDIR}.env.default
+MAIN_ENV  :=${MAKEDIR}.env
+MAIN_DLT  :=${MAKEDIR}.env.default
 
 -include ${MAIN_ENV}
 -include ${VAR_FILE}
@@ -41,13 +43,13 @@ $(eval TARGET=$(shell echo ${firstword ${MAKECMDGOALS}} | ${CUT_TARGET} ))
 $(eval TGT_STR=$(firstword ${MAKECMDGOALS}))
 endif
 
-TRGT_ENV =${MAKEDIR}.env_${TARGET}
-TRGT_DLT =${MAKEDIR}.env_${TARGET}.default
+TRGT_ENV :=${MAKEDIR}.env_${TARGET}
+TRGT_DLT :=${MAKEDIR}.env_${TARGET}.default
 
 -include ${TRGT_ENV}
 -include ${TRGT_DLT}
 
-$(shell >&2 echo Starting with target: \"${TARGET}\")
+$(shell >&2 echo -e "\e[7m" Starting with target: \"${TARGET}\" on `hostname` "\e[0m")
 
 DOCKDIR  ?=${REALDIR}infra/docker/
 DEBIAN_ESC=$(shell echo ${BASELINUX} | sed 's/\:/__/gi')
@@ -94,8 +96,8 @@ BRANCH   :=$(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo nobranch)
 HASH     :=$(shell echo _$$(git rev-parse --short HEAD 2>/dev/null) || echo init)
 DESC     :=$(shell git describe --tags 2>/dev/null || echo ${HASH})
 SUFFIX   =-${TARGET}$(shell [[ ${PHP} = 7.3  ]] || echo -${PHP})
-
-TAG      ?=${DESC}${SUFFIX}$(shell [[ ${BRANCH} == "master" ]] || echo -${BRANCH})
+DBRANCH  :=$(shell [[ ${BRANCH} == "master" ]] || echo -${BRANCH})
+TAG      ?=${DESC}${SUFFIX}
 FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
 IMAGE    ?=
@@ -177,6 +179,8 @@ define QUOTE_ENV ## %frag quotes environment vara:
 	${PARSE_ENV} echo -n " $$ENV_NAME="; printf %q "$$ENV_VALUE"; }; done
 endef
 
+ENTROPY_DIR=/tmp/IDS_ENTROPY
+
 define GET_ENTROPY ## %func Return entropy value for a given key.
 test -w "${ENTROPY_DIR}/${1}"  \
 	&& cat ${ENTROPY_DIR}/${1} \
@@ -208,6 +212,8 @@ cat ${1} | grep -v ^\#     \
 	done;
 endef
 
+DCOMPOSE_TARGET_STACK:= -f ${COMPOSE_TARGET}
+
 define NEWTARGET ## %frag Set up environment for new target.
 test -f infra/compose/${TARGET}.yml;
 $(eval COMPOSE_TARGET:=$(shell echo infra/compose/${TARGET}.yml))
@@ -219,19 +225,24 @@ $(eval TRGT_DLT:=$(shell echo ${MAKEDIR}.env_${TARGET}.default))
 
 $(eval DCOMPOSE_FILES:=)
 
-$(eval DCOMPOSE_FILES+= $(and      \
+$(eval DCOMPOSE_FILES+= $(and        \
 	$(filter +aptcache,${TGT_SVC}),  \
 	-f ${COMPOSE_TOOLS}/aptcache.yml \
 ))
 
-$(eval DCOMPOSE_FILES+=$(and       \
+$(eval DCOMPOSE_FILES+=$(and         \
 	$(filter +graylog,${TGT_SVC}),   \
 	-f ${COMPOSE_TOOLS}/graylog.yml  \
 ))
 
-$(eval DCOMPOSE_FILES+=$(and       \
+$(eval DCOMPOSE_FILES+=$(and         \
 	$(filter +inotify,${TGT_SVC}),   \
 	-f ${COMPOSE_TOOLS}/inotify.yml  \
+))
+
+$(eval DCOMPOSE_FILES+=$(and         \
+	$(filter +make,${TGT_SVC}),      \
+	-f ${COMPOSE_TOOLS}/make.yml     \
 ))
 
 $(eval DCOMPOSE_TARGET_STACK:= -f ${COMPOSE_TARGET} ${DCOMPOSE_FILES})
@@ -244,7 +255,8 @@ MAKEDIR=${MAKEDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}} \
 DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}           \
 DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP} LOCALBASE=${LOCALBASE}         \
 TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${BASELINUX}      \
-REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT}
+REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT}             \
+OUTMAKEDIR=${OUTMAKEDIR} OUTREALDIR=${OUTREALDIR}
 endef
 
 define EXTRACT_TARGET_SERVICES ## %frag extract the target & optional service configs from args.
@@ -298,26 +310,26 @@ DRUN=docker run --rm       \
 	-env-file=.env           \
 	-env-file=.env_${TARGET} \
 	-env-file=.env_${TARGET}.default \
-	-v $$PWD:/app
+	-v ${OUTMAKEDIR}:/app
 
 build b: retarget .lock_env templates localbase ${PREBUILD} ## Build the project.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start
 	@ ${WHILE_IMAGES}                           \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
-		| while read IMAGE_NAME; do                                        \
+		| while read IMAGE_NAME; do                                          \
 			IMAGE_PREFIX=`echo "$$IMAGE_NAME" | sed "s/\:.*\$$//"`;          \
 			                                                                 \
 			echo "original:$$IMAGE_HASH $$IMAGE_PREFIX":${TAG};              \
 			                                                                 \
-			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":latest${SUFFIX};      \
-			echo "  latest:$$IMAGE_HASH $$IMAGE_PREFIX":latest${SUFFIX};     \
+			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":latest${SUFFIX}${DBRANCH};   \
+			echo "  latest:$$IMAGE_HASH $$IMAGE_PREFIX":latest${SUFFIX}${DBRANCH};  \
 			                                                                 \
-			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":${HASH}${SUFFIX};     \
-			echo "    hash:$$IMAGE_HASH $$IMAGE_PREFIX":${HASH}${SUFFIX};    \
+			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":${HASH}${SUFFIX}${DBRANCH};  \
+			echo "    hash:$$IMAGE_HASH $$IMAGE_PREFIX":${HASH}${SUFFIX}${DBRANCH}; \
 			                                                                 \
-			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":`date '+%Y%m%d'`${SUFFIX};  \
-			echo "    date:$$IMAGE_HASH $$IMAGE_PREFIX":`date '+%Y%m%d'`${SUFFIX}; \
+			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":`date '+%Y%m%d'`${SUFFIX}${DBRANCH};  \
+			echo "    date:$$IMAGE_HASH $$IMAGE_PREFIX":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
 		done; \
 	done;
 
@@ -345,7 +357,7 @@ clean: ${PREBUILD} ## Clean the project. Only applies to files from the current 
 
 localbase: ${ENVBUILD} .lock_env
 	@ echo Building ${FULLNAME} \(Local ${LOCALBASE}\);
-	export TARGET=base TAG=${LOCALBASE} \
+	@ export TARGET=base TAG=${LOCALBASE} \
 		&& ${DCOMPOSE} ${DCOMPOSE_BASE_STACK} build idilic
 
 SEP=
@@ -413,7 +425,8 @@ hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 	@ git config core.hooksPath githooks
 
 run: ${PREBUILD} ## CMD= 'SERVICE COMMAND' Run a command in a given service's container.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
+	ls -al infra/compose/tools/make.yml
+	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
 		${PASS_ENV} ${CMD}
 
 bash sh: ${PREBUILD} ## Get a bash propmpt to an idilic container.
@@ -432,14 +445,14 @@ composer-dump-autoload cda:## Run composer dump-autoload. Will download composer
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer dump-autoload
 
 dcompose-config dcc: ${PREBUILD} ## Print the current docker-compose configuration.
-	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} config 2>&1
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} config
 
 dcompose-version dcv: ${PREBUILD} ## Print the current docker-compose configuration.
-	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} version
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} version
 
 .lock_env: retarget ### Lock the environment target
-	touch .lock_env
-	$(eval LOCALBASE:=$(or    \
+	@ touch .lock_env
+	@ $(eval LOCALBASE:=$(or    \
 		, ${LOCALBASE}        \
 		, $(shell ${RANDOM_STRING} ) \
 	))
@@ -447,10 +460,11 @@ dcompose-version dcv: ${PREBUILD} ## Print the current docker-compose configurat
 	@ [[ "${ENV_LOCK_TAG}" != "${TAG}" ]] \
 	||[[ "${ENV_LOCK_TGT_SVC}" != "${TGT_SVC}" ]] \
 	|| ( \
-		 ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer install \
+		 ${DRUN}                                    \
+		 	 -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
+		 	 composer install                       \
 			--ignore-platform-reqs                  \
 			`${ISDEV} || echo "--no-dev"`;          \
-			                                        \
 	);
 
 	@ test ! -z "${TAG}"      \
@@ -477,39 +491,40 @@ retarget: ### Set the current target for one invocation.
 
 .env: config/.env
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app  \
-		${BASELINUX} bash -c '{                     \
-			FROM=config/.env                          \
-			TO=.env                                   \
-				&& ${STITCH_ENTROPY};                   \
+		${BASELINUX} bash -c '{                   \
+			FROM=config/.env                      \
+			TO=.env                               \
+				&& ${STITCH_ENTROPY};             \
 		}'
 
-	docker run --rm -v ${MAKEDIR}:/app -w=/app    \
-		${BASELINUX} bash -c '{                     \
-			FROM=config/.env.default                  \
-			TO=.env.default                           \
-				&& ${STITCH_ENTROPY};                   \
+.env.default: config/.env
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app    \
+		${BASELINUX} bash -c '{                   \
+			FROM=config/.env.default              \
+			TO=.env.default                       \
+				&& ${STITCH_ENTROPY};             \
 		}'
 
 .env_${TARGET}: config/.env_${TARGET}
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		${BASELINUX} bash -c '{                    \
-			FROM=config/.env_${TARGET}               \
-			TO=.env_${TARGET}                        \
-				&& ${STITCH_ENTROPY};                  \
-			FROM=config/.env_${TARGET}.default       \
-			TO=.env_${TARGET}.default                \
-				&& ${STITCH_ENTROPY};                  \
+		${BASELINUX} bash -c '{                  \
+			FROM=config/.env_${TARGET}           \
+			TO=.env_${TARGET}                    \
+				&& ${STITCH_ENTROPY};            \
+			FROM=config/.env_${TARGET}.default   \
+			TO=.env_${TARGET}.default            \
+				&& ${STITCH_ENTROPY};            \
 		}'
 
 .env_${TARGET}.default: config/.env_${TARGET}.default
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		${BASELINUX} bash -c '{                    \
-			FROM=config/.env_${TARGET}               \
-			TO=.env_${TARGET}                        \
-				&& ${STITCH_ENTROPY};                  \
-			FROM=config/.env_${TARGET}.default       \
-			TO=.env_${TARGET}.default                \
-				&& ${STITCH_ENTROPY};                  \
+		${BASELINUX} bash -c '{                  \
+			FROM=config/.env_${TARGET}           \
+			TO=.env_${TARGET}                    \
+				&& ${STITCH_ENTROPY};            \
+			FROM=config/.env_${TARGET}.default   \
+			TO=.env_${TARGET}.default            \
+				&& ${STITCH_ENTROPY};            \
 		}'
 
 config/.env   config/.env_${TARGET}:
@@ -550,6 +565,7 @@ templates: ${GENERABLE}
 ${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) ${ENVBUILD}
 	@ echo Rebuilding template `basename ${@}`;
 	@ test -w ${@} || test -w `dirname ${@}`;
+	@ echo -e "$(call SHELLOUT,cat ${<})" >&2
 	@ echo -e "$(call SHELLOUT,cat ${<})" > ${@}
 	@ test -f ${@};
 
@@ -607,4 +623,4 @@ aptcache-build: ${PREBUILD} ### Stop apt-cache.
 
 ###
 yq:
-	${YQ}
+	${YQ} ${CMD}

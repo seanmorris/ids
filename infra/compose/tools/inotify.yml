@@ -4,8 +4,21 @@ services:
 
   inotify:
     restart:     always
+    image:   ${REPO}/${PROJECT}.inotify:${TAG}
     build:
       context: ../../
       dockerfile: ${REALDIR}infra/docker/tools/inotify.___gen.dockerfile
     volumes:
       - ../../:/app
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/bin/docker:${DOCKER}
+
+  make:
+    restart:     always
+    build:
+      context: ../../
+      dockerfile: ${REALDIR}infra/docker/tools/make.___gen.dockerfile
+    volumes:
+      - ../../:/app
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/bin/docker:${DOCKER}

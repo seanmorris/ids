@@ -10,6 +10,7 @@ services:
     networks:
         - bridge
     restart: always
+    image:   ${REPO}/${PROJECT}.aptcache:${TAG}
     build:
       context: ../../
       dockerfile: ${REALDIR}infra/docker/tools/aptcache.___gen.dockerfile
