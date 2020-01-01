@@ -493,19 +493,6 @@ jobs:
       - run: PHP=7.3 make @test+aptcache ct b psi
       - run: PHP=7.3 make @prod+aptcache ct b psi
 
-  add-on-test_7-1:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
-    steps:
-      - checkout
-      - install-composer
-      - run: PHP=7.1 composer install
-      - run: PHP=7.1 make @base+aptcache ct b psi
-      - run: PHP=7.1 make @dev+aptcache+graylog+inotify ct b psi
-      - run: PHP=7.1 make @test+aptcache ct b psi
-      - run: PHP=7.1 make @prod+aptcache ct b psi
-
   build-and-push:
     parallelism: 1
     machine:
