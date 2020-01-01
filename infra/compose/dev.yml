@@ -6,7 +6,7 @@ services:
     volumes: ['../../:/app', '/tmp:/tmp']
     depends_on: [database]
     extends:
-      file: base..yml
+      file: base.yml
       service: idilic
     environment:
       XDEBUG_CONFIG: ${XDEBUG_CONFIG}
@@ -17,7 +17,7 @@ services:
     ports:   ['${IDS_EXPOSE_HTTP:-0}:80']
     depends_on: [database]
     extends:
-      file: base..yml
+      file: base.yml
       service: server
     environment:
       XDEBUG_CONFIG: ${XDEBUG_CONFIG}
