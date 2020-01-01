@@ -13,7 +13,7 @@ commands:
   docker-permissions:
     steps:
       - run: |
-      sudo apt install -y software-properties-common
+          sudo apt install -y software-properties-common
           sudo chgrp docker /usr/bin/docker  /var/run/docker.sock
           sudo chmod    550 /usr/bin/docker  /var/run/docker.sock
 
