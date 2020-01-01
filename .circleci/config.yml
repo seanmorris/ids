@@ -17,46 +17,46 @@ workflows:
   build-test-push:
     jobs:
       - init-test
-      - recursive-test
+      - recursive-test-1
       - self-test:
           requires:
             - init-test
       - build-and-push:
           requires:
-            - recursive-test
+            - recursive-test-1
             - self-test
             - init-test
 
   build-test-push_7-1:
     jobs:
       - init-test_7-1
-      - recursive-test_7-1
+      - recursive-test-1_7-1
       - self-test_7-1:
           requires:
             - init-test_7-1
       - build-and-push_7-1:
           requires:
-            - recursive-test_7-1
+            - recursive-test-1_7-1
             - self-test_7-1
             - init-test_7-1
 
   build-test-push_7-2:
     jobs:
       - init-test_7-2
-      - recursive-test_7-2
+      - recursive-test-1_7-2
       - self-test_7-2:
           requires:
             - init-test_7-2
       - build-and-push_7-2:
           requires:
-            - recursive-test_7-2
+            - recursive-test-1_7-2
             - self-test_7-2
             - init-test_7-2
 
   build-test-push_7-3:
     jobs:
       - init-test_7-3
-      - recursive-test_7-2
+      - recursive-test-1_7-2
       - self-test_7-3:
           requires:
             - init-test_7-3
@@ -68,13 +68,13 @@ workflows:
   build-test-push_7-4:
     jobs:
       - init-test_7-4
-      - recursive-test_7-4
+      - recursive-test-1_7-4
       - self-test_7-4:
           requires:
             - init-test_7-4
       - build-and-push_7-4:
           requires:
-            - recursive-test_7-4
+            - recursive-test-1_7-4
             - self-test_7-4
             - init-test_7-4
 
