@@ -8,7 +8,8 @@ COPY ./infra/apt/proxy-detect.sh /usr/bin/proxy-detect
 
 RUN set -eux;                  \
 	echo 'Acquire::HTTP::Proxy-Auto-Detect /usr/bin/proxy-detect;' \
-		>> /etc/apt/apt.conf.d/01proxy;         \
+		> /etc/apt/apt.conf.d/02proxy;          \
+	chmod a+rx /usr/bin/proxy-detect;           \
 	echo "HTTP Proxy:" `/usr/bin/proxy-detect`; \
 	apt-get update;            \
 	apt-get install -y --no-install-recommends software-properties-common \

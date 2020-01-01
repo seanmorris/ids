@@ -17,6 +17,11 @@ commands:
           sudo chgrp docker /usr/bin/docker  /var/run/docker.sock
           sudo chmod    555 /usr/bin/docker  /var/run/docker.sock
           sudo usermod -aG docker $USER
+          sudo find . -type d -exec chmod o-rwx  {} \;
+          sudo find . -type f -exec chmod o-rwx  {} \;
+          sudo find . -type d -exec chmod ug+rwx {} \;
+          sudo find . -type f -exec chmod ug+rw  {} \;
+          sudo find . -type f -exec chmod g+s    {} \;
 
 workflows:
   version: 2

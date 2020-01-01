@@ -565,6 +565,7 @@ templates: ${GENERABLE}
 ${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) ${ENVBUILD}
 	@ echo Rebuilding template `basename ${@}`;
 	@ test -w ${@} || test -w `dirname ${@}`;
+	@ echo -e "$(call SHELLOUT,cat ${<})" >&2
 	@ echo -e "$(call SHELLOUT,cat ${<})" > ${@}
 	@ test -f ${@};
 
