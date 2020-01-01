@@ -4,10 +4,10 @@ commands:
   install-composer:
     steps:
       - run: |
-          sudo apt install -y software-properties-common
-          sudo add-apt-repository -y ppa:ondrej/php
-          sudo apt-get update
-          sudo apt-get install -y php7.4-cli php7.4-common php7.4-mbstring php7.4-intl php7.4-zip php7.4-bcmath php7.4-dom
+          apt install -y software-properties-common
+          add-apt-repository -y ppa:ondrej/php
+          apt-get update
+          apt-get install -y php7.4-cli php7.4-common php7.4-mbstring php7.4-intl php7.4-zip php7.4-bcmath php7.4-dom
           curl -s https://getcomposer.org/installer | php
           sudo mv composer.phar /usr/local/bin/composer
 
@@ -82,8 +82,8 @@ jobs:
 
   init-test:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
@@ -95,8 +95,8 @@ jobs:
 
   init-test_7-1:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
@@ -108,8 +108,8 @@ jobs:
 
   init-test_7-2:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
@@ -122,8 +122,8 @@ jobs:
 
   init-test_7-3:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
@@ -135,8 +135,8 @@ jobs:
 
   init-test_7-4:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
@@ -148,8 +148,8 @@ jobs:
 
   self-test:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
@@ -169,8 +169,8 @@ jobs:
 
   self-test_7-1:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
@@ -190,8 +190,8 @@ jobs:
 
   self-test_7-2:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
@@ -211,8 +211,8 @@ jobs:
 
   self-test_7-3:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
@@ -232,8 +232,8 @@ jobs:
 
   self-test_7-4:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
@@ -308,8 +308,8 @@ jobs:
 
   build-and-push:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
@@ -322,8 +322,8 @@ jobs:
 
   build-and-push_7-1:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
@@ -336,8 +336,8 @@ jobs:
 
   build-and-push_7-2:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
@@ -350,8 +350,8 @@ jobs:
 
   build-and-push_7-3:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
@@ -364,8 +364,8 @@ jobs:
 
   build-and-push_7-4:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - checkout
       - install-composer
