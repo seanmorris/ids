@@ -15,7 +15,7 @@ commands:
       - run: |
           sudo apt install -y software-properties-common
           sudo chgrp docker /usr/bin/docker  /var/run/docker.sock
-          sudo chmod    550 /usr/bin/docker  /var/run/docker.sock
+          sudo chmod    555 /usr/bin/docker  /var/run/docker.sock
 
 workflows:
   version: 2
