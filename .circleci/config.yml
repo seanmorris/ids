@@ -4,12 +4,16 @@ commands:
   install-composer:
     steps:
       - run: |
-          curl -s https://getcomposer.org/installer | php
+          sudo add-apt-repository -y ppa:ondrej/php
+          sudo apt-get update
+          sudo apt-get install -y php7.4-cli php7.4-common php7.4-mbstring php7.4-intl php7.4-zip php7.4-bcmath php7.4-dom
           sudo mv composer.phar /usr/local/bin/composer
+          curl -s https://getcomposer.org/installer | php
 
   docker-permissions:
     steps:
       - run: |
+      sudo apt install -y software-properties-common
           sudo chgrp docker /usr/bin/docker  /var/run/docker.sock
           sudo chmod    550 /usr/bin/docker  /var/run/docker.sock
 
@@ -260,6 +264,7 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - docker-permissions
       - run: composer install
       - run: make @test+make ct b run CMD="make @test test"
 
@@ -270,6 +275,7 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - docker-permissions
       - run: composer install
       - run: PHP=7.1 make @test+make ct b run CMD="make @test test"
 
@@ -280,6 +286,7 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - docker-permissions
       - run: composer install
       - run: PHP=7.2 make @test+make ct b run CMD="make @test test"
 
@@ -290,6 +297,7 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - docker-permissions
       - run: composer install
       - run: PHP=7.3 make @test+make ct b run CMD="make @test test"
 
@@ -300,6 +308,7 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - docker-permissions
       - run: composer install
       - run: PHP=7.4 make @test+make ct b run CMD="make @test test"
 
