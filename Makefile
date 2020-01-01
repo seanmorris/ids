@@ -227,7 +227,7 @@ $(eval DCOMPOSE_FILES:=)
 
 $(eval DCOMPOSE_FILES+= $(and        \
 	$(filter +aptcache,${TGT_SVC}),  \
-	-f ${COMPOSE_TOOLS}/aptcach.yml \
+	-f ${COMPOSE_TOOLS}/aptcache.yml \
 ))
 
 $(eval DCOMPOSE_FILES+=$(and         \
