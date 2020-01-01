@@ -253,8 +253,8 @@ jobs:
 
   recursive-test-1:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - setup_remote_docker
       - checkout
@@ -264,8 +264,8 @@ jobs:
 
   recursive-test-1_7-1:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - setup_remote_docker
       - checkout
@@ -275,8 +275,8 @@ jobs:
 
   recursive-test-1_7-2:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - setup_remote_docker
       - checkout
@@ -286,8 +286,8 @@ jobs:
 
   recursive-test-1_7-3:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - setup_remote_docker
       - checkout
@@ -297,8 +297,8 @@ jobs:
 
   recursive-test-1_7-4:
     parallelism: 1
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: docker:stable-git
     steps:
       - setup_remote_docker
       - checkout
