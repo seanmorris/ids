@@ -24,12 +24,16 @@ VAR_FILE  ?=${MAKEDIR}.var
 MAIN_ENV  :=${MAKEDIR}.env
 MAIN_DLT  :=${MAKEDIR}.env.default
 
+D_UID := $(shell id -u)
+D_GID := $(shell id -g)
+
 -include ${MAIN_ENV}
 -include ${VAR_FILE}
 
 CUT_TARGET=cut -d @ -f 2 | cut -d + -f 1 |  cut -d - -f 1
 
 ifeq ($(filter @%,$(firstword ${MAKECMDGOALS})),)
+$(eval TGT_STR= )
 ifeq ($(filter stay@%,$(firstword ${MAKECMDGOALS})),)
 ifeq (${TARGET},)
 $(error Please set a target with @target or stay@target.)
@@ -49,7 +53,7 @@ TRGT_DLT :=${MAKEDIR}.env_${TARGET}.default
 -include ${TRGT_ENV}
 -include ${TRGT_DLT}
 
-$(shell >&2 echo -e "\e[7m" Starting with target: \"${TARGET}\" on `hostname` "\e[0m")
+$(shell >&2 echo -e "\e[1m"Starting with target: \"${TARGET}\" on `hostname` "\e[0m")
 
 DOCKDIR  ?=${REALDIR}infra/docker/
 DEBIAN_ESC=$(shell echo ${BASELINUX} | sed 's/\:/__/gi')
@@ -58,16 +62,16 @@ GEN_EXT='___gen'
 TMP_EXT='idstmp'
 
 define TEMP_TO_GEN ## %func convert a template name to a generatable name.
-$(shell                                             \
-	echo `dirname ${1}`/`basename ${1}`             \
+$(shell                                               \
+	echo `dirname ${1}`/`basename ${1}`               \
 	| sed -r 's/\.${TMP_EXT}\.(.*)/.${GEN_EXT}.\1/gi' \
 )
 endef
 
 define GEN_TO_TEMP ## %func convert a generatable name to a template name.
-$(shell                                             \
-	echo `dirname ${1}`/`basename ${1}`             \
-	| sed -r 's/\.${GEN_EXT}\.(.*)/.${TMP_EXT}.\1/' \
+$(shell                                               \
+	echo `dirname ${1}`/`basename ${1}`               \
+	| sed -r 's/\.${GEN_EXT}\.(.*)/.${TMP_EXT}.\1/'   \
 )
 endef
 
@@ -123,18 +127,18 @@ cat /dev/urandom         \
 endef
 
 define NPX
-cp  -n /app/package-lock.json /build;  \
-	cat /app/composer.json               \
-		| tr '[:upper:]' '[:lower:]'       \
-		| tr '/' '-'                       \
-		> package.json;                    \
+cp  -n /app/package-lock.json /build;   \
+	cat /app/composer.json              \
+		| tr '[:upper:]' '[:lower:]'    \
+		| tr '/' '-'                    \
+		> package.json;                 \
 	npx
 endef ## %var Perform some magic for NPM
 
 define INTERPOLATE_ENV
-env -i DHOST_IP=${DHOST_IP}            \
-	TAG=${TAG} REPO=${REPO}              \
-	TARGET=${TARGET} PROJECT=${PROJECT}  \
+env -i DHOST_IP=${DHOST_IP}             \
+	TAG=${TAG} REPO=${REPO}             \
+	TARGET=${TARGET} PROJECT=${PROJECT} \
 	envsubst
 endef
 
@@ -145,10 +149,10 @@ XDEBUG_CONFIG="`\
 	| ${INTERPOLATE_ENV}                \
 	| grep ^XDEBUG_CONFIG_              \
 	| while read VAR; do echo $$VAR | { \
-		IFS="="" read -r NAME VALUE;      \
-		echo -En $$NAME                   \
+		IFS="="" read -r NAME VALUE;    \
+		echo -En $$NAME                 \
 			| sed 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
-		echo -En "=$$VALUE ";             \
+		echo -En "=$$VALUE ";           \
 	} done`"
 endef
 
@@ -188,23 +192,23 @@ test -w "${ENTROPY_DIR}/${1}"  \
 endef
 
 define STITCH_ENTROPY ## %func Return entropy value for a given key.
-test -d "${ENTROPY_DIR}"                   \
-	|| mkdir -m 700 -p ${ENTROPY_DIR};       \
-while read -r ENV_LINE; do                 \
-	echo -n "$$ENV_LINE" | ${PARSE_ENV}      \
+test -d "${ENTROPY_DIR}"                       \
+	|| mkdir -m 700 -p ${ENTROPY_DIR};         \
+while read -r ENV_LINE; do                     \
+	echo -n "$$ENV_LINE" | ${PARSE_ENV}        \
 		echo -n $$ENV_NAME=;                   \
 		grep $$ENV_NAME .entropy | {           \
 		IFS=":" read -r ENV_KEY ENTROPY_KEY;   \
 		test -n "$$ENTROPY_KEY"                \
-			&& echo $$(ENTROPY_KEY=$$ENTROPY_KEY \
-				$(call GET_ENTROPY,$$ENTROPY_KEY)  \
-			)                                    \
-			|| echo -E $$ENV_VALUE;              \
+			&& echo $$(ENTROPY_KEY=$$ENTROPY_KEY  \
+				$(call GET_ENTROPY,$$ENTROPY_KEY) \
+			)                                  \
+			|| echo -E $$ENV_VALUE;            \
 };}; done; done < $$FROM > $$TO
 endef
 
 define UNINCLUDE ## %func Overwrite all values from given environment file.
-cat ${1} | grep -v ^\#     \
+cat ${1} | grep -v ^\#       \
 	| grep "^[A-Z_]\+="      \
 	| sed 's/\=.\+$$//'      \
 	| while read OLD_VAR; do \
@@ -215,7 +219,6 @@ endef
 DCOMPOSE_TARGET_STACK:= -f ${COMPOSE_TARGET}
 
 define NEWTARGET ## %frag Set up environment for new target.
-test -f infra/compose/${TARGET}.yml;
 $(eval COMPOSE_TARGET:=$(shell echo infra/compose/${TARGET}.yml))
 $(eval PREBUILD:=$(shell echo env .env.default .env_${TARGET} .env_${TARGET}.default .lock_env))
 $(eval MAIN_ENV:=$(shell echo ${MAKEDIR}.env))
@@ -250,18 +253,17 @@ $(eval DCOMPOSE_BASE_STACK  := -f ${COMPOSE_TARGET} -f ${COMPOSE_BASE})
 endef
 
 define ENV ## %var List of environment vars to pass to sub commands.
-TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}  \
-MAKEDIR=${MAKEDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}} \
-DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}           \
-DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP} LOCALBASE=${LOCALBASE}         \
-TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${BASELINUX}      \
-REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT}             \
-OUTMAKEDIR=${OUTMAKEDIR} OUTREALDIR=${OUTREALDIR}
+REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT} D_GID=${D_GID} \
+MAKEDIR=${MAKEDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}}    \
+TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}     \
+OUTMAKEDIR=${OUTMAKEDIR} OUTREALDIR=${OUTREALDIR} D_UID=${D_UID}      \
+TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${BASELINUX}         \
+DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP} LOCALBASE=${LOCALBASE}            \
+DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}
 endef
 
 define EXTRACT_TARGET_SERVICES ## %frag extract the target & optional service configs from args.
 $(eval TGT_STR:=$(subst -, -,$(subst +, +,${1})))
-$(eval TARGET=$(lastword $(subst @, ,$(firstword ${TGT_STR}))))
 $(eval NEW_SVC:=$(wordlist 2, $(words ${TGT_STR}), ${TGT_STR}))
 $(eval NEW_INV:=$(subst *,-,$(subst -,+,$(subst +,*,${NEW_SVC}))))
 $(eval NEW_ENABLE :=$(filter +%,${NEW_SVC}))
@@ -305,7 +307,7 @@ endif
 
 DCOMPOSE= export ${ENV} && docker-compose -p ${PROJECT}_${TARGET}
 
-DRUN=docker run --rm       \
+DRUN=docker run --rm         \
 	-env-file=.env.default   \
 	-env-file=.env           \
 	-env-file=.env_${TARGET} \
@@ -313,6 +315,7 @@ DRUN=docker run --rm       \
 	-v ${OUTMAKEDIR}:/app
 
 build b: retarget .lock_env templates localbase ${PREBUILD} ## Build the project.
+
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start
 	@ ${WHILE_IMAGES}                           \
@@ -343,7 +346,7 @@ clean: ${PREBUILD} ## Clean the project. Only applies to files from the current 
 	@- docker volume prune -f;
 
 	@- docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		${BASELINUX} bash -c "                  \
+		${BASELINUX} bash -c "                    \
 			rm -f infra/docker/*.${GEN_EXT}.*;    \
 			set -o noglob;                        \
 			rm -f .env.default;                   \
@@ -351,8 +354,8 @@ clean: ${PREBUILD} ## Clean the project. Only applies to files from the current 
 			rm -f .lock_env .env_${TARGET}.default;"
 
 	@- docker run --rm -v ${REALDIR}:/app -w=/app \
-		${BASELINUX} bash -c "                      \
-			rm -f ${GENERABLE};                       \
+		${BASELINUX} bash -c "                    \
+			rm -f ${GENERABLE};                   \
 			cat data/global/_schema.json > data/global/schema.json ;"
 
 localbase: ${ENVBUILD} .lock_env
@@ -424,9 +427,8 @@ pull-images pli: ${PREBUILD} ## Pull remotely hosted images.
 hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 	@ git config core.hooksPath githooks
 
-run: ${PREBUILD} ## CMD= 'SERVICE COMMAND' Run a command in a given service's container.
-	ls -al infra/compose/tools/make.yml
-	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
+run: ${PREBUILD} ## CMD 'SERVICE COMMAND' Run a command in a given service's container.
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
 		${PASS_ENV} ${CMD}
 
 bash sh: ${PREBUILD} ## Get a bash propmpt to an idilic container.
@@ -452,22 +454,23 @@ dcompose-version dcv: ${PREBUILD} ## Print the current docker-compose configurat
 
 .lock_env: retarget ### Lock the environment target
 	@ touch .lock_env
-	@ $(eval LOCALBASE:=$(or    \
-		, ${LOCALBASE}        \
-		, $(shell ${RANDOM_STRING} ) \
+	@ $(eval LOCALBASE:=$(or \
+		, ${LOCALBASE}       \
+		, $(shell ${RANDOM_STRING} )      \
 	))
 
 	@ [[ "${ENV_LOCK_TAG}" != "${TAG}" ]] \
-	||[[ "${ENV_LOCK_TGT_SVC}" != "${TGT_SVC}" ]] \
-	|| ( \
-		 ${DRUN}                                    \
+	||[[ "${ENV_LOCK_TGT_SVC}" != "${TGT_SVC}" ]]     \
+	|| (                                              \
+		echo -e >&2 "\e[2m"Env changed, need to check dependencies..."\e[0m"; \
+		 ${DRUN}                                      \
 		 	 -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
-		 	 composer install                       \
-			--ignore-platform-reqs                  \
-			`${ISDEV} || echo "--no-dev"`;          \
+		 	 composer install                         \
+			--ignore-platform-reqs                    \
+			`${ISDEV} || echo "--no-dev"`;            \
 	);
 
-	@ test ! -z "${TAG}"      \
+	@ test ! -z "${TAG}"                              \
 		&& echo ENV_LOCK_TGT_SVC=${TGT_SVC} > ${ENV_LOCK} \
 		&& echo LOCALBASE=${LOCALBASE} >> ${ENV_LOCK} \
 		&& echo ENV_LOCK_TAG=${TAG}    >> ${ENV_LOCK} \
@@ -482,11 +485,16 @@ stay@%: retarget ### Set the current target and persist for later invocations.
 	@ echo TARGET=${TARGET} > ${VAR_FILE}
 
 @%: retarget
-	@ >&2 echo Setting current target ${TARGET}...
+	@ >&2 echo -n
 
 retarget: ### Set the current target for one invocation.
-	@ $(call EXTRACT_TARGET_SERVICES, $(or ${TGT_STR},${TARGET}))
-	@ >&2 echo Checking current target ${TARGET}...
+	@- $(eval ORIG?=${TARGET})
+	@- $(eval TGT_STR?=${TGT_STR})
+	@ $(call EXTRACT_TARGET_SERVICES, ${TGT_STR})
+	@ [[ "${ORIG}" == "${TARGET}" ]] \
+		|| >&2 echo Setting target ${ORIG}...
+	@ test -z "${TGT_STR}" \
+		|| >&2 echo Setting services ${TGT_STR}...
 	@ ${NEWTARGET}
 
 .env: config/.env
@@ -498,7 +506,7 @@ retarget: ### Set the current target for one invocation.
 		}'
 
 .env.default: config/.env
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app    \
+	@ docker run --rm -v ${MAKEDIR}:/app -w=/app  \
 		${BASELINUX} bash -c '{                   \
 			FROM=config/.env.default              \
 			TO=.env.default                       \
@@ -538,22 +546,21 @@ infra/compose/%yml: .env .env.default .env_$${TARGET} .env_$${TARGET}.default .l
 
 
 help: help-all ## print this message
-	echo "SeanMorris/Ids v0.0.0"
+	@ echo "Help for SeanMorris/Ids v0.0.0"
 help-%:
-	echo "SeanMorris/Ids v0.0.0"
 	@ $(eval HELPTYPE:= echo ${@} | sed 's/.+-//' )
 	@ $(foreach MKFL,${MAKEFILE_LIST},  \
-		cat "${MKFL}" | grep '\:.*\#\#' | grep -v '###'\
+		cat "${MKFL}" | grep '\:.*\#\#' | grep -v '###' \
 		| while read -r LINE; do        \
 			NAME=`echo $$LINE | sed -r 's/[:= ].*//'`;  \
 			DESC=`echo $$LINE | sed -r 's/.*\#\#//'`;   \
 			TYPE=`echo $$DESC \
 				| grep '%'    \
-				| sed -r 's/.*(%[a-z]*).*/\1/;'`;         \
+				| sed -r 's/.*(%[a-z]*).*/\1/;'`;       \
 			DESC=`echo $$DESC | sed -r 's/^%[a-z]*//'`; \
 			[[ -z "$$TYPE" ]] || continue;              \
 			echo -e "$$NAME: $$DESC";                   \
-		done | column -ts:;                           \
+		done | column -ts:;                             \
 	)
 	@ echo SeanMorris/Ids/Makefile generated its own helpfile @`date`
 
@@ -563,9 +570,11 @@ templates: ${GENERABLE}
 
 # ${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) .lock_env ${ENVBUILD}
 ${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) ${ENVBUILD}
-	@ echo Rebuilding template `basename ${@}`;
+	@ echo -e >&2 "\e[2m"Rebuilding template `basename ${@}`"\e[0m";
 	@ test -w ${@} || test -w `dirname ${@}`;
-	@ echo -e "$(call SHELLOUT,cat ${<})" >&2
+	@ [[ "${TARGET}" == "dev" ]] \
+		&& echo -e "$(call SHELLOUT,cat ${<})" >&2 \
+		|| true;
 	@ echo -e "$(call SHELLOUT,cat ${<})" > ${@}
 	@ test -f ${@};
 
@@ -624,3 +633,4 @@ aptcache-build: ${PREBUILD} ### Stop apt-cache.
 ###
 yq:
 	${YQ} ${CMD}
+

@@ -7,8 +7,6 @@ bin/:
 
 config/:
 
-	base.idstmp.yml: %
-
 	%idstmp%: %___idsgen%
 
 data/:

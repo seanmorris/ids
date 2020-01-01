@@ -1,6 +1,9 @@
 FROM ${BASELINUX}
 MAINTAINER Sean Morris
 
+ENV WATCH=.
+ENV EVENT=close_write
+
 RUN set -eux;               \
 	apt-get update          \
 	&& apt search inotify-tools       \
@@ -13,6 +16,6 @@ RUN set -eux;               \
 
 WORKDIR /app
 
-ENTRYPOINT ["inotifywait"]
+ENTRYPOINT ["inotifywait", "-e", "$${EVENT}", "-r", "-m"]
 
-CMD ["-r", "-m", ".", "-e", "close_write"]
+CMD ["$${WATCH}"]

@@ -15,8 +15,8 @@ services:
       context: ../../
       dockerfile: ${REALDIR}infra/docker/tools/aptcache.___gen.dockerfile
     volumes:
-      - ../../:/app
-      - ../../infra/apt/cache/:/var/cache/apt-cacher-ng
+      - ${OUTMAKEDIR}:/app
+      - ${OUTMAKEDIR}infra/apt/cache/:/var/cache/apt-cacher-ng
 
 networks:
   bridge: {}

@@ -9,6 +9,6 @@ services:
       context: ../../
       dockerfile: ${REALDIR}infra/docker/tools/make.___gen.dockerfile
     volumes:
-      - ../../:/app
+      - ${OUTMAKEDIR}:/app
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /usr/bin/docker:${DOCKER}
