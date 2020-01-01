@@ -83,7 +83,7 @@ jobs:
   init-test:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
@@ -96,7 +96,7 @@ jobs:
   init-test_7-1:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
@@ -109,7 +109,7 @@ jobs:
   init-test_7-2:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
@@ -123,7 +123,7 @@ jobs:
   init-test_7-3:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
@@ -136,7 +136,7 @@ jobs:
   init-test_7-4:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
@@ -149,7 +149,7 @@ jobs:
   self-test:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
@@ -170,7 +170,7 @@ jobs:
   self-test_7-1:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
@@ -191,7 +191,7 @@ jobs:
   self-test_7-2:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
@@ -212,7 +212,7 @@ jobs:
   self-test_7-3:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
@@ -233,7 +233,7 @@ jobs:
   self-test_7-4:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
@@ -254,7 +254,7 @@ jobs:
   recursive-test-1:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - setup_remote_docker
       - checkout
@@ -265,7 +265,7 @@ jobs:
   recursive-test-1_7-1:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - setup_remote_docker
       - checkout
@@ -276,7 +276,7 @@ jobs:
   recursive-test-1_7-2:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - setup_remote_docker
       - checkout
@@ -287,7 +287,7 @@ jobs:
   recursive-test-1_7-3:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - setup_remote_docker
       - checkout
@@ -298,7 +298,7 @@ jobs:
   recursive-test-1_7-4:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - setup_remote_docker
       - checkout
@@ -309,7 +309,7 @@ jobs:
   build-and-push:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
@@ -323,7 +323,7 @@ jobs:
   build-and-push_7-1:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
@@ -337,7 +337,7 @@ jobs:
   build-and-push_7-2:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
@@ -351,7 +351,7 @@ jobs:
   build-and-push_7-3:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
@@ -365,7 +365,7 @@ jobs:
   build-and-push_7-4:
     parallelism: 1
     docker:
-      - image: docker:stable-git
+      - image: circleci/php:7.4.1
     steps:
       - checkout
       - install-composer
