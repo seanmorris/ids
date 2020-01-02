@@ -466,10 +466,10 @@ jobs:
       - checkout
       - install-composer
       - run: composer install
-      - run: make @base+aptcache ct b psi
-      - run: make @dev+aptcache+graylog+inotify ct b psi
-      - run: make @test+aptcache ct b psi
-      - run: make @prod+aptcache ct b psi
+      - run: make @base+aptcache ct b
+      - run: make @dev+aptcache+graylog+inotify ct b
+      - run: make @test+aptcache ct b
+      - run: make @test+aptcache+graylog+inotify ct t
 
   add-on-test_7-1:
     parallelism: 1
@@ -479,10 +479,10 @@ jobs:
       - checkout
       - install-composer
       - run: PHP=7.1 composer install
-      - run: PHP=7.1 make @base+aptcache ct b psi
-      - run: PHP=7.1 make @dev+aptcache+graylog+inotify ct b psi
-      - run: PHP=7.1 make @test+aptcache ct b psi
-      - run: PHP=7.1 make @prod+aptcache ct b psi
+      - run: PHP=7.1 make @base+aptcache ct b
+      - run: PHP=7.1 make @dev+aptcache+graylog+inotify ct b
+      - run: PHP=7.1 make @test+aptcache ct b
+      - run: PHP=7.1 make @test+aptcache+graylog+inotify ct t
 
   add-on-test_7-2:
     parallelism: 1
@@ -492,10 +492,10 @@ jobs:
       - checkout
       - install-composer
       - run: PHP=7.2 composer install
-      - run: PHP=7.2 make @base+aptcache ct b psi
-      - run: PHP=7.2 make @dev+aptcache+graylog+inotify ct b psi
-      - run: PHP=7.2 make @test+aptcache ct b psi
-      - run: PHP=7.2 make @prod+aptcache ct b psi
+      - run: PHP=7.2 make @base+aptcache ct b
+      - run: PHP=7.2 make @dev+aptcache+graylog+inotify ct b
+      - run: PHP=7.2 make @test+aptcache ct b
+      - run: PHP=7.2 make @test+aptcache+graylog+inotify ct t
 
   add-on-test_7-3:
     parallelism: 1
@@ -505,10 +505,10 @@ jobs:
       - checkout
       - install-composer
       - run: PHP=7.3 composer install
-      - run: PHP=7.3 make @base+aptcache ct b psi
-      - run: PHP=7.3 make @dev+aptcache+graylog+inotify ct b psi
-      - run: PHP=7.3 make @test+aptcache ct b psi
-      - run: PHP=7.3 make @prod+aptcache ct b psi
+      - run: PHP=7.3 make @base+aptcache ct b
+      - run: PHP=7.3 make @dev+aptcache+graylog+inotify ct b
+      - run: PHP=7.3 make @test+aptcache ct b
+      - run: PHP=7.3 make @test+aptcache+graylog+inotify ct t
 
   add-on-test_7-4:
     parallelism: 1
@@ -517,11 +517,12 @@ jobs:
     steps:
       - checkout
       - install-composer
-      - run: PHP=7.3 composer install
-      - run: PHP=7.3 make @base+aptcache ct b psi
-      - run: PHP=7.3 make @dev+aptcache+graylog+inotify ct b psi
-      - run: PHP=7.3 make @test+aptcache ct b psi
-      - run: PHP=7.3 make @prod+aptcache ct b psi
+      - run: PHP=7.4 composer install
+      - run: PHP=7.4 make @base+aptcache ct b
+      - run: PHP=7.4 make @dev+aptcache+graylog+inotify ct b
+      - run: PHP=7.4 make @test+aptcache ct b
+      - run: PHP=7.4 make @test+aptcache+graylog+inotify ct t
+
 
   build-and-push:
     parallelism: 1
@@ -602,10 +603,10 @@ jobs:
       - install-composer
       - run: composer install
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: make @base ct b psi
-      - run: make @dev  ct b psi
-      - run: make @prod ct b psi
-      - run: make @test ct b psi
+      - run: make @base+aptcache ct b psi
+      - run: make @dev+aptcache+graylog+inotify  ct b psi
+      - run: make @prod+aptcache ct b psi
+      - run: make @test+aptcache ct b psi
 
   build-test-push-addons_7-1:
     parallelism: 1
