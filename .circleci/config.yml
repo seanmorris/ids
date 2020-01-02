@@ -607,7 +607,7 @@ jobs:
       - run: make @prod ct b psi
       - run: make @test ct b psi
 
-  build-test-push-addons-7_1:
+  build-test-push-addons_7-1:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -621,7 +621,7 @@ jobs:
       - run: PHP=7.1 make @test+aptcache ct b psi
       - run: PHP=7.1 make @prod+aptcache ct b psi
 
-  build-test-push-addons7_2:
+  build-test-push-addons_7-2:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -635,7 +635,7 @@ jobs:
       - run: PHP=7.2 make @test+aptcache ct b psi
       - run: PHP=7.2 make @prod+aptcache ct b psi
 
-  build-test-push-addons7_3:
+  build-test-push-addons_7-3:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
@@ -649,7 +649,7 @@ jobs:
       - run: PHP=7.3 make @test+aptcache ct b psi
       - run: PHP=7.3 make @prod+aptcache ct b psi
 
-  build-test-push-addons7_4:
+  build-test-push-addons_7-4:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
