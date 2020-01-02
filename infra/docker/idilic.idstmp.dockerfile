@@ -1,6 +1,8 @@
 FROM ${BASELINUX} as base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
+SHELL ["/bin/bash", "-c"]
+
 ARG IDS_APT_PROXY_HOST
 ARG IDS_APT_PROXY_PORT
 
@@ -58,8 +60,6 @@ RUN set -eux;                  \
 ENV IDS_INSIDE_DOCKER=true
 ENV PATH="$${PATH}:/app/source/Idilic:/app/vendor/seanmorris/ids/source/Idilic:/app/vendor/bin"
 
-SHELL ["/bin/bash", "-c"]
-
 WORKDIR /app
 
 ENTRYPOINT ["idilic"]
@@ -76,7 +76,6 @@ RUN set -eux;       \
 	apt-get install -y --no-install-recommends php${PHP}-xdebug; \
 	apt-get clean;  \
 	rm -rf /var/lib/apt/lists/*
-
 
 COPY ./infra/xdebug/30-xdebug-cli.ini /etc/php/${PHP}/cli/conf.d/30-xdebug-cli.ini
 

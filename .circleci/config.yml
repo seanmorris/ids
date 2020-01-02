@@ -13,7 +13,7 @@ commands:
 
   docker-permissions:
     steps:
-      - run: |
+      - run: | #!bash
           sudo chgrp docker /usr/bin/docker  /var/run/docker.sock
           sudo chmod    555 /usr/bin/docker  /var/run/docker.sock
           sudo usermod -aG docker $USER

@@ -1,31 +1,32 @@
----
 asset/:
-	%idstmp%: %___idsgen%
+	.idstmp.: .___gen.
 
 bin/:
-	%idstmp%: %___idsgen%
+	.idstmp.: .___gen.
 
 config/:
 
-	%idstmp%: %___idsgen%
+	.idstmp.: .___gen.
 
 data/:
-	%idstmp%: %___idsgen%
+	.idstmp.: .___gen.
 
 githooks/:
-	%idstmp%: %___idsgen%
+	.idstmp.: .___gen.
 
 infra/:
-	%idstmp%: %___idsgen%
+	.idstmp.: .___gen.
 
 public/:
-	%idstmp%: %___idsgen%
+	.idstmp.: .___gen.
 
 source/:
-	%idstmp%: %___idsgen%
+	.idstmp.: .___gen.
 
 test/:
-	%idstmp%: %___idsgen%
+	.idstmp.: .___gen.
 
-vendor: false
----
+README.idstmp.md:
+	.idstmp.:
+
+vendor/: false

@@ -75,7 +75,7 @@ $(shell                                               \
 )
 endef
 
-TEMPLATES:=$(shell find | grep .${TMP_EXT}\..*$$)## %var List of available templates.
+TEMPLATES:=$(shell find * | grep .${TMP_EXT}\..*$$)## %var List of available templates.
 GENERABLE:=$(foreach TEMPLATE,${TEMPLATES},$(call TEMP_TO_GEN,${TEMPLATE}))## %var List of prospective generatables..
 
 ENVBUILD =.env         \
@@ -314,9 +314,9 @@ DRUN=docker run --rm         \
 	-env-file=.env_${TARGET}.default \
 	-v ${OUTMAKEDIR}:/app
 
+IMAGE?=
 build b: retarget .lock_env templates localbase ${PREBUILD} ## Build the project.
-
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start
 	@ ${WHILE_IMAGES}                           \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
@@ -429,7 +429,7 @@ hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 
 run: ${PREBUILD} ## CMD 'SERVICE COMMAND' Run a command in a given service's container.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
-		${PASS_ENV} ${CMD}
+		 ${PASS_ENV} ${CMD}
 
 bash sh: ${PREBUILD} ## Get a bash propmpt to an idilic container.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
@@ -544,7 +544,6 @@ config/.env.default config/.env_${TARGET}.default:
 infra/compose/%yml: .env .env.default .env_$${TARGET} .env_$${TARGET}.default .lock_env
 	@ test -f infra/compose/${TARGET}.yml;
 
-
 help: help-all ## print this message
 	@ echo "Help for SeanMorris/Ids v0.0.0"
 help-%:
@@ -634,3 +633,5 @@ aptcache-build: ${PREBUILD} ### Stop apt-cache.
 yq:
 	${YQ} ${CMD}
 
+cat:
+	cat
