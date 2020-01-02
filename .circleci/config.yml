@@ -133,9 +133,6 @@ jobs:
       - run: |
           cd ids-project \
           && make @test start-bg test
-      - run: rm ids-project
-      - run: |
-          cd ids-project \
           && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
           && make @test start-bg test
   subproject-init-and-test_7-1:
@@ -149,9 +146,6 @@ jobs:
       - run: |
           cd ids-project \
           && PHP=7.1 make @test start-bg test
-      - run: rm ids-project
-      - run: |
-          cd ids-project \
           && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
           && PHP=7.1 make @test start-bg test
 
@@ -167,9 +161,6 @@ jobs:
       - run: |
           cd ids-project \
           && PHP=7.2 make @test start-bg test
-      - run: rm ids-project
-      - run: |
-          cd ids-project \
           && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
           && PHP=7.2 make @test start-bg test
 
@@ -184,9 +175,6 @@ jobs:
       - run: |
           cd ids-project \
           && PHP=7.3 make @test start-bg test
-      - run: rm ids-project
-      - run: |
-          cd ids-project \
           && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
           && PHP=7.3 make @test start-bg test
 

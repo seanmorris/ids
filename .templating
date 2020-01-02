@@ -27,6 +27,6 @@ test/:
 	.idstmp.: .___gen.
 
 README.idstmp.md:
-	.idstmp.:
+	.idstmp.: .
 
 vendor/: false
