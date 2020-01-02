@@ -132,7 +132,7 @@ jobs:
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
           cd ids-project \
-          && make @test start test \
+          && make @test build start test \
           && rm ids-project \
           && cd .. \
           && cd ids-project \
@@ -149,7 +149,7 @@ jobs:
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
           cd ids-project \
-          && PHP=7.1 make @test start test \
+          && PHP=7.1 make @test build start test \
           && rm ids-project \
           && cd .. \
           && cd ids-project \
@@ -167,7 +167,7 @@ jobs:
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
           cd ids-project \
-          && PHP=7.2 make @test start test \
+          && PHP=7.2 make @test build start test \
           && rm ids-project \
           && cd .. \
           && cd ids-project\
@@ -184,7 +184,7 @@ jobs:
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
           cd ids-project \
-          && PHP=7.3 make @test start test \
+          && PHP=7.3 make @test build start test \
           && rm ids-project \
           && cd .. \
           && cd ids-project \
@@ -201,7 +201,7 @@ jobs:
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
           cd ids-project \
-          && PHP=7.4 make @test start test \
+          && PHP=7.4 make @test build start test \
           && rm ids-project \
           && cd .. \
           && cd ids-project \
