@@ -131,12 +131,12 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
-          cd ids-project
-          && make @test start test
-          && rm ids-project
-          && cd ..
-          && cd ids-project
-          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
+          cd ids-project \
+          && make @test start test \
+          && rm ids-project \
+          && cd .. \
+          && cd ids-project \
+          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
           && make @test start-bg test
 
   subproject-init-and-test_7-1:
@@ -148,12 +148,12 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
-          cd ids-project
-          && PHP=7.1 make @test start test
-          && rm ids-project
-          && cd ..
-          && cd ids-project
-          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
+          cd ids-project \
+          && PHP=7.1 make @test start test \
+          && rm ids-project \
+          && cd .. \
+          && cd ids-project \
+          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
           && PHP=7.1 make @test start-bg test
 
 
@@ -166,12 +166,12 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
-          cd ids-project
-          && PHP=7.2 make @test start test
-          && rm ids-project
-          && cd ..
-          && cd ids-project
-          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
+          cd ids-project \
+          && PHP=7.2 make @test start test \
+          && rm ids-project \
+          && cd .. \
+          && cd ids-project\
+          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
           && PHP=7.2 make @test start-bg test
 
   subproject-init-and-test_7-3:
@@ -183,13 +183,13 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
-          cd ids-project
-          && PHP=7.3 make @test start test
-          && rm ids-project
-          && cd ..
-          && cd ids-project
-          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
-          && PHP=7.3 make @test start-bg test
+          cd ids-project \
+          && PHP=7.3 make @test start test \
+          && rm ids-project \
+          && cd .. \
+          && cd ids-project \
+          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
+          && PHP=7.3 make @test start-bg test\
 
   subproject-init-and-test_7-4:
     parallelism: 1
@@ -200,12 +200,12 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: |
-          cd ids-project
-          && PHP=7.4 make @test start test
-          && rm ids-project
-          && cd ..
-          && cd ids-project
-          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
+          cd ids-project \
+          && PHP=7.4 make @test start test \
+          && rm ids-project \
+          && cd .. \
+          && cd ids-project \
+          && composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
           && PHP=7.4 make @test start-bg test
 
   self-test:
