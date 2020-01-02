@@ -607,7 +607,7 @@ jobs:
       - run: make @prod ct b psi
       - run: make @test ct b psi
 
-  build-test-push-addons7_1:
+  build-test-push-addons-7_1:
     parallelism: 1
     machine:
       image: ubuntu-1604:201903-01
