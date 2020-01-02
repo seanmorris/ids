@@ -35,15 +35,15 @@ workflows:
       - recursive-test-2
       - recursive-test-3
       - build-and-push:
-        requires:
-          - self-test
-          - init-test
-          - recursive-test-1
-          - recursive-test-2
-          - recursive-test-3
+          requires:
+            - self-test
+            - init-test
+            - recursive-test-1
+            - recursive-test-2
+            - recursive-test-3
       - build-and-push-addons:
-        requires:
-          - add-on-test
+          requires:
+            - add-on-test
 
   build-test-push_7-1:
     jobs:
@@ -54,12 +54,12 @@ workflows:
       - recursive-test-2_7-1
       - recursive-test-3_7-1
       - build-and-push_7-1:
-        requires:
-          - self-test_7-1
-          - init-test_7-1
-          - recursive-test-1_7-1
-          - recursive-test-2_7-1
-          - recursive-test-3_7-1
+          requires:
+            - self-test_7-1
+            - init-test_7-1
+            - recursive-test-1_7-1
+            - recursive-test-2_7-1
+            - recursive-test-3_7-1
       - build-and-push-addons_7-1:
           requires:
             - add-on-test_7-1
@@ -73,12 +73,12 @@ workflows:
       - recursive-test-2_7-2
       - recursive-test-3_7-2
       - build-and-push_7-2:
-        requires:
-          - self-test_7-2
-          - init-test_7-2
-          - recursive-test-1_7-2
-          - recursive-test-2_7-2
-          - recursive-test-3_7-2
+          requires:
+            - self-test_7-2
+            - init-test_7-2
+            - recursive-test-1_7-2
+            - recursive-test-2_7-2
+            - recursive-test-3_7-2
       - build-and-push-addons_7-2:
           requires:
             - add-on-test_7-2
@@ -92,12 +92,12 @@ workflows:
       - recursive-test-2_7-3
       - recursive-test-3_7-3
       - build-and-push_7-3:
-        requires:
-          - self-test_7-3
-          - init-test_7-3
-          - recursive-test-1_7-3
-          - recursive-test-2_7-3
-          - recursive-test-3_7-3
+          requires:
+            - self-test_7-3
+            - init-test_7-3
+            - recursive-test-1_7-3
+            - recursive-test-2_7-3
+            - recursive-test-3_7-3
       - build-and-push-addons_7-3:
           requires:
             - add-on-test_7-3
@@ -111,12 +111,12 @@ workflows:
       - recursive-test-2_7-4
       - recursive-test-3_7-4
       - build-and-push_7-4:
-        requires:
-          - self-test_7-4
-          - init-test_7-4
-          - recursive-test-1_7-4
-          - recursive-test-2_7-4
-          - recursive-test-3_7-4
+          requires:
+            - self-test_7-4
+            - init-test_7-4
+            - recursive-test-1_7-4
+            - recursive-test-2_7-4
+            - recursive-test-3_7-4
       - build-and-push-addons_7-4:
           requires:
             - add-on-test_7-4
