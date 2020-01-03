@@ -3,8 +3,9 @@ version: '2.4'
 services:
 
   idilic:
-    image:    ${REPO}/${PROJECT}.idilic:${TAG}
-    restart:  on-failure
+    image:   ${REPO}/${PROJECT}.idilic:${TAG}
+    user:    ${D_UID}:${D_GID}
+    restart: on-failure
     env_file:
       - ${MAIN_DLT}
       - ${MAIN_ENV}
@@ -23,8 +24,9 @@ services:
         IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT}
 
   server:
-    image:    ${REPO}/${PROJECT}.server:${TAG}
-    restart:  always
+    image:   ${REPO}/${PROJECT}.server:${TAG}
+    user:    ${D_UID}:${D_GID}
+    restart: always
     env_file:
       - ${MAIN_DLT}
       - ${MAIN_ENV}

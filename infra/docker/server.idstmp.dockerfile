@@ -1,4 +1,4 @@
-FROM seanmorris/${PROJECT}.idilic:${LOCALBASE} AS base
+FROM ${REPO}/${PROJECT}.idilic:${LOCALBASE} AS base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
 RUN set -eux;                        \
