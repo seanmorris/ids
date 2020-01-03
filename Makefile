@@ -273,6 +273,10 @@ $(eval REMAINING_SVC:=$(filter-out ${NEW_INV}, ${ENV_LOCK_TGT_SVC}))
 $(eval TGT_SVC:=$(sort ${NEW_SVC} ${REMAINING_SVC}))
 endef
 
+SPACE  :=${} ${}
+COMMA  :=,
+NEWLINE:=\n
+
 define SHELLOUT ## %func Get a multiline return value from the shell.
 $(eval ___SHELLOUT_RETURN:=$(subst #,\#,$(shell printf "%q" "$$(${1})" \
 	| sed "s/^$$'//g"     \
@@ -281,9 +285,13 @@ $(eval ___SHELLOUT_RETURN:=$(subst #,\#,$(shell printf "%q" "$$(${1})" \
 )))$$(printf "%b" '${___SHELLOUT_RETURN}' | sed "s/\\\'/'/g")
 endef
 
-SPACE  :=${} ${}
-COMMA  :=,
-NEWLINE:=\n
+define TEMPLATE_SHELL ## %func Get a multiline return value from the shell for a template.
+$(eval ___TEMPLATE_SHELL:=$(subst #,\#,$(shell printf "%q" "$$(${1})" \
+	| sed "s/^$$'//g"     \
+	| sed "s/'$$//g"      \
+	| sed "s/'/'\\\\''/g" \
+)))${___TEMPLATE_SHELL}
+endef
 
 define JOIN ## DELIM,LIST,[ORIGDELIM] Join a list by a delimiter.
 $(subst ${3:=${SPACE}},${1},${2})
