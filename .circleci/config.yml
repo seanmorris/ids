@@ -136,7 +136,7 @@ jobs:
       - run: cd .. \
       - run: cd ids-project \
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
-      - run: make @test start-bg test
+      - run: make @test build start-bg test
 
   subproject-init-and-test_7-1:
     parallelism: 1
@@ -152,7 +152,7 @@ jobs:
       - run: cd .. \
       - run: cd ids-project \
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
-      - run: PHP=7.1 make @test start-bg test
+      - run: PHP=7.1 make @test build start-bg test
 
 
   subproject-init-and-test_7-2:
@@ -169,7 +169,7 @@ jobs:
       - run: cd .. \
       - run: cd ids-project\
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
-      - run: PHP=7.2 make @test start-bg test
+      - run: PHP=7.2 make @test build start-bg test
 
   subproject-init-and-test_7-3:
     parallelism: 1
@@ -185,7 +185,7 @@ jobs:
       - run: cd .. \
       - run: cd ids-project \
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
-      - run: PHP=7.3 make @test start-bg test\
+      - run: PHP=7.3 make @test build start-bg test\
 
   subproject-init-and-test_7-4:
     parallelism: 1
@@ -201,7 +201,7 @@ jobs:
       - run: cd .. \
       - run: cd ids-project \
       - run: composer require seanmorris/ids:dev-${CIRCLE_BRANCH} \
-      - run: PHP=7.4 make @test start-bg test
+      - run: PHP=7.4 make @test build start-bg test
 
   self-test:
     parallelism: 1
