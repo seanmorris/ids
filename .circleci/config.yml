@@ -131,7 +131,7 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: ids-project \
-      - run: make @test build start-bg test \
+      - run: make @test current-tag build start-bg test
       - run: rm ids-project \
       - run: cd .. \
       - run: cd ids-project \
@@ -147,7 +147,7 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project \
-      - run: PHP=7.1 make @test build start-bg test \
+      - run: PHP=7.1 make @test current-tag build start-bg test
       - run: rm ids-project \
       - run: cd .. \
       - run: cd ids-project \
@@ -164,7 +164,7 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project \
-      - run: PHP=7.2 make @test build start-bg test \
+      - run: PHP=7.2 make @test current-tag build start-bg test
       - run: rm ids-project \
       - run: cd .. \
       - run: cd ids-project\
@@ -180,7 +180,7 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project \
-      - run: PHP=7.3 make @test build start-bg test \
+      - run: PHP=7.3 make @test current-tag build start-bg test
       - run: rm ids-project \
       - run: cd .. \
       - run: cd ids-project \
@@ -196,7 +196,7 @@ jobs:
       - install-composer
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project \
-      - run: PHP=7.4 make @test build start-bg test \
+      - run: PHP=7.4 make @test current-tag build start-bg test
       - run: rm ids-project \
       - run: cd .. \
       - run: cd ids-project \
