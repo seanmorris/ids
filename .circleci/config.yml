@@ -44,6 +44,7 @@ workflows:
       - build-and-push-addons:
           requires:
             - addon-test
+            - build-and-push
 
   build-and-push_7-1:
     jobs:
@@ -63,6 +64,7 @@ workflows:
       - build-and-push-addons_7-1:
           requires:
             - addon-test_7-1
+            - build-and-push_7-1
 
   build-and-push_7-2:
     jobs:
@@ -82,6 +84,7 @@ workflows:
       - build-and-push-addons_7-2:
           requires:
             - addon-test_7-2
+            - build-and-push_7-2
 
   build-and-push_7-3:
     jobs:
@@ -101,6 +104,7 @@ workflows:
       - build-and-push-addons_7-3:
           requires:
             - addon-test_7-3
+            - build-and-push_7-3
 
   build-and-push_7-4:
     jobs:
@@ -120,6 +124,7 @@ workflows:
       - build-and-push-addons_7-4:
           requires:
             - addon-test_7-4
+            - build-and-push_7-4
 
 jobs:
   subproject-init-and-test:
