@@ -178,6 +178,15 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			$packageList = \SeanMorris\Ids\Package::listPackages();
 		}
 
+		if(function_exists('xdebug_start_code_coverage'))
+		{
+			xdebug_set_filter(
+				XDEBUG_FILTER_CODE_COVERAGE
+				, XDEBUG_PATH_BLACKLIST
+				, [realpath(IDS_ROOT . '/vendor/')]
+			);
+		}
+
 		while($packageName = array_shift($packageList))
 		{
 			$packageName = str_replace('/', '\\', $packageName);
@@ -225,13 +234,13 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 					$relReports[$relativePath] = $lines;
 				}
-
-				file_put_contents(
-					$reportFile
-					, json_encode($relReports, JSON_PRETTY_PRINT)
-				);
 			}
 		}
+
+		file_put_contents(
+			$reportFile
+			, json_encode($relReports, JSON_PRETTY_PRINT)
+		);
 	}
 
 	public function applySchemas($router)
