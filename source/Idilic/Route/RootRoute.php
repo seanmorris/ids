@@ -187,6 +187,10 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			);
 		}
 
+		$relReports = [];
+		$reports    = [];
+		$report     = [];
+
 		while($packageName = array_shift($packageList))
 		{
 			$packageName = str_replace('/', '\\', $packageName);
@@ -219,28 +223,30 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 				echo PHP_EOL;
 			}
-
-			if(function_exists('xdebug_stop_code_coverage'))
-			{
-				xdebug_stop_code_coverage();
-
-				$reports    = xdebug_get_code_coverage();
-				$reportFile = '/tmp/coverage-report.json';
-				$relReports = [];
-
-				foreach($reports as $filename => $lines)
-				{
-					$relativePath = substr($filename, strlen(IDS_ROOT));
-
-					$relReports[$relativePath] = $lines;
-				}
-			}
 		}
 
-		file_put_contents(
-			$reportFile
-			, json_encode($relReports, JSON_PRETTY_PRINT)
-		);
+		if(function_exists('xdebug_stop_code_coverage'))
+		{
+			xdebug_stop_code_coverage();
+
+			$reportFile = '/tmp/coverage-report.json';
+			$reports    = xdebug_get_code_coverage();
+			$relReports = [];
+
+			foreach($reports as $filename => $lines)
+			{
+				$relativePath = substr($filename, strlen(IDS_ROOT));
+
+				$relReports[$relativePath] = $lines;
+			}
+
+			$report = ['coverage' => $relReports];
+
+			file_put_contents(
+				$reportFile
+				, json_encode($report, JSON_PRETTY_PRINT)
+			);
+		}
 	}
 
 	public function applySchemas($router)
