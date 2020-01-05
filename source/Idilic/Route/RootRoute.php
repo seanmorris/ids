@@ -239,6 +239,26 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			{
 				$relativePath = substr($filename, strlen(IDS_ROOT));
 
+				foreach ($lines as $line => &$executed)
+				{
+					if($executed === 1)
+					{
+						continue;
+					}
+
+					if($executed === -1)
+					{
+						$executed = 0;
+						continue;
+					}
+
+					if($executed === -2)
+					{
+						unset($lines[$line]);
+						continue;
+					}
+				}
+
 				$relReports[$relativePath] = $lines;
 			}
 
