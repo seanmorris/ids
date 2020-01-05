@@ -187,7 +187,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			);
 		}
 
-		$coverageOpts = XDEBUG_CC_UNUSED;
+		$coverageOpts = XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE;
 
 		$relReports = [];
 		$reports    = [];
