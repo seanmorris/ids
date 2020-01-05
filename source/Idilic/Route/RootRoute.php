@@ -215,12 +215,21 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			{
 				xdebug_stop_code_coverage();
 
-				$reports    = json_encode(xdebug_get_code_coverage());
+				$reports    = xdebug_get_code_coverage();
 				$reportFile = '/tmp/coverage-report.json';
+				$relReports = [];
 
-				file_put_contents($reportFile, $reports);
+				foreach($reports as $filename => $lines)
+				{
+					$relativePath = substr($filename, strlen(IDS_ROOT));
 
-				echo $reports;
+					$relReports[$relativePath] = $lines;
+				}
+
+				file_put_contents(
+					$reportFile
+					, json_encode($relReports, JSON_PRETTY_PRINT)
+				);
 			}
 		}
 	}
