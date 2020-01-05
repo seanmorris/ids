@@ -19,7 +19,13 @@ class FileTest extends \UnitTestCase
 
 		$file = new \SeanMorris\Ids\Disk\File($this->testFilepath);
 
+		if($file->check())
+		{
+			$file->delete();
+		}
+
 		$file->write($this->testData, FALSE);
+
 		$this->assertEqual(
 			$file->slurp()
 			, $this->testData
@@ -73,8 +79,8 @@ class FileTest extends \UnitTestCase
 
 		$this->assertEqual(
 			$file->basename()
-			, $this->testFilepath
-			, 'Basename failed for ' . $this->testFilename
+			, $this->testFilename
+			, 'Basename failed for ' . $this->testFilepath
 		);
 	}
 
@@ -83,6 +89,8 @@ class FileTest extends \UnitTestCase
 		$file = new \SeanMorris\Ids\Disk\File($this->testFilepath);
 
 		$file->delete();
+
+		$this->assertFalse($file->check(), 'Delete failed for ' . $this->testFilepath);
 
 		$this->assertFalse(file_exists($this->testFilepath), 'Delete failed for ' . $this->testFilepath);
 	}
@@ -110,7 +118,6 @@ class FileTest extends \UnitTestCase
 	{
 		$file = new \SeanMorris\Ids\Disk\File($this->testFilepath);
 		$dir  = dirname($this->testFilepath);
-
 
 		var_dump($file->subtract($dir));
 	}
