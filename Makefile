@@ -636,5 +636,4 @@ cat:
 	cat
 
 post-coverage:
-	 bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN} -f /tmp/coverage-report.json
-
+	echo -e "$(call SHELLOUT,bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN} -f /tmp/coverage-report.json)"

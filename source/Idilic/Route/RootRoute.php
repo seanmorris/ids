@@ -235,9 +235,25 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			$reports    = xdebug_get_code_coverage();
 			$relReports = [];
 
-			foreach($reports as $filename => $lines)
+			foreach($reports as $filename => &$lines)
 			{
 				$relativePath = substr($filename, strlen(IDS_ROOT));
+
+				foreach ($lines as $line => &$executed)
+				{
+					if($executed == 1)
+					{
+						continue;
+					}
+
+					if($executed == -2)
+					{
+						unset($lines[$line]);
+						continue;
+					}
+
+					$executed = 0;
+				}
 
 				$relReports[$relativePath] = $lines;
 			}
