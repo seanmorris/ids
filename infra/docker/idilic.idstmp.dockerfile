@@ -68,7 +68,6 @@ CMD ["-d=;", "info"]
 
 COPY ./ /app
 
-FROM base AS test
 FROM base AS dev
 
 RUN set -eux;       \
@@ -76,6 +75,8 @@ RUN set -eux;       \
 	apt-get install -y --no-install-recommends php${PHP}-xdebug; \
 	apt-get clean;  \
 	rm -rf /var/lib/apt/lists/*
+
+FROM dev AS test
 
 COPY ./infra/xdebug/30-xdebug-cli.ini /etc/php/${PHP}/cli/conf.d/30-xdebug-cli.ini
 

@@ -178,6 +178,21 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			$packageList = \SeanMorris\Ids\Package::listPackages();
 		}
 
+		if(function_exists('xdebug_set_filter'))
+		{
+			xdebug_set_filter(
+				XDEBUG_FILTER_CODE_COVERAGE
+				, XDEBUG_PATH_BLACKLIST
+				, [realpath(IDS_ROOT . '/vendor/')]
+			);
+		}
+
+		$coverageOpts = XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE;
+
+		$relReports = [];
+		$reports    = [];
+		$report     = [];
+
 		while($packageName = array_shift($packageList))
 		{
 			$packageName = str_replace('/', '\\', $packageName);
@@ -195,9 +210,44 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 				$testClass = $namespace . '\\Test\\' . $m[1];
 				$test = new $testClass;
+
+				if(function_exists('xdebug_start_code_coverage'))
+				{
+					xdebug_start_code_coverage($coverageOpts);
+				}
+
 				$test->run(new \TextReporter());
+
+				if(function_exists('xdebug_stop_code_coverage'))
+				{
+					xdebug_stop_code_coverage(FALSE);
+				}
+
 				echo PHP_EOL;
 			}
+		}
+
+		if(function_exists('xdebug_stop_code_coverage'))
+		{
+			xdebug_stop_code_coverage();
+
+			$reportFile = '/tmp/coverage-report.json';
+			$reports    = xdebug_get_code_coverage();
+			$relReports = [];
+
+			foreach($reports as $filename => $lines)
+			{
+				$relativePath = substr($filename, strlen(IDS_ROOT));
+
+				$relReports[$relativePath] = $lines;
+			}
+
+			$report = ['coverage' => $relReports];
+
+			file_put_contents(
+				$reportFile
+				, json_encode($report, JSON_PRETTY_PRINT)
+			);
 		}
 	}
 
