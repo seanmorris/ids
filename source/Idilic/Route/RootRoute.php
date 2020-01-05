@@ -195,8 +195,32 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 				$testClass = $namespace . '\\Test\\' . $m[1];
 				$test = new $testClass;
+
+				if(function_exists('xdebug_start_code_coverage'))
+				{
+					xdebug_start_code_coverage();
+				}
+
 				$test->run(new \TextReporter());
+
+				if(function_exists('xdebug_stop_code_coverage'))
+				{
+					xdebug_stop_code_coverage(FALSE);
+				}
+
 				echo PHP_EOL;
+			}
+
+			if(function_exists('xdebug_stop_code_coverage'))
+			{
+				xdebug_stop_code_coverage();
+
+				$reports    = json_encode(xdebug_get_code_coverage());
+				$reportFile = '/tmp/coverage-report.json';
+
+				file_put_contents($reportFile, $reports);
+
+				echo $reports;
 			}
 		}
 	}

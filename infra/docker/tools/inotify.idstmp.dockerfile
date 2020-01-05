@@ -16,5 +16,3 @@ RUN set -eux;               \
 WORKDIR /app
 
 ENTRYPOINT ["/usr/bin/inotifywait"]
-
-CMD "-e=$${EVENT}"

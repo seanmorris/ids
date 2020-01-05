@@ -1,0 +1,12 @@
+version: '2.4'
+
+services:
+
+  cloc:
+    restart: always
+    image:   ${REPO}/${PROJECT}.cloc:${TAG}
+    build:
+      context: ../../
+      dockerfile: ${REALDIR}infra/docker/tools/cloc.___gen.dockerfile
+    volumes:
+      - ${OUTMAKEDIR}:/app

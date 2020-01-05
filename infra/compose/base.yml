@@ -16,8 +16,8 @@ services:
       - /usr/bin/docker:${DOCKER}
     build:
       context: ../../
-      dockerfile: infra/docker/idilic.___gen.dockerfile
-      target:  ${TARGET}
+      dockerfile: infra/docker/ids.___gen.dockerfile
+      target:  idilic-${TARGET}
       network: bridge
       args:
         IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST}
@@ -34,8 +34,8 @@ services:
       - ${TRGT_ENV}
     build:
       context: ../../
-      dockerfile: infra/docker/server.___gen.dockerfile
-      target:  ${TARGET}
+      dockerfile: infra/docker/ids.___gen.dockerfile
+      target:  server-${TARGET}
       network: bridge
       args:
         IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST}

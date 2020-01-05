@@ -3,7 +3,7 @@ version: '2.4'
 services:
 
   make:
-    restart:     always
+    restart: always
     image:   ${REPO}/${PROJECT}.make:${TAG}
     build:
       context: ../../

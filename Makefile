@@ -5,8 +5,7 @@
 	da dcc dcompose-config e entropy-dir_env hooks init it k kill li \
 	list-images list-tags lt pli psi pull-images push-images \
 	r rb restart restart-bg restart-fg rf run run-phar s sb sf sh start start-bg \
-	start-fg stay@% stop stop-all t tag-images test .lock_env help help-% \
-	localbase
+	start-fg stay@% stop stop-all t tag-images test .lock_env help help-%
 
 .SECONDEXPANSION:
 
@@ -24,8 +23,9 @@ VAR_FILE  ?=${MAKEDIR}.var
 MAIN_ENV  :=${MAKEDIR}.env
 MAIN_DLT  :=${MAKEDIR}.env.default
 
-D_UID := $(shell id -u)
-D_GID := $(shell id -g)
+D_UID ?= $(shell id -u)
+D_GID ?= $(shell id -g)
+D_USR ?= $(shell whoami)
 
 -include ${MAIN_ENV}
 -include ${VAR_FILE}
@@ -248,6 +248,11 @@ $(eval DCOMPOSE_FILES+=$(and         \
 	-f ${COMPOSE_TOOLS}/make.yml     \
 ))
 
+$(eval DCOMPOSE_FILES+=$(and         \
+	$(filter +cloc,${TGT_SVC}),      \
+	-f ${COMPOSE_TOOLS}/cloc.yml     \
+))
+
 $(eval DCOMPOSE_TARGET_STACK:= -f ${COMPOSE_TARGET} ${DCOMPOSE_FILES})
 $(eval DCOMPOSE_BASE_STACK  := -f ${COMPOSE_TARGET} -f ${COMPOSE_BASE})
 endef
@@ -258,8 +263,8 @@ MAKEDIR=${MAKEDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}}    \
 TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}     \
 OUTMAKEDIR=${OUTMAKEDIR} OUTREALDIR=${OUTREALDIR} D_UID=${D_UID}      \
 TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${BASELINUX}         \
-DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP} LOCALBASE=${LOCALBASE}            \
-DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}
+DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}              \
+DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}
 endef
 
 define EXTRACT_TARGET_SERVICES ## %frag extract the target & optional service configs from args.
@@ -323,7 +328,7 @@ DRUN=docker run --rm         \
 	-v ${OUTMAKEDIR}:/app
 
 IMAGE?=
-build b: retarget .lock_env templates localbase ${PREBUILD} ## Build the project.
+build b: retarget .lock_env templates ${PREBUILD} ## Build the project.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start
 	@ ${WHILE_IMAGES}                           \
@@ -351,7 +356,7 @@ test t: .lock_env ${PREBUILD} ${TEMPLATES} ## Run the tests
 
 clean: ${PREBUILD} ## Clean the project. Only applies to files from the current target.
 	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
-	@- docker volume prune -f;
+	@- docker volume rm -f ${PROJECT}_${TARGET}_schema;
 
 	@- docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		${BASELINUX} bash -c "                    \
@@ -365,11 +370,6 @@ clean: ${PREBUILD} ## Clean the project. Only applies to files from the current 
 		${BASELINUX} bash -c "                    \
 			rm -f ${GENERABLE};                   \
 			cat data/global/_schema.json > data/global/schema.json ;"
-
-localbase: ${ENVBUILD} .lock_env
-	@ echo Building ${FULLNAME} \(Local ${LOCALBASE}\);
-	@ export TARGET=base TAG=${LOCALBASE} \
-		&& ${DCOMPOSE} ${DCOMPOSE_BASE_STACK} build idilic
 
 SEP=
 env e: ## Export the environment as seen from MAKE.
@@ -462,17 +462,13 @@ dcompose-version dcv: ${PREBUILD} ## Print the current docker-compose configurat
 
 .lock_env: retarget ### Lock the environment target
 	@ touch .lock_env
-	@ $(eval LOCALBASE:=$(or \
-		, ${LOCALBASE}       \
-		, $(shell ${RANDOM_STRING} )      \
-	))
 
-	@ [[ "${ENV_LOCK_TAG}" != "${TAG}" ]] \
-	||[[ "${ENV_LOCK_TGT_SVC}" != "${TGT_SVC}" ]]     \
+	@ [[ "${ENV_LOCK_TAG}" == "${TAG}" ]] \
+	||[[ "${ENV_LOCK_TGT_SVC}" == "${TGT_SVC}" ]]     \
 	|| (                                              \
 		echo -e >&2 "\e[2m"Env changed, need to check dependencies..."\e[0m"; \
 		 ${DRUN}                                      \
-		 	 -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
+		 	 -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp  \
 		 	 composer install                         \
 			--ignore-platform-reqs                    \
 			`${ISDEV} || echo "--no-dev"`;            \
@@ -480,13 +476,8 @@ dcompose-version dcv: ${PREBUILD} ## Print the current docker-compose configurat
 
 	@ test ! -z "${TAG}"                              \
 		&& echo ENV_LOCK_TGT_SVC=${TGT_SVC} > ${ENV_LOCK} \
-		&& echo LOCALBASE=${LOCALBASE} >> ${ENV_LOCK} \
 		&& echo ENV_LOCK_TAG=${TAG}    >> ${ENV_LOCK} \
 		|| true;
-
-# 	@[[ "${ENV_LOCK_LOCALBASE}" == "${LOCALBASE}" ]] \
-# 	|| ( \
-# 	);
 
 stay@%: retarget ### Set the current target and persist for later invocations.
 	@ >&2 echo Setting persistent target ${TARGET}...
@@ -643,3 +634,7 @@ yq:
 
 cat:
 	cat
+
+post-coverage:
+	 bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN} -f /tmp/coverage-report.json
+
