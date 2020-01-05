@@ -178,7 +178,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			$packageList = \SeanMorris\Ids\Package::listPackages();
 		}
 
-		if(function_exists('xdebug_start_code_coverage'))
+		if(function_exists('xdebug_set_filter'))
 		{
 			xdebug_set_filter(
 				XDEBUG_FILTER_CODE_COVERAGE
@@ -186,6 +186,8 @@ class RootRoute implements \SeanMorris\Ids\Routable
 				, [realpath(IDS_ROOT . '/vendor/')]
 			);
 		}
+
+		$coverageOpts = XDEBUG_CC_UNUSED;
 
 		$relReports = [];
 		$reports    = [];
@@ -211,7 +213,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 				if(function_exists('xdebug_start_code_coverage'))
 				{
-					xdebug_start_code_coverage();
+					xdebug_start_code_coverage($coverageOpts);
 				}
 
 				$test->run(new \TextReporter());
