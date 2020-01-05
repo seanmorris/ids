@@ -203,6 +203,7 @@ jobs:
       - run: make @test ct b t
       - run: make stay@base ct b
       - run: make ct b
+      - run: make post-coverage
 
   self-test_7-1:
     parallelism: 1
