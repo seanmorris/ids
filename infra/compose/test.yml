@@ -3,7 +3,7 @@ version: '2.4'
 services:
 
   idilic:
-    volumes: ['${OUTMAKEDIR}/:/app']
+    volumes: ['${OUTMAKEDIR}/:/app', '/tmp:/tmp']
     extends:
       file: base.yml
       service: idilic

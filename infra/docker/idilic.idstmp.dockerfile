@@ -77,7 +77,7 @@ RUN set -eux;       \
 	rm -rf /var/lib/apt/lists/*
 
 FROM dev AS test
+FROM base AS prod
 
 COPY ./infra/xdebug/30-xdebug-cli.ini /etc/php/${PHP}/cli/conf.d/30-xdebug-cli.ini
 
-FROM base AS prod
