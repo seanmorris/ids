@@ -6,6 +6,8 @@ class Loader
 	$requested = []
 	, $classes = [];
 
+	use Injectable;
+
 	public static function register()
 	{
 		spl_autoload_register([static::class, 'load']);
