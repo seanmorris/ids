@@ -5,22 +5,22 @@
 */ eye dee ess /* • The PHP + Docker Framework
 
 ```
-* built by sean @ Mon Jan 13 07:32:35 EST 2020 with ids-tmp *
+* built by sean @ Mon Jan 13 07:36:16 EST 2020 with ids-tmp *
 
-github.com/AlDanial/cloc v 1.84  T=0.10 s (1143.3 files/s, 228033.9 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.11 s (1084.3 files/s, 209938.9 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                              66           2743            300          11710
-JSON                             12              0              0           4400
-Markdown                          3            842              0           1843
+JSON                             12              0              0           4407
+Markdown                          2            561              0           1224
 YAML                             27            112             14           1100
 make                              2            134             11            555
 Bourne Shell                      5             16              3             87
 Bourne Again Shell                2             15              7             31
 INI                               3              0              0             11
 --------------------------------------------------------------------------------
-SUM:                            120           3862            335          19737
+SUM:                            119           3581            335          19125
 --------------------------------------------------------------------------------
 ```
 
