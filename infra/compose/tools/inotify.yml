@@ -3,8 +3,10 @@ version: '2.4'
 services:
 
   inotify:
-    restart:     always
+    restart: on-failure
     image:   ${REPO}/${PROJECT}.inotify:${TAG}
+    entrypoint: "bash -c"
+    command: "exit 0"
     build:
       context: ../../
       dockerfile: ${REALDIR}infra/docker/tools/inotify.___gen.dockerfile

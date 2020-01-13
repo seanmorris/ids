@@ -58,7 +58,7 @@ $(shell >&2 echo -e "\e[1m"Starting with target: \"${TARGET}\" on `hostname` "\e
 DOCKDIR  ?=${REALDIR}infra/docker/
 DEBIAN_ESC=$(shell echo ${BASELINUX} | sed 's/\:/__/gi')
 
-$(info $(call TEMPLATE_PATTERNS,${1}))
+# $(shell >&2 echo -e "$(call TEMPLATE_PATTERNS,${1}))")
 
 ENVBUILD =.env         \
 	.env.default       \
@@ -349,22 +349,17 @@ define TEMPLATE_PATTERNS
 	done || true;
 endef
 
-# GEN_EXT='___gen'
-# TMP_EXT='idstmp'
-
-# define TEMP_TO_GEN ## %func convert a template name to a generatable name.
-# $(shell                                               \
-# 	echo `dirname ${1}`/`basename ${1}`               \
-# 	| sed -r 's/\.${TMP_EXT}\.(.*)/.${GEN_EXT}.\1/gi' \
-# )
-# endef
-
 define GEN_TO_TEMP ## %func convert a generatable name to a template name.
-$(shell $(call TEMPLATE_PATTERNS,${1}))
+${TEMPLATES.$(strip ${1})}
 endef
 
 TEMPLATES:=$(shell $(call TEMPLATE_PATTERNS,-t))
 GENERABLE:=$(shell $(call TEMPLATE_PATTERNS,-g))
+TEMPINDEX:=$(shell echo {1..$(words ${GENERABLE})})
+
+$(foreach I,${TEMPINDEX},$(eval \
+	TEMPLATES.$(word ${I},${GENERABLE})=$(word ${I},${TEMPLATES}) \
+))
 
 IMAGE?=
 build b: retarget .lock_env ${PREBUILD} ## Build the project.
@@ -388,10 +383,10 @@ build b: retarget .lock_env ${PREBUILD} ## Build the project.
 		done; \
 	done;
 
-tempats:
+template-patterns:
 	@ $(call TEMPLATE_PATTERNS)
 
-test t: .lock_env ${PREBUILD} ${TEMPLATES} ## Run the tests
+test t: .lock_env ${PREBUILD} ## Run the tests
 	@ export TARGET=${TARGET} && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} \
 		run --rm ${NO_TTY} ${PASS_ENV}                            \
 		idilic SeanMorris/Ids runTests
