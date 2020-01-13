@@ -85,11 +85,16 @@ COPY ./ /app
 
 FROM base AS server-base
 
+ARG UID=1000
+ARG GID=1000
+
 RUN set -eux;               \
 	apt-get update;         \
 	apt-get install -y --no-install-recommends \
 		apache2             \
 		libapache2-mod-php${PHP}; \
+	sed -i '0,/Listen 80/s//Listen 8080/' /etc/apache2/ports.conf; \
+	sed -i '0,/Listen 443/s//Listen 4433/' /etc/apache2/ports.conf; \
 	a2dismod mpm_event;     \
 	a2enmod rewrite ssl php${PHP}; \
 	apt-get remove -y software-properties-common \
@@ -99,6 +104,8 @@ RUN set -eux;               \
 	apt-get clean;          \
 	rm -rfv /var/www/html;  \
 	ln -s /app/public /var/www/html; \
+	chmod -R ug+rw /var/log/apache2 /var/run/apache2; \
+	chgrp -R +$${GID} /var/log/apache2 /var/run/apache2; \
 	ln -sf /proc/self/fd/1 /var/log/apache2/access.log; \
 	ln -sf /proc/self/fd/1 /var/log/apache2/error.log;  \
 	rm -rf /var/lib/apt/lists/*;

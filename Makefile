@@ -58,25 +58,7 @@ $(shell >&2 echo -e "\e[1m"Starting with target: \"${TARGET}\" on `hostname` "\e
 DOCKDIR  ?=${REALDIR}infra/docker/
 DEBIAN_ESC=$(shell echo ${BASELINUX} | sed 's/\:/__/gi')
 
-GEN_EXT='___gen'
-TMP_EXT='idstmp'
-
-define TEMP_TO_GEN ## %func convert a template name to a generatable name.
-$(shell                                               \
-	echo `dirname ${1}`/`basename ${1}`               \
-	| sed -r 's/\.${TMP_EXT}\.(.*)/.${GEN_EXT}.\1/gi' \
-)
-endef
-
-define GEN_TO_TEMP ## %func convert a generatable name to a template name.
-$(shell                                               \
-	echo `dirname ${1}`/`basename ${1}`               \
-	| sed -r 's/\.${GEN_EXT}\.(.*)/.${TMP_EXT}.\1/'   \
-)
-endef
-
-TEMPLATES:=$(shell find * | grep .${TMP_EXT}\..*$$)## %var List of available templates.
-GENERABLE:=$(foreach TEMPLATE,${TEMPLATES},$(call TEMP_TO_GEN,${TEMPLATE}))## %var List of prospective generatables..
+$(info $(call TEMPLATE_PATTERNS,${1}))
 
 ENVBUILD =.env         \
 	.env.default       \
@@ -278,46 +260,6 @@ $(eval REMAINING_SVC:=$(filter-out ${NEW_INV}, ${ENV_LOCK_TGT_SVC}))
 $(eval TGT_SVC:=$(sort ${NEW_SVC} ${REMAINING_SVC}))
 endef
 
-1:=
-define TEMPLATE_PATTERNS
-(${DCOMPOSE} -f infra/compose/tools/yjq.yml run ${PASS_ENV} --rm \
-	yjq bash -c 'yq r - -j | jq -r "to_entries[]  | select(.value) \
-		| [.key, (.value | to_entries[] | .key, .value)] | @tsv"' \
-	) < <(cat .templating | sed 's/\t/  /g') \
-		| while IFS=$$'\t' read -r PREFIX FIND REPLACE; do \
-			test -f "$$PREFIX" && { \
-				export GENERATED=`echo $$PREFIX | replace $$FIND $$REPLACE`; \
-				(test -z ${1}) \
-					&& echo -ne $$PREFIX'\t'; \
-				(test -z ${1}) \
-					&& echo $$GENERATED; \
-				(test "$$GENERATED" == "${1}") \
-					&& echo $$PREFIX; \
-				(test "-t" == "${1}") \
-					&& echo -n "$$PREFIX "; \
-				(test "-g" == "${1}") \
-					&& echo -n "$$GENERATED "; \
-			}; \
-			test -d "$$PREFIX" && { \
-				find $$PREFIX -name "*$$FIND*" | { \
-					while read TEMPLATE; do\
-						export GENERATED=`echo $$TEMPLATE | replace $$FIND $$REPLACE`; \
-						(test -z "${1}") \
-							&& echo -ne $$TEMPLATE'\t'; \
-						(test -z "${1}") \
-							&& echo $$GENERATED; \
-						(test "$$GENERATED" == "${1}") \
-							&& echo $$TEMPLATE; \
-						(test "-t" == "${1}") \
-							&& echo -n "$$TEMPLATE "; \
-						(test "-g" == "${1}") \
-							&& echo -n "$$GENERATED "; \
-					done; \
-				}; \
-			}; \
-	done || true;
-endef
-
 SPACE  :=${""} ${""}
 COMMA  :=,
 NEWLINE:=\n
@@ -367,8 +309,65 @@ DRUN=docker run --rm         \
 	-env-file=.env_${TARGET}.default \
 	-v ${OUTMAKEDIR}:/app
 
+1:=
+define TEMPLATE_PATTERNS
+(${DCOMPOSE} -f infra/compose/tools/yjq.yml run ${PASS_ENV} --rm \
+	yjq bash -c 'yq r - -j | jq -r "to_entries[]  | select(.value) \
+		| [.key, (.value | to_entries[] | .key, .value)] | @tsv"' \
+	) < <(cat .templating | sed 's/\t/  /g') \
+		| while IFS=$$'\t' read -r PREFIX FIND REPLACE; do \
+			test -f "$$PREFIX" && { \
+				export GENERATED=`echo $$PREFIX | replace $$FIND $$REPLACE`; \
+				(test -z ${1}) \
+					&& echo -ne $$PREFIX'\t'; \
+				(test -z ${1}) \
+					&& echo $$GENERATED; \
+				(test "$$GENERATED" == "${1}") \
+					&& echo $$PREFIX; \
+				(test "-t" == "${1}") \
+					&& echo -n "$$PREFIX "; \
+				(test "-g" == "${1}") \
+					&& echo -n "$$GENERATED "; \
+			}; \
+			test -d "$$PREFIX" && { \
+				find $$PREFIX -name "*$$FIND*" | { \
+					while read TEMPLATE; do\
+						export GENERATED=`echo $$TEMPLATE | replace $$FIND $$REPLACE`; \
+						(test -z "${1}") \
+							&& echo -ne $$TEMPLATE'\t'; \
+						(test -z "${1}") \
+							&& echo $$GENERATED; \
+						(test "$$GENERATED" == "${1}") \
+							&& echo $$TEMPLATE; \
+						(test "-t" == "${1}") \
+							&& echo -n "$$TEMPLATE "; \
+						(test "-g" == "${1}") \
+							&& echo -n "$$GENERATED "; \
+					done; \
+				}; \
+			}; \
+	done || true;
+endef
+
+# GEN_EXT='___gen'
+# TMP_EXT='idstmp'
+
+# define TEMP_TO_GEN ## %func convert a template name to a generatable name.
+# $(shell                                               \
+# 	echo `dirname ${1}`/`basename ${1}`               \
+# 	| sed -r 's/\.${TMP_EXT}\.(.*)/.${GEN_EXT}.\1/gi' \
+# )
+# endef
+
+define GEN_TO_TEMP ## %func convert a generatable name to a template name.
+$(shell $(call TEMPLATE_PATTERNS,${1}))
+endef
+
+TEMPLATES:=$(shell $(call TEMPLATE_PATTERNS,-t))
+GENERABLE:=$(shell $(call TEMPLATE_PATTERNS,-g))
+
 IMAGE?=
-build b: retarget .lock_env templates ${PREBUILD} ## Build the project.
+build b: retarget .lock_env ${PREBUILD} ## Build the project.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start
 	@ ${WHILE_IMAGES}                           \
@@ -391,10 +390,6 @@ build b: retarget .lock_env templates ${PREBUILD} ## Build the project.
 
 tempats:
 	@ $(call TEMPLATE_PATTERNS)
-	@ $(call TEMPLATE_PATTERNS,README.md)
-	@ $(call TEMPLATE_PATTERNS,infra/docker/tools/inotify.___gen.dockerfile)
-	@ $(call TEMPLATE_PATTERNS,-t)
-	@ $(call TEMPLATE_PATTERNS,-g)
 
 test t: .lock_env ${PREBUILD} ${TEMPLATES} ## Run the tests
 	@ export TARGET=${TARGET} && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} \
@@ -407,7 +402,6 @@ clean: ${PREBUILD} ## Clean the project. Only applies to files from the current 
 
 	@- docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		${BASELINUX} bash -c "                    \
-			rm -f infra/docker/*.${GEN_EXT}.*;    \
 			set -o noglob;                        \
 			rm -f .env.default;                   \
 			rm -f .env .env_${TARGET} .var;       \
