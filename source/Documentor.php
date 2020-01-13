@@ -32,6 +32,7 @@ class Documentor
 
 			$classDocs[$className]->final    = $reflection->isFinal();
 			$classDocs[$className]->abstract = $reflection->isAbstract();
+			$classDocs[$className]->iterable = $reflection->isIterable();
 
 			$classDocs[$className]->lines = [
 				$reflection->getStartLine()
@@ -44,40 +45,31 @@ class Documentor
 			$classDocs[$className]->interfaces = [];
 			$classDocs[$className]->methods    = [];
 
-			$constanReflection = $reflection;
+			$constants = $reflection->getReflectionConstants();
 
-			$constClassName = $className;
-
-			while($constClassName)
+			foreach($constants as $constant)
 			{
-				$constants = $constanReflection->getConstants();
+				$constantName = $constant->name;
 
-				foreach($constants as $constantName => $constantValue)
+				if(($classDocs[$className]->constants[$constantName] ?? 0)
+					&& (!$classDocs[$className]->constants[$constantName]->overrides)
+				){
+					$classDocs[$className]->constants[$constantName]->overrides = $constClassName;
+					continue;
+				}
+				else if($classDocs[$className]->constants[$constantName] ?? 0)
 				{
-					if(($classDocs[$className]->constants[$constantName] ?? 0)
-						&& (!$classDocs[$className]->constants[$constantName]->overrides)
-					){
-						$classDocs[$className]->constants[$constantName]->overrides = $constClassName;
-						continue;
-					}
-					else if($classDocs[$className]->constants[$constantName] ?? 0)
-					{
-						continue;
-					}
-
-					$classDocs[$className]->constants[$constantName] = (object) [
-						'value'       => $constantValue
-						, 'class'     => $constClassName
-						, 'overrides' => NULL
-					];
+					continue;
 				}
 
-				$constClassName = get_parent_class($constClassName);
-
-				if($constClassName)
-				{
-					$constanReflection = new \ReflectionClass($constClassName);
-				}
+				$classDocs[$className]->constants[$constantName] = (object) [
+					'value'       => $constant->getValue()
+					, 'class'     => $constant->getDeclaringClass()
+					, 'overrides' => NULL
+					, 'public'    => $constant->isPublic()
+					, 'private'   => $constant->isPrivate()
+					, 'protected' => $constant->isProtected()
+				];
 			}
 
 			$defaults   = $reflection->getDefaultProperties();
@@ -117,6 +109,31 @@ class Documentor
 				$classDocs[$className]->traits[$traitName] = (object)[];
 
 				$traitDoc = $classDocs[$className]->traits[$traitName];
+
+				$traitDoc->file = $trait->getFileName();
+
+				$traitDoc->lines = [
+					$trait->getStartLine()
+					, $trait->getEndLine()
+				];
+			}
+
+			$interfaces = $reflection->getInterfaces();
+
+			foreach($interfaces as $interface)
+			{
+				$interfaceName = $interface->name;
+
+				$classDocs[$className]->interfaces[$interfaceName] = (object)[];
+
+				$interfaceDoc = $classDocs[$className]->interfaces[$interfaceName];
+
+				$interfaceDoc->file = $interface->getFileName();
+
+				$interfaceDoc->lines = [
+					$interface->getStartLine()
+					, $interface->getEndLine()
+				];
 			}
 
 			$methods = $reflection->getMethods();
@@ -137,6 +154,8 @@ class Documentor
 				}
 
 				$methodFile = new Disk\File($method->getFileName());
+
+				$prototype = NULL;
 
 				try{
 					$prototype = $method->getPrototype();

@@ -5,11 +5,11 @@
 	da dcc dcompose-config e entropy-dir_env hooks init it k kill li \
 	list-images list-tags lt pli psi pull-images push-images \
 	r rb restart restart-bg restart-fg rf run run-phar s sb sf sh start start-bg \
-	start-fg stay@% stop stop-all t tag-images test .lock_env help help-%
+	start-fg stay@% stop stop-all t tag-images test .lock_env help help-% tempats
 
 .SECONDEXPANSION:
 
-SHELL     =/bin/bash
+SHELL     =/bin/bash -eu
 MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 
 BASELINUX ?= debian:buster-20191118-slim## %var The BASE base image.
@@ -278,7 +278,47 @@ $(eval REMAINING_SVC:=$(filter-out ${NEW_INV}, ${ENV_LOCK_TGT_SVC}))
 $(eval TGT_SVC:=$(sort ${NEW_SVC} ${REMAINING_SVC}))
 endef
 
-SPACE  :=${} ${}
+1:=
+define TEMPLATE_PATTERNS
+(${DCOMPOSE} -f infra/compose/tools/yjq.yml run ${PASS_ENV} --rm \
+	yjq bash -c 'yq r - -j | jq -r "to_entries[]  | select(.value) \
+		| [.key, (.value | to_entries[] | .key, .value)] | @tsv"' \
+	) < <(cat .templating | sed 's/\t/  /g') \
+		| while IFS=$$'\t' read -r PREFIX FIND REPLACE; do \
+			test -f "$$PREFIX" && { \
+				export GENERATED=`echo $$PREFIX | replace $$FIND $$REPLACE`; \
+				(test -z ${1}) \
+					&& echo -ne $$PREFIX'\t'; \
+				(test -z ${1}) \
+					&& echo $$GENERATED; \
+				(test "$$GENERATED" == "${1}") \
+					&& echo $$PREFIX; \
+				(test "-t" == "${1}") \
+					&& echo -n "$$PREFIX "; \
+				(test "-g" == "${1}") \
+					&& echo -n "$$GENERATED "; \
+			}; \
+			test -d "$$PREFIX" && { \
+				find $$PREFIX -name "*$$FIND*" | { \
+					while read TEMPLATE; do\
+						export GENERATED=`echo $$TEMPLATE | replace $$FIND $$REPLACE`; \
+						(test -z "${1}") \
+							&& echo -ne $$TEMPLATE'\t'; \
+						(test -z "${1}") \
+							&& echo $$GENERATED; \
+						(test "$$GENERATED" == "${1}") \
+							&& echo $$TEMPLATE; \
+						(test "-t" == "${1}") \
+							&& echo -n "$$TEMPLATE "; \
+						(test "-g" == "${1}") \
+							&& echo -n "$$GENERATED "; \
+					done; \
+				}; \
+			}; \
+	done || true;
+endef
+
+SPACE  :=${""} ${""}
 COMMA  :=,
 NEWLINE:=\n
 
@@ -348,6 +388,13 @@ build b: retarget .lock_env templates ${PREBUILD} ## Build the project.
 			echo "    date:$$IMAGE_HASH $$IMAGE_PREFIX":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
 		done; \
 	done;
+
+tempats:
+	@ $(call TEMPLATE_PATTERNS)
+	@ $(call TEMPLATE_PATTERNS,README.md)
+	@ $(call TEMPLATE_PATTERNS,infra/docker/tools/inotify.___gen.dockerfile)
+	@ $(call TEMPLATE_PATTERNS,-t)
+	@ $(call TEMPLATE_PATTERNS,-g)
 
 test t: .lock_env ${PREBUILD} ${TEMPLATES} ## Run the tests
 	@ export TARGET=${TARGET} && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} \
