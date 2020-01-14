@@ -6,3 +6,4 @@
 .publishing: .yml
 .templating: .yml
 idilic:      .sh
+githooks/*:  .sh

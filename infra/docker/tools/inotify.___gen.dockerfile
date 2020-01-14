@@ -1,4 +1,4 @@
-FROM ${BASELINUX}
+FROM debian:buster-20191118-slim
 MAINTAINER Sean Morris
 
 ENV EVENT=close_write

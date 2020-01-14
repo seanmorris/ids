@@ -14,7 +14,7 @@ services:
 
   server:
     volumes: ['../../:/app', '/tmp:/tmp']
-    ports:   ['${IDS_EXPOSE_HTTP:-0}:80']
+    ports:   ['${IDS_EXPOSE_HTTP:-0}:8080']
     depends_on: [database]
     extends:
       file: base.yml

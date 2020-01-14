@@ -17,42 +17,28 @@ The project is made to run in docker but doesn't require it. It can be included 
 The philosophy of the Ids project is headlined by security, speed and easy of use, in that order.
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.10 s (1195.0 files/s, 234429.1 lines/s)
---------------------------------------------------------------------------------
-Language                      files          blank        comment           code
---------------------------------------------------------------------------------
-PHP                              66           2743            300          11710
-JSON                             12              0              0           4561
-Markdown                          2            558              0           1222
-YAML                             27            112             14           1105
-make                              2            134              6            570
-Bourne Shell                      4              9              0             40
-Bourne Again Shell                2             15             17             21
-INI                               3              0              0             11
---------------------------------------------------------------------------------
-SUM:                            118           3571            337          19240
---------------------------------------------------------------------------------
+$(call TEMPLATE_SHELL,cloc -q . --exclude-dir="vendor" | tail -n +2 )
 ```
-*built by sean @ Tue Jan 14 01:30:36 EST 2020*
+*built by ${shell whoami} @ $(shell date)*
 
 ## Installation
 
 Include Ids in your project with:
 
 ```bash
-$ composer require seanmorris/ids
+$$ composer require seanmorris/ids
 ```
 
 Install Ids globally for access to the `idilic` cli tool:
 
 ```bash
-$ composer global require seanmorris/ids:dev-master
+$$ composer global require seanmorris/ids:dev-master
 ```
 
 Add composer's global `vendor/bin` to your PATH by adding this to your `~/.bashrc`.
 
 ```bash
-export PATH="$HOME/.composer/vendor/bin:$PATH"
+export PATH="$$HOME/.composer/vendor/bin:$$PATH"
 ```
 
 ## Creating a New Ids Project
@@ -60,9 +46,9 @@ export PATH="$HOME/.composer/vendor/bin:$PATH"
 Create a new project with composer, enter the directory and start php, apache & mysql:
 
 ```bash
-$ composer create-project seanmorris/ids-project -s dev --remove-vcs
-$ cd ids-project
-$ make @dev start-bg
+$$ composer create-project seanmorris/ids-project -s dev --remove-vcs
+$$ cd ids-project
+$$ make @dev start-bg
 ```
 
 Thats it!
@@ -89,7 +75,7 @@ The `dev` build target provides facilities for connecting to xdebug and graylog.
 
 ### XDebug
 
-XDebug is built into the `dev` images by default. You can configure it by setting `XDEBUG_CONFIG_` environment variables in `.env.dev`. By default it will attempt to connect to port 9000 on `${DHOST_IP}`, which is the machine runing the project.
+XDebug is built into the `dev` images by default. You can configure it by setting `XDEBUG_CONFIG_` environment variables in `.env.dev`. By default it will attempt to connect to port 9000 on `$${DHOST_IP}`, which is the machine runing the project.
 
 ### Apt Cache
 
@@ -98,7 +84,7 @@ XDebug is built into the `dev` images by default. You can configure it by settin
 Build the project with `+aptcache` with an internet connection to populate your cache.
 
 ```bash
-$ make @dev+aptcache build
+$$ make @dev+aptcache build
 ```
 ... to be continued
 
@@ -119,23 +105,23 @@ This package comes with a default GELF TCP input in its graylog config backup. Y
 The graylog config can be backed up and restored with the following commands:
 
 ```bash
-$ make graylog-backup     # alias glbak
-$ make graylog-restore    # alias glres
+$$ make graylog-backup     # alias glbak
+$$ make graylog-restore    # alias glres
 ```
 
 Graylog can be started and stopped with the following commands:
 
 ```bash
-$ make graylog-start      # alias gls
-$ make graylog-start-fg   # alias glsf
-$ make graylog-start-bg   # alias glsb
+$$ make graylog-start      # alias gls
+$$ make graylog-start-fg   # alias glsf
+$$ make graylog-start-bg   # alias glsb
 
 
-$ make graylog-stop       # alias gld
+$$ make graylog-stop       # alias gld
 
-$ make graylog-restart    # alias glr
-$ make graylog-restart-fg # alias glrf
-$ make graylog-restart-bg # alias glrb
+$$ make graylog-restart    # alias glr
+$$ make graylog-restart-fg # alias glrf
+$$ make graylog-restart-bg # alias glrb
 ```
 
 ## Idilc CLI
@@ -195,9 +181,9 @@ The project may be built with `make`. Debian users can get this tool by running 
 The default build target is `base`. run `make stay@dev` or `make stay@test` to switch to the development/testing target. You can use @TARGET at the beginning of any make command to use the target for just that command.
 
 ```bash
-$ make @dev build # build the project
+$$ make @dev build # build the project
 
-$ make @dev start # start the services
+$$ make @dev start # start the services
 ```
 
 Docker & docker-compose are available here:
@@ -210,38 +196,38 @@ Docker & docker-compose are available here:
 Make sure to set a target with `make stay@target` before issuing any commands. Alternatively you can run commands in the form `make @target command`.
 
 ```bash
-$ make start      # Start the project in the background,
+$$ make start      # Start the project in the background,
                   # with no output
 
-$ make start-fg   # Start the project in the foreground.
+$$ make start-fg   # Start the project in the foreground.
 
-$ make start-bg   # Start the project in the background,
+$$ make start-bg   # Start the project in the background,
                   # stream output to foreground.
 
-$ make stop       # Stop all services defined for the target.
+$$ make stop       # Stop all services defined for the target.
 
-$ make stop-all   # Stop all services spawned for the target
+$$ make stop-all   # Stop all services spawned for the target
                   # even ones no longer in target compose file.
 
-$ make restart    # Stop, then restart the project in the background,
+$$ make restart    # Stop, then restart the project in the background,
                   # with no output.
 
-$ make restart-fg # Stop, then restart the project in the foreground.
+$$ make restart-fg # Stop, then restart the project in the foreground.
 
-$ make restart-bg # Stop, then restart the project in the background,
+$$ make restart-bg # Stop, then restart the project in the background,
                   # stream output to foreground.
 ```
 
 ## Images & Tags
 
 ```bash
-$ make list-images # List all images for the current project, target & branch.
+$$ make list-images # List all images for the current project, target & branch.
 
-$ make list-tags   # List all tags for the current project, target & branch.
+$$ make list-tags   # List all tags for the current project, target & branch.
 
-$ make push-images # push all images for the current project, target & branch.
+$$ make push-images # push all images for the current project, target & branch.
 
-$ make pull-images # push all images for the current project, target & branch.
+$$ make pull-images # push all images for the current project, target & branch.
 ```
 
 ## Autotagging / Autopublishing / Git Hooks
@@ -279,8 +265,8 @@ Docker images for seanmorris/ids.idilic & seanmorris/ids.server for targets `bas
 Pull from the cli with:
 
 ```bash
-$ docker pull seanmorris/ids.idilic:latest
-$ docker pull seanmorris/ids.server:latest
+$$ docker pull seanmorris/ids.idilic:latest
+$$ docker pull seanmorris/ids.server:latest
 ```
 
 or extend in a dockerfile with one of the following:
@@ -324,7 +310,7 @@ The resulting files should be excluded from version control, as they may contain
 For example: *infra/docker/aptcache.idstmp.dockerfile* starts off with the following line:
 
 ```dockerfile
-FROM ${BASELINUX}
+FROM $${BASELINUX}
 ```
 Varibles are not normally allowed in the `FROM` section of dockerfile,  preprocessed by make before it is used. So long as the file extenstion begins with `.idstmp.`, we can count on a `.___gen.` file being produced. This allows us to keep all the images and containers synced to one base image.
 
@@ -332,8 +318,8 @@ Varibles are not normally allowed in the `FROM` section of dockerfile,  preproce
 The follwing lines from the end of the file show how one can use the shell to track who generated the file and when:
 
 ```dockerfile
-# generated @ $(shell date)
-# by ${shell whoami} @ ${shell hostname}
+# generated @ $$(shell date)
+# by $${shell whoami} @ $${shell hostname}
 ```
 
 See [Functions for Transforming Text](https://www.gnu.org/software/make/manual/html_node/Functions.html#Functions) for more information.
@@ -371,8 +357,8 @@ IDS_SOME_OTHERVAR=other value
 <?php
 use \SeanMorris\Ids\Settings;
 
-$someVar = Settings::read('some', 'var');
-$someOtherVar = Settings::read('some', 'otherVar');
+$$someVar = Settings::read('some', 'var');
+$$someOtherVar = Settings::read('some', 'otherVar');
 ```
 
 ### Configuration Objects
@@ -382,12 +368,12 @@ They'd also both be accessible as an object, which can be iterated:
 ```php
 <?php
 
-$some = Settings::read('some');
+$$some = Settings::read('some');
 
-$some->var;
-$some->otherVar;
+$$some->var;
+$$some->otherVar;
 
-foreach($some as $configKey => $value)
+foreach($$some as $$configKey => $$value)
 {
 
 }
@@ -404,7 +390,7 @@ IDS_ARRAY=first second third
 
 ```php
 <?php
-$array = Settings::read('ARRAY');
+$$array = Settings::read('ARRAY');
 ```
 
 Whitespace will be preserved if the value is quotes:
@@ -433,13 +419,13 @@ IDS_SOME_OTHERVAR=other overridden value
 <?php
 use \SeanMorris\Ids\Settings;
 
-$someVar = Settings::read('some', 'var');
-$someOtherVar = Settings::read('some', 'otherVar');
+$$someVar = Settings::read('some', 'var');
+$$someOtherVar = Settings::read('some', 'otherVar');
 
-$some = Settings::read('some');
+$$some = Settings::read('some');
 
-$some->var;
-$some->otherVar;
+$$some->var;
+$$some->otherVar;
 
 ```
 
@@ -459,7 +445,7 @@ IDS__EXAMPLE_COM__443_SOME_OTHERVAR=some other value for SSL
 <?php
 use \SeanMorris\Ids\Settings;
 
-$someVar = Settings::read('some', 'var');
+$$someVar = Settings::read('some', 'var');
 
 // ...and so on
 
@@ -532,19 +518,19 @@ namespace SeanMorris\Ids\Test\Route;
 class RootRoute implements \SeanMorris\Ids\Routable
 {
 	public
-		$routes = [
+		$$routes = [
 			'foo' => 'SeanMorris\Ids\Test\Route\FooRoute'
 		]
-		, $alias = [
+		, $$alias = [
 			'bar' => 'foo'
 		];
 
-	public function index($router)
+	public function index($$router)
 	{
 		return 'index';
 	}
 
-	public function otherPage($router)
+	public function otherPage($$router)
 	{
 		return 'not index';
 	}
@@ -561,21 +547,21 @@ class Foozle extends \SeanMorris\Ids\Model
 	use Common;
 
 	protected
-		$id
-		, $class
-		, $publicId
-		, $value
+		$$id
+		, $$class
+		, $$publicId
+		, $$value
 	;
 
 	protected static
-		$table = 'Foozle'
-		, $createColumns = [
+		$$table = 'Foozle'
+		, $$createColumns = [
 			'publicId' => 'UNHEX(REPLACE(UUID(), "-", ""))'
 		]
-		, $readColumns = [
+		, $$readColumns = [
 			'publicId' => 'HEX(%s)'
 		]
-		, $updateColumns = [
+		, $$updateColumns = [
 			'publicId' => 'UNHEX(%s)'
 		]
 	;
@@ -589,12 +575,12 @@ Logs can be written from anywhere in the system by calling a function corespongi
 <?php
 use \SeanMorris\Ids\Log;
 
-Log::trace(...$messages); # Log a message along with a stacktrace.
-Log::query(...$messages); # Log query-level information
-Log::debug(...$messages); # Log debug information
-Log::info(...$messages);  # Log general information
-Log::warn(...$messages);  # Issue a warning
-Log::error(...$messages); # Issue an error
+Log::trace(...$$messages); # Log a message along with a stacktrace.
+Log::query(...$$messages); # Log query-level information
+Log::debug(...$$messages); # Log debug information
+Log::info(...$$messages);  # Log general information
+Log::warn(...$$messages);  # Issue a warning
+Log::error(...$$messages); # Issue an error
 ```
 
 Ids will write logs to a file or handle specified by the `IDS_LOG` config:
@@ -640,23 +626,23 @@ IDS_LOGCENSOR_=router password passwd
 You can test censor filters. Issuing the following command will output your database settings, with no censorship applied:
 
 ```bash
-$ idilic config databases
+$$ idilic config databases
 ```
 
 Adding -vv to the idilic command will force it to print its logs to `STDERR` (without verbosity checks).
 
 ```bash
-$ idilic -vv config databases
+$$ idilic -vv config databases
 ```
 We can drop the original output of the command as follows to declutter the terminal:
 
 ```bash
-$ idilic -vv config databases 1 > /dev/null
+$$ idilic -vv config databases 1 > /dev/null
 ```
 We can also extract the original output with:
 
 ```bash
-$ idilic -vv config databases 2 > /dev/null
+$$ idilic -vv config databases 2 > /dev/null
 ```
 
 ### Redirecting / Forcing CLI Logs
@@ -667,22 +653,22 @@ Logging can be forced on the command line with `-v` and `-vv`.
 * `-vv` will print any logs REGARDLESS of verbosity thesholds to `STDERR`.
 
 ```bash
-$ idilic -v  info
-$ idilic -vv info
+$$ idilic -v  info
+$$ idilic -vv info
 ```
 
 Logs of individual commands can be redirected to files or handles with `2>`.
 
 ```bash
-$ idilic -v  info 2> /tmp/summary$(date +%Y%m%d).log
-$ idilic -vv info 2> /tmp/details$(date +%Y%m%d).log
+$$ idilic -v  info 2> /tmp/summary$$(date +%Y%m%d).log
+$$ idilic -vv info 2> /tmp/details$$(date +%Y%m%d).log
 ```
 
 If you're more interested in the logs than the output, you can discard the output with:
 
 ```bash
-$ idilic -v  command 1> /dev/null
-$ idilic -vv command 1> /dev/null
+$$ idilic -v  command 1> /dev/null
+$$ idilic -vv command 1> /dev/null
 ```
 
 ### Graylog
@@ -702,10 +688,10 @@ Custom loggers may created by implemeting the `\SeanMorris\Ids\Logger` interface
 namespace SeanMorris\Ids\Logger;
 class AdditionalLogger implements \SeanMorris\Ids\Logger
 {
-	public static function start($logBlob)
+	public static function start($$logBlob)
 	{/* ... */}
 
-	public static function log($logBlob)
+	public static function log($$logBlob)
 	{/* ... */}
 }
 
@@ -720,7 +706,7 @@ IDS_LOGGERS_=\SeanMorris\Ids\Logger\AdditionalLogger
 ## Debugging
 
 ```
-XDEBUG_CONFIG_REMOTE_HOST=${DHOST_IP}
+XDEBUG_CONFIG_REMOTE_HOST=$${DHOST_IP}
 XDEBUG_CONFIG_REMOTE_PORT=9000
 
 XDEBUG_CONFIG_PROFILER_ENABLE=0
@@ -730,21 +716,21 @@ XDEBUG_CONFIG_REMOTE_ENABLE=1
 ## Linking
 
 ```bash
-$ make composer-dumpautoload
-$ idilic link
+$$ make composer-dumpautoload
+$$ idilic link
 ```
 ## Testing
 
 ```bash
-$ make @test build test
+$$ make @test build test
 ```
 
 ```bash
-$ idilic runTests
+$$ idilic runTests
 ```
 ```php
 <?php
-namespace SeanMorrisxamplePackage\Test;
+namespace SeanMorris\ExamplePackage\Test;
 class ExampleTest extends \UnitTestCase
 {
 	public function testSomething()
@@ -760,34 +746,34 @@ class ExampleTest extends \UnitTestCase
 <?php
 use \SeanMorris\Ids\Disk\File;
 
-$file = new File($filename);
+$$file = new File($$filename);
 
 //Check if file exists
-if($file->check())
+if($$file->check())
 {
 	// ...
 }
 
 //Get the path to the file
-$path = $file->name();
+$$path = $$file->name();
 
 //Copy the file to another location.
-$copiedFile = $file->copy($newLocation);
+$$copiedFile = $$file->copy($$newLocation);
 
 // Read byte-by-byte
-while(!$file->eof())
+while(!$$file->eof())
 {
-	$byte = $file->read(1);
+	$$byte = $$file->read(1);
 }
 
 // Read entire file:
-$content = $file->slurp();
+$$content = $$file->slurp();
 
 // Append
-$file->write($content);
+$$file->write($$content);
 
 // Overwrite
-$file->write($content, FALSE);
+$$file->write($$content, FALSE);
 ```
 
 ## Migrations*
@@ -796,7 +782,7 @@ $file->write($content, FALSE);
 ## IPC / AMPQ*
 ### Idilic CLI
 
-Idilic commands can be run from the CLI in the form `idilic command` or `idilic Vendor/Package command`. Note that on the CLI package names can be separated by a forward slash (`/`). This is done to prevent the user from being forced to remember to escape backslashes (`\`).
+Idilic commands can be run from the CLI in the form `idilic command` or `idilic Vendor/Package command`. Note that on the CLI package names can be separated by a forward slash (`/`). This is done to prevent the user from being forced to remember to escape backslashes (`\\`).
 
 Run `idilic help` to get a list of available idilic commands.
 
@@ -804,11 +790,11 @@ New commands can be implemented by adding a route class named `RootRoute` under 
 
 ```php
 <?php
-namespace SeanMorrisxamplePackage\Idilic\Route;
+namespace SeanMorris\ExamplePackage\Idilic\Route;
 class RootRoute implements \SeanMorris\Ids\Routable
 {
 	/** Help text goes here. */
-	public function commandName($router)
+	public function commandName($$router)
 	{}
 }
 ```
@@ -821,18 +807,18 @@ class RootRoute implements \SeanMorris\Ids\Routable
 <?php
 use \SeanMorris\Ids\Mail;
 
-$mail = new \SeanMorris\Ids\Mail;
-$mail->body(<<<EOM
+$$mail = new \SeanMorris\Ids\Mail;
+$$mail->body(<<<EOM
 	Message body here.
 EOM);
 
-$mail->from(\SeanMorris\Ids\Settings::read('noreply'));
+$$mail->from(\SeanMorris\Ids\Settings::read('noreply'));
 
-$mail->subject('Hello from Ids!');
+$$mail->subject('Hello from Ids!');
 
-$mail->to($recipientEmail);
+$$mail->to($$recipientEmail);
 
-$mail->send(TRUE);
+$$mail->send(TRUE);
 ```
 
 ## Theming / Frontends

@@ -726,7 +726,6 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		foreach($classes as $className)
 		{
-
 			$package = \SeanMorris\Ids\Package::fromClass($className);
 
 			print \SeanMorris\Ids\Idilic\Cli::color('Package: ', 'white')
@@ -1110,5 +1109,39 @@ EOT
 		$args = implode(' ', $args);
 
 		echo `env`;
+	}
+
+	/** Run a queue listener daemon. */
+
+	public function queueDaemon($router)
+	{
+		[$class,] = $router->path()->consumeNodes();
+
+		if(!is_subclass_of($class, '\SeanMorris\Ids\Queue'))
+		{
+			throw new Exception(sprintf(
+				"Provided class does not inherit: %s\n\t%s"
+				, '\SeanMorris\Ids\Queue'
+				, $class
+			));
+		}
+
+		$class::listen();
+	}
+
+	/** Generate documentation for a given package.*/
+
+	public function document($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		if(!$packageName = array_shift($args))
+		{
+			return 'No package supplied.';
+		}
+
+		return json_decode(json_encode(
+			\SeanMorris\Ids\Documentor::docs($packageName)
+		), TRUE);
 	}
 }

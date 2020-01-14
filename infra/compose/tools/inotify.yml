@@ -3,22 +3,14 @@ version: '2.4'
 services:
 
   inotify:
-    restart:     always
-    image:   ${REPO}/${PROJECT}.inotify:${TAG}
+    restart:    on-failure
+    image:      ${REPO}/${PROJECT}.inotify:${TAG}
+    command:    exit 0
+    user:       ${D_UID}:${D_GID}
     build:
       context: ../../
       dockerfile: ${REALDIR}infra/docker/tools/inotify.___gen.dockerfile
     volumes:
       - ${OUTMAKEDIR}:/app
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /usr/bin/docker:${DOCKER}
-
-  make:
-    restart:     always
-    build:
-      context: ../../
-      dockerfile: ${REALDIR}infra/docker/tools/make.___gen.dockerfile
-    volumes:
-      - '${OUTMAKEDIR}:/app'
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /usr/bin/docker:${DOCKER}
