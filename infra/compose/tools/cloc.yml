@@ -5,6 +5,7 @@ services:
   cloc:
     restart: always
     image:   ${REPO}/${PROJECT}.cloc:${TAG}
+    user:    ${D_UID}:${D_GID}
     build:
       context: ../../
       dockerfile: ${REALDIR}infra/docker/tools/cloc.___gen.dockerfile
