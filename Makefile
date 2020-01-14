@@ -5,7 +5,7 @@
 	da dcc dcompose-config e entropy-dir_env hooks init it k kill li \
 	list-images list-tags lt pli psi pull-images push-images \
 	r rb restart restart-bg restart-fg rf run run-phar s sb sf sh start start-bg \
-	start-fg stay@% stop stop-all t tag-images test .lock_env help help-% tempats
+	start-fg stay@% stop stop-all t tag-images test help help-%
 
 .SECONDEXPANSION:
 
@@ -28,6 +28,8 @@ D_GID ?= $(shell id -g)
 D_USR ?= $(shell whoami)
 
 -include ${MAIN_ENV}
+-include ${MAIN_DLT}
+
 -include ${VAR_FILE}
 
 CUT_TARGET=cut -d @ -f 2 | cut -d + -f 1 |  cut -d - -f 1
@@ -60,17 +62,16 @@ DEBIAN_ESC=$(shell echo ${BASELINUX} | sed 's/\:/__/gi')
 
 # $(shell >&2 echo -e "$(call TEMPLATE_PATTERNS,${1}))")
 
-ENVBUILD =.env         \
-	.env.default       \
-	.env_$${TARGET}    \
-	.env_$${TARGET}.default \
-	.lock_env          \
-
-PREBUILD = retarget ${ENVBUILD}
-
-ENV_LOCK ?=${MAKEDIR}.lock_env
+ENV_LOCK ?=${REALDIR}.lock_env
 
 -include ${ENV_LOCK}
+
+ENVBUILD =${REALDIR}.env         \
+	${REALDIR}.env.default       \
+	${REALDIR}.env_$${TARGET}    \
+	${REALDIR}.env_$${TARGET}.default \
+
+PREBUILD = ${VAR_FILE} ${ENVBUILD}
 
 COMPOSE_BASE   =infra/compose/base.yml
 COMPOSE_TARGET =infra/compose/${TARGET}.yml
@@ -202,7 +203,7 @@ DCOMPOSE_TARGET_STACK:= -f ${COMPOSE_TARGET}
 
 define NEWTARGET ## %frag Set up environment for new target.
 $(eval COMPOSE_TARGET:=$(shell echo infra/compose/${TARGET}.yml))
-$(eval PREBUILD:=$(shell echo env .env.default .env_${TARGET} .env_${TARGET}.default .lock_env))
+$(eval PREBUILD:=$(shell echo ${REALDIR}.env ${REALDIR}.env.default ${REALDIR}.env_${TARGET} ${REALDIR}.env_${TARGET}.default))
 $(eval MAIN_ENV:=$(shell echo ${REALDIR}.env))
 $(eval MAIN_DLT:=$(shell echo ${REALDIR}.env.default))
 $(eval TRGT_ENV:=$(shell echo ${REALDIR}.env_${TARGET}))
@@ -285,36 +286,37 @@ $(subst ${3:=${SPACE}},${1},${2})
 endef
 
 ifneq (${MAIN_DLT},)
-ENV+=$(shell cat ${MAIN_DLT} | ${INTERPOLATE_ENV} | ${QUOTE_ENV} | grep -v ^\#)
+ENV+=$(shell grep -hs ^ ${MAIN_DLT} | ${INTERPOLATE_ENV} | ${QUOTE_ENV} | grep -v ^\#)
 endif
 
 ifneq (${MAIN_ENV},)
-ENV+=$(shell cat ${MAIN_ENV} | ${INTERPOLATE_ENV} | ${QUOTE_ENV} | grep -v ^\#)
+ENV+=$(shell grep -hs ^ ${MAIN_ENV} | ${INTERPOLATE_ENV} | ${QUOTE_ENV} | grep -v ^\#)
 endif
 
 ifneq (${TRGT_DLT},)
-ENV+=$(shell cat ${TRGT_DLT} | ${INTERPOLATE_ENV} | ${QUOTE_ENV} | grep -v ^\#)
+ENV+=$(shell grep -hs ^ ${TRGT_DLT} | ${INTERPOLATE_ENV} | ${QUOTE_ENV} | grep -v ^\#)
 endif
 
 ifneq (${TRGT_ENV},)
-ENV+=$(shell cat ${TRGT_ENV} | ${INTERPOLATE_ENV} | ${QUOTE_ENV} | grep -v ^\#)
+ENV+=$(shell grep -hs ^ ${TRGT_ENV} | ${INTERPOLATE_ENV} | ${QUOTE_ENV} | grep -v ^\#)
 endif
 
 DCOMPOSE= export ${ENV} && docker-compose -p ${PROJECT}_${TARGET}
 
 DRUN=docker run --rm         \
-	-env-file=.env.default   \
-	-env-file=.env           \
-	-env-file=.env_${TARGET} \
-	-env-file=.env_${TARGET}.default \
+	-env-file=${REALDIR}.env.default   \
+	-env-file=${REALDIR}.env           \
+	-env-file=${REALDIR}.env_${TARGET} \
+	-env-file=${REALDIR}.env_${TARGET}.default \
 	-v ${OUTMAKEDIR}:/app
 
 1:=
 define TEMPLATE_PATTERNS
-(${DCOMPOSE} -f ${MAKEDIR}infra/compose/tools/yjq.yml run ${PASS_ENV} --rm \
+test -f ${REALDIR}.templating \
+&& (${DCOMPOSE} -f ${MAKEDIR}infra/compose/tools/yjq.yml run ${PASS_ENV} --rm \
 	yjq bash -c 'yq r - -j | jq -r "to_entries[]  | select(.value) \
 		| [.key, (.value | to_entries[] | .key, .value)] | @tsv"' \
-	) < <(grep -hs ^ ${MAKEDIR}.templating | sed 's/\t/  /g') \
+	) < <(grep -hs ^ ${REALDIR}.templating | sed 's/\t/  /g') \
 		| while IFS=$$'\t' read -r PREFIX FIND REPLACE; do \
 			test -f "$$PREFIX" && { \
 				export GENERATED=`echo $${PREFIX/$$FIND/$$REPLACE}`; \
@@ -355,14 +357,17 @@ endef
 
 TEMPLATES:=$(shell $(call TEMPLATE_PATTERNS,-t))
 GENERABLE:=$(shell $(call TEMPLATE_PATTERNS,-g))
-TEMPINDEX:=$(shell echo {1..$(words ${GENERABLE})})
+TEMPLEN  :=$(words ${GENERABLE})
+TEMPINDEX:=$(shell echo {1..${TEMPLEN}})
 
+ifneq (${TEMPLEN},0)
 $(foreach I,${TEMPINDEX},$(eval \
 	TEMPLATES.$(word ${I},${GENERABLE})=$(word ${I},${TEMPLATES}) \
 ))
+endif
 
 IMAGE?=
-build b: retarget .lock_env ${PREBUILD} ${GENERABLE} ## Build the project.
+build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start
 	@ ${WHILE_IMAGES}                           \
@@ -386,21 +391,24 @@ build b: retarget .lock_env ${PREBUILD} ${GENERABLE} ## Build the project.
 template-patterns:
 	@ $(call TEMPLATE_PATTERNS)
 
-test t: .lock_env ${PREBUILD} ${GENERABLE} ## Run the tests
+test t: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Run the tests
 	@ export TARGET=${TARGET} && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} \
 		run --rm ${NO_TTY} ${PASS_ENV}                            \
 		idilic SeanMorris/Ids runTests
 
-clean: ${PREBUILD} ## Clean the project. Only applies to files from the current target.
+clean: ${PREBUILD}## Clean the project. Only applies to files from the current target.
 	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
 	@- docker volume rm -f ${PROJECT}_${TARGET}_schema;
-
-	@- docker run --rm -v ${MAKEDIR}:/app -w=/app \
-		${BASELINUX} bash -c "                    \
-			set -o noglob;                        \
-			rm -f .env.default;                   \
-			rm -f .env .env_${TARGET} .var;       \
-			rm -f .lock_env .env_${TARGET}.default;"
+	@- docker run --rm -v ${MAKEDIR}:/app -w=/app   \
+		${BASELINUX} bash -c "            \
+			set -o noglob;                \
+			rm -f ${GENERABLE};           \
+			rm -f .var;                   \
+			rm -f .lock_env;              \
+			rm -f .env_${TARGET}.default; \
+			rm -f .env_${TARGET};         \
+			rm -f .env.default            \
+			rm -f .env"
 
 	@- docker run --rm -v ${REALDIR}:/app -w=/app \
 		${BASELINUX} bash -c "                    \
@@ -411,34 +419,34 @@ SEP=
 env e: ## Export the environment as seen from MAKE.
 	@ export ${ENV} && env ${SEP};
 
-start s: ${PREBUILD} ${GENERABLE} ## Start the project services.
+start s: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d
 
-start-fg sf: ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
+start-fg sf: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up
 
-start-bg sb: ${PREBUILD} ${GENERABLE} ## Start the project services in the background, streaming output to terminal.
+start-bg sb: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the background, streaming output to terminal.
 	(${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up &)
 
-stop d: ${PREBUILD} ${GENERABLE} ## Stop the current project services on the current target.
+stop d: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the current project services on the current target.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down
 
-stop-all da: ${PREBUILD} ${GENERABLE} ## Stop the all project services on the current target. including orphans.
+stop-all da: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the all project services on the current target. including orphans.
 	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
 
-restart r: ${PREBUILD} ${GENERABLE} ## Restart the project services in the foreground.
+restart r: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Restart the project services in the foreground.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d
 
-restart-fg rf: ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
+restart-fg rf: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up
 
-restart-bg rb: ${PREBUILD} ${GENERABLE}## Start the project services in the background, streaming output to terminal.
+restart-bg rb: ${ENV_LOCK} ${PREBUILD} ${GENERABLE}## Start the project services in the background, streaming output to terminal.
 	@ (${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up &)
 
-kill k: ${PREBUILD} ${GENERABLE}## Kill current project services.
+kill k: ${ENV_LOCK} ${PREBUILD} ${GENERABLE}## Kill current project services.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} kill -s 9
 
-kill-all: ${GENERABLE}## Kill all project services.
+kill-all: ${ENV_LOCK} ${GENERABLE}## Kill all project services.
 	@ ${WHILE_IMAGES} echo docker kill -9 $$IMAGE_HASH; done;
 
 current-tag ct: ${COMPOSE_TARGET} ## Get the current project tag.
@@ -448,7 +456,7 @@ current-target ctr: ${COMPOSE_TARGET} ## Get the current target.
 	@ [[ "${TARGET}" != "" ]] || (echo "No target set." && false)
 	@ echo ${TARGET}
 
-list-images li:${PREBUILD}## List available images from current target.
+list-images li:${ENV_LOCK} ${PREBUILD}## List available images from current target.
 	@ ${WHILE_IMAGES} \
 		echo $$(docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH) \
 		$$(docker image inspect --format="{{ .Size }}" $$IMAGE_HASH  \
@@ -459,13 +467,13 @@ list-images li:${PREBUILD}## List available images from current target.
 list-tags lt: ## List the images tagged from the current target.
 	@ ${WHILE_TAGS} echo $$TAG_NAME; done;done;
 
-push-images psi: ${COMPOSE_TARGET} ## Push locally built images.
+push-images psi: ${ENV_LOCK} ${COMPOSE_TARGET} ## Push locally built images.
 	@ echo Pushing ${PROJECT}:${TAG}
 	@ ${WHILE_TAGS} \
 		docker push $$TAG_NAME; \
 	done;done;
 
-pull-images pli: ${PREBUILD} ## Pull remotely hosted images.
+pull-images pli: ${ENV_LOCK} ${PREBUILD} ## Pull remotely hosted images.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull
 
 hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
@@ -496,11 +504,9 @@ dcompose-config dcc: ${PREBUILD} ${GENERABLE}## Print the current docker-compose
 dcompose-version dcv: ${PREBUILD} ${GENERABLE}## Print the current docker-compose version.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} version
 
-.lock_env: retarget ### Lock the environment target
-	@ touch .lock_env
-
-	@ [[ "${ENV_LOCK_TAG}" == "${TAG}" ]] \
-	||[[ "${ENV_LOCK_TGT_SVC}" == "${TGT_SVC}" ]]     \
+${ENV_LOCK}: ${VAR_FILE} ### Lock the environment target
+	@ [[ "${ENV_LOCK_TAG:-}" == "${TAG}" ]] \
+	||[[ "${ENV_LOCK_TGT_SVC:-}" == "${TGT_SVC}" ]]     \
 	|| (                                              \
 		echo -e >&2 "\e[2m"Env changed, need to check dependencies..."\e[0m"; \
 		 ${DRUN}                                      \
@@ -510,19 +516,21 @@ dcompose-version dcv: ${PREBUILD} ${GENERABLE}## Print the current docker-compos
 			`${ISDEV} || echo "--no-dev"`;            \
 	);
 
-	@ test ! -z "${TAG}"                              \
+	@ [[ "${ENV_LOCK_TAG:-}" != "${TAG}" ]]             \
+	||[[ "${ENV_LOCK_TGT_SVC:-}" != "${TGT_SVC}" ]]     \
 		&& echo ENV_LOCK_TGT_SVC=${TGT_SVC} > ${ENV_LOCK} \
 		&& echo ENV_LOCK_TAG=${TAG} >> ${ENV_LOCK} \
+		&& echo ENV_LOCK_TIME=`date` >> ${ENV_LOCK} \
 		|| true;
 
-stay@%: retarget ### Set the current target and persist for later invocations.
+stay@%: ${VAR_FILE} ### Set the current target and persist for later invocations.
 	@ >&2 echo Setting persistent target ${TARGET}...
 	@ echo TARGET=${TARGET} > ${VAR_FILE}
 
-@%: retarget
+@%: ${VAR_FILE}
 	@ >&2 echo -n
 
-retarget: ### Set the current target for one invocation.
+${VAR_FILE}: ### Set the current target for one invocation.
 	@- $(eval ORIG?=${TARGET})
 	@- $(eval TGT_STR?=${TGT_STR})
 	@ $(call EXTRACT_TARGET_SERVICES, ${TGT_STR})
@@ -531,52 +539,53 @@ retarget: ### Set the current target for one invocation.
 	@ test -z "${TGT_STR}" \
 		|| >&2 echo Setting services for ${TGT_STR}...
 	@ ${NEWTARGET}
+	@ touch ${VAR_FILE}
 
-.env: config/.env
+${REALDIR}.env: ${REALDIR}config/.env
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app  \
 		${BASELINUX} bash -c '{                   \
-			FROM=config/.env                      \
-			TO=.env                               \
+			FROM=config/.env            \
+			TO=.env                     \
 				&& ${STITCH_ENTROPY};             \
 		}'
 
-.env.default: config/.env
+${REALDIR}.env.default: ${REALDIR}config/.env
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app  \
 		${BASELINUX} bash -c '{                   \
-			FROM=config/.env.default              \
-			TO=.env.default                       \
+			FROM=config/.env.default    \
+			TO=.env.default             \
 				&& ${STITCH_ENTROPY};             \
 		}'
 
-.env_${TARGET}: config/.env_${TARGET}
+${REALDIR}.env_${TARGET}: ${REALDIR}config/.env_${TARGET}
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		${BASELINUX} bash -c '{                  \
-			FROM=config/.env_${TARGET}           \
-			TO=.env_${TARGET}                    \
+			FROM=config/.env_${TARGET} \
+			TO=.env_${TARGET}          \
 				&& ${STITCH_ENTROPY};            \
-			FROM=config/.env_${TARGET}.default   \
-			TO=.env_${TARGET}.default            \
+			FROM=config/.env_${TARGET}.default \
+			TO=.env_${TARGET}.default  \
 				&& ${STITCH_ENTROPY};            \
 		}'
 
-.env_${TARGET}.default: config/.env_${TARGET}.default
+${REALDIR}.env_${TARGET}.default: ${REALDIR}config/.env_${TARGET}.default
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		${BASELINUX} bash -c '{                  \
-			FROM=config/.env_${TARGET}           \
-			TO=.env_${TARGET}                    \
+			FROM=config/.env_${TARGET} \
+			TO=.env_${TARGET}          \
 				&& ${STITCH_ENTROPY};            \
-			FROM=config/.env_${TARGET}.default   \
-			TO=.env_${TARGET}.default            \
+			FROM=config/.env_${TARGET}.default \
+			TO=.env_${TARGET}.default  \
 				&& ${STITCH_ENTROPY};            \
 		}'
 
-config/.env   config/.env_${TARGET}:
+${REALDIR}config/.env   ${REALDIR}config/.env_${TARGET}:
 	@ test -f ${@} || touch ${@};
 
-config/.env.default config/.env_${TARGET}.default:
+${REALDIR}config/.env.default ${REALDIR}config/.env_${TARGET}.default:
 	@ test -f ${@};
 
-infra/compose/%yml: .env .env.default .env_$${TARGET} .env_$${TARGET}.default .lock_env
+infra/compose/%yml: ${REALDIR}.env ${REALDIR}.env.default ${REALDIR}.env_$${TARGET} ${REALDIR}.env_$${TARGET}.default ${ENV_LOCK}
 	@ test -f infra/compose/${TARGET}.yml;
 
 help: help-all ## print this message
@@ -602,8 +611,7 @@ help-%:
 
 templates: ${GENERABLE}
 
-# ${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) .lock_env ${ENVBUILD}
-${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) .lock_env ${ENVBUILD}
+${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) ${ENV_LOCK} ${ENVBUILD}
 	@ echo -e >&2 "\e[2m"Rebuilding template `basename ${@}`"\e[0m";
 	@ test -w ${@} || test -w `dirname ${@}`;
 	@ [[ "${TARGET}" == "dev" ]] \
