@@ -317,7 +317,7 @@ define TEMPLATE_PATTERNS
 	) < <(cat .templating | sed 's/\t/  /g') \
 		| while IFS=$$'\t' read -r PREFIX FIND REPLACE; do \
 			test -f "$$PREFIX" && { \
-				export GENERATED=`echo $$PREFIX | replace $$FIND $$REPLACE`; \
+				export GENERATED=`echo $${PREFIX/$$FIND/$$REPLACE}`; \
 				(test -z ${1}) \
 					&& echo -ne $$PREFIX'\t'; \
 				(test -z ${1}) \
@@ -332,7 +332,7 @@ define TEMPLATE_PATTERNS
 			test -d "$$PREFIX" && { \
 				find $$PREFIX -name "*$$FIND*" | { \
 					while read TEMPLATE; do\
-						export GENERATED=`echo $$TEMPLATE | replace $$FIND $$REPLACE`; \
+						export GENERATED=`echo $${TEMPLATE/$$FIND/$$REPLACE}`; \
 						(test -z "${1}") \
 							&& echo -ne $$TEMPLATE'\t'; \
 						(test -z "${1}") \
