@@ -5,7 +5,7 @@
 	da dcc dcompose-config e entropy-dir_env hooks init it k kill li \
 	list-images list-tags lt pli psi pull-images push-images \
 	r rb restart restart-bg restart-fg rf run run-phar s sb sf sh start start-bg \
-	start-fg stay@% stop stop-all t tag-images test help help-%
+	start-fg stay@% stop stop-all t tag-images test help help-% retarget
 
 .SECONDEXPANSION:
 
@@ -18,10 +18,14 @@ REALDIR   :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 OUTREALDIR?=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 MAKEDIR   :=${REALDIR}
 OUTMAKEDIR?=${REALDIR}
-VAR_FILE  ?=${REALDIR}.var
 
 MAIN_ENV  :=${REALDIR}.env
 MAIN_DLT  :=${REALDIR}.env.default
+
+ENV_LOCK ?=${REALDIR}.lock_env
+VAR_FILE ?=${REALDIR}.var
+
+-include ${ENV_LOCK}
 
 D_UID ?= $(shell id -u)
 D_GID ?= $(shell id -g)
@@ -49,6 +53,8 @@ $(eval TARGET=$(shell echo ${firstword ${MAKECMDGOALS}} | ${CUT_TARGET} ))
 $(eval TGT_STR=$(firstword ${MAKECMDGOALS}))
 endif
 
+# @ ( [[ "${ENV_LOCK_TAG}" != "" ]] || [[ "${ENV_LOCK_TGT_SVC}" != "${TGT_SVC}" ]] ) \
+
 TRGT_ENV :=${REALDIR}.env_${TARGET}
 TRGT_DLT :=${REALDIR}.env_${TARGET}.default
 
@@ -62,16 +68,12 @@ DEBIAN_ESC=$(shell echo ${BASELINUX} | sed 's/\:/__/gi')
 
 # $(shell >&2 echo -e "$(call TEMPLATE_PATTERNS,${1}))")
 
-ENV_LOCK ?=${REALDIR}.lock_env
-
--include ${ENV_LOCK}
-
 ENVBUILD =${REALDIR}.env         \
 	${REALDIR}.env.default       \
 	${REALDIR}.env_$${TARGET}    \
 	${REALDIR}.env_$${TARGET}.default \
 
-PREBUILD = ${VAR_FILE} ${ENVBUILD}
+PREBUILD = retarget ${VAR_FILE} ${ENVBUILD}
 
 COMPOSE_BASE   =infra/compose/base.yml
 COMPOSE_TARGET =infra/compose/${TARGET}.yml
@@ -257,8 +259,9 @@ $(eval NEW_INV:=$(subst *,-,$(subst -,+,$(subst +,*,${NEW_SVC}))))
 $(eval NEW_ENABLE :=$(filter +%,${NEW_SVC}))
 $(eval NEW_DISABLE:=$(filter -%,${NEW_SVC}))
 $(eval TGT_SVC:=$(sort ${NEW_ENABLE} ${NEW_DISABLE}))
-$(eval REMAINING_SVC:=$(filter-out ${NEW_INV}, ${ENV_LOCK_TGT_SVC}))
+$(eval REMAINING_SVC:=$(filter-out ${NEW_INV}, ${ENV_LOCK_TGT_SVC:=}))
 $(eval TGT_SVC:=$(sort ${NEW_SVC} ${REMAINING_SVC}))
+test ${TGT_SVC} == ${ENV_LOCK_TGT_SVC} || touch -d 0 ${ENV_LOCK}
 endef
 
 SPACE  :=${""} ${""}
@@ -452,7 +455,7 @@ kill-all: ${ENV_LOCK} ${GENERABLE}## Kill all project services.
 current-tag ct: ${COMPOSE_TARGET} ## Get the current project tag.
 	@ echo ${TAG}
 
-current-target ctr: ${COMPOSE_TARGET} ## Get the current target.
+current-target ctr: ${COMPOSE_TARGET} ${ENV_LOCK} ## Get the current target.
 	@ [[ "${TARGET}" != "" ]] || (echo "No target set." && false)
 	@ echo ${TARGET}
 
@@ -505,8 +508,8 @@ dcompose-version dcv: ${PREBUILD} ${GENERABLE}## Print the current docker-compos
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} version
 
 ${ENV_LOCK}: ${VAR_FILE} ### Lock the environment target
-	@ [[ "${ENV_LOCK_TAG:-}" == "${TAG}" ]] \
-	||[[ "${ENV_LOCK_TGT_SVC:-}" == "${TGT_SVC}" ]]     \
+	@ [[ "${ENV_LOCK_TAG:=}" == "${TAG}" ]] \
+	||[[ "${ENV_LOCK_TGT_SVC:=}" == "${TGT_SVC}" ]]     \
 	|| (                                              \
 		echo -e >&2 "\e[2m"Env changed, need to check dependencies..."\e[0m"; \
 		 ${DRUN}                                      \
@@ -516,12 +519,16 @@ ${ENV_LOCK}: ${VAR_FILE} ### Lock the environment target
 			`${ISDEV} || echo "--no-dev"`;            \
 	);
 
-	@ [[ "${ENV_LOCK_TAG:-}" != "${TAG}" ]]             \
-	||[[ "${ENV_LOCK_TGT_SVC:-}" != "${TGT_SVC}" ]]     \
-		&& echo ENV_LOCK_TGT_SVC=${TGT_SVC} > ${ENV_LOCK} \
-		&& echo ENV_LOCK_TAG=${TAG} >> ${ENV_LOCK} \
-		&& echo ENV_LOCK_TIME=`date` >> ${ENV_LOCK} \
-		|| true;
+	@ ( [[ "${ENV_LOCK_TAG:=}" != "${TAG}" ]] || [[ "${ENV_LOCK_TGT_SVC:=}" != "${TGT_SVC}" ]] ) \
+	&& { \
+		>&2 echo "Locking env...";                      \
+		echo ENV_LOCK_TGT_SVC=${TGT_SVC} > ${ENV_LOCK}; \
+		echo ENV_LOCK_TAG=${TAG} >> ${ENV_LOCK};        \
+		echo ENV_LOCK_TIME=`date` >> ${ENV_LOCK};       \
+		$(eval ENV_LOCK_TAG=${TAG})                     \
+		$(eval ENV_LOCK_TGT_SVC=${TGT_SVC})             \
+	} \
+	|| true;
 
 stay@%: ${VAR_FILE} ### Set the current target and persist for later invocations.
 	@ >&2 echo Setting persistent target ${TARGET}...
@@ -530,7 +537,11 @@ stay@%: ${VAR_FILE} ### Set the current target and persist for later invocations
 @%: ${VAR_FILE}
 	@ >&2 echo -n
 
-${VAR_FILE}: ### Set the current target for one invocation.
+${VAR_FILE}: retarget
+	@ >&2 echo -n
+# 	@ touch ${VAR_FILE}
+
+retarget: ### Set the current target for one invocation.
 	@- $(eval ORIG?=${TARGET})
 	@- $(eval TGT_STR?=${TGT_STR})
 	@ $(call EXTRACT_TARGET_SERVICES, ${TGT_STR})
@@ -539,43 +550,43 @@ ${VAR_FILE}: ### Set the current target for one invocation.
 	@ test -z "${TGT_STR}" \
 		|| >&2 echo Setting services for ${TGT_STR}...
 	@ ${NEWTARGET}
-	@ touch ${VAR_FILE}
+
 
 ${REALDIR}.env: ${REALDIR}config/.env
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app  \
 		${BASELINUX} bash -c '{                   \
-			FROM=config/.env            \
-			TO=.env                     \
+			FROM=config/.env                      \
+			TO=.env                               \
 				&& ${STITCH_ENTROPY};             \
 		}'
 
 ${REALDIR}.env.default: ${REALDIR}config/.env
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app  \
 		${BASELINUX} bash -c '{                   \
-			FROM=config/.env.default    \
-			TO=.env.default             \
+			FROM=config/.env.default              \
+			TO=.env.default                       \
 				&& ${STITCH_ENTROPY};             \
 		}'
 
 ${REALDIR}.env_${TARGET}: ${REALDIR}config/.env_${TARGET}
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		${BASELINUX} bash -c '{                  \
-			FROM=config/.env_${TARGET} \
-			TO=.env_${TARGET}          \
+			FROM=config/.env_${TARGET}           \
+			TO=.env_${TARGET}                    \
 				&& ${STITCH_ENTROPY};            \
-			FROM=config/.env_${TARGET}.default \
-			TO=.env_${TARGET}.default  \
+			FROM=config/.env_${TARGET}.default   \
+			TO=.env_${TARGET}.default            \
 				&& ${STITCH_ENTROPY};            \
 		}'
 
 ${REALDIR}.env_${TARGET}.default: ${REALDIR}config/.env_${TARGET}.default
 	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
 		${BASELINUX} bash -c '{                  \
-			FROM=config/.env_${TARGET} \
-			TO=.env_${TARGET}          \
+			FROM=config/.env_${TARGET}           \
+			TO=.env_${TARGET}                    \
 				&& ${STITCH_ENTROPY};            \
-			FROM=config/.env_${TARGET}.default \
-			TO=.env_${TARGET}.default  \
+			FROM=config/.env_${TARGET}.default   \
+			TO=.env_${TARGET}.default            \
 				&& ${STITCH_ENTROPY};            \
 		}'
 
@@ -590,6 +601,7 @@ infra/compose/%yml: ${REALDIR}.env ${REALDIR}.env.default ${REALDIR}.env_$${TARG
 
 help: help-all ## print this message
 	@ echo "Help for SeanMorris/Ids v0.0.0"
+
 help-%:
 	@ $(eval HELPTYPE:= echo ${@} | sed 's/.+-//' )
 	@ $(foreach MKFL,${MAKEFILE_LIST},  \
