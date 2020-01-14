@@ -66,7 +66,7 @@ ENVBUILD =.env         \
 	.env_$${TARGET}.default \
 	.lock_env          \
 
-PREBUILD = retarget ${ENVBUILD} ${GENERABLE}
+PREBUILD = retarget ${ENVBUILD}
 
 ENV_LOCK ?=${MAKEDIR}.lock_env
 
@@ -362,7 +362,7 @@ $(foreach I,${TEMPINDEX},$(eval \
 ))
 
 IMAGE?=
-build b: retarget .lock_env ${PREBUILD} ## Build the project.
+build b: retarget .lock_env ${PREBUILD} ${GENERABLE} ## Build the project.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start
 	@ ${WHILE_IMAGES}                           \
@@ -386,7 +386,7 @@ build b: retarget .lock_env ${PREBUILD} ## Build the project.
 template-patterns:
 	@ $(call TEMPLATE_PATTERNS)
 
-test t: .lock_env ${PREBUILD} ## Run the tests
+test t: .lock_env ${PREBUILD} ${GENERABLE} ## Run the tests
 	@ export TARGET=${TARGET} && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} \
 		run --rm ${NO_TTY} ${PASS_ENV}                            \
 		idilic SeanMorris/Ids runTests
@@ -411,34 +411,34 @@ SEP=
 env e: ## Export the environment as seen from MAKE.
 	@ export ${ENV} && env ${SEP};
 
-start s: ${PREBUILD} ## Start the project services.
+start s: ${PREBUILD} ${GENERABLE} ## Start the project services.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d
 
-start-fg sf: ${PREBUILD} ## Start the project services in the foreground.
+start-fg sf: ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
 	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up
 
-start-bg sb: ${PREBUILD} ## Start the project services in the background, streaming output to terminal.
+start-bg sb: ${PREBUILD} ${GENERABLE} ## Start the project services in the background, streaming output to terminal.
 	(${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up &)
 
-stop d: ${PREBUILD} ## Stop the current project services on the current target.
+stop d: ${PREBUILD} ${GENERABLE} ## Stop the current project services on the current target.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down
 
-stop-all da: ${PREBUILD} ## Stop the all project services on the current target. including orphans.
+stop-all da: ${PREBUILD} ${GENERABLE} ## Stop the all project services on the current target. including orphans.
 	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
 
-restart r: ${PREBUILD} ## Restart the project services in the foreground.
+restart r: ${PREBUILD} ${GENERABLE} ## Restart the project services in the foreground.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d
 
-restart-fg rf: ${PREBUILD} ## Start the project services in the foreground.
+restart-fg rf: ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up
 
-restart-bg rb: ${PREBUILD}## Start the project services in the background, streaming output to terminal.
+restart-bg rb: ${PREBUILD} ${GENERABLE}## Start the project services in the background, streaming output to terminal.
 	@ (${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up &)
 
-kill k: ${PREBUILD} ## Kill current project services.
+kill k: ${PREBUILD} ${GENERABLE}## Kill current project services.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} kill -s 9
 
-kill-all: ## Kill all project services.
+kill-all: ${GENERABLE}## Kill all project services.
 	@ ${WHILE_IMAGES} echo docker kill -9 $$IMAGE_HASH; done;
 
 current-tag ct: ${COMPOSE_TARGET} ## Get the current project tag.
@@ -448,7 +448,7 @@ current-target ctr: ${COMPOSE_TARGET} ## Get the current target.
 	@ [[ "${TARGET}" != "" ]] || (echo "No target set." && false)
 	@ echo ${TARGET}
 
-list-images li:${PREBUILD} ## List available images from current target.
+list-images li:${PREBUILD}## List available images from current target.
 	@ ${WHILE_IMAGES} \
 		echo $$(docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH) \
 		$$(docker image inspect --format="{{ .Size }}" $$IMAGE_HASH  \
@@ -471,11 +471,11 @@ pull-images pli: ${PREBUILD} ## Pull remotely hosted images.
 hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 	@ git config core.hooksPath githooks
 
-run: ${PREBUILD} ## CMD 'SERVICE COMMAND' Run a command in a given service's container.
+run: ${PREBUILD} ${GENERABLE}## CMD 'SERVICE COMMAND' Run a command in a given service's container.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
 		 ${PASS_ENV} ${CMD}
 
-bash sh: ${PREBUILD} ## Get a bash propmpt to an idilic container.
+bash sh: ${PREBUILD} ${GENERABLE}## Get a bash propmpt to an idilic container.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
 		${PASS_ENV} --entrypoint=bash idilic
 
@@ -490,10 +490,10 @@ composer-update cu: ## Run composer update. Will download docker image if not av
 composer-dump-autoload cda:## Run composer dump-autoload. Will download composer docker image if not available..
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer dump-autoload
 
-dcompose-config dcc: ${PREBUILD} ## Print the current docker-compose configuration.
+dcompose-config dcc: ${PREBUILD} ${GENERABLE}## Print the current docker-compose configuration.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} config
 
-dcompose-version dcv: ${PREBUILD} ## Print the current docker-compose configuration.
+dcompose-version dcv: ${PREBUILD} ${GENERABLE}## Print the current docker-compose version.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} version
 
 .lock_env: retarget ### Lock the environment target
@@ -512,7 +512,7 @@ dcompose-version dcv: ${PREBUILD} ## Print the current docker-compose configurat
 
 	@ test ! -z "${TAG}"                              \
 		&& echo ENV_LOCK_TGT_SVC=${TGT_SVC} > ${ENV_LOCK} \
-		&& echo ENV_LOCK_TAG=${TAG}    >> ${ENV_LOCK} \
+		&& echo ENV_LOCK_TAG=${TAG} >> ${ENV_LOCK} \
 		|| true;
 
 stay@%: retarget ### Set the current target and persist for later invocations.
@@ -603,7 +603,7 @@ help-%:
 templates: ${GENERABLE}
 
 # ${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) .lock_env ${ENVBUILD}
-${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) ${ENVBUILD}
+${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) .lock_env ${ENVBUILD}
 	@ echo -e >&2 "\e[2m"Rebuilding template `basename ${@}`"\e[0m";
 	@ test -w ${@} || test -w `dirname ${@}`;
 	@ [[ "${TARGET}" == "dev" ]] \
@@ -614,62 +614,57 @@ ${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) ${ENVBUILD}
 
 ###
 
-graylog-start gls: ${PREBUILD} ### Start graylog.
+graylog-start gls: ${PREBUILD} ${GENERABLE}### Start graylog.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up -d
 
-graylog-start-fg glsf: ${PREBUILD} ### start-fg for graylog.
+graylog-start-fg glsf: ${PREBUILD} ${GENERABLE}### start-fg for graylog.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up
 
-graylog-start-bg glsb: ${PREBUILD} ### start-bg for graylog.
+graylog-start-bg glsb: ${PREBUILD} ${GENERABLE}### start-bg for graylog.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up &
 
-graylog-restart glr: ${PREBUILD} ### Restart graylog.
+graylog-restart glr: ${PREBUILD} ${GENERABLE}### Restart graylog.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up -d
 
-graylog-restart-fg glrf: ${PREBUILD} ### restart-fg for graylog.
+graylog-restart-fg glrf: ${PREBUILD} ${GENERABLE}### restart-fg for graylog.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up
 
-graylog-restart-bg glrb: ${PREBUILD} ### restart-bg for graylog.
+graylog-restart-bg glrb: ${PREBUILD} ${GENERABLE}### restart-bg for graylog.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml up &
 
-graylog-stop gld: ${PREBUILD} ### Stop graylog.
+graylog-stop gld: ${PREBUILD} ${GENERABLE}### Stop graylog.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml down
 
-graylog-backup glbak: ### Backup graylog config to files.
+graylog-backup glbak: ${GENERABLE}### Backup graylog config to files.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml run --rm mongo bash -c \
 		'mongodump -h mongo --db graylog --out /settings; ls /; ls /settings'
 
-graylog-restore glres: ### Restore graylog config from files.
+graylog-restore glres: ${GENERABLE}### Restore graylog config from files.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml run --rm mongo bash -c \
 		'mongorestore -h mongo --db graylog /settings/graylog'
 
-inotify-start: ${PREBUILD} ### Start inotify.
+inotify-start: ${PREBUILD} ${GENERABLE}### Start inotify.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/inotify.yml up
 
-inotify-stop: ${PREBUILD} ### Stop inotify.
+inotify-stop: ${PREBUILD} ${GENERABLE}### Stop inotify.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/inotify.yml down
 
-inotify-build: ${PREBUILD} ### Stop inotify.
+inotify-build: ${PREBUILD} ${GENERABLE}### Stop inotify.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/inotify.yml build
 
-aptcache-start: ${PREBUILD} ### Start apt-cache.
+aptcache-start: ${PREBUILD} ${GENERABLE}### Start apt-cache.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/aptcache.yml up
 
-aptcache-stop: ${PREBUILD} ### Stop apt-cache.
+aptcache-stop: ${PREBUILD} ${GENERABLE}### Stop apt-cache.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/aptcache.yml down
 
-aptcache-build: ${PREBUILD} ### Stop apt-cache.
+aptcache-build: ${PREBUILD} ${GENERABLE}### Stop apt-cache.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/aptcache.yml build
 
 ###
-yq:
-	${YQ} ${CMD}
-
-cat:
-	cat
 
 post-coverage:
 	echo -e "$(call SHELLOUT,bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN} -f /tmp/coverage-report.json)"
