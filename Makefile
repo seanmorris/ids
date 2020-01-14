@@ -311,7 +311,7 @@ DRUN=docker run --rm         \
 
 1:=
 define TEMPLATE_PATTERNS
-(${DCOMPOSE} -f infra/compose/tools/yjq.yml run ${PASS_ENV} --rm \
+(${DCOMPOSE} -f ${MAKEDIR}infra/compose/tools/yjq.yml run ${PASS_ENV} --rm \
 	yjq bash -c 'yq r - -j | jq -r "to_entries[]  | select(.value) \
 		| [.key, (.value | to_entries[] | .key, .value)] | @tsv"' \
 	) < <(cat .templating | sed 's/\t/  /g') \
