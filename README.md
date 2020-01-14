@@ -17,23 +17,23 @@ The project is made to run in docker but doesn't require it. It can be included 
 The philosophy of the Ids project is headlined by security, speed and easy of use, in that order.
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.11 s (1119.1 files/s, 211053.0 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.11 s (1050.4 files/s, 205869.7 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                              66           2743            300          11710
-JSON                             12              0              0           4533
-YAML                             27            112             14           1106
-Markdown                          1            279              0            604
-make                              2            131              3            560
-Bourne Shell                      5             13              2             79
+JSON                             12              0              0           4540
+Markdown                          2            558              0           1222
+YAML                             27            112             14           1105
+make                              2            134              6            570
+Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15              7             31
 INI                               3              0              0             11
 --------------------------------------------------------------------------------
-SUM:                            118           3293            326          18634
+SUM:                            118           3571            327          19229
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Mon Jan 13 23:01:40 EST 2020*
+*built by sean @ Tue Jan 14 01:21:01 EST 2020*
 
 ## Installation
 

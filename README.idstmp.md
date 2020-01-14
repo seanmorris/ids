@@ -17,7 +17,7 @@ The project is made to run in docker but doesn't require it. It can be included 
 The philosophy of the Ids project is headlined by security, speed and easy of use, in that order.
 
 ```
-$(call TEMPLATE_SHELL,cloc -q . --exclude-dir="vendor" | tail -n +2 )
+$(call TEMPLATE_SHELL,cloc -q . --exclude-dir="vendor" --exclude-ext=___gen.* | tail -n +2 )
 ```
 *built by ${shell whoami} @ $(shell date)*
 

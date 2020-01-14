@@ -75,9 +75,9 @@ ENVBUILD =${REALDIR}.env         \
 
 PREBUILD = retarget ${VAR_FILE} ${ENVBUILD}
 
-COMPOSE_BASE   =infra/compose/base.yml
-COMPOSE_TARGET =infra/compose/${TARGET}.yml
-COMPOSE_TOOLS  =infra/compose/tools
+COMPOSE_BASE   =${REALDIR}infra/compose/base.yml
+COMPOSE_TARGET =${REALDIR}infra/compose/${TARGET}.yml
+COMPOSE_TOOLS  =${REALDIR}infra/compose/tools
 
 PROJECT  ?=ids
 REPO     ?=seanmorris
@@ -261,7 +261,7 @@ $(eval NEW_DISABLE:=$(filter -%,${NEW_SVC}))
 $(eval TGT_SVC:=$(sort ${NEW_ENABLE} ${NEW_DISABLE}))
 $(eval REMAINING_SVC:=$(filter-out ${NEW_INV}, ${ENV_LOCK_TGT_SVC:=}))
 $(eval TGT_SVC:=$(sort ${NEW_SVC} ${REMAINING_SVC}))
-test ${TGT_SVC} == ${ENV_LOCK_TGT_SVC} || touch -d 0 ${ENV_LOCK}
+test "${TGT_SVC}" == "${ENV_LOCK_TGT_SVC}" || touch -d 0 "${ENV_LOCK}"
 endef
 
 SPACE  :=${""} ${""}
