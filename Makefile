@@ -18,10 +18,10 @@ REALDIR   :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 OUTREALDIR?=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 MAKEDIR   :=${REALDIR}
 OUTMAKEDIR?=${REALDIR}
-VAR_FILE  ?=${MAKEDIR}.var
+VAR_FILE  ?=${REALDIR}.var
 
-MAIN_ENV  :=${MAKEDIR}.env
-MAIN_DLT  :=${MAKEDIR}.env.default
+MAIN_ENV  :=${REALDIR}.env
+MAIN_DLT  :=${REALDIR}.env.default
 
 D_UID ?= $(shell id -u)
 D_GID ?= $(shell id -g)
@@ -47,8 +47,8 @@ $(eval TARGET=$(shell echo ${firstword ${MAKECMDGOALS}} | ${CUT_TARGET} ))
 $(eval TGT_STR=$(firstword ${MAKECMDGOALS}))
 endif
 
-TRGT_ENV :=${MAKEDIR}.env_${TARGET}
-TRGT_DLT :=${MAKEDIR}.env_${TARGET}.default
+TRGT_ENV :=${REALDIR}.env_${TARGET}
+TRGT_DLT :=${REALDIR}.env_${TARGET}.default
 
 -include ${TRGT_ENV}
 -include ${TRGT_DLT}
@@ -126,8 +126,8 @@ endef
 
 define XDEBUG_ENV
 XDEBUG_CONFIG="`\
-	test -f ${MAKEDIR}.env_${TARGET}    \
-	&& cat ${MAKEDIR}.env_${TARGET}     \
+	test -f ${REALDIR}.env_${TARGET}    \
+	&& cat ${REALDIR}.env_${TARGET}     \
 	| ${INTERPOLATE_ENV}                \
 	| grep ^XDEBUG_CONFIG_              \
 	| while read VAR; do echo $$VAR | { \
@@ -203,10 +203,10 @@ DCOMPOSE_TARGET_STACK:= -f ${COMPOSE_TARGET}
 define NEWTARGET ## %frag Set up environment for new target.
 $(eval COMPOSE_TARGET:=$(shell echo infra/compose/${TARGET}.yml))
 $(eval PREBUILD:=$(shell echo env .env.default .env_${TARGET} .env_${TARGET}.default .lock_env))
-$(eval MAIN_ENV:=$(shell echo ${MAKEDIR}.env))
-$(eval MAIN_DLT:=$(shell echo ${MAKEDIR}.env.default))
-$(eval TRGT_ENV:=$(shell echo ${MAKEDIR}.env_${TARGET}))
-$(eval TRGT_DLT:=$(shell echo ${MAKEDIR}.env_${TARGET}.default))
+$(eval MAIN_ENV:=$(shell echo ${REALDIR}.env))
+$(eval MAIN_DLT:=$(shell echo ${REALDIR}.env.default))
+$(eval TRGT_ENV:=$(shell echo ${REALDIR}.env_${TARGET}))
+$(eval TRGT_DLT:=$(shell echo ${REALDIR}.env_${TARGET}.default))
 
 $(eval DCOMPOSE_FILES:=)
 
@@ -314,7 +314,7 @@ define TEMPLATE_PATTERNS
 (${DCOMPOSE} -f ${MAKEDIR}infra/compose/tools/yjq.yml run ${PASS_ENV} --rm \
 	yjq bash -c 'yq r - -j | jq -r "to_entries[]  | select(.value) \
 		| [.key, (.value | to_entries[] | .key, .value)] | @tsv"' \
-	) < <(cat .templating | sed 's/\t/  /g') \
+	) < <(grep -hs ^ ${MAKEDIR}.templating | sed 's/\t/  /g') \
 		| while IFS=$$'\t' read -r PREFIX FIND REPLACE; do \
 			test -f "$$PREFIX" && { \
 				export GENERATED=`echo $${PREFIX/$$FIND/$$REPLACE}`; \
