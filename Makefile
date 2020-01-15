@@ -14,16 +14,16 @@ MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 
 BASELINUX ?= debian:buster-20191118-slim## %var The BASE base image.
 PHP       ?= 7.3
-REALDIR   :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-OUTREALDIR?=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-MAKEDIR   :=${REALDIR}
-OUTMAKEDIR?=${REALDIR}
+COREDIR   :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+OUTCOREDIR?=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+ROOTDIR   ?=${COREDIR}
+OUTROOTDIR?=${COREDIR}
 
-MAIN_ENV  :=${REALDIR}.env
-MAIN_DLT  :=${REALDIR}.env.default
+MAIN_ENV  :=${ROOTDIR}.env
+MAIN_DLT  :=${ROOTDIR}.env.default
 
-ENV_LOCK ?=${REALDIR}.lock_env
-VAR_FILE ?=${REALDIR}.var
+ENV_LOCK ?=${ROOTDIR}.lock_env
+VAR_FILE ?=${ROOTDIR}.var
 
 -include ${ENV_LOCK}
 
@@ -55,29 +55,29 @@ endif
 
 # @ ( [[ "${ENV_LOCK_TAG}" != "" ]] || [[ "${ENV_LOCK_TGT_SVC}" != "${TGT_SVC}" ]] ) \
 
-TRGT_ENV :=${REALDIR}.env_${TARGET}
-TRGT_DLT :=${REALDIR}.env_${TARGET}.default
+TRGT_ENV :=${ROOTDIR}.env_${TARGET}
+TRGT_DLT :=${ROOTDIR}.env_${TARGET}.default
 
 -include ${TRGT_ENV}
 -include ${TRGT_DLT}
 
 $(shell >&2 echo -e "\e[1m"Starting with target: \"${TARGET}\" on `hostname` "\e[0m")
 
-DOCKDIR  ?=${REALDIR}infra/docker/
+DOCKDIR  ?=${COREDIR}infra/docker/
 DEBIAN_ESC=$(shell echo ${BASELINUX} | sed 's/\:/__/gi')
 
 # $(shell >&2 echo -e "$(call TEMPLATE_PATTERNS,${1}))")
 
-ENVBUILD =${REALDIR}.env         \
-	${REALDIR}.env.default       \
-	${REALDIR}.env_$${TARGET}    \
-	${REALDIR}.env_$${TARGET}.default \
+ENVBUILD =${ROOTDIR}.env         \
+	${ROOTDIR}.env.default       \
+	${ROOTDIR}.env_$${TARGET}    \
+	${ROOTDIR}.env_$${TARGET}.default \
 
 PREBUILD = retarget ${VAR_FILE} ${ENVBUILD}
 
-COMPOSE_BASE   =${REALDIR}infra/compose/base.yml
-COMPOSE_TARGET =${REALDIR}infra/compose/${TARGET}.yml
-COMPOSE_TOOLS  =${REALDIR}infra/compose/tools
+COMPOSE_BASE   =${COREDIR}infra/compose/base.yml
+COMPOSE_TARGET =${COREDIR}infra/compose/${TARGET}.yml
+COMPOSE_TOOLS  =${COREDIR}infra/compose/tools
 
 PROJECT  ?=ids
 REPO     ?=seanmorris
@@ -129,8 +129,8 @@ endef
 
 define XDEBUG_ENV
 XDEBUG_CONFIG="`\
-	test -f ${REALDIR}.env_${TARGET}    \
-	&& cat ${REALDIR}.env_${TARGET}     \
+	test -f ${ROOTDIR}.env_${TARGET}    \
+	&& cat ${ROOTDIR}.env_${TARGET}     \
 	| ${INTERPOLATE_ENV}                \
 	| grep ^XDEBUG_CONFIG_              \
 	| while read VAR; do echo $$VAR | { \
@@ -205,11 +205,11 @@ DCOMPOSE_TARGET_STACK:= -f ${COMPOSE_TARGET}
 
 define NEWTARGET ## %frag Set up environment for new target.
 $(eval COMPOSE_TARGET:=$(shell echo infra/compose/${TARGET}.yml))
-$(eval PREBUILD:=$(shell echo ${REALDIR}.env ${REALDIR}.env.default ${REALDIR}.env_${TARGET} ${REALDIR}.env_${TARGET}.default))
-$(eval MAIN_ENV:=$(shell echo ${REALDIR}.env))
-$(eval MAIN_DLT:=$(shell echo ${REALDIR}.env.default))
-$(eval TRGT_ENV:=$(shell echo ${REALDIR}.env_${TARGET}))
-$(eval TRGT_DLT:=$(shell echo ${REALDIR}.env_${TARGET}.default))
+$(eval PREBUILD:=$(shell echo ${ROOTDIR}.env ${COREDIR}.env.default ${COREDIR}.env_${TARGET} ${COREDIR}.env_${TARGET}.default))
+$(eval MAIN_ENV:=$(shell echo ${ROOTDIR}.env))
+$(eval MAIN_DLT:=$(shell echo ${ROOTDIR}.env.default))
+$(eval TRGT_ENV:=$(shell echo ${ROOTDIR}.env_${TARGET}))
+$(eval TRGT_DLT:=$(shell echo ${ROOTDIR}.env_${TARGET}.default))
 
 $(eval DCOMPOSE_FILES:=)
 
@@ -244,11 +244,11 @@ endef
 
 define ENV ## %var List of environment vars to pass to sub commands.
 REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT} D_GID=${D_GID} \
-MAKEDIR=${MAKEDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}}    \
+ROOTDIR=${ROOTDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}}    \
 TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}     \
-OUTMAKEDIR=${OUTMAKEDIR} OUTREALDIR=${OUTREALDIR} D_UID=${D_UID}      \
+OUTROOTDIR=${OUTROOTDIR} OUTCOREDIR=${OUTCOREDIR} D_UID=${D_UID}      \
 TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${BASELINUX}         \
-DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} REALDIR=${REALDIR}              \
+DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} COREDIR=${COREDIR}              \
 DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}
 endef
 
@@ -307,19 +307,19 @@ endif
 DCOMPOSE= export ${ENV} && docker-compose -p ${PROJECT}_${TARGET}
 
 DRUN=docker run --rm         \
-	-env-file=${REALDIR}.env.default   \
-	-env-file=${REALDIR}.env           \
-	-env-file=${REALDIR}.env_${TARGET} \
-	-env-file=${REALDIR}.env_${TARGET}.default \
-	-v ${OUTMAKEDIR}:/app
+	-env-file=${ROOTDIR}.env.default   \
+	-env-file=${ROOTDIR}.env           \
+	-env-file=${ROOTDIR}.env_${TARGET} \
+	-env-file=${ROOTDIR}.env_${TARGET}.default \
+	-v ${OUTROOTDIR}:/app
 
 1:=
 define TEMPLATE_PATTERNS
-test -f ${REALDIR}.templating \
-&& (${DCOMPOSE} -f ${MAKEDIR}infra/compose/tools/yjq.yml run ${PASS_ENV} --rm \
+test -f ${COREDIR}.templating \
+&& (${DCOMPOSE} -f ${COREDIR}infra/compose/tools/yjq.yml run ${PASS_ENV} --rm \
 	yjq bash -c 'yq r - -j | jq -r "to_entries[]  | select(.value) \
 		| [.key, (.value | to_entries[] | .key, .value)] | @tsv"' \
-	) < <(grep -hs ^ ${REALDIR}.templating | sed 's/\t/  /g') \
+	) < <(grep -hs ^ ${COREDIR}.templating | sed 's/\t/  /g') \
 		| while IFS=$$'\t' read -r PREFIX FIND REPLACE; do \
 			test -f "$$PREFIX" && { \
 				export GENERATED=`echo $${PREFIX/$$FIND/$$REPLACE}`; \
@@ -402,7 +402,7 @@ test t: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Run the tests
 clean: ${PREBUILD}## Clean the project. Only applies to files from the current target.
 	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
 	@- docker volume rm -f ${PROJECT}_${TARGET}_schema;
-	@- docker run --rm -v ${MAKEDIR}:/app -w=/app   \
+	@- docker run --rm -v ${ROOTDIR}:/app -w=/app   \
 		${BASELINUX} bash -c "            \
 			set -o noglob;                \
 			rm -f ${GENERABLE};           \
@@ -413,7 +413,7 @@ clean: ${PREBUILD}## Clean the project. Only applies to files from the current t
 			rm -f .env.default            \
 			rm -f .env"
 
-	@- docker run --rm -v ${REALDIR}:/app -w=/app \
+	@- docker run --rm -v ${COREDIR}:/app -w=/app \
 		${BASELINUX} bash -c "                    \
 			rm -f ${GENERABLE};                   \
 			cat data/global/_schema.json > data/global/schema.json ;"
@@ -552,24 +552,24 @@ retarget: ### Set the current target for one invocation.
 	@ ${NEWTARGET}
 
 
-${REALDIR}.env: ${REALDIR}config/.env
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app  \
+${ROOTDIR}.env: ${ROOTDIR}config/.env
+	@ docker run --rm -v ${ROOTDIR}:/app -w=/app  \
 		${BASELINUX} bash -c '{                   \
 			FROM=config/.env                      \
 			TO=.env                               \
 				&& ${STITCH_ENTROPY};             \
 		}'
 
-${REALDIR}.env.default: ${REALDIR}config/.env
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app  \
+${ROOTDIR}.env.default: ${ROOTDIR}config/.env
+	@ docker run --rm -v ${ROOTDIR}:/app -w=/app  \
 		${BASELINUX} bash -c '{                   \
 			FROM=config/.env.default              \
 			TO=.env.default                       \
 				&& ${STITCH_ENTROPY};             \
 		}'
 
-${REALDIR}.env_${TARGET}: ${REALDIR}config/.env_${TARGET}
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+${ROOTDIR}.env_${TARGET}: ${ROOTDIR}config/.env_${TARGET}
+	@ docker run --rm -v ${ROOTDIR}:/app -w=/app \
 		${BASELINUX} bash -c '{                  \
 			FROM=config/.env_${TARGET}           \
 			TO=.env_${TARGET}                    \
@@ -579,8 +579,8 @@ ${REALDIR}.env_${TARGET}: ${REALDIR}config/.env_${TARGET}
 				&& ${STITCH_ENTROPY};            \
 		}'
 
-${REALDIR}.env_${TARGET}.default: ${REALDIR}config/.env_${TARGET}.default
-	@ docker run --rm -v ${MAKEDIR}:/app -w=/app \
+${ROOTDIR}.env_${TARGET}.default: ${ROOTDIR}config/.env_${TARGET}.default
+	@ docker run --rm -v ${ROOTDIR}:/app -w=/app \
 		${BASELINUX} bash -c '{                  \
 			FROM=config/.env_${TARGET}           \
 			TO=.env_${TARGET}                    \
@@ -590,13 +590,19 @@ ${REALDIR}.env_${TARGET}.default: ${REALDIR}config/.env_${TARGET}.default
 				&& ${STITCH_ENTROPY};            \
 		}'
 
-${REALDIR}config/.env   ${REALDIR}config/.env_${TARGET}:
+${ROOTDIR}config/.env:
 	@ test -f ${@} || touch ${@};
 
-${REALDIR}config/.env.default ${REALDIR}config/.env_${TARGET}.default:
+${ROOTDIR}config/.env_${TARGET}:
+	@ test -f ${@} || touch ${@};
+
+${ROOTDIR}config/.env.default:
 	@ test -f ${@};
 
-infra/compose/%yml: ${REALDIR}.env ${REALDIR}.env.default ${REALDIR}.env_$${TARGET} ${REALDIR}.env_$${TARGET}.default ${ENV_LOCK}
+${ROOTDIR}config/.env_${TARGET}.default:
+	@ test -f ${@};
+
+infra/compose/%yml: ${ROOTDIR}.env ${ROOTDIR}.env.default ${ROOTDIR}.env_$${TARGET} ${COREDIR}.env_$${TARGET}.default ${ENV_LOCK}
 	@ test -f infra/compose/${TARGET}.yml;
 
 help: help-all ## print this message
@@ -688,3 +694,8 @@ aptcache-build: ${PREBUILD} ${GENERABLE}### Stop apt-cache.
 
 post-coverage:
 	echo -e "$(call SHELLOUT,bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN} -f /tmp/coverage-report.json)"
+
+dir:
+	echo ${ROOTDIR}
+	echo ${COREDIR}
+	echo ${ROOTDIR}config/.env_${TARGET}.default

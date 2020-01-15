@@ -19,23 +19,23 @@ The project is made to run in docker but doesn't require it. It can be included 
 The philosophy of the Ids project is headlined by security, speed and easy of use, in that order.
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.10 s (1171.9 files/s, 230072.2 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.08 s (1337.2 files/s, 257164.9 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                              66           2743            300          11710
-JSON                             12              0              0           4575
-Markdown                          2            560              0           1224
-YAML                             27            112             14           1105
-make                              2            134              6            570
+PHP                              65           2738            301          11678
+JSON                             11              0              0           3794
+YAML                             24             97             14           1037
+Markdown                          1            280              0            605
+make                              1            130              6            554
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15             17             21
 INI                               3              0              0             11
 --------------------------------------------------------------------------------
-SUM:                            118           3573            337          19256
+SUM:                            111           3269            338          17740
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue Jan 14 03:07:41 EST 2020*
+*built by sean @ Tue Jan 14 21:57:04 EST 2020*
 
 ## Installation
 
@@ -398,10 +398,10 @@ foreach($some as $configKey => $value)
 
 ### Configuration Arrays
 
-Arrays can be created by adding a `_` to the end of the environment variable name. The value will be split on whitespace.
+Arrays can be created by adding an underscore to the end of the environment variable name. The value will be split on whitespace.
 
 ```
-IDS_ARRAY=first second third
+IDS_ARRAY_=first second third
 ```
 
 ```php
@@ -412,12 +412,12 @@ $array = Settings::read('ARRAY');
 Whitespace will be preserved if the value is quotes:
 
 ```
-IDS_ARRAY=first "second element" third
+IDS_ARRAY_=first "second element" third
 ```
 
 Quotes can be escaped by doubling:
 ```
-IDS_ARRAY=first "second element ""with quotes inside""." third
+IDS_ARRAY_=first "second element ""with quotes inside""." third
 ```
 
 ### Hostname & Port based configuration

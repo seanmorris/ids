@@ -7,7 +7,7 @@ services:
     image:   ${REPO}/${PROJECT}.make:${TAG}
     build:
       context: ../../
-      dockerfile: ${REALDIR}infra/docker/tools/make.___gen.dockerfile
+      dockerfile: ${COREDIR}infra/docker/tools/make.___gen.dockerfile
     volumes:
       - ${OUTMAKEDIR}:/app
       - /var/run/docker.sock:/var/run/docker.sock:ro

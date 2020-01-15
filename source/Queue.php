@@ -200,7 +200,7 @@ abstract class Queue
 	{
 		if(!static::$channel || $reset)
 		{
-			$servers = \SeanMorris\Ids\Settings::read('rabbitMq');
+			$servers = \SeanMorris\Ids\Settings::read('rabbitmq');
 
 			if(!$servers)
 			{
