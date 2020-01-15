@@ -10,7 +10,7 @@ services:
     depends_on: [database]
 
   server:
-    volumes: ['${OUTMAKEDIR}:/app']
+    volumes: ['${OUTROOTDIR}:/app']
     ports:   ['${IDS_EXPOSE_HTTP}:8080']
     extends:
       file: base.yml

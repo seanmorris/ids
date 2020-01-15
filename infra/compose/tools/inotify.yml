@@ -11,6 +11,6 @@ services:
       context: ../../
       dockerfile: ${COREDIR}infra/docker/tools/inotify.___gen.dockerfile
     volumes:
-      - ${OUTMAKEDIR}:/app
+      - ${OUTROOTDIR}:/app
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /usr/bin/docker:${DOCKER}

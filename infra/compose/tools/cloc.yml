@@ -10,4 +10,4 @@ services:
       context: ../../
       dockerfile: ${COREDIR}infra/docker/tools/cloc.___gen.dockerfile
     volumes:
-      - ${OUTMAKEDIR}:/app
+      - ${OUTROOTDIR}:/app
