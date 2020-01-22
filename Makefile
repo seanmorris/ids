@@ -78,7 +78,6 @@ DEBIAN_ESC=$(shell echo ${BASELINUX} | sed 's/\:/__/gi')
 
 # $(shell >&2 echo -e "$(call TEMPLATE_PATTERNS,${1}))")
 
-
 ENVBUILD =${ROOTDIR}.env         \
 	${ROOTDIR}.env.default       \
 	${ROOTDIR}.env_$${TARGET}    \
@@ -390,7 +389,6 @@ build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
 	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start
 	@ ${WHILE_IMAGES}                           \
->>>>>>> 6eaa28faf4c0cd3741bf74e319794c86b046615a
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
 		| while read IMAGE_NAME; do                                          \
 			IMAGE_PREFIX=`echo "$$IMAGE_NAME" | sed "s/\:.*\$$//"`;          \

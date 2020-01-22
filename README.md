@@ -19,23 +19,23 @@ The project is made to run in docker but doesn't require it. It can be included 
 The philosophy of the Ids project is headlined by security, speed and easy of use, in that order.
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.08 s (1325.6 files/s, 263626.5 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.09 s (1344.0 files/s, 265319.7 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                              65           2741            304          11692
-JSON                             11              0              0           3794
-Markdown                          2            560              0           1224
-YAML                             24             97             14           1041
-make                              1            134              9            550
+PHP                              66           2748            304          11725
+JSON                             12              0              0           4596
+Markdown                          2            565              0           1289
+YAML                             27            113             14           1113
+make                              2            139              9            566
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15             17             21
 INI                               3              0              0             11
 --------------------------------------------------------------------------------
-SUM:                            112           3556            344          18373
+SUM:                            118           3589            344          19361
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Wed Jan 22 03:57:17 EST 2020*
+*built by sean @ Wed Jan 22 04:25:21 EST 2020*
 
 ## Installation
 
@@ -75,17 +75,6 @@ https://github.com/seanmorris/ids-project
 
 ## Dependencies
 
-<<<<<<< HEAD
-*  Composer
-*  Docker
-*  Docker Compose
-*  GNU Make
-*  Git
-*  Linux or Compatible OS
-*  PHP
-*  SimpleTest/SimpleTest
-*  Minikube (required for kubernetes targets only)
-=======
  * Composer
  * Docker
  * Docker Compose
@@ -95,7 +84,6 @@ https://github.com/seanmorris/ids-project
  * PHP
  * SimpleTest
  * Minikube (required for kubernetes targets only)
->>>>>>> 6eaa28faf4c0cd3741bf74e319794c86b046615a
 
 ## Dev Tools
 
@@ -166,15 +154,6 @@ Run `idilic help` to see actions exposed by any installed packages.
 
 By default Ids provides 4 build targets: base, prod, dev, and test. Each exposes different ports, so they may run without conflict in parallel.
 
-<<<<<<< HEAD
-*  **base** exposes no ports and builds **without** require-dev.
-
-*  **prod** exposes port 80 (configurable by `IDS_EXPOSE_HTTP`) and port 443* ( configurable by `IDS_EXPOSE_HTTPS` ) and builds **without** require-dev.
-
-*  **test** exposes port 2021 (configurable by `IDS_EXPOSE_HTTP`) and port 3031 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
-
-*  **dev** exposes port 2020 ( configurable by `IDS_EXPOSE_HTTP` ) and port 3030 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
-=======
  * **base** exposes no ports and builds **without** require-dev.
 
  * **prod** exposes port 80 (configurable by `IDS_EXPOSE_HTTP`) and port 443* ( configurable by `IDS_EXPOSE_HTTPS` ) and builds **without** require-dev.
@@ -182,7 +161,6 @@ By default Ids provides 4 build targets: base, prod, dev, and test. Each exposes
  * **test** exposes port 2021 (configurable by `IDS_EXPOSE_HTTP`) and port 3031 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
 
  * **dev** exposes port 2020 ( configurable by `IDS_EXPOSE_HTTP` ) and port 3030 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
->>>>>>> 6eaa28faf4c0cd3741bf74e319794c86b046615a
 
 \*Not yet implemented.
 
@@ -199,17 +177,10 @@ If youre on the BASH shell simply run one of the following commands to set the t
 
 If you don't feek like typing `@target` for every command, you can ask the system to remember a target with:
 
-<<<<<<< HEAD
-*  `make stay@base`
-*  `make stay@dev`
-*  `make stay@test`
-*  `make stay@prod`
-=======
  * `make stay@base`
  * `make stay@dev`
  * `make stay@test`
  * `make stay@prod`
->>>>>>> 6eaa28faf4c0cd3741bf74e319794c86b046615a
 
 ### Extending Environments
 
@@ -873,46 +844,6 @@ $mail->send(TRUE);
 
 Run these from the project root to build and control the project infrastructure.
 
-<<<<<<< HEAD
-*  `make build` `make b` - Build the project
-*  `make env` `make e` - Print the project's environment config.
-*  `make test` `make t`- Run tests.
-*  `make test` `make t`- Remove the generated configs,* *even if they have been altered.**
-*  `make start` `make s`- Start the project services.
-*  `make start-fg` `make sf`- Start the project services, hold control of the terminal and stream output.
-*  `make start-bg` `make sb`- Start the project services, hold control of the terminal and stream output.
-*  `make restart-fg` `make rf` - Restart the project services, hold control of the terminal and stream output.
-*  `make restart-bg` `make rb`- Restart the project services, hold control of the terminal and stream output.
-*  `make stop` `make d`- Stop the project services.
-*  `make stop-all` `make da`- Stop the project services, including any that no longer appear in the compose file.
-*  `make kill` `make k`- Immediately kill the project services.
-*  `make nuke` `make nk`* - Immediately kill all containers on the host. Not yet implemented.
-*  `make current-tag` `ct`- Output the project tag for the current target & branch.
-*  `make list-tags` `make lt`- List image tags for the current target & branch.
-*  `make list-images` `make li`- List images for the current target & branch.
-*  `make push-images` `make psi`- List images for the current target & branch.
-*  `make pull-images` `make pli`- List images for the current target & branch.
-*  `make hooks` - Initialize git hooks.
-*  `make composer-install` `make ci`- Install composer packages.
-*  `make composer-update` `make co`- Update composer packages.
-*  `make composer-dump-autoload` `make cda`- Regenerate and dump composer autoload files..
-*  `make npm install PKG="[PACKAGE]"` `make ni`- Run `npm install` inside the project.
-*  `make bash` `make sh`- Get a bash prompt to an `idilic` container.
-*  `make run CMD="SERVICE [COMMAND]"` `make r`- Run a command in a service container.
-
-## Dependencies
-
-*  Bash
-*  Composer
-*  Docker
-*  Docker Compose
-*  GNU Make
-*  Git
-*  Linux or Compatible OS
-*  Node
-*  PHP
-*  SimpleTest/SimpleTest
-=======
  * `make build` `make b` - Build the project
  * `make env` `make e` - Print the project's environment config.
  * `make test` `make t`- Run tests.
@@ -950,7 +881,6 @@ Run these from the project root to build and control the project infrastructure.
  * Linux or Compatible OS
  * Node
  * PHP
->>>>>>> 6eaa28faf4c0cd3741bf74e319794c86b046615a
 
 ## SeanMorris/Ids
 
