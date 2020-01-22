@@ -1632,6 +1632,12 @@ class Model
 
 		while($class)
 		{
+			if(!property_exists($class, $name))
+			{
+				$class = get_parent_class($class);
+				continue;
+			}
+
 			try
 			{
 				$key = $class . '::' . $name;

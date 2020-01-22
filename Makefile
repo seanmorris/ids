@@ -134,7 +134,7 @@ XDEBUG_CONFIG="`\
 	| ${INTERPOLATE_ENV}                \
 	| grep ^XDEBUG_CONFIG_              \
 	| while read VAR; do echo $$VAR | { \
-		IFS="="" read -r NAME VALUE;    \
+		IFS="=" read -r NAME VALUE;    \
 		echo -En $$NAME                 \
 			| sed 's/^XDEBUG_CONFIG_\(.\+\)/\L\1/'; \
 		echo -En "=$$VALUE ";           \
@@ -161,24 +161,23 @@ endef
 define PARSE_ENV ## %frag Loop over environment files. Provides $$ENV_NAME and $$ENV_VALUE. Finish with "done;"
 grep -v ^\# \
 	| while read -r ENV; do echo $$ENV | { \
-		IFS='\=' read -r ENV_NAME ENV_VALUE;
+		IFS="\=" read -r ENV_NAME ENV_VALUE;
 endef
 
-define QUOTE_ENV ## %frag quotes environment vara:
+define QUOTE_ENV ## %frag quotes environment vars:
 	${PARSE_ENV} echo -n " $$ENV_NAME="; printf %q "$$ENV_VALUE"; }; done
 endef
 
 ENTROPY_DIR=/tmp/IDS_ENTROPY
 
 define GET_ENTROPY ## %func Return entropy value for a given key.
-test -w "${ENTROPY_DIR}/${1}"  \
-	&& cat ${ENTROPY_DIR}/${1} \
+test -d "${ENTROPY_DIR}" || mkdir -m 700 -p ${ENTROPY_DIR}; \
+test -w "${ENTROPY_DIR}/${1}"                               \
+	&& cat ${ENTROPY_DIR}/${1}                              \
 	|| ${RANDOM_STRING} | tee ${ENTROPY_DIR}/${1}
 endef
 
 define STITCH_ENTROPY ## %func Return entropy value for a given key.
-test -d "${ENTROPY_DIR}"                       \
-	|| mkdir -m 700 -p ${ENTROPY_DIR};         \
 while read -r ENV_LINE; do                     \
 	echo -n "$$ENV_LINE" | ${PARSE_ENV}        \
 		echo -n $$ENV_NAME=;                   \
@@ -188,8 +187,8 @@ while read -r ENV_LINE; do                     \
 			&& echo $$(ENTROPY_KEY=$$ENTROPY_KEY  \
 				$(call GET_ENTROPY,$$ENTROPY_KEY) \
 			)                                  \
-			|| echo -E $$ENV_VALUE;            \
-};}; done; done < $$FROM > $$TO
+			|| echo -E "$$ENV_VALUE";          \
+};}; done; done
 endef
 
 define UNINCLUDE ## %func Overwrite all values from given environment file.
@@ -268,12 +267,16 @@ SPACE  :=${""} ${""}
 COMMA  :=,
 NEWLINE:=\n
 
-define SHELLOUT ## %func Get a multiline return value from the shell.
-$(eval ___SHELLOUT_RETURN:=$(subst #,\#,$(shell printf "%q" "$$(${1})" \
+define IMPORT_TEMPLATE ## %func Get a multiline return value from the shell.
+$(eval ___IMPORT_TEMPLATE:=$(subst #,\#,$(shell printf "%q" "$$(${1})" \
 	| sed "s/^$$'//g"     \
 	| sed "s/'$$//g"      \
 	| sed "s/'/'\\\\''/g" \
-)))$$(printf "%b" '${___SHELLOUT_RETURN}' | sed "s/\\\'/'/g")
+)))$$(printf "%b" '${___IMPORT_TEMPLATE}' | sed "s/\\\'/'/g")
+endef
+
+define SHELLOUT ## %func Get a multiline return value from the shell.
+$(shell echo -E "$$(printf "%q" "$$(${1})")")
 endef
 
 define TEMPLATE_SHELL ## %func Get a multiline return value from the shell for a template.
@@ -551,45 +554,6 @@ retarget: ### Set the current target for one invocation.
 		|| >&2 echo Setting services for ${TGT_STR}...
 	@ ${NEWTARGET}
 
-
-${ROOTDIR}.env: ${ROOTDIR}config/.env
-	@ docker run --rm -v ${ROOTDIR}:/app -w=/app  \
-		${BASELINUX} bash -c '{                   \
-			FROM=config/.env                      \
-			TO=.env                               \
-				&& ${STITCH_ENTROPY};             \
-		}'
-
-${ROOTDIR}.env.default: ${ROOTDIR}config/.env
-	@ docker run --rm -v ${ROOTDIR}:/app -w=/app  \
-		${BASELINUX} bash -c '{                   \
-			FROM=config/.env.default              \
-			TO=.env.default                       \
-				&& ${STITCH_ENTROPY};             \
-		}'
-
-${ROOTDIR}.env_${TARGET}: ${ROOTDIR}config/.env_${TARGET}
-	@ docker run --rm -v ${ROOTDIR}:/app -w=/app \
-		${BASELINUX} bash -c '{                  \
-			FROM=config/.env_${TARGET}           \
-			TO=.env_${TARGET}                    \
-				&& ${STITCH_ENTROPY};            \
-			FROM=config/.env_${TARGET}.default   \
-			TO=.env_${TARGET}.default            \
-				&& ${STITCH_ENTROPY};            \
-		}'
-
-${ROOTDIR}.env_${TARGET}.default: ${ROOTDIR}config/.env_${TARGET}.default
-	@ docker run --rm -v ${ROOTDIR}:/app -w=/app \
-		${BASELINUX} bash -c '{                  \
-			FROM=config/.env_${TARGET}           \
-			TO=.env_${TARGET}                    \
-				&& ${STITCH_ENTROPY};            \
-			FROM=config/.env_${TARGET}.default   \
-			TO=.env_${TARGET}.default            \
-				&& ${STITCH_ENTROPY};            \
-		}'
-
 ${ROOTDIR}config/.env:
 	@ test -f ${@} || touch ${@};
 
@@ -632,11 +596,35 @@ templates: ${GENERABLE}
 ${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) ${ENV_LOCK} ${ENVBUILD}
 	@ echo -e >&2 "\e[2m"Rebuilding template `basename ${@}`"\e[0m";
 	@ test -w ${@} || test -w `dirname ${@}`;
-	@ [[ "${TARGET}" == "dev" ]] \
-		&& echo -e "$(call SHELLOUT,cat ${<})" >&2 \
-		|| true;
-	@ echo -e "$(call SHELLOUT,cat ${<})" > ${@}
-	@ test -f ${@};
+	export TEMPLATE_SOURCE="$(call IMPORT_TEMPLATE,cat ${<})" \
+	&& echo -en "$$TEMPLATE_SOURCE" >${@}
+
+# 	export TEMPLATE_SOURCE="$(call SHELLOUT,cat ${<})" \
+# 	@ eval printf "%q" "$(call SHELLOUT,cat ${<}) >${@}";\
+# 	@ printf "%q" '$(call SHELLOUT,cat ${<})' >${@};
+
+${ROOTDIR}.env: ${ROOTDIR}config/.env
+	export ${ENV} \
+	&& export ENV_SOURCE="$(call SHELLOUT,cat ${ROOTDIR}config/.env)" \
+	&& {                                                \
+		test "$${ENV_SOURCE:0:1}" == '$$'               \
+		&& eval echo -en $$ENV_SOURCE                   \
+		|| eval eval echo -en $$"$$ENV_SOURCE";         \
+		echo "\n";                                      \
+	} | docker run --rm -iv ${ROOTDIR}:/app -w=/app     \
+		${BASELINUX} bash -c '${STITCH_ENTROPY}' > ${@} \
+
+
+${ROOTDIR}.env%: ${ROOTDIR}config/.env${*}
+	export ${ENV} \
+	&& export ENV_SOURCE="$(call SHELLOUT,cat ${ROOTDIR}config/.env${*})" \
+	&& {                                                \
+		test "$${ENV_SOURCE:0:1}" == '$$'               \
+		&& eval echo -en $$ENV_SOURCE                   \
+		|| eval eval echo -en $$"$$ENV_SOURCE";         \
+		echo -en "\n";                                  \
+	} | docker run --rm -iv ${ROOTDIR}:/app -w=/app     \
+		${BASELINUX} bash -c '${STITCH_ENTROPY}' > ${@} \
 
 ###
 
