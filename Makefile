@@ -24,7 +24,6 @@ ROOTDIR   :=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 OUTCOREDIR?=${COREDIR}
 OUTROOTDIR?=${ROOTDIR}
 
-
 MAIN_ENV  :=${ROOTDIR}.env
 MAIN_DLT  :=${ROOTDIR}.env.default
 
