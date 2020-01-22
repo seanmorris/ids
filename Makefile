@@ -63,6 +63,7 @@ endif
 
 ENV_LOCK_TAG?=
 ENV_LOCK_TGT_SVC?=
+TGT_SVC?=
 
 TRGT_ENV :=${ROOTDIR}.env_${TARGET}
 TRGT_DLT :=${ROOTDIR}.env_${TARGET}.default
