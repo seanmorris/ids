@@ -253,11 +253,8 @@ TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}     \
 OUTROOTDIR=${OUTROOTDIR} OUTCOREDIR=${OUTCOREDIR} D_UID=${D_UID}      \
 TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${BASELINUX}         \
 DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} COREDIR=${COREDIR}              \
-DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}                                   \
-BUILDCOREDIR=$(if $(filter ${COREDIR},${ROOTDIR}),./,vendor/seanmorris/ids) \
-BUILDROOTDIR=$(if $(filter ${COREDIR},${ROOTDIR}),./,./) \
-CORERELDIR=${CORERELDIR} \
-ROOTRELDIR=${ROOTRELDIR}
+CORERELDIR=${CORERELDIR} ROOTRELDIR=${ROOTRELDIR}                    \
+DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}
 endef
 
 define EXTRACT_TARGET_SERVICES ## %frag extract the target & optional service configs from args.
@@ -684,7 +681,7 @@ aptcache-build: ${PREBUILD} ${GENERABLE}### Stop apt-cache.
 ###
 
 post-coverage:
-	echo -e "$(call SHELLOUT,bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN} -f /tmp/coverage-report.json)"
+	echo -e "$(call IMPORT_TEMPLATE,bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN} -f /tmp/coverage-report.json)"
 
 dir:
 	echo ${ROOTDIR}

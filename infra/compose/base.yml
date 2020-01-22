@@ -22,8 +22,8 @@ services:
       args:
         UID: ${D_UID}
         GID: ${D_GID}
-        CORERELDIR: ${CORERELDIR}
-        ROOTRELDIR: ${ROOTRELDIR}
+        OUTCOREDIR: ${OUTCOREDIR}
+        OUTROOTDIR: ${OUTROOTDIR}
         IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST:-}
         IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT:-}
 
@@ -44,8 +44,8 @@ services:
       args:
         UID: ${D_UID}
         GID: ${D_GID}
-        CORERELDIR: ${CORERELDIR}
-        ROOTRELDIR: ${ROOTRELDIR}
+        OUTCOREDIR: ${OUTCOREDIR}
+        OUTROOTDIR: ${OUTROOTDIR}
         IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST:-}
         IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT:-}
 
