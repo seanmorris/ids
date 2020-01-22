@@ -4,9 +4,11 @@
 
 */ eye dee ess /* • The PHP + Docker Framework
 
-![seanmorris/ids](https://img.shields.io/packagist/v/seanmorris/ids?color=900&label=seanmorris%2Fids&logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAACAAAAAfCAYAAACGVs%2BMAAAHb0lEQVR42pVWa1CU1xk2dSYzHSs4aEsEHZ0VAYEFBBGQAcRba5CxtUJpbeiIN2BdLgLLrizKQkx0ubhDMBCuy3UBuQuIGtAogSQ1pK026bSdtjO10TbRH06bJqPZp%2Bc5zLoyDJX9Zp7Z833f%2Bz7Pe97L%2BXbRPNdLtoVCoXBetWrVYwE4iMf0ncXpyOXm5pYsMLZ69eor%2Fv7%2BTwICAiB%2BFwTaKpXKJ8uXL7%2BydOnSMYHkBUjaI3R1dY3z8PC46%2BXlBW9vb4SGhiIsLMwqgAWA9tbw8HDs3bsX%2B%2FfvR0xMzF1BG7egbLi4uPiuWbPmEXeyZcsWK8U3b968YISEhCAwMJC%2BaGhowOjoqDUnJ4cbeUTu%2BXRtO1eyfhs3boRd2HEEBQXJAKqqqtDe3g6LxQKj0QhRTixZskQ5X%2Br3%2BPn53T9z5gx27txJEoeFufNDhw6hoqICZWVlaGxsRHNzM1paWvjLZ%2BS9v3jx4j2ztJ2cnBKjo6Ons7Ky0NHRgd27d5PMobSz8Tw9PaFWq9Hf389dS9Gmpia0traipqYGmZmZ0nbt2rXTosETn6Vg2bJlEwkJCRgZGbGazWZs376dhAsWZ7r37duHuLg45OfnU5zCNnBTzIqN08rGFgFMPAvA2dl5mN3a3d0NBhAbG4vg4GCSLyjtO3bs4G4pxHTPErdloLS09FlfcbpWrlw5PCsAZqCvr48OsnsTExPh6%2Bv7wmajjSifrHdbW9sccQbFrHAs6cMg7AHYu3%2BYZKxfZ2cnBgYGUFtbi5SUlOeb0XYe2MRlwxUWFsJgMDBzzMIc8cHBQWi1Wvj4%2BNCP%2FnMDcHd3HxaNgcjISOh0Ooni4mIcO3aMJxrTLMX9lP5Y77WBa7nzgoICClBoljADYUb0er1EUlISA54%2FAN7YTjyK2Y5dOnAkd%2B3ahZDNoQgO9EfoRhGQOCcio6JQVFTEjM0R5%2BzX19cjIiKCO7eJ%2F%2F8A%2BNCWXoJBsA9YVxL6Bgbj3PEDuNtWglfc3FFWXk5xe9PZA%2BAUsI94BPNQI5%2FjATADycnJaBdkASFhqNGr8O%2BxRmDKgvdrixETHQV3hSd%2B8csk0TP9FJfCGo2G5whHknxzJokjq%2FBYD2eXFfYAXv6eU%2F9axTq%2BtDWb%2BA1B1NZtSPhZIk4fScDD0Rrgd33AR53AdDeqNIdRfDQe6Un78fOkg1J8aGgIKpWKO2Qp54gT3qIkuyM24fCrUf1S%2FKYxM%2BhA7NbJ6LAQ%2BPj5zzSb2L2Xjy%2BUvj44uCdGCuI3vcAHlhlMtgO%2F7QP%2BcgUT1aexbUsI8vUFePPsWcTHx7Puc74lvCecV7iiIGkv%2FtBgmOzIPRi0qFOXjCfXxQwXZ8JV1JZRe673gMuKH0CVGAd80ounE214cquV4JoB2CDfPxiuhtc6BVxfWSn%2FjIhP%2BbynJjVaizLw9XgDqC0D%2BGLobeDXXRg5r5MEU7VFePqeGVPNpdDm5iAvO0siIz0dVW%2BeAj6%2BKDNhZQDMyFQ7vhypRl56KuIP%2FAq7Xt0Dl%2B%2B7InjTJvYBISfHzd0dVyv0wEdd%2BNelC%2FYAPu9%2FC%2Fj0Eu4N1%2BBHsXGoP3cKQ3XlaBC%2F53VqjDeU4mZTOSZbTLhWW4o642lmQgTdyZ6QgXS%2FfQ5TbZW40%2FMOJpvLYT6lgmLdOmzwVSJAlJSN90MR2P3LddSipj2Afw5eAO4MWL%2B81og3dNk4kpKGo0ePorIgC3%2B2lMwIfdIN3G7HZ0MXUPm6Xgb09Xst%2BEaUZby%2BBHnqVNEmJpEdi%2BDql1nSH0pAUIASCk9vbIvZKrhP4OG7ZqlFTVsA9%2F7eff6bbyda8ehyNcYrTiInMx0XCjLxJ4tRiF6cqfWHXZjqPofe5pNi3YnszAzcaCzDrWYTUlNSMWbSoa4yA7f7S2krxxWfXULuaz9GeEQkCk%2FmSe6HQoNa1KT2InGWf2fwdMr1Hv0R3CzPgfX9dug12bhaZxTp7bA323QvLEY1tGlx4t4Cgy4XqarjSBMoFGs2aJ54Rxva0kcGMdmG4eqz0OdJbqlBLWpSW45iU06Sf606MXK0OFV1y5SHdFWa8Kuw4k7fTKMRH%2Fegy5QBQ%2B4%2BmZX8vFwYTqRJ6LUaOapFmp%2FShrb0kYL4dEDso9KqFpzkpga1qCnF8dw%2F1K748O82Z79WWq5Vf2suOYXf91ZZMX2RPSAEevD55Qpcqy%2FASE0JjFpRgmoDwTWf8R1taCt96EsOcpGT3NSg1nPac29umDSW13NUX5kMOvxjpA5%2Fu1SDvw6%2Bgy%2BumnHbUikylIrL5Vp8NdZAcM1nfEcb2tJH%2BpKDXOScpfWi61p5blWD4QRSj6uhVkuImquRf0KN0TIN%2FnvdDHzYQXDNZ3xHG5u99CUHuRY5enVoDzbdMGnxcLzFyp0Q9wQeiDn%2Bj9i1rckIrvmM72hjs6cvOcjlcAD1xxM3XTdmdf2x5Q3OND9EVn4PCNaYjcjTk%2BCaz2zvaUsf%2BpKDXA5I22t0%2FvBPNoiRmbjXY3r6YOAtcXpVLAi0pQ99yfEcp%2BNBtKoPOIkD47EAHMRj%2Br5I%2FH8NrWvzntWI2gAAAABJRU5ErkJggg%3D%3D&style=for-the-badge) [![CircleCI](https://img.shields.io/circleci/build/github/seanmorris/ids?logo=circleci&logoColor=white&style=for-the-badge&token=b52ac489d3c2d170963021c81ecd422b7536f41c)](https://circleci.com/gh/seanmorris/ids/) [![Apache-2.0 Licence Badge](https://img.shields.io/npm/l/cv3-inject?logo=apache&color=338800&style=for-the-badge)](https://github.com/seanmorris/cv3-inject/blob/master/LICENSE)
+![seanmorris/ids](https://img.shields.io/packagist/v/seanmorris/ids?color=900&label=seanmorris%2Fids&logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAACAAAAAfCAYAAACGVs%2BMAAAHb0lEQVR42pVWa1CU1xk2dSYzHSs4aEsEHZ0VAYEFBBGQAcRba5CxtUJpbeiIN2BdLgLLrizKQkx0ubhDMBCuy3UBuQuIGtAogSQ1pK026bSdtjO10TbRH06bJqPZp%2Bc5zLoyDJX9Zp7Z833f%2Bz7Pe97L%2BXbRPNdLtoVCoXBetWrVYwE4iMf0ncXpyOXm5pYsMLZ69eor%2Fv7%2BTwICAiB%2BFwTaKpXKJ8uXL7%2BydOnSMYHkBUjaI3R1dY3z8PC46%2BXlBW9vb4SGhiIsLMwqgAWA9tbw8HDs3bsX%2B%2FfvR0xMzF1BG7egbLi4uPiuWbPmEXeyZcsWK8U3b968YISEhCAwMJC%2BaGhowOjoqDUnJ4cbeUTu%2BXRtO1eyfhs3boRd2HEEBQXJAKqqqtDe3g6LxQKj0QhRTixZskQ5X%2Br3%2BPn53T9z5gx27txJEoeFufNDhw6hoqICZWVlaGxsRHNzM1paWvjLZ%2BS9v3jx4j2ztJ2cnBKjo6Ons7Ky0NHRgd27d5PMobSz8Tw9PaFWq9Hf389dS9Gmpia0traipqYGmZmZ0nbt2rXTosETn6Vg2bJlEwkJCRgZGbGazWZs376dhAsWZ7r37duHuLg45OfnU5zCNnBTzIqN08rGFgFMPAvA2dl5mN3a3d0NBhAbG4vg4GCSLyjtO3bs4G4pxHTPErdloLS09FlfcbpWrlw5PCsAZqCvr48OsnsTExPh6%2Bv7wmajjSifrHdbW9sccQbFrHAs6cMg7AHYu3%2BYZKxfZ2cnBgYGUFtbi5SUlOeb0XYe2MRlwxUWFsJgMDBzzMIc8cHBQWi1Wvj4%2BNCP%2FnMDcHd3HxaNgcjISOh0Ooni4mIcO3aMJxrTLMX9lP5Y77WBa7nzgoICClBoljADYUb0er1EUlISA54%2FAN7YTjyK2Y5dOnAkd%2B3ahZDNoQgO9EfoRhGQOCcio6JQVFTEjM0R5%2BzX19cjIiKCO7eJ%2F%2F8A%2BNCWXoJBsA9YVxL6Bgbj3PEDuNtWglfc3FFWXk5xe9PZA%2BAUsI94BPNQI5%2FjATADycnJaBdkASFhqNGr8O%2BxRmDKgvdrixETHQV3hSd%2B8csk0TP9FJfCGo2G5whHknxzJokjq%2FBYD2eXFfYAXv6eU%2F9axTq%2BtDWb%2BA1B1NZtSPhZIk4fScDD0Rrgd33AR53AdDeqNIdRfDQe6Un78fOkg1J8aGgIKpWKO2Qp54gT3qIkuyM24fCrUf1S%2FKYxM%2BhA7NbJ6LAQ%2BPj5zzSb2L2Xjy%2BUvj44uCdGCuI3vcAHlhlMtgO%2F7QP%2BcgUT1aexbUsI8vUFePPsWcTHx7Puc74lvCecV7iiIGkv%2FtBgmOzIPRi0qFOXjCfXxQwXZ8JV1JZRe673gMuKH0CVGAd80ounE214cquV4JoB2CDfPxiuhtc6BVxfWSn%2FjIhP%2BbynJjVaizLw9XgDqC0D%2BGLobeDXXRg5r5MEU7VFePqeGVPNpdDm5iAvO0siIz0dVW%2BeAj6%2BKDNhZQDMyFQ7vhypRl56KuIP%2FAq7Xt0Dl%2B%2B7InjTJvYBISfHzd0dVyv0wEdd%2BNelC%2FYAPu9%2FC%2Fj0Eu4N1%2BBHsXGoP3cKQ3XlaBC%2F53VqjDeU4mZTOSZbTLhWW4o642lmQgTdyZ6QgXS%2FfQ5TbZW40%2FMOJpvLYT6lgmLdOmzwVSJAlJSN90MR2P3LddSipj2Afw5eAO4MWL%2B81og3dNk4kpKGo0ePorIgC3%2B2lMwIfdIN3G7HZ0MXUPm6Xgb09Xst%2BEaUZby%2BBHnqVNEmJpEdi%2BDql1nSH0pAUIASCk9vbIvZKrhP4OG7ZqlFTVsA9%2F7eff6bbyda8ehyNcYrTiInMx0XCjLxJ4tRiF6cqfWHXZjqPofe5pNi3YnszAzcaCzDrWYTUlNSMWbSoa4yA7f7S2krxxWfXULuaz9GeEQkCk%2FmSe6HQoNa1KT2InGWf2fwdMr1Hv0R3CzPgfX9dug12bhaZxTp7bA323QvLEY1tGlx4t4Cgy4XqarjSBMoFGs2aJ54Rxva0kcGMdmG4eqz0OdJbqlBLWpSW45iU06Sf606MXK0OFV1y5SHdFWa8Kuw4k7fTKMRH%2Fegy5QBQ%2B4%2BmZX8vFwYTqRJ6LUaOapFmp%2FShrb0kYL4dEDso9KqFpzkpga1qCnF8dw%2F1K748O82Z79WWq5Vf2suOYXf91ZZMX2RPSAEevD55Qpcqy%2FASE0JjFpRgmoDwTWf8R1taCt96EsOcpGT3NSg1nPac29umDSW13NUX5kMOvxjpA5%2Fu1SDvw6%2Bgy%2BumnHbUikylIrL5Vp8NdZAcM1nfEcb2tJH%2BpKDXOScpfWi61p5blWD4QRSj6uhVkuImquRf0KN0TIN%2FnvdDHzYQXDNZ3xHG5u99CUHuRY5enVoDzbdMGnxcLzFyp0Q9wQeiDn%2Bj9i1rckIrvmM72hjs6cvOcjlcAD1xxM3XTdmdf2x5Q3OND9EVn4PCNaYjcjTk%2BCaz2zvaUsf%2BpKDXA5I22t0%2FvBPNoiRmbjXY3r6YOAtcXpVLAi0pQ99yfEcp%2BNBtKoPOIkD47EAHMRj%2Br5I%2FH8NrWvzntWI2gAAAABJRU5ErkJggg%3D%3D&style=for-the-badge) [![Apache-2.0 Licence Badge](https://img.shields.io/npm/l/cv3-inject?logo=apache&color=338800&style=for-the-badge)](https://github.com/seanmorris/cv3-inject/blob/master/LICENSE)
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/seanmorris/ids.idilic?logo=docker&logoColor=white&color=600&label=ids.idilic%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.idilic) [![Docker Pulls](https://img.shields.io/docker/pulls/seanmorris/ids.server?logo=docker&logoColor=white&color=960&label=ids.server%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.server) ![Size badge](https://img.shields.io/github/languages/code-size/seanmorris/ids?logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAABQAAAAOCAQAAACFzfR7AAABF0lEQVQoFQXBQWvOAQDA4ef/7o29YWtqKU7ExWE5OIvm4LKcnXwD7aQ0N/kAczO1i1KOO0xJvQojaTm4KbJabnJysLSf5wFAa603CUB322yOAAitVT86BTTQ1+oJDYDQcv+qFRr3vC1ooYPqDkHoYgfVKmnSfhG62t/qBkHn2q8ekjRpryB0v/rZ2eh4r6tpY5pp3Gx7RTONoJfVLnpQfekYtNG0832rRj3tEaT31bOxQ5wc/oATrnnniEMfXfaZDFrAoEk71XajNN9OVVW7HYVeVZ9AF/pd3YPm267qbYs0tF597wygpaquQ7Nt9QLoVlWXCEK3q1oCCF2p6iYBpKGN6kNzATrdr2qVAACa9rgRQKPetAnAf1jX/qSkN8aIAAAAAElFTkSuQmCC&style=for-the-badge)
+[![CircleCI](https://img.shields.io/circleci/build/github/seanmorris/ids?logo=circleci&logoColor=white&style=for-the-badge&token=b52ac489d3c2d170963021c81ecd422b7536f41c)](https://circleci.com/gh/seanmorris/ids/) [![Codecov](https://img.shields.io/codecov/c/github/seanmorris/ids?color=B80&logo=codecov&logoColor=white&style=for-the-badge)](https://codecov.io/gh/seanmorris/ids) ![Size badge](https://img.shields.io/github/languages/code-size/seanmorris/ids?logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAABQAAAAOCAQAAACFzfR7AAABF0lEQVQoFQXBQWvOAQDA4ef/7o29YWtqKU7ExWE5OIvm4LKcnXwD7aQ0N/kAczO1i1KOO0xJvQojaTm4KbJabnJysLSf5wFAa603CUB322yOAAitVT86BTTQ1+oJDYDQcv+qFRr3vC1ooYPqDkHoYgfVKmnSfhG62t/qBkHn2q8ekjRpryB0v/rZ2eh4r6tpY5pp3Gx7RTONoJfVLnpQfekYtNG0832rRj3tEaT31bOxQ5wc/oATrnnniEMfXfaZDFrAoEk71XajNN9OVVW7HYVeVZ9AF/pd3YPm267qbYs0tF597wygpaquQ7Nt9QLoVlWXCEK3q1oCCF2p6iYBpKGN6kNzATrdr2qVAACa9rgRQKPetAnAf1jX/qSkN8aIAAAAAElFTkSuQmCC&style=for-the-badge)
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/seanmorris/ids.idilic?logo=docker&logoColor=white&color=600&label=ids.idilic%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.idilic) [![Docker Pulls](https://img.shields.io/docker/pulls/seanmorris/ids.server?logo=docker&logoColor=white&color=960&label=ids.server%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.server)
 
 The Ids library provides general domain-primitives for developing web based applications. Routing, requests, modeling configuration, logging, sessions, and database access are all abstracted behind simple, expressive interfaces to efficient and powerful code.
 
@@ -15,6 +17,25 @@ To prevent unexpected behavior, the system is set to die on all errors down to `
 The project is made to run in docker but doesn't require it. It can be included in any composer project, and used in part or in whole easily.
 
 The philosophy of the Ids project is headlined by security, speed and easy of use, in that order.
+
+```
+github.com/AlDanial/cloc v 1.84  T=0.08 s (1325.6 files/s, 263626.5 lines/s)
+--------------------------------------------------------------------------------
+Language                      files          blank        comment           code
+--------------------------------------------------------------------------------
+PHP                              65           2741            304          11692
+JSON                             11              0              0           3794
+Markdown                          2            560              0           1224
+YAML                             24             97             14           1041
+make                              1            134              9            550
+Bourne Shell                      4              9              0             40
+Bourne Again Shell                2             15             17             21
+INI                               3              0              0             11
+--------------------------------------------------------------------------------
+SUM:                            112           3556            344          18373
+--------------------------------------------------------------------------------
+```
+*built by sean @ Wed Jan 22 03:57:17 EST 2020*
 
 ## Installation
 
@@ -54,6 +75,7 @@ https://github.com/seanmorris/ids-project
 
 ## Dependencies
 
+<<<<<<< HEAD
 *  Composer
 *  Docker
 *  Docker Compose
@@ -63,6 +85,17 @@ https://github.com/seanmorris/ids-project
 *  PHP
 *  SimpleTest/SimpleTest
 *  Minikube (required for kubernetes targets only)
+=======
+ * Composer
+ * Docker
+ * Docker Compose
+ * GNU Make
+ * Git
+ * Linux or Compatible OS
+ * PHP
+ * SimpleTest
+ * Minikube (required for kubernetes targets only)
+>>>>>>> 6eaa28faf4c0cd3741bf74e319794c86b046615a
 
 ## Dev Tools
 
@@ -72,10 +105,20 @@ The `dev` build target provides facilities for connecting to xdebug and graylog.
 
 XDebug is built into the `dev` images by default. You can configure it by setting `XDEBUG_CONFIG_` environment variables in `.env.dev`. By default it will attempt to connect to port 9000 on `${DHOST_IP}`, which is the machine runing the project.
 
+### Apt Cache
+
+*Rebuild your images offline*
+
+Build the project with `+aptcache` with an internet connection to populate your cache.
+
+```bash
+$ make @dev+aptcache build
+```
+... to be continued
+
 ### GrayLog
 
 `\SeanMorris\Ids\Logger\Gelf` provides a simple interface to graylog. Just add it to the `IDS_LOGGERS_` environment variable to enable it. So long as there is a graylog server available , it will send all logs that meet the verbosity threshold.
-
 
 The default graylog config for the `dev` target looks like:
 
@@ -123,6 +166,7 @@ Run `idilic help` to see actions exposed by any installed packages.
 
 By default Ids provides 4 build targets: base, prod, dev, and test. Each exposes different ports, so they may run without conflict in parallel.
 
+<<<<<<< HEAD
 *  **base** exposes no ports and builds **without** require-dev.
 
 *  **prod** exposes port 80 (configurable by `IDS_EXPOSE_HTTP`) and port 443* ( configurable by `IDS_EXPOSE_HTTPS` ) and builds **without** require-dev.
@@ -130,6 +174,15 @@ By default Ids provides 4 build targets: base, prod, dev, and test. Each exposes
 *  **test** exposes port 2021 (configurable by `IDS_EXPOSE_HTTP`) and port 3031 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
 
 *  **dev** exposes port 2020 ( configurable by `IDS_EXPOSE_HTTP` ) and port 3030 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
+=======
+ * **base** exposes no ports and builds **without** require-dev.
+
+ * **prod** exposes port 80 (configurable by `IDS_EXPOSE_HTTP`) and port 443* ( configurable by `IDS_EXPOSE_HTTPS` ) and builds **without** require-dev.
+
+ * **test** exposes port 2021 (configurable by `IDS_EXPOSE_HTTP`) and port 3031 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
+
+ * **dev** exposes port 2020 ( configurable by `IDS_EXPOSE_HTTP` ) and port 3030 ( `IDS_EXPOSE_SQL` ) and builds **with** require-dev.
+>>>>>>> 6eaa28faf4c0cd3741bf74e319794c86b046615a
 
 \*Not yet implemented.
 
@@ -137,12 +190,26 @@ By default Ids provides 4 build targets: base, prod, dev, and test. Each exposes
 
 The system will use the TARGET environment variable to decide which build target to use.
 
-If youre on the BASH shell simply run one of the following commands to set the target:
+If youre on the BASH shell simply run one of the following commands to set the target for the context of a single command:
 
+ * `make @base start`
+ * `make @dev build`
+ * `make @test test`
+ * `make @prod push-images`
+
+If you don't feek like typing `@target` for every command, you can ask the system to remember a target with:
+
+<<<<<<< HEAD
 *  `make stay@base`
 *  `make stay@dev`
 *  `make stay@test`
 *  `make stay@prod`
+=======
+ * `make stay@base`
+ * `make stay@dev`
+ * `make stay@test`
+ * `make stay@prod`
+>>>>>>> 6eaa28faf4c0cd3741bf74e319794c86b046615a
 
 ### Extending Environments
 
@@ -166,10 +233,12 @@ $ make @dev start # start the services
 
 Docker & docker-compose are available here:
 
-* https://docs.docker.com/install/
-* https://docs.docker.com/compose/install/
+ * https://docs.docker.com/install/
+ * https://docs.docker.com/compose/install/
 
 ## Start / Stop / Restart
+
+Make sure to set a target with `make stay@target` before issuing any commands. Alternatively you can run commands in the form `make @target command`.
 
 ```bash
 $ make start      # Start the project in the background,
@@ -214,15 +283,15 @@ Image tags are generated automatically on build based on the date, current git t
 
 The master branch will generate:
 
-*  repository/project:gitTag-target
-*  repository/project:date-target
-*  repository/project:latest-target
+ * repository/project:gitTag-target
+ * repository/project:date-target
+ * repository/project:latest-target
 
 Branches other than master will generate:
 
-*  repository/project:gitTag-target-branch
-*  repository/project:date-target-branch
-*  repository/project:latest-target-branch
+ * repository/project:gitTag-target-branch
+ * repository/project:date-target-branch
+ * repository/project:latest-target-branch
 
 Images will be built on `git commit` and pushed on `git push` if the current branch appears in the project root `.publishing` file in the form: `BRANCH:TARGET`. For example this file would push images for prod & test when `git push` is run for the master branch:
 
@@ -247,12 +316,58 @@ $ docker pull seanmorris/ids.server:latest
 
 or extend in a dockerfile with one of the following:
 
+(it is not recommended to use `latest` in `FROM`)
+
 ```Dockerfile
 FROM seanmorris/ids.idilic:TAGNAME
 FROM seanmorris/ids.server:TAGNAME
 ```
 
-(it is not recommended to use `latest` in `FROM`)
+## Service Switches
+
+Additional services can be included when running Ids. Simply add +toolname to your @target when issing a make command, and the necessary composer files will be included in the comtext of your command. For example, to start the system with graylog in dev mode:
+
+```bash
+make @dev+graylog start
+```
+Or inotify
+
+```bash
+make @dev+inotify start
+```
+Or both
+
+```bash
+make @dev+graylog+inotify start
+```
+## Templating
+
+*This ain't your granpappy's makefile.*
+
+GNU Make has a distinct and powerful syntax. It borrows, or in some instances outright uses the underlying bash engine to allow a user to define complex build steps and track the relationships between them to ensure everything is up to date.
+
+Make allows for recursive variable expansion, conditionals, loops, and even calls out to the shell. This syntax is no longer limted to the Makefile.
+
+Simply put the extension `*.idstmp.*` *before* your existing file extension. Ids will look for these files in all subdirectories of the prohect and rebuild them on startup. The resulting file will have the extension `*.___gen.*` where the `*.idstmp.*` is in the source file.
+
+The resulting files should be excluded from version control, as they may contain artifacts from one target that should not exist in another.
+
+For example: *infra/docker/aptcache.idstmp.dockerfile* starts off with the following line:
+
+```dockerfile
+FROM ${BASELINUX}
+```
+Varibles are not normally allowed in the `FROM` section of dockerfile,  preprocessed by make before it is used. So long as the file extenstion begins with `.idstmp.`, we can count on a `.___gen.` file being produced. This allows us to keep all the images and containers synced to one base image.
+
+
+The follwing lines from the end of the file show how one can use the shell to track who generated the file and when:
+
+```dockerfile
+# generated @ $(shell date)
+# by ${shell whoami} @ ${shell hostname}
+```
+
+See [Functions for Transforming Text](https://www.gnu.org/software/make/manual/html_node/Functions.html#Functions) for more information.
 
 ## Configuration / Environment Variables / Secrets
 
@@ -271,10 +386,10 @@ The following files may be created/modified to configure the system. When the pr
 
 The values set will be read according to the following precedence (higher takes precedence over lower):
 
-* `.env_TARGET`
-* `.env_TARGET.default`
-* `.env`
-* `.env.default`
+ * `.env_TARGET`
+ * `.env_TARGET.default`
+ * `.env`
+ * `.env.default`
 
 Environment variables to be used in configuration should have the the prefix `IDS_`. An environment variable with the name IDS_SOME_VAR and IDS_SOME_OTHERVAR would be accessible within the system with:
 
@@ -312,10 +427,10 @@ foreach($some as $configKey => $value)
 
 ### Configuration Arrays
 
-Arrays can be created by adding a `_` to the end of the environment variable name. The value will be split on whitespace.
+Arrays can be created by adding an underscore to the end of the environment variable name. The value will be split on whitespace.
 
 ```
-IDS_ARRAY=first second third
+IDS_ARRAY_=first second third
 ```
 
 ```php
@@ -326,12 +441,12 @@ $array = Settings::read('ARRAY');
 Whitespace will be preserved if the value is quotes:
 
 ```
-IDS_ARRAY=first "second element" third
+IDS_ARRAY_=first "second element" third
 ```
 
 Quotes can be escaped by doubling:
 ```
-IDS_ARRAY=first "second element ""with quotes inside""." third
+IDS_ARRAY_=first "second element ""with quotes inside""." third
 ```
 
 ### Hostname & Port based configuration
@@ -339,7 +454,6 @@ IDS_ARRAY=first "second element ""with quotes inside""." third
 Hostname specific environment variables are prefixed with an extra underscore: `IDS__`. Dots and other non-word charaters in the hostname are placed by a single underscore, **except for the hyhpen which is replaced by 3 underscores.** Another double underscore finishes the hostname, and the variable name comes next.
 
 The above environment variables could be overridden for example.com with: `IDS__EXAMPLE_COM__SOME_VAR` and `IDS__EXAMPLE_COM__SOME_OTHERVAR`. They would be accessed in the same way as above:
-
 
 ```
 IDS__EXAMPLE_COM__SOME_VAR=overridden value
@@ -434,7 +548,6 @@ Ensure you've installed the `idilic` cli tool from the start of the document. Us
 `idilic applySchema [PACKAGE]` - Apply the stored schema.
 
 `idilic applySchemas` - Apply the stored schema for all installed packages.
-
 
 The schema will be stored in `data/global/schema.json`.
 
@@ -662,7 +775,7 @@ $ idilic runTests
 ```
 ```php
 <?php
-namespace SeanMorris\ExamplePackage\Test;
+namespace SeanMorrisxamplePackage\Test;
 class ExampleTest extends \UnitTestCase
 {
 	public function testSomething()
@@ -714,7 +827,7 @@ $file->write($content, FALSE);
 ## IPC / AMPQ*
 ### Idilic CLI
 
-Idilic commands can be run from the CLI in the form `idilic command` or `idilic Vendor/Package command`. Note that on the CLI package names can be separated by a forward slash (`/`). This is done to prevent the user from being forced to remember to escape backslashes (`\\`).
+Idilic commands can be run from the CLI in the form `idilic command` or `idilic Vendor/Package command`. Note that on the CLI package names can be separated by a forward slash (`/`). This is done to prevent the user from being forced to remember to escape backslashes (`\`).
 
 Run `idilic help` to get a list of available idilic commands.
 
@@ -722,7 +835,7 @@ New commands can be implemented by adding a route class named `RootRoute` under 
 
 ```php
 <?php
-namespace SeanMorris\ExamplePackage\Idilic\Route;
+namespace SeanMorrisxamplePackage\Idilic\Route;
 class RootRoute implements \SeanMorris\Ids\Routable
 {
 	/** Help text goes here. */
@@ -733,7 +846,26 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 ## Dependency Injection*
 ## Sessions
-## Email*
+## Email
+
+```php
+<?php
+use \SeanMorris\Ids\Mail;
+
+$mail = new \SeanMorris\Ids\Mail;
+$mail->body(<<<EOM
+	Message body here.
+EOM);
+
+$mail->from(\SeanMorris\Ids\Settings::read('noreply'));
+
+$mail->subject('Hello from Ids!');
+
+$mail->to($recipientEmail);
+
+$mail->send(TRUE);
+```
+
 ## Theming / Frontends
 ## Existing Ids Projects
 
@@ -741,6 +873,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 Run these from the project root to build and control the project infrastructure.
 
+<<<<<<< HEAD
 *  `make build` `make b` - Build the project
 *  `make env` `make e` - Print the project's environment config.
 *  `make test` `make t`- Run tests.
@@ -779,6 +912,45 @@ Run these from the project root to build and control the project infrastructure.
 *  Node
 *  PHP
 *  SimpleTest/SimpleTest
+=======
+ * `make build` `make b` - Build the project
+ * `make env` `make e` - Print the project's environment config.
+ * `make test` `make t`- Run tests.
+ * `make test` `make t`- Remove the generated configs,* *even if they have been altered.**
+ * `make start` `make s`- Start the project services.
+ * `make start-fg` `make sf`- Start the project services, hold control of the terminal and stream output.
+ * `make start-bg` `make sb`- Start the project services, hold control of the terminal and stream output.
+ * `make restart-fg` `make rf` - Restart the project services, hold control of the terminal and stream output.
+ * `make restart-bg` `make rb`- Restart the project services, hold control of the terminal and stream output.
+ * `make stop` `make d`- Stop the project services.
+ * `make stop-all` `make da`- Stop the project services, including any that no longer appear in the compose file.
+ * `make kill` `make k`- Immediately kill the project services.
+ * `make nuke` `make nk`* - Immediately kill all containers on the host. Not yet implemented.
+ * `make current-tag` `ct`- Output the project tag for the current target & branch.
+ * `make list-tags` `make lt`- List image tags for the current target & branch.
+ * `make list-images` `make li`- List images for the current target & branch.
+ * `make push-images` `make psi`- List images for the current target & branch.
+ * `make pull-images` `make pli`- List images for the current target & branch.
+ * `make hooks` - Initialize git hooks.
+ * `make composer-install` `make ci`- Install composer packages.
+ * `make composer-update` `make co`- Update composer packages.
+ * `make composer-dump-autoload` `make cda`- Regenerate and dump composer autoload files..
+ * `make npm install PKG="[PACKAGE]"` `make ni`- Run `npm install` inside the project.
+ * `make bash` `make sh`- Get a bash prompt to an `idilic` container.
+ * `make run CMD="SERVICE [COMMAND]"` `make r`- Run a command in a service container.
+
+## Dependencies
+
+ * Bash
+ * Composer
+ * Docker
+ * Docker Compose
+ * GNU Make
+ * Git
+ * Linux or Compatible OS
+ * Node
+ * PHP
+>>>>>>> 6eaa28faf4c0cd3741bf74e319794c86b046615a
 
 ## SeanMorris/Ids
 

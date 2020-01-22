@@ -1,0 +1,14 @@
+version: '2.4'
+
+services:
+
+  make:
+    restart: always
+    image:   ${REPO}/${PROJECT}.make:${TAG}
+    build:
+      context: ../../
+      dockerfile: ${COREDIR}infra/docker/tools/make.___gen.dockerfile
+    volumes:
+      - ${OUTROOTDIR}:/app
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/bin/docker:${DOCKER}

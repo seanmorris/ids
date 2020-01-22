@@ -4,6 +4,34 @@ namespace SeanMorris\Ids;
 use PhpAmqpLib\Message\AMQPMessage,
 	PhpAmqpLib\Connection\AMQPStreamConnection;
 
+if(!class_exists('AMQPMessage'))
+{
+	Log::warn('SeanMorris\Ids\Queue requires PhpAmqpLib');
+}
+
+/**
+ * SeanMorris\Ids\Queue provides a simple interface for working with
+ * PhpAmqpLib. Simple message queueing, broadcasting, and RPC methods
+ * are exposed, as well as optional topic based message/consumer
+ * routing.
+ *
+ * SeanMorris\Ids\Queue is meant to be sublassed. Each subclass will
+ * be provided with its own namespace, such that messages broadcast
+ * to one will not be visible to the other channels.
+ *
+ * Objects are serialized automatically, so any type can be provided
+ * to the queue, provided it, and all its components are serializable.
+ *
+ * Usage:
+ *
+ * Implement SubclassQueue::recieve($message) to  Process messages.
+ *
+ * Send a message with SubclassQueue::send($anything);
+ *
+ * Run the following idilic command to execute a listener daemon:
+ * $ idilic queueDaemon SubclassQueue
+ *
+ */
 abstract class Queue
 {
 	const RABBIT_MQ_SERVER   = 'default'
@@ -49,10 +77,33 @@ abstract class Queue
 		, $rpcSendTopicQueue     = []
 		, $rpcResponseTopicQueue = [];
 
+	/**
+	 * Initialization logid for listeners.
+	 *
+	 * Override ::init for initialization logic on
+	 * start of ::listen().
+	 */
 	public static function init(){}
 
+	/**
+	 * Recieve messages on a queue.
+	 *
+	 * Override ::receive to implement logic to operate
+	 * on each message provided to ::send
+	 *
+	 * @param $message any serializeable PHP data structure.
+	 * @return void
+	 */
 	protected static function recieve($message){}
 
+	/**
+	 * Send a message to a queue. Optionally provide a topic
+	 * to route messages to certain consumers.
+	 *
+	 * @param $message any serializeable PHP data structure.
+	 * @param string $topic
+	 * @return void
+	 */
 	public static function send($message, $topic = NULL)
 	{
 		$channel = static::getChannel();
@@ -64,11 +115,23 @@ abstract class Queue
 		);
 	}
 
+	/**
+	 * Broadcast a message.
+	 *
+	 * Broadcast a message to all consumers of a queue.
+	 * Provide a topic to send messages to all consumers
+	 * listening on a topic.
+	 *
+	 * @param $message any serializeable PHP data structure.
+	 * @param $message any serializeable PHP data structure.
+	 * @return void
+	 */
 	public static function broadcast($message, $topic = NULL)
 	{
 		$channel = static::getChannel();
 
-		$exchange = static::queueDomain() . '::'
+		$exchange = static::queueDomain()
+			. '::'
 			. get_called_class()
 			. static::BROADCAST_EXCHANGE;
 
@@ -76,7 +139,8 @@ abstract class Queue
 		{
 			static::getTopicQueue($topic);
 
-			$exchange = static::queueDomain() . '::'
+			$exchange = static::queueDomain()
+				. '::'
 				. get_called_class()
 				. static::TOPIC_EXCHANGE;
 		}
@@ -136,7 +200,7 @@ abstract class Queue
 	{
 		if(!static::$channel || $reset)
 		{
-			$servers = \SeanMorris\Ids\Settings::read('rabbitMq');
+			$servers = \SeanMorris\Ids\Settings::read('rabbitmq');
 
 			if(!$servers)
 			{
@@ -206,7 +270,7 @@ abstract class Queue
 	}
 
 
-	public static function rpc($message, $topic = NULL)
+	public static function rpc($message, $topic = NULL, $degree = FALSE)
 	{
 		$correlationId = uniqid();
 

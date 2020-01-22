@@ -1,13 +1,13 @@
 #!/bin/bash
 set -eu;
 
-while read -d $'\0' VAR; do
-	[[ ! -z "$VAR" ]] && declare "$VAR";
-done < <(make @base env SEP=-0);
+# while read -d $'\0' VAR; do
+# 	[[ ! -z "$VAR" ]] && declare "$VAR";
+# done < <(make @base env SEP=-0);
 
-[[ "$TARGET" == "dev" ]] && set -x;
+# [[ "$TARGET" == "dev" ]] && set -x;
 
-echo Pushing $BRANCH;
+# echo Pushing $BRANCH;
 
 # make @base b;
 # while read LINE; do echo $LINE | {

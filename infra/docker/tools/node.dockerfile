@@ -8,18 +8,9 @@ SHELL ["/bin/bash", "-c"]
 RUN set -eux;              \
 	mkdir -p /build;       \
 	apt-get update;        \
-	apt-get install jq -y --no-install-recommends;  \
-	apt-get purge -y --auto-remove; \
+	apt-get install jq:1.5+dfsg-1.3  \
+		 -y --no-install-recommends; \
+	apt-get purge -y --auto-remove;  \
 	apt-get autoremove -y; \
-	apt-get clean;
-
-CMD cp -n /app/package-lock.json /build; \
-	NAME=jq '.name' /app/composer.json \
-	jq '.name |= (sub("/"; "_") | ascii_downcase)' /app/composer.json \
-	> package.json;        \
-	cat package.json;      \
-	npm install;           \
-	cp package-lock.json /app; \
-	jq '.name |= "$NAME")' package.json \
-	> /app/composer.json;  \
-	echo Done!;            \
+	apt-get clean;         \
+	rm -rf /var/lib/apt/lists/*;

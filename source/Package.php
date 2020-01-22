@@ -622,13 +622,15 @@ class Package
 
 		if(($vars = json_decode($varsJson)))
 		{
-			$currentVar = & $vars;
+
+			$currentVar = $vars;
 
 			while($varName = array_shift($varPath))
 			{
-				$currentVar = & $currentVar
-					? $currentVar->$varName ?? NULL
-					: (object) [];
+				$currentVar = ($currentVar
+					? ($currentVar->{$varName} ?? NULL)
+					: (object) []
+				);
 			}
 
 			return $currentVar;

@@ -106,8 +106,8 @@ class Meta
 
 	public static function classes($super = NULL)
 	{
-		$path       = IDS_ROOT;
-		$classes    = [];
+		$path    = IDS_ROOT;
+		$classes = [];
 
 		static $allClasses = [];
 
@@ -120,7 +120,7 @@ class Meta
 					continue;
 				}
 
-				if(!static::classExists($super))
+				if($super && !static::classExists($super))
 				{
 					continue;
 				}
@@ -245,6 +245,11 @@ class Meta
 							$subNamespace = $aliases[$subNamespace];
 						}
 
+						if($subNamespace[0] !== '\\')
+						{
+							$subNamespace = $namespace . '\\' . $subNamespace;
+						}
+
 						if(!static::classExists($subNamespace))
 						{
 							break;
@@ -274,7 +279,7 @@ class Meta
 							break;
 						}
 
-						if(!static::classExists($super))
+						if($super && !static::classExists($super))
 						{
 							break;
 						}
@@ -300,7 +305,6 @@ class Meta
 					{
 						break;
 					}
-
 
 					if(in_array($class, $allClasses))
 					{

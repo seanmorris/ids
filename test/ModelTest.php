@@ -289,10 +289,10 @@ class ModelTest extends \UnitTestCase
 
 	public function testGroceries()
 	{
-		\SeanMorris\Ids\Test\Model\GroceryList::fill(100, function($index, $instance) {
+		\SeanMorris\Ids\Test\Model\GroceryList::fill(10, function($index, $instance) {
 
 			$instance->consume([
-				'groceries' => \SeanMorris\Ids\Test\Model\Grocery::fill(40)
+				'groceries' => \SeanMorris\Ids\Test\Model\Grocery::fill(4)
 			]);
 
 			$instance->save();
@@ -310,12 +310,12 @@ class ModelTest extends \UnitTestCase
 			foreach($groceries as $i => $grocery)
 			{
 				$this->assertTrue(
-					$grocery->id > ($instance->id - 1 ) * 40
+					$grocery->id > ($instance->id - 1 ) * 4
 					, 'Incorrect grocery loaded.'
 				);
 
 				$this->assertTrue(
-					$grocery->id <= $instance->id  * 40
+					$grocery->id <= $instance->id  * 4
 					, 'Incorrect grocery loaded.'
 				);
 			}

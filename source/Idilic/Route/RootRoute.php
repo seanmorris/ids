@@ -178,6 +178,21 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			$packageList = \SeanMorris\Ids\Package::listPackages();
 		}
 
+		if(function_exists('xdebug_set_filter'))
+		{
+			xdebug_set_filter(
+				XDEBUG_FILTER_CODE_COVERAGE
+				, XDEBUG_PATH_BLACKLIST
+				, [realpath(IDS_ROOT . '/vendor/')]
+			);
+		}
+
+		$coverageOpts = XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE;
+
+		$relReports = [];
+		$reports    = [];
+		$report     = [];
+
 		while($packageName = array_shift($packageList))
 		{
 			$packageName = str_replace('/', '\\', $packageName);
@@ -195,9 +210,60 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 				$testClass = $namespace . '\\Test\\' . $m[1];
 				$test = new $testClass;
+
+				if(function_exists('xdebug_start_code_coverage'))
+				{
+					xdebug_start_code_coverage($coverageOpts);
+				}
+
 				$test->run(new \TextReporter());
+
+				if(function_exists('xdebug_stop_code_coverage'))
+				{
+					xdebug_stop_code_coverage(FALSE);
+				}
+
 				echo PHP_EOL;
 			}
+		}
+
+		if(function_exists('xdebug_stop_code_coverage'))
+		{
+			xdebug_stop_code_coverage();
+
+			$reportFile = '/tmp/coverage-report.json';
+			$reports    = xdebug_get_code_coverage();
+			$relReports = [];
+
+			foreach($reports as $filename => &$lines)
+			{
+				$relativePath = substr($filename, strlen(IDS_ROOT));
+
+				foreach ($lines as $line => &$executed)
+				{
+					if($executed == 1)
+					{
+						continue;
+					}
+
+					if($executed == -2)
+					{
+						unset($lines[$line]);
+						continue;
+					}
+
+					$executed = 0;
+				}
+
+				$relReports[$relativePath] = $lines;
+			}
+
+			$report = ['coverage' => $relReports];
+
+			file_put_contents(
+				$reportFile
+				, json_encode($report, JSON_PRETTY_PRINT)
+			);
 		}
 	}
 
@@ -660,7 +726,6 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		foreach($classes as $className)
 		{
-
 			$package = \SeanMorris\Ids\Package::fromClass($className);
 
 			print \SeanMorris\Ids\Idilic\Cli::color('Package: ', 'white')
@@ -1044,5 +1109,39 @@ EOT
 		$args = implode(' ', $args);
 
 		echo `env`;
+	}
+
+	/** Run a queue listener daemon. */
+
+	public function queueDaemon($router)
+	{
+		[$class,] = $router->path()->consumeNodes();
+
+		if(!is_subclass_of($class, '\SeanMorris\Ids\Queue'))
+		{
+			throw new Exception(sprintf(
+				"Provided class does not inherit: %s\n\t%s"
+				, '\SeanMorris\Ids\Queue'
+				, $class
+			));
+		}
+
+		$class::listen();
+	}
+
+	/** Generate documentation for a given package.*/
+
+	public function document($router)
+	{
+		$args = $router->path()->consumeNodes();
+
+		if(!$packageName = array_shift($args))
+		{
+			return 'No package supplied.';
+		}
+
+		return json_decode(json_encode(
+			\SeanMorris\Ids\Documentor::docs($packageName)
+		), TRUE);
 	}
 }

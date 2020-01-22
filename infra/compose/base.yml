@@ -3,8 +3,9 @@ version: '2.4'
 services:
 
   idilic:
-    image:    ${REPO}/${PROJECT}.idilic:${TAG}
-    restart:  on-failure
+    image:   ${REPO}/${PROJECT}.idilic:${TAG}
+    user:    ${D_UID}:${D_GID}
+    restart: on-failure
     env_file:
       - ${MAIN_DLT}
       - ${MAIN_ENV}
@@ -15,12 +16,22 @@ services:
       - /usr/bin/docker:${DOCKER}
     build:
       context: ../../
-      dockerfile: infra/docker/idilic.___gen.dockerfile
-      target: ${TARGET}
+
+      dockerfile: ${CORERELDIR}infra/docker/ids.___gen.dockerfile
+      target:  idilic-${TARGET}
+      network: bridge
+      args:
+        UID: ${D_UID}
+        GID: ${D_GID}
+        OUTCOREDIR: ${OUTCOREDIR}
+        OUTROOTDIR: ${OUTROOTDIR}
+        IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST:-}
+        IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT:-}
 
   server:
-    image:    ${REPO}/${PROJECT}.server:${TAG}
-    restart:  always
+    image:   ${REPO}/${PROJECT}.server:${TAG}
+    user:    ${D_UID}:${D_GID}
+    restart: always
     env_file:
       - ${MAIN_DLT}
       - ${MAIN_ENV}
@@ -28,8 +39,16 @@ services:
       - ${TRGT_ENV}
     build:
       context: ../../
-      dockerfile: infra/docker/server.___gen.dockerfile
-      target: ${TARGET}
+      dockerfile: ${COREDIR}infra/docker/ids.___gen.dockerfile
+      target:  server-${TARGET}
+      network: bridge
+      args:
+        UID: ${D_UID}
+        GID: ${D_GID}
+        OUTCOREDIR: ${OUTCOREDIR}
+        OUTROOTDIR: ${OUTROOTDIR}
+        IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST:-}
+        IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT:-}
 
   database:
     command: ['mysqld', '--character-set-server=utf8mb4']
@@ -51,3 +70,6 @@ services:
 volumes:
   schema:
     driver: local
+
+networks:
+  bridge: {}

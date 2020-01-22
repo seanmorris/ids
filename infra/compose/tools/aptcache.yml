@@ -1,0 +1,22 @@
+version: '2.4'
+
+x-aptcached:
+  depends-on:
+    - aptcache
+
+services:
+
+  aptcache:
+    networks:
+        - bridge
+    restart: always
+    image:   ${REPO}/${PROJECT}.aptcache:${TAG}
+    build:
+      context: ../../
+      dockerfile: ${COREDIR}infra/docker/tools/aptcache.___gen.dockerfile
+    volumes:
+      - ${OUTROOTDIR}:/app
+      - ${OUTROOTDIR}infra/apt/cache/:/var/cache/apt-cacher-ng
+
+networks:
+  bridge: {}

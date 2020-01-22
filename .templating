@@ -1,0 +1,32 @@
+asset/:
+	.idstmp.: .___gen.
+
+bin/:
+	.idstmp.: .___gen.
+
+config/:
+
+	.idstmp.: .___gen.
+
+data/:
+	.idstmp.: .___gen.
+
+githooks/:
+	.idstmp.: .___gen.
+
+infra/:
+	.idstmp.: .___gen.
+
+public/:
+	.idstmp.: .___gen.
+
+source/:
+	.idstmp.: .___gen.
+
+test/:
+	.idstmp.: .___gen.
+
+README.idstmp.md:
+	.idstmp.: .
+
+vendor/: false

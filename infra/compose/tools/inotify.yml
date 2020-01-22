@@ -2,11 +2,15 @@ version: '2.4'
 
 services:
 
-  node:
-    restart:     always
+  inotify:
+    restart:    on-failure
+    image:      ${REPO}/${PROJECT}.inotify:${TAG}
+    command:    exit 0
+    user:       ${D_UID}:${D_GID}
     build:
       context: ../../
-      dockerfile: infra/docker/tools/node.dockerfile
+      dockerfile: ${COREDIR}infra/docker/tools/inotify.___gen.dockerfile
     volumes:
-      - ../../:/app
-      - ../../infra/node/modules:/build/node_modules
+      - ${OUTROOTDIR}:/app
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/bin/docker:${DOCKER}

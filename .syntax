@@ -1,0 +1,9 @@
+.var:        .sh
+.env*:       .sh
+.syntax:     .yml
+.entropy:    .yml
+.lock_env*:  .sh
+.publishing: .yml
+.templating: .yml
+idilic:      .sh
+githooks/*:  .sh

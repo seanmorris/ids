@@ -1,11 +1,11 @@
 #!/bin/bash
 set -eu;
 
-while read -d $'\0' VAR; do
-	[[ ! -z "$VAR" ]] && declare "$VAR";
-done < <(make @base env SEP=-0);
+# while read -d $'\0' VAR; do
+# 	[[ ! -z "$VAR" ]] && declare "$VAR";
+# done < <(make @${TARGET} env SEP=-0);
 
-[[ "$TARGET" == "dev" ]] && set +x;
+# [[ "$TARGET" == "dev" ]] && set +x;
 
 PHP_ERROR=0;
 
@@ -22,11 +22,11 @@ git diff-index HEAD | grep "^:" | grep ".php" \
 set -eu;
 
 [[ ! -z "$PHP_ERROR" ]] && ( \
-	echo Please correct the above errors before committing. \
+	echo Please correct the above errors before committing.; \
 		exit $PHP_ERROR;\
 	) \
 	|| echo No php errors found.;
 
 make @test t;
 
-echo Committing to $BRANCH;
+# echo Committing to $BRANCH;
