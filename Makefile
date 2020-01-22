@@ -615,7 +615,7 @@ ${ROOTDIR}.env: ${ROOTDIR}config/.env
 		test "$${ENV_SOURCE:0:1}" == '$$'               \
 		&& eval echo -en $$ENV_SOURCE                   \
 		|| eval eval echo -en $$"$$ENV_SOURCE";         \
-		echo "\n";                                      \
+		echo -en "\n";                                  \
 	} | docker run --rm -iv ${OUTROOTDIR}:/app -w=/app  \
 		${BASELINUX} bash -c '${STITCH_ENTROPY}' > ${@} \
 
