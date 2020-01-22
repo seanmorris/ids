@@ -561,10 +561,10 @@ retarget: ### Set the current target for one invocation.
 	@ ${NEWTARGET}
 
 ${ROOTDIR}config/.env:
-	@ test -f ${@} || touch -d ${@}
+	@ test -f ${@} || touch -d 0 ${@}
 
 ${ROOTDIR}config/.env%:
-	@ test -f ${@} || touch -d ${@}
+	@ test -f ${@} || touch -d 0 ${@}
 
 infra/compose/%yml: ${ROOTDIR}.env ${ROOTDIR}.env.default ${ROOTDIR}.env_$${TARGET} ${COREDIR}.env_$${TARGET}.default ${ENV_LOCK}
 	@ test -f infra/compose/${TARGET}.yml;
