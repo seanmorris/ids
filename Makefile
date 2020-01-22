@@ -531,11 +531,11 @@ ${ENV_LOCK}: ${VAR_FILE} ### Lock the environment target
 	@ ( [[ "${ENV_LOCK_TAG:=}" != "${TAG}" ]] || [[ "${ENV_LOCK_TGT_SVC:=}" != "${TGT_SVC}" ]] ) \
 	&& { \
 		>&2 echo "Locking env...";                      \
-		echo ENV_LOCK_TGT_SVC=${TGT_SVC} > ${ENV_LOCK}; \
-		echo ENV_LOCK_TAG=${TAG} >> ${ENV_LOCK};        \
+		echo ENV_LOCK_TGT_SVC=${TGT_SVC:=} > ${ENV_LOCK}; \
+		echo ENV_LOCK_TAG=${TAG:=} >> ${ENV_LOCK};        \
 		echo ENV_LOCK_TIME=`date` >> ${ENV_LOCK};       \
-		$(eval ENV_LOCK_TAG=${TAG})                     \
-		$(eval ENV_LOCK_TGT_SVC=${TGT_SVC})             \
+		$(eval ENV_LOCK_TAG=${TAG:=})                     \
+		$(eval ENV_LOCK_TGT_SVC=${TGT_SVC:=})             \
 	} \
 	|| true;
 
