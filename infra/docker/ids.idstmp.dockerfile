@@ -6,8 +6,8 @@ SHELL ["/bin/bash", "-c"]
 ARG IDS_APT_PROXY_HOST
 ARG IDS_APT_PROXY_PORT
 
-ARG OUTCOREDIR
-ARG OUTROOTDIR
+ARG CORERELDIR
+ARG ROOTRELDIR
 
 COPY $${CORERELDIR}/infra/apt/proxy-detect.sh /usr/bin/proxy-detect
 
