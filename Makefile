@@ -9,7 +9,7 @@
 
 .SECONDEXPANSION:
 
-SHELL     =/bin/bash -eu
+SHELL     =/bin/bash
 MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 
 BASELINUX ?= debian:buster-20191118-slim## %var The BASE base image.
