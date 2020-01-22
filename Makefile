@@ -186,6 +186,7 @@ endef
 define STITCH_ENTROPY ## %func Return entropy value for a given key.
 while read -r ENV_LINE; do                     \
 	echo -n "$$ENV_LINE" | ${PARSE_ENV}        \
+		test -z "$$ENV_NAME" && continue;      \
 		echo -n $$ENV_NAME=;                   \
 		grep $$ENV_NAME .entropy | {           \
 		IFS=":" read -r ENV_KEY ENTROPY_KEY;   \
