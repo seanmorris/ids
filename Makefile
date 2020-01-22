@@ -15,9 +15,11 @@ MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 BASELINUX ?= debian:buster-20191118-slim## %var The BASE base image.
 PHP       ?= 7.3
 COREDIR   :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-OUTCOREDIR?=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+OUTCOREDIR?=${COREDIR}
 ROOTDIR   ?=${COREDIR}
-OUTROOTDIR?=${COREDIR}
+OUTROOTDIR?=${ROOTDIR}
+CORERELDIR:=$(dir $(lastword $(MAKEFILE_LIST)))
+ROOTRELDIR:=$(dir $(firstword $(MAKEFILE_LIST)))
 
 MAIN_ENV  :=${ROOTDIR}.env
 MAIN_DLT  :=${ROOTDIR}.env.default
@@ -203,8 +205,7 @@ endef
 DCOMPOSE_TARGET_STACK:= -f ${COMPOSE_TARGET}
 
 define NEWTARGET ## %frag Set up environment for new target.
-$(eval COMPOSE_TARGET:=$(shell echo infra/compose/${TARGET}.yml))
-$(eval PREBUILD:=$(shell echo ${ROOTDIR}.env ${COREDIR}.env.default ${COREDIR}.env_${TARGET} ${COREDIR}.env_${TARGET}.default))
+$(eval COMPOSE_TARGET:=$(shell echo ${ROOTRELDIR}infra/compose/${TARGET}.yml))
 $(eval MAIN_ENV:=$(shell echo ${ROOTDIR}.env))
 $(eval MAIN_DLT:=$(shell echo ${ROOTDIR}.env.default))
 $(eval TRGT_ENV:=$(shell echo ${ROOTDIR}.env_${TARGET}))
@@ -248,7 +249,11 @@ TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}     \
 OUTROOTDIR=${OUTROOTDIR} OUTCOREDIR=${OUTCOREDIR} D_UID=${D_UID}      \
 TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${BASELINUX}         \
 DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} COREDIR=${COREDIR}              \
-DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}
+DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}                                   \
+BUILDCOREDIR=$(if $(filter ${COREDIR},${ROOTDIR}),./,vendor/seanmorris/ids) \
+BUILDROOTDIR=$(if $(filter ${COREDIR},${ROOTDIR}),./,./) \
+CORERELDIR=${CORERELDIR} \
+ROOTRELDIR=${ROOTRELDIR}
 endef
 
 define EXTRACT_TARGET_SERVICES ## %frag extract the target & optional service configs from args.
@@ -374,7 +379,7 @@ endif
 
 IMAGE?=
 build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
+	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start
 	@ ${WHILE_IMAGES}                           \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
@@ -405,7 +410,7 @@ test t: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Run the tests
 clean: ${PREBUILD}## Clean the project. Only applies to files from the current target.
 	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
 	@- docker volume rm -f ${PROJECT}_${TARGET}_schema;
-	@- docker run --rm -v ${ROOTDIR}:/app -w=/app   \
+	@- docker run --rm -v ${OUTROOTDIR}:/app -w=/app   \
 		${BASELINUX} bash -c "            \
 			set -o noglob;                \
 			rm -f ${GENERABLE};           \
@@ -416,7 +421,7 @@ clean: ${PREBUILD}## Clean the project. Only applies to files from the current t
 			rm -f .env.default            \
 			rm -f .env"
 
-	@- docker run --rm -v ${COREDIR}:/app -w=/app \
+	@- docker run --rm -v ${OUTCOREDIR}:/app -w=/app \
 		${BASELINUX} bash -c "                    \
 			rm -f ${GENERABLE};                   \
 			cat data/global/_schema.json > data/global/schema.json ;"
@@ -486,7 +491,7 @@ hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 	@ git config core.hooksPath githooks
 
 run: ${PREBUILD} ${GENERABLE}## CMD 'SERVICE COMMAND' Run a command in a given service's container.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
+	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
 		 ${PASS_ENV} ${CMD}
 
 bash sh: ${PREBUILD} ${GENERABLE}## Get a bash propmpt to an idilic container.
@@ -554,17 +559,8 @@ retarget: ### Set the current target for one invocation.
 		|| >&2 echo Setting services for ${TGT_STR}...
 	@ ${NEWTARGET}
 
-${ROOTDIR}config/.env:
-	@ test -f ${@} || touch ${@};
-
-${ROOTDIR}config/.env_${TARGET}:
-	@ test -f ${@} || touch ${@};
-
-${ROOTDIR}config/.env.default:
-	@ test -f ${@};
-
-${ROOTDIR}config/.env_${TARGET}.default:
-	@ test -f ${@};
+${OUTROOTDIR}config/.env%:
+	@ test -f ${@}
 
 infra/compose/%yml: ${ROOTDIR}.env ${ROOTDIR}.env.default ${ROOTDIR}.env_$${TARGET} ${COREDIR}.env_$${TARGET}.default ${ENV_LOCK}
 	@ test -f infra/compose/${TARGET}.yml;
@@ -611,7 +607,7 @@ ${ROOTDIR}.env: ${ROOTDIR}config/.env
 		&& eval echo -en $$ENV_SOURCE                   \
 		|| eval eval echo -en $$"$$ENV_SOURCE";         \
 		echo "\n";                                      \
-	} | docker run --rm -iv ${ROOTDIR}:/app -w=/app     \
+	} | docker run --rm -iv ${OUTROOTDIR}:/app -w=/app  \
 		${BASELINUX} bash -c '${STITCH_ENTROPY}' > ${@} \
 
 
@@ -623,7 +619,7 @@ ${ROOTDIR}.env%: ${ROOTDIR}config/.env${*}
 		&& eval echo -en $$ENV_SOURCE                   \
 		|| eval eval echo -en $$"$$ENV_SOURCE";         \
 		echo -en "\n";                                  \
-	} | docker run --rm -iv ${ROOTDIR}:/app -w=/app     \
+	} | docker run --rm -iv ${OUTROOTDIR}:/app -w=/app  \
 		${BASELINUX} bash -c '${STITCH_ENTROPY}' > ${@} \
 
 ###

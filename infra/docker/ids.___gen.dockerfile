@@ -6,7 +6,10 @@ SHELL ["/bin/bash", "-c"]
 ARG IDS_APT_PROXY_HOST
 ARG IDS_APT_PROXY_PORT
 
-COPY ./infra/apt/proxy-detect.sh /usr/bin/proxy-detect
+ARG CORERELDIR
+ARG ROOTRELDIR
+
+COPY ${CORERELDIR}/infra/apt/proxy-detect.sh /usr/bin/proxy-detect
 
 RUN set -eux;               \
 	chmod ugo+rx /usr/bin/proxy-detect;         \
@@ -76,12 +79,12 @@ RUN set -eux;       \
 	apt-get clean;  \
 	rm -rf /var/lib/apt/lists/*
 
-COPY ./infra/xdebug/30-xdebug-cli.ini /etc/php/7.3/cli/conf.d/30-xdebug-cli.ini
+COPY ${CORERELDIR}/infra/xdebug/30-xdebug-cli.ini /etc/php/7.3/cli/conf.d/30-xdebug-cli.ini
 
 FROM idilic-test AS idilic-dev
 FROM idilic-base AS idilic-prod
 
-COPY ./ /app
+COPY ${ROOTRELDIR}/ /app
 
 FROM base AS server-base
 
@@ -121,6 +124,6 @@ RUN set -eux;       \
 	apt-get clean;  \
 	rm -rf /var/lib/apt/lists/*;
 
-COPY ./infra/xdebug/30-xdebug-apache.ini /etc/php/7.3/apache2/conf.d/30-xdebug-apache.ini
+COPY ${CORERELDIR}/infra/xdebug/30-xdebug-apache.ini /etc/php/7.3/apache2/conf.d/30-xdebug-apache.ini
 
 FROM server-base AS server-prod
