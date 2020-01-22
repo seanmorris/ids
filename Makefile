@@ -14,12 +14,16 @@ MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 
 BASELINUX ?= debian:buster-20191118-slim## %var The BASE base image.
 PHP       ?= 7.3
-COREDIR   :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-OUTCOREDIR?=${COREDIR}
-ROOTDIR   ?=${COREDIR}
-OUTROOTDIR?=${ROOTDIR}
+
 CORERELDIR:=$(dir $(lastword $(MAKEFILE_LIST)))
 ROOTRELDIR:=$(dir $(firstword $(MAKEFILE_LIST)))
+
+COREDIR   :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+ROOTDIR   :=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
+
+OUTCOREDIR?=${COREDIR}
+OUTROOTDIR?=${ROOTDIR}
+
 
 MAIN_ENV  :=${ROOTDIR}.env
 MAIN_DLT  :=${ROOTDIR}.env.default
@@ -685,4 +689,3 @@ post-coverage:
 dir:
 	echo ${ROOTDIR}
 	echo ${COREDIR}
-	echo ${ROOTDIR}config/.env_${TARGET}.default
