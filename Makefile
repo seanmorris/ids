@@ -9,7 +9,7 @@
 
 .SECONDEXPANSION:
 
-SHELL     =/bin/bash
+SHELL     =/bin/bash -eu
 MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 
 BASELINUX ?= debian:buster-20191118-slim## %var The BASE base image.
@@ -60,6 +60,9 @@ $(eval TGT_STR=$(firstword ${MAKECMDGOALS}))
 endif
 
 # @ ( [[ "${ENV_LOCK_TAG}" != "" ]] || [[ "${ENV_LOCK_TGT_SVC}" != "${TGT_SVC}" ]] ) \
+
+ENV_LOCK_TAG?=
+ENV_LOCK_TGT_SVC?=
 
 TRGT_ENV :=${ROOTDIR}.env_${TARGET}
 TRGT_DLT :=${ROOTDIR}.env_${TARGET}.default
@@ -185,8 +188,8 @@ endef
 
 define STITCH_ENTROPY ## %func Return entropy value for a given key.
 while read -r ENV_LINE; do                     \
+	test -z "$$ENV_LINE" && continue;          \
 	echo -n "$$ENV_LINE" | ${PARSE_ENV}        \
-		test -z "$$ENV_NAME" && continue;      \
 		echo -n $$ENV_NAME=;                   \
 		grep $$ENV_NAME .entropy | {           \
 		IFS=":" read -r ENV_KEY ENTROPY_KEY;   \
