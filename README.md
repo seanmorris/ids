@@ -19,23 +19,23 @@ The project is made to run in docker but doesn't require it. It can be included 
 The philosophy of the Ids project is headlined by security, speed and easy of use, in that order.
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.09 s (1363.1 files/s, 268269.1 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.07 s (1528.9 files/s, 306726.9 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                              66           2748            304          11725
-JSON                             12              0              0           4596
+PHP                              65           2741            304          11692
+JSON                             10              0              0           3788
 Markdown                          2            560              0           1224
-YAML                             27            113             14           1113
-make                              2            139              9            566
+YAML                             24             98             14           1041
+make                              1            135              9            550
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15             17             21
 INI                               3              0              0             11
 --------------------------------------------------------------------------------
-SUM:                            118           3584            344          19296
+SUM:                            111           3558            344          18367
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Wed Jan 22 04:36:04 EST 2020*
+*built by sean @ Wed Jan 22 07:02:44 EST 2020*
 
 ## Installation
 

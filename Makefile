@@ -690,5 +690,5 @@ post-coverage:
 	echo -e "$(call IMPORT_TEMPLATE,bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN} -f /tmp/coverage-report.json)"
 
 dir:
-	echo ${ROOTDIR}
-	echo ${COREDIR}
+	@ echo ${ROOTRELDIR}
+	@ ls -al ${CORERELDIR}infra/xdebug/30-xdebug-cli.ini
