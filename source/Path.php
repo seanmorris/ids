@@ -2,7 +2,7 @@
 namespace SeanMorris\Ids;
 class Path
 {
-	protected 
+	protected
 		$counter = -1
 		, $nodes = []
 		, $nodeAlias = []
@@ -24,7 +24,7 @@ class Path
 	public function append(...$nodes)
 	{
 		$newPath = clone $this;
-		
+
 		foreach($nodes as $node)
 		{
 			$newPath->nodes[] = $node;
@@ -38,7 +38,7 @@ class Path
 	public function unshift(...$nodes)
 	{
 		$newPath = clone $this;
-		
+
 		foreach($nodes as $node)
 		{
 			array_unshift($newPath->nodes, $node);
@@ -49,12 +49,24 @@ class Path
 		return $newPath;
 	}
 
+	public function push(...$nodes)
+	{
+		$newPath = clone $this;
+
+		foreach($nodes as $node)
+		{
+			$newPath->nodes[] = $node;
+		}
+
+		return $newPath;
+	}
+
 	public function pop(&$node = null)
 	{
 		$newPath = clone $this;
 
 		$newPath->nodes = [];
-		
+
 		foreach($this->nodes as $node)
 		{
 			$newPath->nodes[] = $node;
@@ -119,7 +131,7 @@ class Path
 	public function consumeNodes()
 	{
 		$args = [];
-		
+
 		while(($arg = $this->consumeNode()) !== NULL)
 		{
 			$args[] = $arg;
@@ -172,12 +184,12 @@ class Path
 
 	public function remaining()
 	{
-		return count($this->nodes) - $this->counter; 
+		return count($this->nodes) - $this->counter;
 	}
 
 	public function setAlias($alias)
 	{
-		$this->nodeAlias[$this->counter] = $alias;	
+		$this->nodeAlias[$this->counter] = $alias;
 	}
 
 	public function getAlias($nodeKey)

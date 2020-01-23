@@ -3,14 +3,14 @@ version: '2.4'
 services:
 
   idilic:
-    volumes: ['${OUTMAKEDIR}/:/app', '/tmp:/tmp']
+    volumes: ['${OUTROOTDIR}/:/app', '/tmp:/tmp']
     extends:
       file: base.yml
       service: idilic
     depends_on: [database]
 
   server:
-    volumes: ['${OUTMAKEDIR}:/app']
+    volumes: ['${OUTROOTDIR}:/app']
     ports:   ['${IDS_EXPOSE_HTTP}:8080']
     extends:
       file: base.yml

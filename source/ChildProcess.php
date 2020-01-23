@@ -34,7 +34,11 @@ class ChildProcess
 
 	public function write($record)
 	{
-		fwrite($this->stdIn, $record);
+		if(is_resource($this->process))
+		{
+			return fwrite($this->stdIn, $record);
+		}
+		return FALSE;
 	}
 
 	public function get($bytes)
@@ -74,10 +78,10 @@ class ChildProcess
 			return TRUE;
 		}
 
-		if(!$this->feof())
-		{
-			return FALSE;
-		}
+		// if(!$this->feof())
+		// {
+		// 	return FALSE;
+		// }
 
 		$status = proc_get_status($this->process);
 

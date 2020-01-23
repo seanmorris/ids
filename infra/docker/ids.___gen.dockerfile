@@ -1,12 +1,20 @@
+ARG UID=1000
+ARG GID=1000
+ARG CORERELDIR
+ARG ROOTRELDIR
+ARG IDS_APT_PROXY_HOST
+ARG IDS_APT_PROXY_PORT
+
 FROM debian:buster-20191118-slim as base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
 SHELL ["/bin/bash", "-c"]
 
+ARG CORERELDIR
 ARG IDS_APT_PROXY_HOST
 ARG IDS_APT_PROXY_PORT
 
-COPY ./infra/apt/proxy-detect.sh /usr/bin/proxy-detect
+COPY ${CORERELDIR}/infra/apt/proxy-detect.sh /usr/bin/proxy-detect
 
 RUN set -eux;               \
 	chmod ugo+rx /usr/bin/proxy-detect;         \
@@ -70,23 +78,29 @@ CMD ["-d=;", "info"]
 FROM base as idilic-base
 FROM idilic-base AS idilic-test
 
+ARG CORERELDIR
+
 RUN set -eux;       \
 	apt-get update; \
 	apt-get install -y --no-install-recommends php7.3-xdebug; \
 	apt-get clean;  \
 	rm -rf /var/lib/apt/lists/*
 
-COPY ./infra/xdebug/30-xdebug-cli.ini /etc/php/7.3/cli/conf.d/30-xdebug-cli.ini
+RUN echo ${CORERELDIR} && ls -al
+
+COPY ${CORERELDIR}/infra/xdebug/30-xdebug-cli.ini /etc/php/7.3/cli/conf.d/30-xdebug-cli.ini
 
 FROM idilic-test AS idilic-dev
 FROM idilic-base AS idilic-prod
 
-COPY ./ /app
+ARG ROOTRELDIR
+
+COPY ${ROOTRELDIR}/ /app
 
 FROM base AS server-base
 
-ARG UID=1000
-ARG GID=1000
+ARG GID
+ARG CORERELDIR
 
 RUN set -eux;               \
 	apt-get update;         \
@@ -115,12 +129,14 @@ ENTRYPOINT ["apachectl", "-D", "FOREGROUND"]
 FROM server-base AS server-test
 FROM server-base AS server-dev
 
+ARG CORERELDIR
+
 RUN set -eux;       \
 	apt-get update; \
 	apt-get install -y --no-install-recommends php7.3-xdebug; \
 	apt-get clean;  \
 	rm -rf /var/lib/apt/lists/*;
 
-COPY ./infra/xdebug/30-xdebug-apache.ini /etc/php/7.3/apache2/conf.d/30-xdebug-apache.ini
+COPY ${CORERELDIR}/infra/xdebug/30-xdebug-apache.ini /etc/php/7.3/apache2/conf.d/30-xdebug-apache.ini
 
 FROM server-base AS server-prod

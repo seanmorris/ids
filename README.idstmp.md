@@ -384,10 +384,10 @@ foreach($$some as $$configKey => $$value)
 
 ### Configuration Arrays
 
-Arrays can be created by adding a `_` to the end of the environment variable name. The value will be split on whitespace.
+Arrays can be created by adding an underscore to the end of the environment variable name. The value will be split on whitespace.
 
 ```
-IDS_ARRAY=first second third
+IDS_ARRAY_=first second third
 ```
 
 ```php
@@ -398,12 +398,12 @@ $$array = Settings::read('ARRAY');
 Whitespace will be preserved if the value is quotes:
 
 ```
-IDS_ARRAY=first "second element" third
+IDS_ARRAY_=first "second element" third
 ```
 
 Quotes can be escaped by doubling:
 ```
-IDS_ARRAY=first "second element ""with quotes inside""." third
+IDS_ARRAY_=first "second element ""with quotes inside""." third
 ```
 
 ### Hostname & Port based configuration

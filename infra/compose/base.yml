@@ -16,14 +16,17 @@ services:
       - /usr/bin/docker:${DOCKER}
     build:
       context: ../../
-      dockerfile: infra/docker/ids.___gen.dockerfile
+
+      dockerfile: ${CORERELDIR}infra/docker/ids.___gen.dockerfile
       target:  idilic-${TARGET}
       network: bridge
       args:
         UID: ${D_UID}
         GID: ${D_GID}
-        IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST}
-        IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT}
+        CORERELDIR: ${CORERELDIR}
+        ROOTRELDIR: ${ROOTRELDIR}
+        IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST:-}
+        IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT:-}
 
   server:
     image:   ${REPO}/${PROJECT}.server:${TAG}
@@ -36,14 +39,16 @@ services:
       - ${TRGT_ENV}
     build:
       context: ../../
-      dockerfile: infra/docker/ids.___gen.dockerfile
+      dockerfile: ${COREDIR}infra/docker/ids.___gen.dockerfile
       target:  server-${TARGET}
       network: bridge
       args:
         UID: ${D_UID}
         GID: ${D_GID}
-        IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST}
-        IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT}
+        CORERELDIR: ${CORERELDIR}
+        ROOTRELDIR: ${ROOTRELDIR}
+        IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST:-}
+        IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT:-}
 
   database:
     command: ['mysqld', '--character-set-server=utf8mb4']

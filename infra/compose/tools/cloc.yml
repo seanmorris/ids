@@ -8,6 +8,6 @@ services:
     user:    ${D_UID}:${D_GID}
     build:
       context: ../../
-      dockerfile: ${REALDIR}infra/docker/tools/cloc.___gen.dockerfile
+      dockerfile: ${COREDIR}infra/docker/tools/cloc.___gen.dockerfile
     volumes:
-      - ${OUTMAKEDIR}:/app
+      - ${OUTROOTDIR}:/app

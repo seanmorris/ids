@@ -13,10 +13,10 @@ services:
     image:   ${REPO}/${PROJECT}.aptcache:${TAG}
     build:
       context: ../../
-      dockerfile: ${REALDIR}infra/docker/tools/aptcache.___gen.dockerfile
+      dockerfile: ${COREDIR}infra/docker/tools/aptcache.___gen.dockerfile
     volumes:
-      - ${OUTMAKEDIR}:/app
-      - ${OUTMAKEDIR}infra/apt/cache/:/var/cache/apt-cacher-ng
+      - ${OUTROOTDIR}:/app
+      - ${OUTROOTDIR}infra/apt/cache/:/var/cache/apt-cacher-ng
 
 networks:
   bridge: {}
