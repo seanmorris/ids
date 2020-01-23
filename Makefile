@@ -532,12 +532,14 @@ ${ENV_LOCK}: ${VAR_FILE} ### Lock the environment target
 			`${ISDEV} || echo "--no-dev"`;          \
 	} || true;
 
-	@ ( test "${ENV_LOCK_TAG:=}" != "${TAG}" || test "${ENV_LOCK_TGT_SVC:=}" != "${TGT_SVC}" )  \
+	@ ( test "${ENV_LOCK_TAG:=}" != "${TAG}"        \
+		|| test "${ENV_LOCK_TGT_SVC:=}" != "${TGT_SVC}" ) \
 	&& {                                            \
 		>&2 echo "Locking env...";                  \
 		echo ENV_LOCK_TGT_SVC=${TGT_SVC:=} > ${ENV_LOCK}; \
 		echo ENV_LOCK_TAG=${TAG:=} >> ${ENV_LOCK};  \
 		echo ENV_LOCK_TIME=`date` >> ${ENV_LOCK};   \
+		touch -d 0 ${ENV_LOCK};                     \
 		$(eval ENV_LOCK_TGT_SVC:=${TGT_SVC:=})      \
 		$(eval ENV_LOCK_TAG:=${TAG:=})              \
 	} || true;
