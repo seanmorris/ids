@@ -46,6 +46,7 @@ RUN set -eux;               \
 		php${PHP}-common    \
 		php${PHP}-dom       \
 		php${PHP}-json      \
+		php${PHP}-mbstring  \
 		php${PHP}-opcache   \
 		php${PHP}-pdo-mysql \
 		php${PHP}-readline  \

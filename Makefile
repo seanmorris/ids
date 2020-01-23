@@ -385,8 +385,8 @@ endif
 
 IMAGE?=
 build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
-	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start ${IMAGE}
 	@ ${WHILE_IMAGES}                           \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
 		| while read IMAGE_NAME; do                                          \
@@ -497,7 +497,7 @@ hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 	@ git config core.hooksPath githooks
 
 run: ${PREBUILD} ${GENERABLE}## CMD 'SERVICE COMMAND' Run a command in a given service's container.
-	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
 		 ${PASS_ENV} ${CMD}
 
 bash sh: ${PREBUILD} ${GENERABLE}## Get a bash propmpt to an idilic container.
@@ -607,7 +607,7 @@ ${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) ${ENV_LOCK} ${ENVBUILD}
 # 	@ printf "%q" '$(call SHELLOUT,cat ${<})' >${@};
 
 ${ROOTDIR}.env: ${ROOTDIR}config/.env
-	export ${ENV} \
+	@ export ${ENV} \
 	&& export ENV_SOURCE="$(call SHELLOUT,cat ${ROOTDIR}config/.env)" \
 	&& {                                                \
 		test "$${ENV_SOURCE:0:1}" == '$$'               \
@@ -619,7 +619,7 @@ ${ROOTDIR}.env: ${ROOTDIR}config/.env
 
 
 ${ROOTDIR}.env%: ${ROOTDIR}config/.env$${*}
-	export ${ENV} \
+	@ export ${ENV} \
 	&& export ENV_SOURCE="$(call SHELLOUT,cat ${ROOTDIR}config/.env${*})" \
 	&& {                                                \
 		test "$${ENV_SOURCE:0:1}" == '$$'               \
