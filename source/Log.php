@@ -1119,17 +1119,18 @@ class Log
 
 		static::$censor = (object) [];
 
-		$censorConfig = Settings::read('logCensor');
-
-		foreach($censorConfig as $censorKey => $censorVal)
+		if($censorConfig = Settings::read('logCensor'))
 		{
-			if(is_numeric($censorKey))
+			foreach($censorConfig as $censorKey => $censorVal)
 			{
-				$censorKey = $censorVal;
-				$censorVal = TRUE;
-			}
+				if(is_numeric($censorKey))
+				{
+					$censorKey = $censorVal;
+					$censorVal = TRUE;
+				}
 
-			static::$censor->$censorKey = $censorVal;
+				static::$censor->$censorKey = $censorVal;
+			}
 		}
 	}
 }
