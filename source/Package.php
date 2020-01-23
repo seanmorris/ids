@@ -567,7 +567,9 @@ class Package
 			{
 				if(is_scalar($currentVar))
 				{
-					$currentVar = (object) [];
+					$currentVar = (object) [
+						$varName => (object) []
+					];
 				}
 
 				$currentVar = & $currentVar->$varName;
