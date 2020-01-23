@@ -440,7 +440,7 @@ start s: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d
 
 start-fg sf: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
-	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up
+	${DCOMPOSE} -f ${COMPOSE_TARGET} up
 
 start-bg sb: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the background, streaming output to terminal.
 	(${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up &)
@@ -474,7 +474,7 @@ current-target ctr: ${COMPOSE_TARGET} ${ENV_LOCK} ## Get the current target.
 	@ echo ${TARGET}
 
 list-images li:${ENV_LOCK} ${PREBUILD}## List available images from current target.
-	@ ${WHILE_IMAGES} \
+	${WHILE_IMAGES} \
 		echo $$(docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH) \
 		$$(docker image inspect --format="{{ .Size }}" $$IMAGE_HASH  \
 			| awk '{ S=$$1 /1024/1024 ; print S "MB" }' \
@@ -484,7 +484,7 @@ list-images li:${ENV_LOCK} ${PREBUILD}## List available images from current targ
 list-tags lt: ## List the images tagged from the current target.
 	@ ${WHILE_TAGS} echo $$TAG_NAME; done;done;
 
-push-images psi: ${ENV_LOCK} ${COMPOSE_TARGET} ## Push locally built images.
+push-images psi: ${ENV_LOCK} ## Push locally built images.
 	@ echo Pushing ${PROJECT}:${TAG}
 	@ ${WHILE_TAGS} \
 		docker push $$TAG_NAME; \
