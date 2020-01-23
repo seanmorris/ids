@@ -60,10 +60,6 @@ endif
 
 # @ ( [[ "${ENV_LOCK_TAG}" != "" ]] || [[ "${ENV_LOCK_TGT_SVC}" != "${TGT_SVC}" ]] ) \
 
-ENV_LOCK_TAG=
-ENV_LOCK_TGT_SVC?=
-TGT_SVC?=
-
 TRGT_ENV :=${ROOTDIR}.env_${TARGET}
 TRGT_DLT :=${ROOTDIR}.env_${TARGET}.default
 
@@ -97,6 +93,10 @@ SUFFIX   =-${TARGET}$(shell [[ ${PHP} = 7.3  ]] || echo -${PHP})
 DBRANCH  :=$(shell [[ ${BRANCH} == "master" ]] || echo -${BRANCH})
 TAG      :=${DESC}${SUFFIX}
 FULLNAME ?=${REPO}/${PROJECT}:${TAG}
+
+ENV_LOCK_TAG?=
+ENV_LOCK_TGT_SVC?=
+TGT_SVC?=
 
 IMAGE    ?=
 DHOST_IP :=$(shell docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
@@ -522,25 +522,24 @@ dcompose-version dcv: ${PREBUILD} ${GENERABLE}## Print the current docker-compos
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} version
 
 ${ENV_LOCK}: ${VAR_FILE} ### Lock the environment target
-	@ [[ "${ENV_LOCK_TAG:=}" == "${TAG}" ]] \
-	||[[ "${ENV_LOCK_TGT_SVC:=}" == "${TGT_SVC}" ]]     \
-	|| (                                              \
+	@ (test "${ENV_LOCK_TAG:=}" != "${TAG}"         \
+	|| test "${ENV_LOCK_TGT_SVC:=}" != "${TGT_SVC}" \
+	) && {                                          \
 		echo -e >&2 "\e[2m"Env changed, need to check dependencies..."\e[0m"; \
-		 ${DRUN}                                      \
-		 	 -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp  \
-		 	 composer install                         \
-			--ignore-platform-reqs                    \
-			`${ISDEV} || echo "--no-dev"`;            \
-	);
+		 ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
+			composer install                        \
+			--ignore-platform-reqs                  \
+			`${ISDEV} || echo "--no-dev"`;          \
+	};
 
-	@ ( [[ "${ENV_LOCK_TAG:=}" != "${TAG}" ]] || [[ "${ENV_LOCK_TGT_SVC:=}" != "${TGT_SVC}" ]] ) \
-	&& { \
-		>&2 echo "Locking env...";                      \
+	@ ( test "${ENV_LOCK_TAG:=}" != "${TAG}" || test "${ENV_LOCK_TGT_SVC:=}" != "${TGT_SVC}" )  \
+	&& {                                            \
+		>&2 echo "Locking env...";                  \
 		echo ENV_LOCK_TGT_SVC=${TGT_SVC:=} > ${ENV_LOCK}; \
-		echo ENV_LOCK_TAG=${TAG:=} >> ${ENV_LOCK};        \
-		echo ENV_LOCK_TIME=`date` >> ${ENV_LOCK};       \
-		$(eval ENV_LOCK_TAG=${TAG:=})                     \
-		$(eval ENV_LOCK_TGT_SVC=${TGT_SVC:=})             \
+		echo ENV_LOCK_TAG=${TAG:=} >> ${ENV_LOCK};  \
+		echo ENV_LOCK_TIME=`date` >> ${ENV_LOCK};   \
+		$(eval ENV_LOCK_TGT_SVC:=${TGT_SVC:=})      \
+		$(eval ENV_LOCK_TAG:=${TAG:=})              \
 	} \
 	|| true;
 
@@ -620,7 +619,7 @@ ${ROOTDIR}.env: ${ROOTDIR}config/.env
 		${BASELINUX} bash -c '${STITCH_ENTROPY}' > ${@} \
 
 
-${ROOTDIR}.env%: ${ROOTDIR}config/.env${*}
+${ROOTDIR}.env%: ${ROOTDIR}config/.env$${*}
 	export ${ENV} \
 	&& export ENV_SOURCE="$(call SHELLOUT,cat ${ROOTDIR}config/.env${*})" \
 	&& {                                                \
