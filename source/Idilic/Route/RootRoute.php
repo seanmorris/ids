@@ -1129,6 +1129,44 @@ EOT
 		$class::listen();
 	}
 
+	/** Run an SQL query*/
+	public function sql($router)
+	{
+		$database = \SeanMorris\Ids\Database::get('main');
+		$output = fopen('php://stdout', 'w');
+		$input  = fopen('php://stdin', 'r');
+
+		echo "ctrl+c to exit.\n>";
+
+		while($queryString = fgets($input))
+		{
+			try{
+				$query = $database->prepare($queryString);
+
+				$query->execute();
+			}
+			catch(\Exception $e)
+			{
+				echo "\n>";
+				\SeanMorris\Ids\Log::logException($e);
+				continue;
+			}
+
+			$headers = FALSE;
+
+			while($row = $query->fetch(\PDO::FETCH_ASSOC))
+			{
+				if(!$headers)
+				{
+					fputcsv($output, $headers = array_keys($row), "\t");
+				}
+
+				fputcsv($output, $row, "\t");
+			}
+			echo "\n>";
+		}
+	}
+
 	/** Generate documentation for a given package.*/
 
 	public function document($router)
