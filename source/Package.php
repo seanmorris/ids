@@ -565,7 +565,7 @@ class Package
 
 			while($varName = array_shift($varPath))
 			{
-				if(is_scalar($currentVar))
+				if(is_scalar($currentVar) || !$currentVar)
 				{
 					$currentVar = (object) [
 						$varName => (object) []
