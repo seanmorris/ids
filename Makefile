@@ -60,7 +60,7 @@ endif
 
 # @ ( [[ "${ENV_LOCK_TAG}" != "" ]] || [[ "${ENV_LOCK_TGT_SVC}" != "${TGT_SVC}" ]] ) \
 
-ENV_LOCK_TAG?=
+ENV_LOCK_TAG=
 ENV_LOCK_TGT_SVC?=
 TGT_SVC?=
 
@@ -95,7 +95,7 @@ HASH     :=$(shell echo _$$(git rev-parse --short HEAD 2>/dev/null) || echo init
 DESC     :=$(shell git describe --tags 2>/dev/null || echo ${HASH})
 SUFFIX   =-${TARGET}$(shell [[ ${PHP} = 7.3  ]] || echo -${PHP})
 DBRANCH  :=$(shell [[ ${BRANCH} == "master" ]] || echo -${BRANCH})
-TAG      ?=${DESC}${SUFFIX}
+TAG      :=${DESC}${SUFFIX}
 FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
 IMAGE    ?=
@@ -466,7 +466,7 @@ kill k: ${ENV_LOCK} ${PREBUILD} ${GENERABLE}## Kill current project services.
 kill-all: ${ENV_LOCK} ${GENERABLE}## Kill all project services.
 	@ ${WHILE_IMAGES} echo docker kill -9 $$IMAGE_HASH; done;
 
-current-tag ct: ${COMPOSE_TARGET} ## Get the current project tag.
+current-tag ct: ## Get the current project tag.
 	@ echo ${TAG}
 
 current-target ctr: ${COMPOSE_TARGET} ${ENV_LOCK} ## Get the current target.
