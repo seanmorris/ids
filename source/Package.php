@@ -565,11 +565,14 @@ class Package
 
 			while($varName = array_shift($varPath))
 			{
-				if(is_scalar($currentVar) || !$currentVar)
+				if(is_scalar($currentVar))
 				{
-					$currentVar = (object) [
-						$varName => (object) []
-					];
+					$currentVar = (object) [];
+				}
+
+				if(!isset($currentVar->$varName))
+				{
+					$currentVar[$varName] = (object) [];
 				}
 
 				$currentVar = & $currentVar->$varName;
