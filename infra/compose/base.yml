@@ -16,7 +16,6 @@ services:
       - /usr/bin/docker:${DOCKER}
     build:
       context: ../../
-
       dockerfile: ${CORERELDIR}infra/docker/ids.___gen.dockerfile
       target:  idilic-${TARGET}
       network: bridge

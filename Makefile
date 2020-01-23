@@ -522,7 +522,7 @@ dcompose-version dcv: ${PREBUILD} ${GENERABLE}## Print the current docker-compos
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} version
 
 ${ENV_LOCK}: ${VAR_FILE} ### Lock the environment target
-	@ (test "${ENV_LOCK_TAG:=}" != "${TAG}"         \
+	@ (test "${ENV_LOCK_TAG:=}" != "${TAG}"           \
 	|| test "${ENV_LOCK_TGT_SVC:=}" != "${TGT_SVC}" \
 	) && {                                          \
 		echo -e >&2 "\e[2m"Env changed, need to check dependencies..."\e[0m"; \
@@ -530,7 +530,7 @@ ${ENV_LOCK}: ${VAR_FILE} ### Lock the environment target
 			composer install                        \
 			--ignore-platform-reqs                  \
 			`${ISDEV} || echo "--no-dev"`;          \
-	};
+	} || true;
 
 	@ ( test "${ENV_LOCK_TAG:=}" != "${TAG}" || test "${ENV_LOCK_TGT_SVC:=}" != "${TGT_SVC}" )  \
 	&& {                                            \
@@ -540,8 +540,7 @@ ${ENV_LOCK}: ${VAR_FILE} ### Lock the environment target
 		echo ENV_LOCK_TIME=`date` >> ${ENV_LOCK};   \
 		$(eval ENV_LOCK_TGT_SVC:=${TGT_SVC:=})      \
 		$(eval ENV_LOCK_TAG:=${TAG:=})              \
-	} \
-	|| true;
+	} || true;
 
 stay@%: ${VAR_FILE} ### Set the current target and persist for later invocations.
 	@ >&2 echo Setting persistent target ${TARGET}...
