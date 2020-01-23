@@ -348,6 +348,8 @@ class Settings
 			, sprintf('_;%d', $port)
 			, sprintf(':%d', $port)
 			, sprintf(';%d', $port)
+			, sprintf('_:', $port)
+			, sprintf('_;', $port)
 			, '_'
 			, ':'
 			, ';'
