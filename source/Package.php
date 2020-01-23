@@ -572,7 +572,7 @@ class Package
 
 				if(!isset($currentVar->$varName))
 				{
-					$currentVar[$varName] = (object) [];
+					$currentVar->$varName = (object) [];
 				}
 
 				$currentVar = & $currentVar->$varName;
