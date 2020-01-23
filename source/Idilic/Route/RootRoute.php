@@ -201,7 +201,16 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			$namespace = $package->packageSpace();
 			$tests     = $package->testDir();
 
+			$testsFound = [];
+
 			while($tests->check() && $test = $tests->read())
+			{
+				$testsFound[] = $test;
+			}
+
+			$testsFound = array_reverse($testsFound);
+
+			foreach($testsFound as $test)
 			{
 				if(!preg_match('/(\w+?Test)\.php/', $test->name(), $m))
 				{
@@ -651,6 +660,13 @@ class RootRoute implements \SeanMorris\Ids\Routable
 	public function _getPackage($packageName)
 	{
 		$packageName = \SeanMorris\Ids\Package::name($packageName);
+
+		return \SeanMorris\Ids\Package::get($packageName);
+	}
+
+	public function package($router)
+	{
+		$packageName = $router->path()->consumeNode();
 
 		return \SeanMorris\Ids\Package::get($packageName);
 	}
@@ -1166,6 +1182,8 @@ EOT
 			echo "\n>";
 		}
 	}
+
+
 
 	/** Generate documentation for a given package.*/
 
