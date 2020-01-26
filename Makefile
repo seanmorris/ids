@@ -91,7 +91,7 @@ HASH     :=$(shell echo _$$(git rev-parse --short HEAD 2>/dev/null) || echo init
 DESC     :=$(shell git describe --tags 2>/dev/null || echo ${HASH})
 SUFFIX   =-${TARGET}$(shell [[ ${PHP} = 7.3  ]] || echo -${PHP})
 DBRANCH  :=$(shell [[ ${BRANCH} == "master" ]] || echo -${BRANCH})
-TAG      :=${DESC}${SUFFIX}
+TAG      ?=${DESC}${SUFFIX}
 FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
 ENV_LOCK_TAG?=
@@ -385,7 +385,7 @@ endif
 
 IMAGE?=
 build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build --parallel ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start ${IMAGE}
 	@ ${WHILE_IMAGES}                           \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
@@ -415,7 +415,7 @@ test t: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Run the tests
 
 clean: ${PREBUILD}## Clean the project. Only applies to files from the current target.
 	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
-	@- docker volume rm -f ${PROJECT}_${TARGET}_schema;
+	@- docker volume rm -f `sed 's/[^a-z0-9]//g' <<< ${PROJECT}`_${TARGET}_schema;
 	@- docker run --rm -v ${OUTROOTDIR}:/app -w=/app   \
 		${BASELINUX} bash -c "            \
 			set -o noglob;                \
