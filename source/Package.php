@@ -552,30 +552,25 @@ class Package
 
 		$path = $dir . 'var.json';
 
-		if(! file_exists($path))
+		if(!file_exists($path))
 		{
 			file_put_contents($path, '{}');
 		}
 
-		$varsJson = file_get_contents($path);
+		if(!$varsJson = file_get_contents($path))
+		{
+			$varsJson = '{}';
+		}
 
 		if($vars = json_decode($varsJson))
 		{
-			$currentVar = & $vars;
+			$currentVar =& $vars;
 
 			while($varName = array_shift($varPath))
 			{
-				if(is_scalar($currentVar))
-				{
-					$currentVar = (object) [];
-				}
+				$currentVar->$varName = $currentVar->$varName ?? (object) [];
 
-				if(!isset($currentVar->$varName))
-				{
-					$currentVar->$varName = (object) [];
-				}
-
-				$currentVar = & $currentVar->$varName;
+				$currentVar =& $currentVar->$varName;
 			}
 
 			$currentVar = $val;

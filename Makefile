@@ -120,6 +120,8 @@ cat /dev/urandom         \
 	| head -n 1
 endef
 
+IDS_DATABASES_MAIN_ROOT_PASSWORD:=`${RANDOM_STRING}`
+
 define NPX
 cp  -n /app/package-lock.json /build;   \
 	cat /app/composer.json              \
@@ -257,8 +259,9 @@ ROOTDIR=${ROOTDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}}    \
 TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}     \
 OUTROOTDIR=${OUTROOTDIR} OUTCOREDIR=${OUTCOREDIR} D_UID=${D_UID}      \
 TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${BASELINUX}         \
+IDS_DATABASES_ROOT_PASSWORD=${IDS_DATABASES_ROOT_PASSWORD}            \
 DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} COREDIR=${COREDIR}              \
-CORERELDIR=${CORERELDIR} ROOTRELDIR=${ROOTRELDIR}                    \
+CORERELDIR=${CORERELDIR} ROOTRELDIR=${ROOTRELDIR}                     \
 DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}
 endef
 

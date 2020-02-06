@@ -10,91 +10,48 @@ class Linker
 	{
 		$rootPackage = \SeanMorris\Ids\Package::getRoot();
 		$packages = \SeanMorris\Ids\Package::listPackages();
-		$links = array();
+
+		$links = $rootPackage->getVar('linker:links', (object) [], 'global');
 
 		foreach($packages as $package)
 		{
 			$package = \SeanMorris\Ids\Package::get($package);
 			$packageSpace = $package->packageSpace();
 
-			if($exposedLinks = $package->getVar('link', NULL))
-			{
-				foreach($exposedLinks as $key => $value)
-				{
-					$links[$key][$packageSpace] = $value;
-				}
-			}
-			else
-			{
-				$linker = $packageSpace . 'Linker';
+			$linker = $packageSpace . 'Linker';
 
-				if($linker !== __CLASS__ && !class_exists($linker))
-				{
-					continue;
-				}
-
-				if($exposedLinks = $linker::expose())
+			if($linker !== __CLASS__ && !class_exists($linker))
+			{
+				if($exposedLinks = $package->getVar('link', NULL, 'global'))
 				{
 					foreach($exposedLinks as $key => $value)
 					{
 						$links[$key][$packageSpace] = $value;
 					}
 				}
+
+				continue;
+			}
+
+			if($exposedLinks = $linker::expose())
+			{
+				foreach($exposedLinks as $key => $value)
+				{
+					$links[$key][$packageSpace] = $value;
+				}
 			}
 		}
 
-		$rootPackage = \SeanMorris\Ids\Package::getRoot();
-
-		$rootPackage->setVar('linker:links', $links);
-		$rootPackage->setVar(
-			'linker:foreignLinks'
-			, static::$foreginVars[get_called_class()] ?? []
-		);
+		$rootPackage->setVar('linker:links', $links, 'global');
 	}
 
-	public static function get($key = NULL, $package = NULL)
+	public static function get($key = NULL)
 	{
 		$rootPackage = \SeanMorris\Ids\Package::getRoot();
 
-		$links = (array) $rootPackage->getVar('linker:links:' . $key);
+		$links = $rootPackage->getVar('linker:links:' . $key, [], 'global');
 
-		if($package && !is_bool($package))
-		{
-			$package = \SeanMorris\Ids\Package::get($package);
-			$packageSpace = $package->packageSpace();
-
-			$links = (array) $rootPackage->getVar('linker:foreignLinks');
-
-			if(array_key_exists($packageSpace, $links))
-			{
-				$links = (array) $links[$packageSpace];
-			}
-
-			if(array_key_exists($key, $links))
-			{
-				return $links[$key];
-			}
-
-			return [];
-		}
-
-		if($package === TRUE)
-		{
-			if(!$links)
-			{
-				return [];
-			}
-
-			return array_merge(...array_values(array_map(
-				function($link)
-				{
-					return (array)$link;
-				}
-				, $links
-			)));
-		}
-
-		return $links;
+		return (array) $links;
 	}
 
 	public static function expose()
@@ -102,23 +59,17 @@ class Linker
 		return [] + (static::$exposeVars[get_called_class()] ?? []);
 	}
 
-	public static function set($key, $value, $package = NULL)
+	public static function set($key, $value)
 	{
-		if($package)
-		{
-			if(!is_object($package))
-			{
-				$package = \SeanMorris\Ids\Package::get($package);
-			}
+		$rootPackage = \SeanMorris\Ids\Package::getRoot();
 
-			$package = $package->packageSpace();
+		$links = $rootPackage->setVar(
+			'linker:links:' . $key
+			, $value
+			, 'global'
+		);
 
-			static::$foreginVars[get_called_class()][$package][$key] = $value;
-
-			return;
-		}
-
-		static::$exposeVars[get_called_class()][$key] = $value;
+		return (array) $links;
 	}
 
 	public static function inheritance()

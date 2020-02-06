@@ -701,7 +701,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		$rootPackage = \SeanMorris\Ids\Package::getRoot();
 
-		$rootPackage->setVar('linker:inheritance', $inheritance);
+		$rootPackage->setVar('linker:inheritance', $inheritance, 'global');
 
 		print json_encode($inheritance, JSON_PRETTY_PRINT);
 	}
