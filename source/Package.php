@@ -252,7 +252,7 @@ class Package
 				static::class, 0, strpos(
 					static::class
 					, '\\'
-					, strpos(static::class, '\\')
+					, 1 + strpos(static::class, '\\')
 				)
 			)
 		);
@@ -1399,5 +1399,10 @@ class Package
 	public function cliName()
 	{
 		return preg_replace('/\\\\/', '/', $this->packageName);
+	}
+
+	public function __toString()
+	{
+		return $this->packageName;
 	}
 }
