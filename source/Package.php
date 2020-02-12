@@ -106,7 +106,7 @@ class Package
 		$packageName  = static::name($packageName);
 		$packageClass = $packageName . '\\Package';
 
-		if($packageClass == __CLASS__ || class_exists($packageName))
+		if($packageClass == __CLASS__ || class_exists($packageClass))
 		{
 			return new $packageClass($packageName, $root);
 		}
@@ -811,6 +811,8 @@ class Package
 		}
 
 		$classTables = static::$tables + ['main' => []];
+
+		var_dump($classTables);
 
 		foreach($classTables as $db =>$tables)
 		{

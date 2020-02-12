@@ -940,7 +940,7 @@ class Log
 			, count($trace)
 		);
 
-		$superTrace = implode(PHP_EOL, $superTrace);
+		$superTrace = implode(PHP_EOL, array_reverse($superTrace));
 
 		return $superTrace;
 	}
@@ -989,9 +989,9 @@ class Log
 				. $header;
 		}
 
-		return $header
+		return $superTrace
 			 . PHP_EOL
-			 . $superTrace
+			 . $header
 			 . PHP_EOL;
 	}
 

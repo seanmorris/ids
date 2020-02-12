@@ -75,7 +75,13 @@ class Gelf implements \SeanMorris\Ids\Logger
 		{
 			$payload = json_encode($gelf);
 
-			socket_write($socket, $payload . "\0", strlen($payload) + 1);
+			try{
+				// socket_write($socket, $payload . "\0", strlen($payload) + 1);
+			}
+			catch(\Exception $e)
+			{
+				return;
+			}
 		}
 	}
 
