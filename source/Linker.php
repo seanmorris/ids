@@ -45,11 +45,13 @@ class Linker
 		$rootPackage->setVar('linker:links', $links, 'global');
 	}
 
-	public static function get($key = NULL)
+	public static function get($key = NULL, $default = [])
 	{
 		$rootPackage = \SeanMorris\Ids\Package::getRoot();
 
-		$links = $rootPackage->getVar('linker:links:' . $key, [], 'global');
+		$realKey = 'linker:links:' . $key;
+
+		$links = $rootPackage->getVar($realKey, $default, 'global');
 
 		return (array) $links;
 	}
@@ -70,6 +72,15 @@ class Linker
 		);
 
 		return (array) $links;
+	}
+
+	public static function classes($super = '')
+	{
+		$rootPackage = \SeanMorris\Ids\Package::getRoot();
+
+		$realKey = 'linker:inheritance:' . $super;
+
+		return $rootPackage->getVar($realKey, [], 'global');
 	}
 
 	public static function inheritance()

@@ -1884,7 +1884,7 @@ class Model
 		else if(!in_array('class', static::$ignore))
 		{
 			$rootPackage = \SeanMorris\Ids\Package::getRoot();
-			$allClasses  =  $rootPackage->getVar('linker:inheritance', []);
+			$allClasses  =  $roles = \SeanMorris\Ids\Linker::classes();
 
 			$subClasses  = $allClasses->{$topClass} ?? [];
 

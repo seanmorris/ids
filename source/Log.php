@@ -554,6 +554,11 @@ class Log
 						continue;
 					}
 
+					if($val instanceof \GuzzleHttp\Handler\EasyHandle)
+					{
+						continue;
+					}
+
 					$_val[$k] = $relflectedProp->getValue($val);
 				}
 
