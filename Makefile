@@ -60,10 +60,6 @@ endif
 
 # @ ( [[ "${ENV_LOCK_TAG}" != "" ]] || [[ "${ENV_LOCK_TGT_SVC}" != "${TGT_SVC}" ]] ) \
 
-ENV_LOCK_TAG?=
-ENV_LOCK_TGT_SVC?=
-TGT_SVC?=
-
 TRGT_ENV :=${ROOTDIR}.env_${TARGET}
 TRGT_DLT :=${ROOTDIR}.env_${TARGET}.default
 
@@ -98,6 +94,10 @@ DBRANCH  :=$(shell [[ ${BRANCH} == "master" ]] || echo -${BRANCH})
 TAG      ?=${DESC}${SUFFIX}
 FULLNAME ?=${REPO}/${PROJECT}:${TAG}
 
+ENV_LOCK_TAG?=
+ENV_LOCK_TGT_SVC?=
+TGT_SVC?=
+
 IMAGE    ?=
 DHOST_IP :=$(shell docker network inspect bridge --format='{{ (index .IPAM.Config 0).Gateway}}')
 NO_TTY   ?=-T
@@ -119,6 +119,8 @@ cat /dev/urandom         \
 	| fold -w 32         \
 	| head -n 1
 endef
+
+IDS_DATABASES_MAIN_ROOT_PASSWORD:=`${RANDOM_STRING}`
 
 define NPX
 cp  -n /app/package-lock.json /build;   \
@@ -257,8 +259,9 @@ ROOTDIR=${ROOTDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}}    \
 TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}     \
 OUTROOTDIR=${OUTROOTDIR} OUTCOREDIR=${OUTCOREDIR} D_UID=${D_UID}      \
 TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${BASELINUX}         \
+IDS_DATABASES_ROOT_PASSWORD=${IDS_DATABASES_ROOT_PASSWORD}            \
 DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} COREDIR=${COREDIR}              \
-CORERELDIR=${CORERELDIR} ROOTRELDIR=${ROOTRELDIR}                    \
+CORERELDIR=${CORERELDIR} ROOTRELDIR=${ROOTRELDIR}                     \
 DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}
 endef
 
@@ -386,7 +389,7 @@ endif
 IMAGE?=
 build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start ${IMAGE}
 	@ ${WHILE_IMAGES}                           \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
 		| while read IMAGE_NAME; do                                          \
@@ -415,7 +418,7 @@ test t: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Run the tests
 
 clean: ${PREBUILD}## Clean the project. Only applies to files from the current target.
 	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
-	@- docker volume rm -f ${PROJECT}_${TARGET}_schema;
+	@- docker volume rm -f `sed 's/[^a-z0-9]//g' <<< ${PROJECT}`_${TARGET}_schema;
 	@- docker run --rm -v ${OUTROOTDIR}:/app -w=/app   \
 		${BASELINUX} bash -c "            \
 			set -o noglob;                \
@@ -452,7 +455,7 @@ stop-all da: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the all project servic
 	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
 
 restart r: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Restart the project services in the foreground.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} restart ${IMAGE}
 
 restart-fg rf: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up
@@ -466,7 +469,7 @@ kill k: ${ENV_LOCK} ${PREBUILD} ${GENERABLE}## Kill current project services.
 kill-all: ${ENV_LOCK} ${GENERABLE}## Kill all project services.
 	@ ${WHILE_IMAGES} echo docker kill -9 $$IMAGE_HASH; done;
 
-current-tag ct: ${COMPOSE_TARGET} ## Get the current project tag.
+current-tag ct: ## Get the current project tag.
 	@ echo ${TAG}
 
 current-target ctr: ${COMPOSE_TARGET} ${ENV_LOCK} ## Get the current target.
@@ -522,27 +525,27 @@ dcompose-version dcv: ${PREBUILD} ${GENERABLE}## Print the current docker-compos
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} version
 
 ${ENV_LOCK}: ${VAR_FILE} ### Lock the environment target
-	@ [[ "${ENV_LOCK_TAG:=}" == "${TAG}" ]] \
-	||[[ "${ENV_LOCK_TGT_SVC:=}" == "${TGT_SVC}" ]]     \
-	|| (                                              \
+	@ (test "${ENV_LOCK_TAG:=}" != "${TAG}"           \
+	|| test "${ENV_LOCK_TGT_SVC:=}" != "${TGT_SVC}" \
+	) && {                                          \
 		echo -e >&2 "\e[2m"Env changed, need to check dependencies..."\e[0m"; \
-		 ${DRUN}                                      \
-		 	 -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp  \
-		 	 composer install                         \
-			--ignore-platform-reqs                    \
-			`${ISDEV} || echo "--no-dev"`;            \
-	);
+		 ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
+			composer install                        \
+			--ignore-platform-reqs                  \
+			`${ISDEV} || echo "--no-dev"`;          \
+	} || true;
 
-	@ ( [[ "${ENV_LOCK_TAG:=}" != "${TAG}" ]] || [[ "${ENV_LOCK_TGT_SVC:=}" != "${TGT_SVC}" ]] ) \
-	&& { \
-		>&2 echo "Locking env...";                      \
+	@ ( test "${ENV_LOCK_TAG:=}" != "${TAG}"        \
+		|| test "${ENV_LOCK_TGT_SVC:=}" != "${TGT_SVC}" ) \
+	&& {                                            \
+		>&2 echo "Locking env...";                  \
 		echo ENV_LOCK_TGT_SVC=${TGT_SVC:=} > ${ENV_LOCK}; \
-		echo ENV_LOCK_TAG=${TAG:=} >> ${ENV_LOCK};        \
-		echo ENV_LOCK_TIME=`date` >> ${ENV_LOCK};       \
-		$(eval ENV_LOCK_TAG=${TAG:=})                     \
-		$(eval ENV_LOCK_TGT_SVC=${TGT_SVC:=})             \
-	} \
-	|| true;
+		echo ENV_LOCK_TAG=${TAG:=} >> ${ENV_LOCK};  \
+		echo ENV_LOCK_TIME=`date` >> ${ENV_LOCK};   \
+		touch -d 0 ${ENV_LOCK};                     \
+		$(eval ENV_LOCK_TGT_SVC:=${TGT_SVC:=})      \
+		$(eval ENV_LOCK_TAG:=${TAG:=})              \
+	} || true;
 
 stay@%: ${VAR_FILE} ### Set the current target and persist for later invocations.
 	@ >&2 echo Setting persistent target ${TARGET}...
@@ -609,7 +612,7 @@ ${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) ${ENV_LOCK} ${ENVBUILD}
 # 	@ printf "%q" '$(call SHELLOUT,cat ${<})' >${@};
 
 ${ROOTDIR}.env: ${ROOTDIR}config/.env
-	export ${ENV} \
+	@ export ${ENV} \
 	&& export ENV_SOURCE="$(call SHELLOUT,cat ${ROOTDIR}config/.env)" \
 	&& {                                                \
 		test "$${ENV_SOURCE:0:1}" == '$$'               \
@@ -620,8 +623,8 @@ ${ROOTDIR}.env: ${ROOTDIR}config/.env
 		${BASELINUX} bash -c '${STITCH_ENTROPY}' > ${@} \
 
 
-${ROOTDIR}.env%: ${ROOTDIR}config/.env${*}
-	export ${ENV} \
+${ROOTDIR}.env%: ${ROOTDIR}config/.env$${*}
+	@ export ${ENV} \
 	&& export ENV_SOURCE="$(call SHELLOUT,cat ${ROOTDIR}config/.env${*})" \
 	&& {                                                \
 		test "$${ENV_SOURCE:0:1}" == '$$'               \

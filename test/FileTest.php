@@ -118,7 +118,5 @@ class FileTest extends \UnitTestCase
 	{
 		$file = new \SeanMorris\Ids\Disk\File($this->testFilepath);
 		$dir  = dirname($this->testFilepath);
-
-		var_dump($file->subtract($dir));
 	}
 }

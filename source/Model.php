@@ -1398,7 +1398,7 @@ class Model
 			}
 		}
 
-// 		\SeanMorris\Ids\Log::debug(get_called_class(), $skeleton);
+		// \SeanMorris\Ids\Log::debug(get_called_class(), $skeleton);
 
 		foreach($this as $property => $value)
 		{
@@ -1406,11 +1406,11 @@ class Model
 			{
 				$subjectClass = static::$hasOne[$property];
 
-// 				\SeanMorris\Ids\Log::debug(
-// 					$property
-// 					, $subjectClass
-// 					, $subjectClass::$table
-// 				);
+				// \SeanMorris\Ids\Log::debug(
+				// 	$property
+				// 	, $subjectClass
+				// 	, $subjectClass::$table
+				// );
 
 				if(isset($skeleton[$subjectClass::$table]))
 				{
@@ -1451,17 +1451,17 @@ class Model
 					    $subSkeletonKey = $joinMap[$property];
 					}
 
-// 					$subSkeletonAliasChain = explode('__', $_subSkeletonAlias);
+					// $subSkeletonAliasChain = explode('__', $_subSkeletonAlias);
 
-// 					$subSkeletonKey = array_pop($subSkeletonAliasChain)
-// 						. '_'
-// 						. $property
-// 						. '__'
-// 						. $subjectClass::$table
-// 						. '_0'
-// 					;
+					// $subSkeletonKey = array_pop($subSkeletonAliasChain)
+					// 	. '_'
+					// 	. $property
+					// 	. '__'
+					// 	. $subjectClass::$table
+					// 	. '_0'
+					// ;
 
-// 					\SeanMorris\Ids\Log::debug($_subSkeletonAlias, $subSkeletonKey, $subSkeletons);
+					// \SeanMorris\Ids\Log::debug($_subSkeletonAlias, $subSkeletonKey, $subSkeletons);
 
 					if(isset(
 						$subSkeletons[$subSkeletonKey]
@@ -1884,7 +1884,7 @@ class Model
 		else if(!in_array('class', static::$ignore))
 		{
 			$rootPackage = \SeanMorris\Ids\Package::getRoot();
-			$allClasses  =  $rootPackage->getVar('linker:inheritance', []);
+			$allClasses  =  $roles = \SeanMorris\Ids\Linker::classes();
 
 			$subClasses  = $allClasses->{$topClass} ?? [];
 
@@ -2771,73 +2771,23 @@ class Model
 		$database->prepare('ROLLBACK')->execute();
 	}
 
-	protected static function beforeConsume($instance, &$skeleton)
-	{
-
-	}
-
-	protected static function afterConsume($instance, &$skeleton)
-	{
-
-	}
-
-	protected static function beforeCreate($instance, &$skeleton)
-	{
-
-	}
-
-	protected static function afterCreate($instance, &$skeleton)
-	{
-
-	}
-
-	protected static function beforeWrite($instance, &$skeleton)
-	{
-
-	}
-
-	protected static function afterWrite($instance, &$skeleton)
-	{
-
-	}
-
-	protected static function beforeRead($instance)
-	{
-
-	}
-
-	protected static function afterRead($instance)
-	{
-
-	}
-
-	protected static function beforeUpdate($instance, &$skeleton)
-	{
-
-	}
-
-	protected static function afterUpdate($instance, &$skeleton)
-	{
-
-	}
-
-	protected static function beforeDelete($instance)
-	{
-
-	}
-
-	protected static function afterDelete($instance)
-	{
-
-	}
-
 	public static function getCache()
 	{
 		return static::$cache;
 	}
 
-	protected function onSubjugate($parent, $property)
-	{
-
-	}
+	// Overridable "Hook" methods
+	protected function onSubjugate($parent, $property){}
+	protected static function beforeConsume($instance, &$skeleton){}
+	protected static function afterConsume($instance, &$skeleton){}
+	protected static function beforeCreate($instance, &$skeleton){}
+	protected static function afterCreate($instance, &$skeleton){}
+	protected static function beforeWrite($instance, &$skeleton){}
+	protected static function afterWrite($instance, &$skeleton){}
+	protected static function beforeRead($instance){}
+	protected static function afterRead($instance){}
+	protected static function beforeUpdate($instance, &$skeleton){}
+	protected static function afterUpdate($instance, &$skeleton){}
+	protected static function beforeDelete($instance){}
+	protected static function afterDelete($instance){}
 }

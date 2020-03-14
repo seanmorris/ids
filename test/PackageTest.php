@@ -2,12 +2,12 @@
 namespace SeanMorris\Ids\Test;
 class PackageTest extends \UnitTestCase
 {
-	protected $setUp;
+	protected $setUp, $package;
 
 	public function setUp()
 	{
 		$this->database = \SeanMorris\Ids\Database::get('main');
-		$this->package  = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
+		$this->package  = \SeanMorris\Ids\Package::get('SeanMorris/Ids');
 
 		foreach($this->package->tables() as $dbName => $tables)
 		{
@@ -31,6 +31,8 @@ class PackageTest extends \UnitTestCase
 
 	public function tearDown()
 	{
+		$this->package = \SeanMorris\Ids\Package::get('SeanMorris/Ids');
+
 		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
 			$this->package->globalDir() . '_schema.json'
 		);

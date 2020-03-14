@@ -106,7 +106,7 @@ class Package
 		$packageName  = static::name($packageName);
 		$packageClass = $packageName . '\\Package';
 
-		if($packageClass == __CLASS__ || class_exists($packageName))
+		if($packageClass == __CLASS__ || class_exists($packageClass))
 		{
 			return new $packageClass($packageName, $root);
 		}
@@ -252,7 +252,7 @@ class Package
 				static::class, 0, strpos(
 					static::class
 					, '\\'
-					, strpos(static::class, '\\')
+					, 1 + strpos(static::class, '\\')
 				)
 			)
 		);
@@ -552,25 +552,25 @@ class Package
 
 		$path = $dir . 'var.json';
 
-		if(! file_exists($path))
+		if(!file_exists($path))
 		{
 			file_put_contents($path, '{}');
 		}
 
-		$varsJson = file_get_contents($path);
+		if(!$varsJson = file_get_contents($path))
+		{
+			$varsJson = '{}';
+		}
 
 		if($vars = json_decode($varsJson))
 		{
-			$currentVar = & $vars;
+			$currentVar =& $vars;
 
 			while($varName = array_shift($varPath))
 			{
-				if(is_scalar($currentVar))
-				{
-					$currentVar = (object) [];
-				}
+				$currentVar->$varName = $currentVar->$varName ?? (object) [];
 
-				$currentVar = & $currentVar->$varName;
+				$currentVar =& $currentVar->$varName;
 			}
 
 			$currentVar = $val;
@@ -811,6 +811,8 @@ class Package
 		}
 
 		$classTables = static::$tables + ['main' => []];
+
+		var_dump($classTables);
 
 		foreach($classTables as $db =>$tables)
 		{
@@ -1399,5 +1401,10 @@ class Package
 	public function cliName()
 	{
 		return preg_replace('/\\\\/', '/', $this->packageName);
+	}
+
+	public function __toString()
+	{
+		return $this->packageName;
 	}
 }

@@ -164,17 +164,30 @@ class Log
 			}
 		}
 
+
 		if($level > $maxLevel || $level == 0)
 		{
 			if(!isset(static::$also))
 			{
-				static::$also = (object) Settings::read('logAlso') ?: [];
+				$also = Settings::read('logAlso');
+
+				if(is_object($also) && $also->{0})
+				{
+					$also = array_combine(
+						(array) $also
+						, array_fill(0, count((array) $also), TRUE)
+					);
+				}
+
+				static::$also = (object) ( $also ?: [] );
 			}
 
 			if(
 				!isset(static::$also->$levelString)
-				 && !isset($switches['vv'])
-				 || !$switches['vv']
+				 && (
+				 	!isset($switches['vv'])
+				 	|| !$switches['vv']
+				 )
 			){
 				return;
 			}
@@ -537,6 +550,11 @@ class Log
 					}
 
 					if($relflectedProp->isStatic())
+					{
+						continue;
+					}
+
+					if($val instanceof \GuzzleHttp\Handler\EasyHandle)
 					{
 						continue;
 					}
@@ -927,7 +945,7 @@ class Log
 			, count($trace)
 		);
 
-		$superTrace = implode(PHP_EOL, $superTrace);
+		$superTrace = implode(PHP_EOL, array_reverse($superTrace));
 
 		return $superTrace;
 	}
@@ -976,9 +994,9 @@ class Log
 				. $header;
 		}
 
-		return $header
+		return $superTrace
 			 . PHP_EOL
-			 . $superTrace
+			 . $header
 			 . PHP_EOL;
 	}
 
@@ -1119,17 +1137,18 @@ class Log
 
 		static::$censor = (object) [];
 
-		$censorConfig = Settings::read('logCensor');
-
-		foreach($censorConfig as $censorKey => $censorVal)
+		if($censorConfig = Settings::read('logCensor'))
 		{
-			if(is_numeric($censorKey))
+			foreach($censorConfig as $censorKey => $censorVal)
 			{
-				$censorKey = $censorVal;
-				$censorVal = TRUE;
-			}
+				if(is_numeric($censorKey))
+				{
+					$censorKey = $censorVal;
+					$censorVal = TRUE;
+				}
 
-			static::$censor->$censorKey = $censorVal;
+				static::$censor->$censorKey = $censorVal;
+			}
 		}
 	}
 }

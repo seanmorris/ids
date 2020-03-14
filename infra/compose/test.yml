@@ -11,14 +11,14 @@ services:
 
   server:
     volumes: ['${OUTROOTDIR}:/app']
-    ports:   ['${IDS_EXPOSE_HTTP}:8080']
+    ports:   ['${IDS_EXPOSE_HTTP:-0}:8080']
     extends:
       file: base.yml
       service: server
     depends_on: [database]
 
   database:
-    ports: ['${IDS_EXPOSE_SQL}:3306']
+    ports: ['${IDS_EXPOSE_SQL:-0}:3306']
     extends:
       file: base.yml
       service: database

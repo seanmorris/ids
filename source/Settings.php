@@ -334,6 +334,9 @@ class Settings
 			, sprintf(':%d/settings', $port)
 			, sprintf(';%d/settings', $port)
 
+			, '_:/settings'
+			, '_;/settings'
+
 			, '_/settings'
 			, ':/settings'
 			, ';/settings'
@@ -348,6 +351,8 @@ class Settings
 			, sprintf('_;%d', $port)
 			, sprintf(':%d', $port)
 			, sprintf(';%d', $port)
+			, sprintf('_:', $port)
+			, sprintf('_;', $port)
 			, '_'
 			, ':'
 			, ';'

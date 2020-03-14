@@ -222,7 +222,10 @@ class Meta
 					$aliases[$lastToken] = $aliased;
 				}
 
-				if(T_CLASS === $tokens[$index][0]
+				if((T_CLASS === $tokens[$index][0]
+						|| T_TRAIT === $tokens[$index][0]
+						|| T_INTERFACE === $tokens[$index][0]
+					)
 					&& T_PAAMAYIM_NEKUDOTAYIM !== $tokens[$index-1][0]
 				){
 					if(T_IMPLEMENTS === $tokens[$index + 4][0]
@@ -235,6 +238,8 @@ class Meta
 							|| $tokens[$index + $subIndex][0] == T_NS_SEPARATOR
 							|| $tokens[$index + $subIndex][0] == T_STRING
 							|| $tokens[$index + $subIndex][0] == T_CLASS
+							|| $tokens[$index + $subIndex][0] == T_TRAIT
+							|| $tokens[$index + $subIndex][0] == T_INTERFACE
 						){
 							$subNamespace .= $tokens[$subIndex + $index][1];
 							$subIndex++;
@@ -296,8 +301,10 @@ class Meta
 
 					try
 					{
-						if(!class_exists($class))
-						{
+						if(!class_exists($class)
+							&& !interface_exists($class)
+							&& !trait_exists($class)
+						){
 							break;
 						}
 					}

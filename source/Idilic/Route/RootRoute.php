@@ -201,7 +201,16 @@ class RootRoute implements \SeanMorris\Ids\Routable
 			$namespace = $package->packageSpace();
 			$tests     = $package->testDir();
 
+			$testsFound = [];
+
 			while($tests->check() && $test = $tests->read())
+			{
+				$testsFound[] = $test;
+			}
+
+			$testsFound = array_reverse($testsFound);
+
+			foreach($testsFound as $test)
 			{
 				if(!preg_match('/(\w+?Test)\.php/', $test->name(), $m))
 				{
@@ -655,6 +664,13 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		return \SeanMorris\Ids\Package::get($packageName);
 	}
 
+	public function package($router)
+	{
+		$packageName = $router->path()->consumeNode();
+
+		return \SeanMorris\Ids\Package::get($packageName);
+	}
+
 	/** List all installed packages. */
 
 	public function listPackages($router)
@@ -685,7 +701,7 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 		$rootPackage = \SeanMorris\Ids\Package::getRoot();
 
-		$rootPackage->setVar('linker:inheritance', $inheritance);
+		$rootPackage->setVar('linker:inheritance', $inheritance, 'global');
 
 		print json_encode($inheritance, JSON_PRETTY_PRINT);
 	}
@@ -1167,19 +1183,39 @@ EOT
 		}
 	}
 
+
+
 	/** Generate documentation for a given package.*/
 
 	public function document($router)
 	{
 		$args = $router->path()->consumeNodes();
+		$packageName = array_shift($args);
 
-		if(!$packageName = array_shift($args))
+		// if(!$packageName = array_shift($args))
+		// {
+		// 	return 'No package supplied.';
+		// }
+
+		$docs   = \SeanMorris\Ids\Documentor::docs($packageName);
+
+		$chunk = [];
+
+		foreach($docs as $doc)
 		{
-			return 'No package supplied.';
-		}
+			array_push($chunk, $doc);
 
-		return json_decode(json_encode(
-			\SeanMorris\Ids\Documentor::docs($packageName)
-		), TRUE);
+			if(count($chunk) >= 10)
+			{
+				print json_encode($chunk) . PHP_EOL;
+				$chunk = [];
+			}
+
+		}
+	}
+
+	public function phpinfo()
+	{
+		phpinfo();
 	}
 }
