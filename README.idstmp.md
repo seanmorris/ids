@@ -18,6 +18,8 @@ The project is made to run in docker but doesn't require it. It can be included 
 
 The philosophy of the Ids project is headlined by security, speed and easy of use, in that order.
 
+View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
+
 ```
 $(call TEMPLATE_SHELL,cloc -q . --exclude-dir="vendor" | tail -n +2 )
 ```

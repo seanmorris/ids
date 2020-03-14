@@ -18,13 +18,15 @@ The project is made to run in docker but doesn't require it. It can be included 
 
 The philosophy of the Ids project is headlined by security, speed and easy of use, in that order.
 
+View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
+
 ```
-github.com/AlDanial/cloc v 1.84  T=0.16 s (905.9 files/s, 144964.2 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.15 s (960.1 files/s, 153070.2 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                              66           2751            312          11789
-JSON                             12              0              0           3812
+JSON                             13              0              0           3887
 Markdown                          2            560              0           1228
 YAML                             27            112             14           1113
 make                              2            139              9            567
@@ -33,13 +35,13 @@ Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15             17             21
 HTML                              1              0              0             12
 INI                               3              0              0             11
-JavaScript                        1              0              0              1
 CSS                               1              0              0              1
+JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            142           3586            354          18783
+SUM:                            143           3586            354          18858
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Sat Mar 14 08:32:10 EDT 2020*
+*built by sean @ Sat Mar 14 09:04:23 EDT 2020*
 
 ## Installation
 
