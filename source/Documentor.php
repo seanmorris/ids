@@ -90,8 +90,13 @@ class Documentor
 
 				$propertyClass = $property->getDeclaringClass();
 
-				$propertyDoc->default   = $defaults[$property->name];
-				$propertyDoc->static    = $property->isStatic();
+				$propertyDoc->default = NULL;
+
+				if(!$propertyDoc->static = $property->isStatic())
+				{
+					$propertyDoc->default = $property->getValue();
+				}
+
 				$propertyDoc->public    = $property->isPublic();
 				$propertyDoc->private   = $property->isPrivate();
 				$propertyDoc->protected = $property->isProtected();
