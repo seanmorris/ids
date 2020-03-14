@@ -46,6 +46,7 @@ RUN set -eux;               \
 		php7.3-common    \
 		php7.3-dom       \
 		php7.3-json      \
+		php7.3-mbstring  \
 		php7.3-opcache   \
 		php7.3-pdo-mysql \
 		php7.3-readline  \

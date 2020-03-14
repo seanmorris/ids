@@ -19,27 +19,27 @@ The project is made to run in docker but doesn't require it. It can be included 
 The philosophy of the Ids project is headlined by security, speed and easy of use, in that order.
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.14 s (985.7 files/s, 157780.2 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.16 s (905.9 files/s, 144964.2 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                              66           2757            305          11758
-JSON                             12              0              0           4596
-YAML                             27            113             14           1113
-Markdown                          1            280              0            605
-make                              2            138              9            565
+PHP                              66           2751            312          11789
+JSON                             12              0              0           3812
+Markdown                          2            560              0           1228
+YAML                             27            112             14           1113
+make                              2            139              9            567
 SVG                              21              0              2            188
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15             17             21
 HTML                              1              0              0             12
 INI                               3              0              0             11
-CSS                               1              0              0              1
 JavaScript                        1              0              0              1
+CSS                               1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            141           3312            347          18911
+SUM:                            142           3586            354          18783
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Sat Mar 14 08:25:31 EDT 2020*
+*built by sean @ Sat Mar 14 08:32:10 EDT 2020*
 
 ## Installation
 
