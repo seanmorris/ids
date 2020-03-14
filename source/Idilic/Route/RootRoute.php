@@ -1190,14 +1190,32 @@ EOT
 	public function document($router)
 	{
 		$args = $router->path()->consumeNodes();
+		$packageName = array_shift($args);
 
-		if(!$packageName = array_shift($args))
+		// if(!$packageName = array_shift($args))
+		// {
+		// 	return 'No package supplied.';
+		// }
+
+		$docs   = \SeanMorris\Ids\Documentor::docs($packageName);
+
+		$chunk = [];
+
+		foreach($docs as $doc)
 		{
-			return 'No package supplied.';
-		}
+			array_push($chunk, $doc);
 
-		return json_decode(json_encode(
-			\SeanMorris\Ids\Documentor::docs($packageName)
-		), TRUE);
+			if(count($chunk) >= 10)
+			{
+				print json_encode($chunk) . PHP_EOL;
+				$chunk = [];
+			}
+
+		}
+	}
+
+	public function phpinfo()
+	{
+		phpinfo();
 	}
 }

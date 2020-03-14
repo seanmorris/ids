@@ -2,13 +2,23 @@
 namespace SeanMorris\Ids;
 class Documentor
 {
-	public static function docs($namespace)
+	public static function docs($namespace = '')
 	{
-		$classes = \SeanMorris\Ids\Meta::classes();
+		$namespace = str_replace('/', '\\', $namespace);
 
-		$classes = array_filter($classes, function($class) use($namespace) {
-			return substr($class, 0, strlen($namespace)) === $namespace;
-		});
+		$allClasses = \SeanMorris\Ids\Linker::classes(':');
+		$allClasses = (array) ($allClasses->{''} ?? []);
+
+		if($namespace)
+		{
+			$classes = array_filter($allClasses, function($class) use($namespace) {
+				return substr($class, 0, strlen($namespace)) === $namespace;
+			});
+		}
+		else
+		{
+			$classes = $allClasses;
+		}
 
 		$classDocs = [];
 
@@ -16,9 +26,13 @@ class Documentor
 		{
 			$classDocs[$className] = (object)[];
 
-			$package = \SeanMorris\Ids\Package::fromClass($className);
+			// $package = \SeanMorris\Ids\Package::fromClass($className);
 
 			$reflection = new \ReflectionClass($className);
+
+			$classDocs[$className]->classname = $className;
+			$classDocs[$className]->namespace = $reflection->getNamespaceName();
+			$classDocs[$className]->shortname = $reflection->getShortName();
 
 			$classDocs[$className]->doc = NULL;
 
@@ -30,9 +44,26 @@ class Documentor
 			$classDocs[$className]->parent = get_parent_class($className) ?: NULL;
 			$classDocs[$className]->file   = $reflection->getFileName();
 
-			$classDocs[$className]->final    = $reflection->isFinal();
-			$classDocs[$className]->abstract = $reflection->isAbstract();
-			$classDocs[$className]->iterable = $reflection->isIterable();
+			$classDocs[$className]->final       = $reflection->isFinal();
+			$classDocs[$className]->abstract    = $reflection->isAbstract();
+			$classDocs[$className]->iterable    = $reflection->isIterable();
+			$classDocs[$className]->isTrait     = $reflection->isTrait();
+			$classDocs[$className]->isInterface = $reflection->isInterface();
+
+			$classDocs[$className]->isClass     = !(
+				$classDocs[$className]->isTrait
+				 ||$classDocs[$className]->isInterface
+			);
+
+			$classDocs[$className]->isPlainClass = $classDocs[$className]->isClass &&!(
+				$classDocs[$className]->abstract
+				|| $classDocs[$className]->final
+			);
+
+			if($classDocs[$className]->isInterface)
+			{
+				$classDocs[$className]->abstract = false;
+			}
 
 			$classDocs[$className]->lines = [
 				$reflection->getStartLine()
@@ -90,8 +121,13 @@ class Documentor
 
 				$propertyClass = $property->getDeclaringClass();
 
-				$propertyDoc->default   = $defaults[$property->name];
-				$propertyDoc->static    = $property->isStatic();
+				$propertyDoc->default = NULL;
+
+				if(!$propertyDoc->static = $property->isStatic())
+				{
+					$propertyDoc->default   = $defaults[$property->name];
+				}
+
 				$propertyDoc->public    = $property->isPublic();
 				$propertyDoc->private   = $property->isPrivate();
 				$propertyDoc->protected = $property->isProtected();
