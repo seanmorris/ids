@@ -1,55 +1,63 @@
 {
-	"idilic":{
-		"help":{
-			"summary": "Application core library.\n\tPassing a package with no command will return the root directory of that package.\nSwitches:\n\t-d= or --domain=\n\t\tSet the domain for the current command."
-			, "switches":{
-				"-d= or --domain=":"Set the domain for the current command."
-			}
-			, "commands":{
-				"storeSchema":{
-					"description":"Store the mysql table structure for a given package."
-					, "usage":"PACKAGE_NAME"
-					, "manual":"Store the mysql table structure for a given package."
-				}
-				, "applySchema":{
-					"description":"Apply the stored the mysql table structure for a given package."
-					, "usage":"PACKAGE_NAME"
-					, "manual":"Apply the stored the table structure for a given package."
-				}
-				, "runTests":{
-					"description":"Execute tests for given package."
-					, "usage":"PACKAGE_NAME TEST_CLASS [TEST_CLASS...]"
-					, "manual":"Execute tests for given package."
-				}
-				, "exportModels": {
-					"description":"Export model records to CSV."
-					, "usage":"MODEL_CLASS [FILTER [FILTER_ARG...]]"
-					, "manual":"Export model records to CSV."
-				}
-				, "importModels": {
-					"description":"Import model records from CSV over STDIN."
-					, "usage":"MODEL_CLASS"
-					, "manual":"Import model records from CSV over STDIN"
-				}
-				, "buildAssets": {
-					"description":"Build assets from a package into public/"
-					, "usage":"PACKAGE_NAME"
-					, "manual":"Build assets from a package into public/"
-				}
-				, "help": {
-					"description":"This help message."
-				}
-				, "apacheConfig": {
-					"description":"Experimental. Exports a vhost config for a given domain (-d or --domain option)."
-				}
-				, "batch": {
-					"description":"Run a Multiota multitasker job."
-					, "usage": "PACKAGE_NAME JOB_NAME"
-				}
-				, "listPackages": {
-					"description":"Output a list of packages, separated by newlines."	
-				}
-		    }
-		}
-	}
+    "idilic": {
+        "help": {
+            "summary": "Application core library.\n\tPassing a package with no command will return the root directory of that package.\nSwitches:\n\t-d= or --domain=\n\t\tSet the domain for the current command.",
+            "switches": {
+                "-d= or --domain=": "Set the domain for the current command."
+            },
+            "commands": {
+                "storeSchema": {
+                    "description": "Store the mysql table structure for a given package.",
+                    "usage": "PACKAGE_NAME",
+                    "manual": "Store the mysql table structure for a given package."
+                },
+                "applySchema": {
+                    "description": "Apply the stored the mysql table structure for a given package.",
+                    "usage": "PACKAGE_NAME",
+                    "manual": "Apply the stored the table structure for a given package."
+                },
+                "runTests": {
+                    "description": "Execute tests for given package.",
+                    "usage": "PACKAGE_NAME TEST_CLASS [TEST_CLASS...]",
+                    "manual": "Execute tests for given package."
+                },
+                "exportModels": {
+                    "description": "Export model records to CSV.",
+                    "usage": "MODEL_CLASS [FILTER [FILTER_ARG...]]",
+                    "manual": "Export model records to CSV."
+                },
+                "importModels": {
+                    "description": "Import model records from CSV over STDIN.",
+                    "usage": "MODEL_CLASS",
+                    "manual": "Import model records from CSV over STDIN"
+                },
+                "buildAssets": {
+                    "description": "Build assets from a package into public\/",
+                    "usage": "PACKAGE_NAME",
+                    "manual": "Build assets from a package into public\/"
+                },
+                "help": {
+                    "description": "This help message."
+                },
+                "apacheConfig": {
+                    "description": "Experimental. Exports a vhost config for a given domain (-d or --domain option)."
+                },
+                "batch": {
+                    "description": "Run a Multiota multitasker job.",
+                    "usage": "PACKAGE_NAME JOB_NAME"
+                },
+                "listPackages": {
+                    "description": "Output a list of packages, separated by newlines."
+                }
+            }
+        }
+    },
+    "linker": {
+        "links": {
+            "Test@1584189208": [
+                "testValue",
+                "blah"
+            ]
+        }
+    }
 }

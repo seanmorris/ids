@@ -10,7 +10,7 @@ RUN set -eux;               \
 	rm -rf /var/lib/apt/lists/*;
 
 CMD /etc/init.d/apt-cacher-ng start     \
-	&& tail -f /var/log/apt-cacher-ng/* \
+	&& tail -f /var/log/apt-cacher-ng/*
 
 # generated @ $(shell date)
 # by ${shell whoami} @ ${shell hostname}

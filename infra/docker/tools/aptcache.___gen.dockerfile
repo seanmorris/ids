@@ -10,7 +10,7 @@ RUN set -eux;               \
 	rm -rf /var/lib/apt/lists/*;
 
 CMD /etc/init.d/apt-cacher-ng start     \
-	&& tail -f /var/log/apt-cacher-ng/* \
+	&& tail -f /var/log/apt-cacher-ng/*
 
-# generated @ Fri Feb  7 05:05:40 EST 2020
+# generated @ Sat Mar 14 08:32:10 EDT 2020
 # by sean @ the-altar
