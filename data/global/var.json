@@ -78,6 +78,80 @@
                 "testValue",
                 "blah"
             ]
+        },
+        "inheritance": {
+            "SeanMorris\\Ids\\Mysql\\Statement": [
+                "SeanMorris\\Ids\\Mysql\\WhereStatement",
+                "SeanMorris\\Ids\\Mysql\\InsertStatement",
+                "SeanMorris\\Ids\\Mysql\\DeleteStatement",
+                "SeanMorris\\Ids\\Mysql\\UpdateStatement",
+                "SeanMorris\\Ids\\Mysql\\CountStatement",
+                "SeanMorris\\Ids\\Mysql\\SelectStatement"
+            ],
+            "SeanMorris\\Ids\\Mysql\\WhereStatement": [
+                "SeanMorris\\Ids\\Mysql\\DeleteStatement",
+                "SeanMorris\\Ids\\Mysql\\UpdateStatement",
+                "SeanMorris\\Ids\\Mysql\\CountStatement",
+                "SeanMorris\\Ids\\Mysql\\SelectStatement"
+            ],
+            "SeanMorris\\Ids\\Mysql\\SelectStatement": [
+                "SeanMorris\\Ids\\Mysql\\CountStatement"
+            ],
+            "SeanMorris\\Ids\\Disk\\File": [
+                "SeanMorris\\Ids\\Disk\\Directory"
+            ],
+            "SeanMorris\\Ids\\Model": [
+                "SeanMorris\\Ids\\Relationship"
+            ],
+            "SeanMorris\\Ids\\Http\\HttpResponse": [
+                "SeanMorris\\Ids\\Http\\HttpDocument"
+            ],
+            "": [
+                "Composer\\Autoload\\ClassLoader",
+                "Composer\\Autoload\\ComposerStaticInit97b6a83422d6c226e381adbbfdbdd1a3",
+                "SeanMorris\\Ids\\Mysql\\Statement",
+                "SeanMorris\\Ids\\Mysql\\WhereStatement",
+                "SeanMorris\\Ids\\Mysql\\InsertStatement",
+                "SeanMorris\\Ids\\Mysql\\DeleteStatement",
+                "SeanMorris\\Ids\\Mysql\\UpdateStatement",
+                "SeanMorris\\Ids\\Mysql\\CountStatement",
+                "SeanMorris\\Ids\\Mysql\\SelectStatement",
+                "SeanMorris\\Ids\\Disk\\Directory",
+                "SeanMorris\\Ids\\Disk\\File",
+                "SeanMorris\\Ids\\LogMeta",
+                "SeanMorris\\Ids\\ChildProcess",
+                "SeanMorris\\Ids\\Queue",
+                "SeanMorris\\Ids\\Fuse",
+                "SeanMorris\\Ids\\AssetManager",
+                "SeanMorris\\Ids\\Request",
+                "SeanMorris\\Ids\\Log",
+                "SeanMorris\\Ids\\HashToken",
+                "SeanMorris\\Ids\\Documentor",
+                "SeanMorris\\Ids\\Settings",
+                "SeanMorris\\Ids\\Relationship",
+                "SeanMorris\\Ids\\Injectable",
+                "SeanMorris\\Ids\\Router",
+                "SeanMorris\\Ids\\Mail",
+                "SeanMorris\\Ids\\Path",
+                "SeanMorris\\Ids\\Meta",
+                "SeanMorris\\Ids\\Idilic\\Cli",
+                "SeanMorris\\Ids\\Idilic\\Route\\RootRoute",
+                "SeanMorris\\Ids\\Linker",
+                "SeanMorris\\Ids\\Loader",
+                "SeanMorris\\Ids\\Database",
+                "SeanMorris\\Ids\\Model",
+                "SeanMorris\\Ids\\Repl",
+                "SeanMorris\\Ids\\Logger\\Gelf",
+                "SeanMorris\\Ids\\Logger\\Plain",
+                "SeanMorris\\Ids\\Routable",
+                "SeanMorris\\Ids\\Package",
+                "SeanMorris\\Ids\\Http\\Http",
+                "SeanMorris\\Ids\\Http\\Http303",
+                "SeanMorris\\Ids\\Http\\Http404",
+                "SeanMorris\\Ids\\Http\\HttpResponse",
+                "SeanMorris\\Ids\\Http\\HttpDocument",
+                "SeanMorris\\Ids\\Logger"
+            ]
         }
     }
 }
