@@ -41,8 +41,10 @@ class Documentor
 				$classDocs[$className]->doc = $dockblock;
 			}
 
+			$classFile = new Disk\File($reflection->getFileName());
+
 			$classDocs[$className]->parent = get_parent_class($className) ?: NULL;
-			$classDocs[$className]->file   = $reflection->getFileName();
+			$classDocs[$className]->file   = $classFile->subtract(IDS_ROOT);;
 
 			$classDocs[$className]->final       = $reflection->isFinal();
 			$classDocs[$className]->abstract    = $reflection->isAbstract();
@@ -82,6 +84,10 @@ class Documentor
 			{
 				$constantName = $constant->name;
 
+				$constantClass = $constant->getDeclaringClass();
+
+				$constantFile = new Disk\File($constantClass->getFileName());
+
 				if(($classDocs[$className]->constants[$constantName] ?? 0)
 					&& (!$classDocs[$className]->constants[$constantName]->overrides)
 				){
@@ -95,7 +101,8 @@ class Documentor
 
 				$classDocs[$className]->constants[$constantName] = (object) [
 					'value'       => $constant->getValue()
-					, 'class'     => $constant->getDeclaringClass()
+					, 'class'     => $constantClass->name
+					, 'file'      => $constantFile->subtract(IDS_ROOT)
 					, 'overrides' => NULL
 					, 'public'    => $constant->isPublic()
 					, 'private'   => $constant->isPrivate()
@@ -128,11 +135,13 @@ class Documentor
 					$propertyDoc->default   = $defaults[$property->name];
 				}
 
+				$propertyFile = new Disk\File($propertyClass->getFileName());
+
 				$propertyDoc->public    = $property->isPublic();
 				$propertyDoc->private   = $property->isPrivate();
 				$propertyDoc->protected = $property->isProtected();
 				$propertyDoc->class     = $propertyClass->name;
-				$propertyDoc->file      = $propertyClass->getFileName();
+				$propertyDoc->file      = $propertyFile->subtract(IDS_ROOT);
 			}
 
 			$traits  = $reflection->getTraits();
