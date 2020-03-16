@@ -81,6 +81,10 @@
             "Test@1584333250": [
                 "testValue",
                 "blah"
+            ],
+            "Test@1584333451": [
+                "testValue",
+                "blah"
             ]
         },
         "inheritance": {
