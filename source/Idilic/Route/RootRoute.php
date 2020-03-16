@@ -1199,18 +1199,9 @@ EOT
 
 		$docs   = \SeanMorris\Ids\Documentor::docs($packageName);
 
-		$chunk = [];
-
 		foreach($docs as $doc)
 		{
-			array_push($chunk, $doc);
-
-			if(count($chunk) >= 10)
-			{
-				print json_encode($chunk) . PHP_EOL;
-				$chunk = [];
-			}
-
+			print json_encode([$doc]) . PHP_EOL;
 		}
 	}
 
