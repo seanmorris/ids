@@ -192,32 +192,71 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		$relReports = [];
 		$reports    = [];
 		$report     = [];
+		$testList   = [];
 
 		while($packageName = array_shift($packageList))
 		{
+			while($packageList && $packageList[0][0] === '+')
+			{
+				$testList[] = substr(array_shift($packageList), 1);
+			}
+
 			$packageName = str_replace('/', '\\', $packageName);
 
 			$package   = \SeanMorris\Ids\Package::get($packageName);
 			$namespace = $package->packageSpace();
-			$tests     = $package->testDir();
 
-			$testsFound = [];
-
-			while($tests->check() && $test = $tests->read())
+			if(!$testList)
 			{
-				$testsFound[] = $test;
+				$tests = $package->testDir();
+
+				$testList = [];
+
+				while($tests->check() && $test = $tests->read())
+				{
+					$testList[] = $test;
+				}
+
+				$testList = array_reverse($testList);
+			}
+			else
+			{
+				$testList = array_map(
+					function($test)
+					{
+						return str_replace('/', '\\', $test);
+					}
+					, $testList
+				);
 			}
 
-			$testsFound = array_reverse($testsFound);
-
-			foreach($testsFound as $test)
+			foreach($testList as $test)
 			{
-				if(!preg_match('/(\w+?Test)\.php/', $test->name(), $m))
+				if(!$test)
 				{
 					continue;
 				}
 
-				$testClass = $namespace . '\\Test\\' . $m[1];
+				if(!is_string($test))
+				{
+					if(!preg_match('/(\w+?Test)\.php/', $test->name(), $m))
+					{
+						continue;
+					}
+
+					var_dump($m);
+
+					$testClass = $namespace . '\\Test\\' . $m[1];
+				}
+				else if(class_exists($test))
+				{
+					$testClass = $test;
+				}
+				else
+				{
+					continue;
+				}
+
 				$test = new $testClass;
 
 				if(function_exists('xdebug_start_code_coverage'))
@@ -971,10 +1010,6 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		return $package->deleteVar($var);
 	}
 
-	/** Start a RePL. */
-
-
-
 	/** Print project info. */
 
 	public function info()
@@ -1104,11 +1139,6 @@ EOT
 		return print_r($pharPath, 1);
 	}
 
-	public static function parseDoc()
-	{
-
-	}
-
 	/** Access docker. */
 
 	public function docker($router)
@@ -1183,8 +1213,6 @@ EOT
 		}
 	}
 
-
-
 	/** Generate documentation for a given package.*/
 
 	public function document($router)
@@ -1204,6 +1232,8 @@ EOT
 			print json_encode([$doc]) . PHP_EOL;
 		}
 	}
+
+	/** print phpinfo() */
 
 	public function phpinfo()
 	{

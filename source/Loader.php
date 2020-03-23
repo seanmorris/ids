@@ -27,6 +27,11 @@ class Loader
 				));
 			}
 
+			if(is_object($target))
+			{
+				$target = get_class($target);
+			}
+
 			static::$classes[$alias] = $target;
 		}
 
@@ -68,11 +73,6 @@ class Loader
 			'file'   => $trace[1]['file']
 			, 'line' => $trace[1]['line']
 		];
-
-		if(is_object($realClass))
-		{
-			$realClass = get_class($realClass);
-		}
 
 		class_alias($realClass, $classname);
 	}

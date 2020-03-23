@@ -412,7 +412,7 @@ template-patterns:
 	@ $(call TEMPLATE_PATTERNS)
 
 test t: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Run the tests
-	@ export TARGET=${TARGET} && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} \
+	export TARGET=${TARGET} && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} \
 		run --rm ${NO_TTY} ${PASS_ENV}                            \
 		idilic SeanMorris/Ids runTests
 
