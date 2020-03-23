@@ -244,8 +244,6 @@ class RootRoute implements \SeanMorris\Ids\Routable
 						continue;
 					}
 
-					var_dump($m);
-
 					$testClass = $namespace . '\\Test\\' . $m[1];
 				}
 				else if(class_exists($test))
