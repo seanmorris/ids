@@ -124,7 +124,7 @@ class Package
 		$packageName = static::name($package);
 		$packageDir = static::dir($package);
 
-		$packageClass = $packageName . 'Package';
+		$packageClass = $packageName . '\\Package';
 
 		if($packageClass === __CLASS__ || class_exists($packageClass))
 		{

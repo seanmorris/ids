@@ -6,37 +6,42 @@ trait Injectable
 
 	protected static
 		$___injections   = []
-		, $___extensions = 0
-		, $___propMasks  = []
+		, $___extensions = []
+		, $___propMeta   = []
+		, $___propTypes  = []
 		, $___classMatch = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*$/'
 	;
 
-	public function __get($property)
+	public function __construct()
 	{
-		if(!isset(static::$___injections))
+		$this->initInjections();
+	}
+
+	protected function initInjections()
+	{
+		foreach(static::$___propMeta as $property => $meta)
 		{
-			return;
+			if(($meta[ 'mask' ] ?? 0) & 1)
+			{
+				continue;
+			}
+
+			if(isset(static::$___injections[$property]) && !$this->$property)
+			{
+				$propertyClass = static::$___injections[$property];
+
+				$this->$property = new $propertyClass;
+
+				continue;
+			}
+
+			if($meta[ 'type' ] && !$meta[ 'null' ] && !$meta[ 'internal' ])
+			{
+				$propertyClass = $meta[ 'type' ];
+
+				$this->$property = new $propertyClass;
+			}
 		}
-
-		if($this->___instances[$property] ?? FALSE)
-		{
-			return $this->___instances[$property];
-		}
-
-		if(isset(static::$___injections[$property]) && !($this->___instances[$property] ?? FALSE))
-		{
-			$instance = new static::$___injections[$property];
-
-			$this->___instances[$property] = $instance;
-
-			return $this->___instances[$property];
-		}
-
-		trigger_error(sprintf(
-			'Undefined property: %s::$%s'
-			, get_called_class()
-			, $property
-		), E_USER_NOTICE);
 	}
 
 	public static function inject(array $injections = [], $alias = '')
@@ -54,17 +59,11 @@ trait Injectable
 		$baseAlias = $hashSpace . '\\_' . sha1($baseClass);
 		$subHash   = sprintf('%s_%d', $baseAlias, static::$___extensions++);
 
-		$longName = sprintf('%s\\%s', $hashSpace, $subHash);
+		$longHash  = sprintf('%s\\%s', $hashSpace, $subHash);
 
-		if(!(static::$___propMasks[$baseClass] ?? NULL))
+		if(!class_exists($baseAlias))
 		{
-			$reflection = new \ReflectionClass($baseClass);
-			$properties = $reflection->getProperties();
-
-			foreach($properties as $property)
-			{
-				static::$___propMasks[ $baseAlias ][ $property->name ] = $property->getModifiers();
-			}
+			class_alias($baseClass, $baseAlias);
 		}
 
 		if($alias)
@@ -72,51 +71,115 @@ trait Injectable
 			$splitAt    = mb_strpos($alias, "\\");
 			$aliasSpace = mb_substr($alias, 0, $splitAt);
 			$shortAlias = mb_substr($alias, $splitAt + 1);
-
-			$classDef = sprintf(
-				'namespace %s; class %s extends \%s {};'
-				, $aliasSpace
-				, $shortAlias
-				, $baseAlias
-			);
+			$longName   = $alias;
 		}
 		else
 		{
-			$classDef = sprintf(
-				'namespace %s; class %s extends \%s {};'
-				, $hashSpace
-				, $subClass
-				, $baseAlias
-			);
+			$aliasSpace = $hashSpace;
+			$shortAlias = $subClass;
+			$longName   = $longHash;
 		}
 
-		if(!class_exists($baseAlias))
+		$propMeta = [];
+
+		$reflection = new \ReflectionClass($baseClass);
+		$properties = $reflection->getProperties();
+
+		foreach($properties as $property)
 		{
-			class_alias($baseClass, $baseAlias);
+			$type = method_exists($property, 'getType')
+				? $property->getType()
+				: NULL;
+
+			$propMeta[ $property->name ] = [
+				'mask'       => $property->getModifiers()
+				, 'type'     => $type ? $type->getName()    : NULL
+				, 'internal' => $type ? $type->isBuiltin()  : NULL
+				, 'null'     => $type ? $type->allowsNull() : NULL
+			];
 		}
 
-		eval($classDef);
+		$injections += static::$___injections;
 
-		if($alias)
-		{
-			class_alias($alias, $longName);
-		}
-
-		foreach($injections as $name => &$injection)
-		{
-			if(is_object($injection))
-			{
-				$injection = get_class($injection);
+		eval(sprintf(
+			<<<'ENDTEMPLATE'
+			namespace %s; class %s extends \%s {
+				protected static $___injections = [], $___propMeta = %s;
 			}
+			ENDTEMPLATE
+			, $aliasSpace
+			, $shortAlias
+			, $baseAlias
+			, var_export($propMeta, true)
+		));
 
-			$longName::$___injections[$name] =& $injection;
+		if($alias && !class_exists($alias))
+		{
+			class_alias($alias, $longHash);
+		}
 
-			if((static::$___propMasks[ $baseAlias ][ $name ] ?? 0) & 1)
+		foreach($injections as $property => $injection)
+		{
+			if(function_exists($injection))
 			{
-				$longName::$name = $injection;
+				$injection = $injection();
+			}
+			else
+			{
+				if(is_object($injection))
+				{
+					$injections[$property] = $injection = get_class($injection);
+				}
+
+				if(!class_exists($injection))
+				{
+					unset($injections[$property]);
+				}
 			}
 		}
+
+		$longName::$___injections = $injections;
 
 		return $longName;
+	}
+
+	public function __get($property)
+	{
+		if(!isset(static::$___injections))
+		{
+			return;
+		}
+
+		if($this->___instances[$property] ?? FALSE)
+		{
+			return $this->___instances[$property];
+		}
+
+		if(isset(static::$___injections[$property])
+			&& !($this->___instances[$property] ?? FALSE)
+		){
+			if(function_exists(static::$___injections[$property]))
+			{
+				$instance = (static::$___injections[$property])();
+			}
+			else if(class_exists(static::$___injections[$property]))
+			{
+				$instance = new static::$___injections[$property];
+			}
+			else
+			{
+				//ERROR STATE
+			}
+
+			$this->___instances[$property] = $instance;
+
+			return $this->___instances[$property];
+		}
+
+		trigger_error(sprintf(
+			'Undefined property: %s::$%s'
+			, get_called_class()
+			, $property
+		), E_USER_NOTICE);
 	}
 }
