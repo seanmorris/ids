@@ -270,9 +270,9 @@ class Package
 		return $name;
 	}
 
-	public static function dir($package)
+	public static function dir($package = null)
 	{
-		return str_replace('\\', '/', $package ?? static::class);
+		return str_replace('\\', '/', $package ?? static::name());
 	}
 
 	public function packageDir()

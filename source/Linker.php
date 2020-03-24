@@ -80,7 +80,11 @@ class Linker
 
 		$realKey = 'linker:inheritance:' . $super;
 
-		return $rootPackage->getVar($realKey, [], 'global');
+		$classes = $rootPackage->getVar($realKey, [], 'global') ?: [];
+
+		array_unshift($classes, $super);
+
+		return $classes;
 	}
 
 	public static function inheritance()

@@ -2,7 +2,9 @@
 namespace SeanMorris\Ids;
 
 /**
- * Loader is a dependency injection handler that allows for the promotion of anonymous classes. Once a claass has been promoted and given a proper name, it can be extended, used in typehints and return types, etc. Normal classes may also be provided by string.
+ * Loader is a dependency injection handler that allows for the promotion of anonymous
+ * classes. Once a claass has been promoted and given a proper name, it can be extended,
+ * used in typehints and return types, etc. Normal classes may also be provided by string.
  *
  * The added layers of complexity allow for injected classes to be overridden.
  * act as

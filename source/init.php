@@ -338,4 +338,18 @@ if(!\SeanMorris\Ids\Settings::read('devmode'))
 	\SeanMorris\Ids\Log::suppress();
 }
 
+foreach(\SeanMorris\Ids\Package::packageDirectories() as $packagename => $directory)
+{
+	$package   = \SeanMorris\Ids\Package::get($packagename);
+
+	$bootFile = $package->packageDir()->file('source/ids.boot.php');
+
+	if($bootFile->check())
+	{
+		require $bootFile;
+	}
+}
+
+die;
+
 return $composer;
