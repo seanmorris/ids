@@ -13,7 +13,25 @@ class RootRoute implements \SeanMorris\Ids\Routable
 	{
 		$args = $router->path()->consumeNodes();
 
-		$packageName = $router->match();
+		$input = $router->match();
+
+		if($input[0] === '@')
+		{
+			$method = str_replace('/', '\\', substr($input, 1));
+
+			if($paamayim = strstr($method, '::'))
+			{
+				[$class, $method] = explode('::', $method, 2);
+
+				return $class::$method(...$args);
+			}
+			else
+			{
+				return $method(...$args);
+			}
+		}
+
+		$packageName = $input;
 
 		if(!$packageName)
 		{

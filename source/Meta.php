@@ -297,7 +297,16 @@ class Meta
 						break;
 					}
 
-					$class = $namespace . '\\' . $tokens[$index][1];
+					if($tokens[$index - 4]??0 && $tokens[$index - 4][0] == T_NEW)
+					{
+						$currentClassName = 'anonymous';
+					}
+					else
+					{
+						$currentClassName = $tokens[$index][1];
+					}
+
+					$class = $namespace . '\\' . $currentClassName;
 
 					try
 					{

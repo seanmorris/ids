@@ -350,6 +350,4 @@ foreach(\SeanMorris\Ids\Package::packageDirectories() as $packagename => $direct
 	}
 }
 
-die;
-
 return $composer;

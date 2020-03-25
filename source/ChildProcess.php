@@ -1,5 +1,11 @@
 <?php
 namespace SeanMorris\Ids;
+
+/**
+ * Manges communication with spawned processes. Allows the main program
+ * to communicate with the child (optionally) asyncronously.
+ */
+
 class ChildProcess
 {
 	protected
@@ -8,11 +14,11 @@ class ChildProcess
 		, $stdIn
 		, $stdOut
 		, $stdErr
-		, $pipeDescriptor = array(
-			0 => array('pipe', 'r'),
-			1 => array('pipe', 'w'),
-			2 => array('pipe', 'w'),
-		)
+		, $pipeDescriptor = [
+			0 => ['pipe', 'r'],
+			1 => ['pipe', 'w'],
+			2 => ['pipe', 'w'],
+		]
 	;
 
 	public function __construct($command, $asyncOut = FALSE, $asyncIn = FALSE)
@@ -24,10 +30,9 @@ class ChildProcess
 			, $pipes
 		);
 
-		list($this->stdIn, $this->stdOut, $this->stdErr) = $pipes;
+		[$this->stdIn, $this->stdOut, $this->stdErr] = $pipes;
 
 		stream_set_blocking($this->stdIn,  !$asyncIn);
-		// stream_set_blocking($this->stdIn,  TRUE);
 		stream_set_blocking($this->stdOut, !$asyncOut);
 		stream_set_blocking($this->stdErr, !$asyncOut);
 	}
@@ -56,14 +61,14 @@ class ChildProcess
 		return trim(fgets($this->stdOut));
 	}
 
-	public function feof()
-	{
-		return feof($this->stdOut);
-	}
-
 	public function readError()
 	{
 		return trim(fgets($this->stdErr));
+	}
+
+	public function feof()
+	{
+		return feof($this->stdOut);
 	}
 
 	public function feofError()
@@ -77,11 +82,6 @@ class ChildProcess
 		{
 			return TRUE;
 		}
-
-		// if(!$this->feof())
-		// {
-		// 	return FALSE;
-		// }
 
 		$status = proc_get_status($this->process);
 

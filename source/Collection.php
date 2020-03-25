@@ -1,18 +1,34 @@
 <?php
-namespace SeanMorris\Ids;
-class Collection
-{
-	use Injectable;
 
-	protected static $type;
+namespace SeanMorris\Ids;
+
+(new class { use Injectable; })::inject([
+
+	'content' => \SplObjectStorage::class
+
+	, 'Type'  => \stdClass::class
+
+], \SeanMorris\Ids\___\BaseCollection::class);
+
+abstract class Collection extends \SeanMorris\Ids\___\BaseCollection
+{
+	protected $content;
+	protected static $Type;
 
 	public static function of(string $type, string $name = null)
 	{
-		return static::inject(['type' => $type], $name);
+		return static::inject(['Type' => $type], $name);
 	}
 
-	public function __construct(array $contents = [])
+	public function add($item)
 	{
+		if(!is_object($item) || !($item instanceof static::$Type))
+		{
+			return FALSE;
+		}
 
+		$this->content[$item] = $item;
+
+		return $this->content->getHash($item);
 	}
 }

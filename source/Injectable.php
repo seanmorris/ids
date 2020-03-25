@@ -1,15 +1,16 @@
 <?php
 namespace SeanMorris\Ids;
+
+$___extensions = 0;
+
 trait Injectable
 {
 	protected $___instances  = [];
 
 	protected static
-		$___injections   = []
-		, $___extensions = []
+		$___classMatch   = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*$/'
 		, $___propMeta   = []
-		, $___propTypes  = []
-		, $___classMatch = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*$/'
+		, $___injections = []
 	;
 
 	public function __construct()
@@ -26,38 +27,72 @@ trait Injectable
 				continue;
 			}
 
+			if(ctype_upper($property))
+			{
+				$this->$property = $propertyClass;
+				continue;
+			}
+
 			if(isset(static::$___injections[$property]) && !$this->$property)
 			{
 				$propertyClass = static::$___injections[$property];
 
-				$this->$property = new $propertyClass;
+				if(is_object($propertyClass) && $propertyClass instanceof FactoryMethod)
+				{
+					$this->$property = $propertyClass($this);
+				}
+				else if(class_exists($propertyClass))
+				{
+					$this->$property = new $propertyClass;
+				}
+				else
+				{
+					throw new \Exception(sprintf(
+						'Error: invalid classname provided: %s'
+						, $propertyClass
+					));
+				}
 
 				continue;
 			}
 
-			if($meta[ 'type' ] && !$meta[ 'null' ] && !$meta[ 'internal' ])
+			if($meta[ 'type' ] && !$meta[ 'null' ])
 			{
 				$propertyClass = $meta[ 'type' ];
 
-				$this->$property = new $propertyClass;
+				if(class_exists($propertyClass))
+				{
+					$this->$property = new $propertyClass;
+				}
+				else
+				{
+					throw new \Exception(sprintf(
+						'Error: invalid classname provided: %s'
+						, $propertyClass
+					));
+				}
 			}
 		}
 	}
 
 	public static function inject(array $injections = [], $alias = '')
 	{
+		global $___extensions;
+
 		if($alias && !preg_match(static::$___classMatch, $alias))
 		{
 			return FALSE;
 		}
 
-		$injectSpace = \SeanMorris\Ids\Settings::read('injectSpace');
-
 		$baseClass = get_called_class();
-		$hashSpace = $injectSpace . '\\_\\HashedClasses';
+
+		// $injectSpace = \SeanMorris\Ids\Settings::read('injectSpace') ?: '___';
+		$injectSpace = '___';
+
+		$hashSpace = $injectSpace . '\\HashedClasses';
 
 		$baseAlias = $hashSpace . '\\_' . sha1($baseClass);
-		$subHash   = sprintf('%s_%d', $baseAlias, static::$___extensions++);
+		$subHash   = sprintf('%s_%d', $baseAlias, $___extensions++);
 
 		$longHash  = sprintf('%s\\%s', $hashSpace, $subHash);
 
@@ -66,24 +101,67 @@ trait Injectable
 			class_alias($baseClass, $baseAlias);
 		}
 
+		$longName = NULL;
+
 		if($alias)
 		{
-			$splitAt    = mb_strpos($alias, "\\");
-			$aliasSpace = mb_substr($alias, 0, $splitAt);
-			$shortAlias = mb_substr($alias, $splitAt + 1);
-			$longName   = $alias;
+			[$vendor, $restOfClass] = mb_split('\\\\', $alias, 2);
+
+			$aliasSpaceParts = [];
+
+			if($vendor === $injectSpace)
+			{
+				$topSpace  = $vendor;
+				$classname  = $restOfClass;
+
+				$splitAt    = mb_strrpos($alias, "\\");
+				$aliasSpace = substr($alias, 0, $splitAt);
+				$shortAlias = substr($alias, $splitAt + 1);
+			}
+			else
+			{
+				[$package, $topSpace, $classname] = mb_split('\\\\', $restOfClass, 3);
+
+				$splitAt    = mb_strrpos($classname, "\\");
+				$subSpace   = substr($classname, 0, $splitAt);
+				$shortAlias = substr($classname, $splitAt);
+
+				$aliasSpaceParts = [$vendor, $package, $topSpace, $subSpace];
+
+				while($aliasSpaceParts && !$aliasSpaceParts[ count($aliasSpaceParts) - 1 ])
+				{
+					array_pop($aliasSpaceParts);
+				}
+
+				$aliasSpace = implode('\\', $aliasSpaceParts);
+			}
+
+			if($topSpace === $injectSpace)
+			{
+				$longName   = $alias;
+			}
+			else
+			{
+				throw new \Exception(sprintf(
+					'Error: Classname is not in an injected namespace: %s'
+					, $alias
+				));
+			}
 		}
 		else
 		{
 			$aliasSpace = $hashSpace;
-			$shortAlias = $subClass;
+			$shortAlias = $subHash;
 			$longName   = $longHash;
 		}
 
 		$propMeta = [];
 
-		$reflection = new \ReflectionClass($baseClass);
-		$properties = $reflection->getProperties();
+		$reflection =  new \ReflectionClass($baseClass);
+		$properties =  $reflection->getProperties();
+		$injections += static::$___injections;
+
+		$placeholders = [];
 
 		foreach($properties as $property)
 		{
@@ -97,21 +175,32 @@ trait Injectable
 				, 'internal' => $type ? $type->isBuiltin()  : NULL
 				, 'null'     => $type ? $type->allowsNull() : NULL
 			];
+
+			if(array_key_exists($property->name, $injections)
+				&& $propMeta[ $property->name ][ 'mask' ] & 1
+			){
+				$modifiers = implode(' ', \Reflection::getModifierNames($propMeta[ $property->name ][ 'mask' ]));
+
+				$placeholders[] = sprintf(
+					'%s $%s;'
+					, $modifiers
+					, $property->name
+				);
+			}
 		}
 
-		$injections += static::$___injections;
+		$placeholders[] = 'protected static $___injections = [];';
+		$placeholders[] = sprintf(
+			'protected static $___propMeta = %s;'
+			, var_export($propMeta, true)
+		);
 
-		eval(sprintf(
-			<<<'ENDTEMPLATE'
-			namespace %s; class %s extends \%s {
-				protected static $___injections = [], $___propMeta = %s;
-			}
-			ENDTEMPLATE
-			, $aliasSpace
+		static::generateClass(
+			$aliasSpace
 			, $shortAlias
 			, $baseAlias
-			, var_export($propMeta, true)
-		));
+			, implode(' ', $placeholders)
+		);
 
 		if($alias && !class_exists($alias))
 		{
@@ -120,9 +209,9 @@ trait Injectable
 
 		foreach($injections as $property => $injection)
 		{
-			if(function_exists($injection))
+			if(is_object($injection) && $injection instanceof FactoryMethod)
 			{
-				$injection = $injection();
+				// $injection = $injection($this);
 			}
 			else
 			{
@@ -135,6 +224,11 @@ trait Injectable
 				{
 					unset($injections[$property]);
 				}
+			}
+
+			if(isset($propMeta[ $property ]) && $propMeta[ $property ][ 'mask' ] & 1)
+			{
+				$alias::$$property = $injection;
 			}
 		}
 
@@ -158,9 +252,10 @@ trait Injectable
 		if(isset(static::$___injections[$property])
 			&& !($this->___instances[$property] ?? FALSE)
 		){
-			if(function_exists(static::$___injections[$property]))
-			{
-				$instance = (static::$___injections[$property])();
+			if(is_object(static::$___injections[$property])
+				&& static::$___injections[$property] instanceof FactoryMethod
+			){
+				$instance = (static::$___injections[$property])($this);
 			}
 			else if(class_exists(static::$___injections[$property]))
 			{
@@ -168,7 +263,10 @@ trait Injectable
 			}
 			else
 			{
-				//ERROR STATE
+				throw new \Exception(sprintf(
+					'Invalid classname provided as injection: "%s"'
+					, static::$___injections[$property]
+				));
 			}
 
 			$this->___instances[$property] = $instance;
@@ -181,5 +279,41 @@ trait Injectable
 			, get_called_class()
 			, $property
 		), E_USER_NOTICE);
+	}
+
+	protected static function cloneClass($originalClass, $cloneTo)
+	{
+		$reflection = new \ReflectionClass($originalClass);
+
+		if($reflection->isUserDefined())
+		{
+			class_alias($originalClass, $cloneTo);
+			return $cloneTo;
+		}
+
+		$cloneSplit = mb_strrpos($cloneTo, "\\");
+		$cloneSpace = mb_substr($cloneTo, 0, $cloneSplit);
+		$cloneName  = mb_substr($cloneTo, $cloneSplit + 1);
+
+		static::generateClass(
+			$cloneSpace
+			, $cloneName
+			, $originalClass
+		);
+
+		return $cloneTo;
+	}
+
+	protected static function generateClass($space, $name, $base, $body = NULL)
+	{
+		eval(sprintf(
+			'namespace %s; class %s extends \%s {%s}'
+			, $space
+			, $name
+			, $base
+			, $body
+		));
+
+		return $space . '\\' . $name;
 	}
 }

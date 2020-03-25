@@ -138,12 +138,12 @@ foreach($requests as $req)
 		switch($switches['format'] ?? NULL)
 		{
 			case 'yml':
-					print yaml_emit($res);
-					break;
+				print yaml_emit($res);
+				break;
 
 			case 'json':
-					print json_encode($res, JSON_PRETTY_PRINT);
-					break;
+				print json_encode($res, JSON_PRETTY_PRINT);
+				break;
 
 			default:
 				if(function_exists('yaml_emit'))

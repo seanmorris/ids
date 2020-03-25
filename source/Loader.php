@@ -2,12 +2,12 @@
 namespace SeanMorris\Ids;
 
 /**
- * Loader is a dependency injection handler that allows for the promotion of anonymous
- * classes. Once a claass has been promoted and given a proper name, it can be extended,
- * used in typehints and return types, etc. Normal classes may also be provided by string.
+ * Loader allows aliased classnames to be mapped to actual classes. It defers the actual
+ * alias operation until the autoloader runs, so that the aliased names may be overridden
+ * during configuration.
  *
- * The added layers of complexity allow for injected classes to be overridden.
- * act as
+ * Built-in classes may be used as well as user defined and anonymous classes.
+ *
  */
 
 class Loader
@@ -15,7 +15,7 @@ class Loader
 	protected static
 	$requested = []
 	, $classes = []
-	, $classMatch = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*$/';
+	, $___classMatch = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*$/';
 
 	use Injectable;
 
@@ -28,7 +28,7 @@ class Loader
 	{
 		foreach($classes as $alias => $target)
 		{
-			if($alias && !preg_match(static::$classMatch, $alias))
+			if($alias && !preg_match(static::$___classMatch, $alias))
 			{
 				continue;
 			}
@@ -43,26 +43,7 @@ class Loader
 				));
 			}
 
-			if($target instanceof FactoryMethod)
-			{
-				$splitAt    = mb_strpos($alias, "\\");
-				$aliasSpace = mb_substr($alias, 0, $splitAt);
-				$shortAlias = mb_substr($alias, $splitAt + 1);
-				$called     = get_called_class();
-				$template   = sprintf(
-					'namespace %s; function %s(...$args) { return (\%s::load("%s"))(...$args); }'
-					, $aliasSpace
-					, $shortAlias
-					, $called
-					, $alias
-				);
-
-				if(!function_exists($alias))
-				{
-					eval($template);
-				}
-			}
-			else if(is_object($target))
+			if(is_object($target))
 			{
 				$target = get_class($target);
 			}
@@ -75,16 +56,20 @@ class Loader
 
 	public static function load($classname)
 	{
-		if(!$parts = explode('\\', $classname))
+		if(!$parts = mb_split('\\\\', $classname))
 		{
 			return;
 		}
 
-		$injectSpace = \SeanMorris\Ids\Settings::read('injectSpace');
+		// $injectSpace = \SeanMorris\Ids\Settings::read('injectSpace') ?: '___';
+		$injectSpace = '___';
 
-		if($injectSpace && ($parts[0] !== $injectSpace))
+		if($parts[0] !== $injectSpace)
 		{
-			return;
+			if($injectSpace && ($parts[2] !== $injectSpace))
+			{
+				return;
+			}
 		}
 
 		if(!$realClass = static::$classes[$classname]??0)
@@ -104,7 +89,7 @@ class Loader
 			return $realClass;
 		}
 
-		class_alias($realClass, $classname);
+		static::cloneClass($realClass, $classname);
 
 		return $realClass;
 	}
