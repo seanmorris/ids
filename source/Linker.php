@@ -82,9 +82,10 @@ class Linker
 
 		$classes = $rootPackage->getVar($realKey, [], 'global') ?: [];
 
-		var_dump($classes);die;
-
-		array_unshift($classes, $super);
+		if($super)
+		{
+			array_unshift($classes, $super);
+		}
 
 		return $classes;
 	}
