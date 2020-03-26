@@ -186,9 +186,9 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 		return $collection;
 	}
 
-	public function reduce($callback, $initial = NULL)
+	public function reduce($callback)
 	{
-		$reduced = $initial;
+		$reduced = NULL;
 
 		foreach($this as $item)
 		{

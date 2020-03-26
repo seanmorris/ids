@@ -322,7 +322,23 @@ class CollectionTest extends \UnitTestCase
 			$numbers->add((object)(['i' => $i]));
 		}
 
-		var_dump($numbers);
+		$sum = $numbers->reduce(function($a, $b){
+
+			$c = $b->i;
+
+			if(isset($a))
+			{
+				$c += $a;
+			}
+
+			return $c;
+
+		});
+
+		$this->assertEqual(
+			$sum, 100
+			, 'Reduce operation returned incorrect result.'
+		);
 	}
 
 	public function testRank()
