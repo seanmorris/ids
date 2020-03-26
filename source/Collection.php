@@ -186,19 +186,16 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 		return $collection;
 	}
 
-	public function reduce($callback)
+	public function reduce($callback, $initial = NULL)
 	{
-		// $reduced = NULL;
+		$reduced = $initial;
 
-		// foreach($this->ranked as $rank => $items)
-		// {
-		// 	foreach($items as $item)
-		// 	{
-		// 		$reduced = $callback($reduced, $item);
-		// 	}
-		// }
+		foreach($this as $item)
+		{
+			$reduced = $callback($reduced, $item);
+		}
 
-		// return $reduced;
+		return $reduced;
 	}
 
 	protected function rank($item)

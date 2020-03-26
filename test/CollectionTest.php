@@ -1,8 +1,8 @@
 <?php
 namespace SeanMorris\Ids\Test;
 
-use stdClass, Datetime, \SeanMorris\Ids\Collection;
 use \___\StdCollection, \___\DatetimeCollection;
+use \stdClass, \Datetime, \SeanMorris\Ids\Collection;
 
 Collection::of(stdClass::class, StdCollection::class);
 Collection::of(Datetime::class, DatetimeCollection::class);
@@ -314,11 +314,22 @@ class CollectionTest extends \UnitTestCase
 	}
 
 	public function testReduce()
-	{}
+	{
+		$numbers = new StdCollection;
+
+		foreach(array_fill(0,10,10) as $i)
+		{
+			$numbers->add((object)(['i' => $i]));
+		}
+
+		var_dump($numbers);
+	}
 
 	public function testRank()
-	{}
+	{
+	}
 
 	public function testTag()
-	{}
+	{
+	}
 }
