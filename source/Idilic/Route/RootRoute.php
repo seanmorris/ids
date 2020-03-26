@@ -203,9 +203,10 @@ class RootRoute implements \SeanMorris\Ids\Routable
 				, XDEBUG_PATH_BLACKLIST
 				, [realpath(IDS_ROOT . '/vendor/')]
 			);
+
+			$coverageOpts = XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE;
 		}
 
-		$coverageOpts = XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE;
 
 		$relReports = [];
 		$reports    = [];

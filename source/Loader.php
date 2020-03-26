@@ -61,12 +61,9 @@ class Loader
 			return;
 		}
 
-		// $injectSpace = \SeanMorris\Ids\Settings::read('injectSpace') ?: '___';
-		$injectSpace = '___';
-
-		if($parts[0] !== $injectSpace)
+		if($parts[0] !== IDS_INJECT_SPACE)
 		{
-			if($injectSpace && ($parts[2] !== $injectSpace))
+			if(!isset($parts[2]) || ($parts[2] !== IDS_INJECT_SPACE))
 			{
 				return;
 			}

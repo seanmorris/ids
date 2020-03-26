@@ -1,58 +1,62 @@
 <?php
 namespace SeanMorris\Ids\Test;
 
+use \SeanMorris\Ids\Loader;
+use \___\Heap, SplHeap, SplMaxHeap;
+
+use \___\GlobalAliasedDatetime;
+use \SeanMorris\Ids\___\ScopedAliasedDatetime;
+
+use \SeanMorris\Ids\Inject\FactoryMethod;
+use \SeanMorris\Ids\Inject\SingletonMethod;
+
 class LoaderTest extends \UnitTestCase
 {
 	public function testClassAlias()
 	{
-		\SeanMorris\Ids\Loader::define([
-			\___\AliasedDatetime::class => \Datetime::class
-		]);
+		Loader::define([ GlobalAliasedDatetime::class => \Datetime::class ]);
 
-		$datetime = new \___\AliasedDatetime;
+		$datetime = new GlobalAliasedDatetime;
 
 		$this->assertTrue(
 			$datetime instanceof \Datetime
-			, '\___\AliasedDatetime is not an instance of Datetime.'
+			, 'GlobalAliasedDatetime is not an instance of Datetime.'
 		);
 
-		\SeanMorris\Ids\Loader::define([
-			\SeanMorris\Ids\___\AliasedDatetime::class => \Datetime::class
-		]);
+		Loader::define([ ScopedAliasedDatetime::class => \Datetime::class ]);
 
-		$datetime = new \SeanMorris\Ids\___\AliasedDatetime;
+		$datetime = new ScopedAliasedDatetime;
 
 		$this->assertTrue(
 			$datetime instanceof \Datetime
-			, '\SeanMorris\Ids\___\AliasedDatetime is not an instance of Datetime.'
+			, 'ScopedAliasedDatetime is not an instance of Datetime.'
 		);
 	}
 
 	public function testClassOverride()
 	{
-		\SeanMorris\Ids\Loader::define([
-			\___\Heap::class => \SplHeap::class
+		Loader::define([
+			Heap::class => SplHeap::class
 		]);
 
-
-		\SeanMorris\Ids\Loader::define([
-			\___\Heap::class => \SplMaxHeap::class
+		Loader::define([
+			Heap::class => SplMaxHeap::class
 		]);
 
 		$this->assertTrue(
-			is_a(\___\Heap::class, \SplHeap::class, TRUE)
-			, '\___\Heap::class is not an SplHeap.'
+			is_a(Heap::class, SplHeap::class, TRUE)
+			, 'Heap::class is not an SplHeap.'
 		);
 
 		$this->assertTrue(
-			is_a(\___\Heap::class, \SplMaxHeap::class, TRUE)
-			, '\___\Heap::class is not an SplMaxHeap.'
+			is_a(Heap::class, SplMaxHeap::class, TRUE)
+			, 'Heap::class is not an SplMaxHeap.'
 		);
 	}
 
 	public function testFactoryMethod()
 	{
-		$personFactory = \SeanMorris\Ids\FactoryMethod::wrap(function($name){
+		$personFactory = FactoryMethod::wrap(function($name){
 			return (object)['name' => $name];
 		});
 
@@ -77,7 +81,7 @@ class LoaderTest extends \UnitTestCase
 
 	public function testSingletonMethod()
 	{
-		$singletonFactory = \SeanMorris\Ids\SingletonMethod::wrap((object)[
+		$singletonFactory = SingletonMethod::wrap((object)[
 			'a'   => 1
 			, 'b' => 2
 			, 'c' => 3
@@ -92,11 +96,11 @@ class LoaderTest extends \UnitTestCase
 		$this->assertEqual($x, $y, 'Singleton did not return the same instance twice.');
 	}
 
-	public function testLoader()
-	{
-		// \SeanMorris\Ids\Loader::define([
+	// public function testLoader()
+	// {
+		// Loader::define([
 
-		// 	'___\singletonObject' => \SeanMorris\Ids\Loader::one((object)[
+		// 	'___\singletonObject' => Loader::one((object)[
 		// 		'lmao' => 'wow'
 		// 	])
 
@@ -164,5 +168,5 @@ class LoaderTest extends \UnitTestCase
 		// var_dump($x);
 		// var_dump($x->x);
 		// var_dump($x->x->x);
-	}
+	// }
 }

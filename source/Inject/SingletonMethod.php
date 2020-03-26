@@ -1,5 +1,5 @@
 <?php
-namespace SeanMorris\Ids;
+namespace SeanMorris\Ids\Inject;
 abstract class SingletonMethod extends FactoryMethod
 {
 	public static function wrap($instance)
