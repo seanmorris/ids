@@ -283,7 +283,35 @@ class CollectionTest extends \UnitTestCase
 	}
 
 	public function testFilter()
-	{}
+	{
+		$numbers = new StdCollection;
+
+		foreach(range(0,99) as $i)
+		{
+			$numbers->add((object)(['i' => $i]));
+		}
+
+		$tens = $numbers->filter(function($n){
+			return $n->i % 10 === 0;
+		});
+
+		$count = 0;
+
+		foreach($tens as $ten)
+		{
+			$this->assertTrue(
+				$ten->i % 10 === 0
+				, 'Nullable map operation returned incorrect results.'
+			);
+
+			$count++;
+		}
+
+		$this->assertEqual(
+			$count, 10
+			, 'Filter operation returned incorrect number of results.'
+		);
+	}
 
 	public function testReduce()
 	{}

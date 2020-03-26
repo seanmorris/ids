@@ -812,8 +812,6 @@ class Package
 
 		$classTables = static::$tables + ['main' => []];
 
-		var_dump($classTables);
-
 		foreach($classTables as $db =>$tables)
 		{
 			// @TODO: GENERALIZE FOR MULTIPLE DBs

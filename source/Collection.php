@@ -1,10 +1,11 @@
 <?php
 namespace SeanMorris\Ids;
 
-use UnexpectedValueException;
+use \UnexpectedValueException;
 use \SeanMorris\Ids\WrappedMethod;
 use SeanMorris\Ids\Inject\FactoryMethod;
-use Iterator, IteratorAggregate, AppendIterator, CallbackFilterIterator, Countable;
+use \Iterator, \IteratorAggregate, \AppendIterator;
+use \CallbackFilterIterator, \Countable, \Traversible;
 
 use FilterIterator;
 
@@ -14,7 +15,9 @@ use \SeanMorris\Ids\Collection\RankOuterIterator;
 use \SeanMorris\Ids\___\BaseCollection;
 
 (new class { use Injectable; })::inject([
-	'RankOuterIterator' => RankOuterIterator::class
+	'CallbackFilterIterator' => CallbackFilterIterator::class
+	, 'RankOuterIterator'    => RankOuterIterator::class
+
 	, 'Store' => \SplObjectStorage::class
 	, 'Type'  => NULL
 
@@ -27,9 +30,10 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 
 	protected static
 		$Type, $Store, $RankOuterIterator
+		, $CallbackFilterIterator
 		, $Map, $Filter, $Nullable;
 
-	public function __construct(traversible ...$seedLists)
+	public function __construct(iterable ...$seedLists)
 	{
 		$this->initInjections();
 
@@ -133,7 +137,8 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 
 	public function map($callback)
 	{
-		$ofType   = static::$Type;
+		$collectionClass = static::class;
+
 		$scalars  = FALSE;
 		$nullable = FALSE;
 
@@ -141,18 +146,16 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 
 		if($returnType = $reflection->getReturnType())
 		{
-			$ofType   = $returnType->getName();
+			$collectionClass = self::of($returnType->getName());
+
 			$scalars  = $returnType->isBuiltin();
 			$nullable = $returnType->allowsNull();
 		}
 
-		$collectionClass = self::of($ofType);
-
-		$mapper = WrappedMethod::wrap($callback);
 		$mapped = $collectionClass::inject([
 
 			'RankOuterIterator' => $collectionClass::$RankOuterIterator::inject([
-				'map'    => $mapper
+				'map'    => WrappedMethod::wrap($callback)
 			])
 
 			, 'Nullable' => $nullable
@@ -166,106 +169,36 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 		$collection->tagged =& $this->tagged;
 
 		return $collection;
-
-		// $of = static::$Type;
-
-		// $scalars  = FALSE;
-		// $nullable = FALSE;
-
-		// $reflection = new \ReflectionFunction($callback);
-
-		// if($returnType = $reflection->getReturnType())
-		// {
-		// 	$of = $returnType->getName();
-
-		// 	$scalars  = $returnType->isBuiltin();
-		// 	$nullable = $returnType->allowsNull();
-		// }
-
-		// $newCollection = NULL;
-
-		// if($scalars)
-		// {
-		// 	$newCollection = [];
-		// }
-		// else
-		// {
-		// 	$collectionClass = self::of($of);
-		// 	$newCollection = new $collectionClass;
-		// }
-
-		// if(is_array($newCollection))
-		// {
-		// 	foreach($this->ranked as $rank => $items)
-		// 	{
-		// 		foreach($items as $item)
-		// 		{
-		// 			if($nullable)
-		// 			{
-		// 				if(NULL !== $result = $callback($item, $rank))
-		// 				{
-		// 					$newCollection[] = $result;
-		// 				}
-
-		// 				continue;
-		// 			}
-
-		// 			$newCollection[] = $callback($item, $rank);
-		// 		}
-		// 	}
-		// }
-		// else
-		// {
-		// 	foreach($this->ranked as $rank => $items)
-		// 	{
-		// 		foreach($items as $item)
-		// 		{
-		// 			if($nullable)
-		// 			{
-		// 				if($result = $callback($item, $rank))
-		// 				{
-		// 					$newCollection->add($result);
-		// 				}
-
-		// 				continue;
-		// 			}
-
-		// 			$newCollection->add($callback($item, $rank));
-		// 		}
-		// 	}
-		// }
-
-		// return $newCollection;
 	}
 
 	public function filter($callback)
 	{
-		$newCollection = new static;
+		$filtered = static::inject([
+			'Filter' => WrappedMethod::wrap($callback)
+		]);
 
-		foreach($this as $item)
-		{
-			if($callback($item, $rank))
-			{
-				$newCollection->add($item, $rank);
-			}
-		}
+		$collection = new $filtered;
 
-		return $newCollection;
+		$collection->index  =& $this->index;
+		$collection->ranked =& $this->ranked;
+		$collection->tagged =& $this->tagged;
+
+		return $collection;
 	}
 
 	public function reduce($callback)
 	{
-		$reduced = NULL;
+		// $reduced = NULL;
 
-		foreach($this->ranked as $rank => $items)
-		{
-			foreach($items as $item)
-			{
-				$reduced = $callback($reduced, $item);
-			}
-		}
+		// foreach($this->ranked as $rank => $items)
+		// {
+		// 	foreach($items as $item)
+		// 	{
+		// 		$reduced = $callback($reduced, $item);
+		// 	}
+		// }
 
-		return $reduced;
+		// return $reduced;
 	}
 
 	protected function rank($item)
@@ -282,16 +215,21 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
     {
     	$ranks = new static::$RankOuterIterator(...$this->ranked);
 
-    	if(static::$Nullable)
-    	{
-    		return new CallbackFilterIterator($ranks, function($v) {
+
+		if(static::$Filter)
+		{
+			$ranks = new static::$CallbackFilterIterator($ranks, static::$Filter);
+		}
+
+		if(static::$Nullable)
+		{
+			$ranks = new static::$CallbackFilterIterator($ranks, function($v) {
 
 				return $v !== NULL;
 
 			});
-    	}
+		}
 
     	return $ranks;
     }
-
 }
