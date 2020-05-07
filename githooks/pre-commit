@@ -12,8 +12,8 @@ PHP_ERROR=0;
 git diff-index HEAD | grep "^:" | grep ".php" \
 	| sed 's:.* [UAM][ \\''t]*\([^ \\''t]*\):\1:g' \
 	| while read FILE; do \
-		test -f $FILE || continue;
 		echo Checking $FILE...;
+		test -f $FILE || continue;
 		echo -ne "\t";
 		php -l $FILE 2>&1;
 		PHP_ERROR=$?;
