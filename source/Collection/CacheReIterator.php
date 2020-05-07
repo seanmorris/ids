@@ -1,5 +1,5 @@
 <?php
-namespace SeanMorris\Ids\CacheReIterator;
+namespace SeanMorris\Ids\Collection;
 
 class CacheReIterator extends CachingIterator implements Iterator
 {

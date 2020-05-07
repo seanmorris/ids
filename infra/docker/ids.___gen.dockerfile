@@ -108,8 +108,6 @@ RUN set -eux;               \
 	apt-get install -y --no-install-recommends \
 		apache2             \
 		libapache2-mod-php7.3; \
-	sed -i '0,/Listen 80/s//Listen 8080/' /etc/apache2/ports.conf; \
-	sed -i '0,/Listen 443/s//Listen 4433/' /etc/apache2/ports.conf; \
 	a2dismod mpm_event;     \
 	a2enmod rewrite ssl php7.3; \
 	apt-get remove -y software-properties-common \
@@ -119,11 +117,32 @@ RUN set -eux;               \
 	apt-get clean;          \
 	rm -rfv /var/www/html;  \
 	ln -s /app/public /var/www/html; \
-	chmod -R ug+rw /var/log/apache2 /var/run/apache2; \
-	chgrp -R +${GID} /var/log/apache2 /var/run/apache2; \
-	ln -sf /proc/self/fd/1 /var/log/apache2/access.log; \
-	ln -sf /proc/self/fd/1 /var/log/apache2/error.log;  \
+	ls -al /var/www; \
+	chmod -R ug+rw /var/log/apache2 /var/run/apache2 /var/www; \
+	chgrp -R +${GID} /var/log/apache2 /var/run/apache2 /var/www; \
+	ln -sf /proc/self/fd/2 /var/log/apache2/access.log; \
+	ln -sf /proc/self/fd/2 /var/log/apache2/error.log;  \
 	rm -rf /var/lib/apt/lists/*;
+
+RUN set -eux; \
+
+	sed -i '0,/LogLevel warn/s//LogLevel trace8/' /etc/apache2/apache2.conf; \
+
+	sed -i '0,/Listen 80/s//Listen 8080/' /etc/apache2/ports.conf; \
+
+	sed -i '0,/Listen 443/s//Listen 4433/' /etc/apache2/ports.conf; \
+
+	sed -i '/DocumentRoot \/var\/www\/html/a \	</Directory>' \
+		/etc/apache2/sites-available/000-default.conf; \
+
+	sed -i '0,/<VirtualHost \*:80>/s//<VirtualHost *:8080>/' \
+		/etc/apache2/sites-available/000-default.conf; \
+
+	sed -i '/DocumentRoot \/var\/www\/html/a \	\	AllowOverride All' \
+		/etc/apache2/sites-available/000-default.conf; \
+
+	sed -i '/DocumentRoot \/var\/www\/html/a \	<Directory /var/www/html/>' \
+		/etc/apache2/sites-available/000-default.conf;
 
 ENTRYPOINT ["apachectl", "-D", "FOREGROUND"]
 

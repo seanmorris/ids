@@ -14,6 +14,8 @@ class ChildProcess
 		, $stdIn
 		, $stdOut
 		, $stdErr
+		, $stdOutBuffer = ''
+		, $stdErrBuffer = ''
 		, $pipeDescriptor = [
 			0 => ['pipe', 'r'],
 			1 => ['pipe', 'w'],
@@ -58,12 +60,44 @@ class ChildProcess
 
 	public function read()
 	{
-		return trim(fgets($this->stdOut));
+		$got = fgets($this->stdOut);
+
+		if(!$this->feof() && substr($got, -1) !== "\n")
+		{
+			$this->stdOutBuffer .= $got;
+			return;
+		}
+		else
+		{
+			$message = $this->stdOutBuffer .= $got;
+
+			$this->stdOutBuffer = NULL;
+
+			return $message;
+		}
+
+		return $got;
 	}
 
 	public function readError()
 	{
-		return trim(fgets($this->stdErr));
+		return fgets($this->stdErr);
+
+		if(!$this->feof() && substr($got, -1) !== "\n")
+		{
+			$this->stdErrBuffer .= $got;
+			return;
+		}
+		else
+		{
+			$message = $this->stdErrBuffer .= $got;
+
+			$this->stdErrBuffer = NULL;
+
+			return $message;
+		}
+
+		return $got;
 	}
 
 	public function feof()

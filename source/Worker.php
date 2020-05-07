@@ -1,6 +1,8 @@
 <?php
 namespace SeanMorris\Ids;
 
+use SeanMorris\Ids\Inject\FactoryMethod;
+
 (new class {
 	use Injectable;
 
@@ -13,22 +15,9 @@ namespace SeanMorris\Ids;
 		, $Cli;
 
 })::inject([
-
 	'childProcess' => FactoryMethod::wrap(function($parent){
-
 		return new ChildProcess($parent::getCommand(), TRUE, TRUE);
-
 	})
-
-	, 'Iterator' => new class implements \Iterator {
-
-		public function current(){}
-		public function key(){}
-		public function next(){}
-		public function rewind(){}
-		public function valid(){}
-
-	}
 
 	, 'Cli' => \SeanMorris\Ids\Idilic\Cli::class
 
@@ -71,7 +60,7 @@ class Worker extends \SeanMorris\Ids\___\BaseWorker
 		{
 			if($error = $worker->childProcess->readError())
 			{
-				static::$Cli::error($error . PHP_EOL);
+				static::$Cli::error(' ++ ' . $error);
 			}
 
 			if($message = $worker->childProcess->read())

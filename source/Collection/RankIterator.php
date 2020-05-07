@@ -4,7 +4,7 @@ namespace SeanMorris\Ids\Collection;
 use \SeanMorris\Ids\Injectable;
 use \AppendIterator, \Iterator;
 
-class RankOuterIterator extends AppendIterator {
+class RankIterator extends AppendIterator {
 
 	use Injectable;
 
@@ -32,6 +32,11 @@ class RankOuterIterator extends AppendIterator {
 
 	public function key()
 	{
+		if(static::$map)
+		{
+			return $this->getInnerIterator()->current();
+		}
+
 		return $this->getArrayIterator()->key();
 	}
 

@@ -92,31 +92,38 @@ class Linker
 
 	public static function inheritance()
 	{
-		$classes     = \SeanMorris\Ids\Meta::classes();
-		$subClasses  = [];
-		$classTree   = [];
+		$classes    = \SeanMorris\Ids\Meta::classes();
+		$subClasses = [];
+		$classTree  = [];
 
-		foreach($classes as $class)
+		foreach($classes as $index => $class)
 		{
-			if(get_parent_class($class))
+			try{ $parents = class_parents($class); }
+			catch(\ErrorException $exception)
 			{
-				$subClasses[$class] = $class;
+				Log::logException($exception);
+				unset($classes[$index]);
+			}
+
+			if(!$parents)
+			{
 				continue;
 			}
-		}
 
-		foreach($subClasses as $subClass)
-		{
-			foreach($classes as $class)
+			foreach($parents as $parent)
 			{
-				if(is_subclass_of($subClass, $class, TRUE))
-				{
-					$classTree[$class][] = $subClass;
-				}
+				$classTree[$parent][] = $class;
+			}
+
+			if($classTree[$parent])
+			{
+				sort($classTree[$parent]);
 			}
 		}
 
-		$classTree[''] = $classes;
+		$classTree[''] = array_values($classes);
+
+		sort($classTree['']);
 
 		return $classTree;
 	}

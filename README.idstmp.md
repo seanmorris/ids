@@ -543,6 +543,13 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 ## Modeling / ORM
 
+### Defining models
+
+* Properties
+* Selectors
+* Column wrappers
+* Behavior
+
 ```php
 <?php
 namespace SeanMorris\Ids\Test\Model;
@@ -559,18 +566,48 @@ class Foozle extends \SeanMorris\Ids\Model
 
 	protected static
 		$$table = 'Foozle'
+
 		, $$createColumns = [
 			'publicId' => 'UNHEX(REPLACE(UUID(), "-", ""))'
 		]
+
+		, $$byId = [['id' => '?']]
+
 		, $$readColumns = [
 			'publicId' => 'HEX(%s)'
 		]
+
 		, $$updateColumns = [
 			'publicId' => 'UNHEX(%s)'
 		]
 	;
 }
 ```
+
+### Loading Models
+
+Model load methods are dynamically generated with names in the form of:
+
+`VERB [Flat] [Submodel|Record] [By SELECTOR]([...$args])`
+
+#### Verbs
+
+* get - Gets an array of models.
+* getOne - Gets a single model.
+* load - Returns a callback that gets an array of models.
+* loadOne - Alias of getOne.
+* generate - Returns a callback that produces a Generator of models.
+* count - Returns a count of models.
+* report - Return an (optionally) aggregated result set as a 2d array.
+
+#### Modifiers
+
+* Flat - Don't join child models, even if specified in selector (parent class tables are still joined)
+* Submodel - Include any subclass of a given model in result set (May not include all tables!);
+* Record - Load records but skip initialization logic (before/afterRead methods).
+
+#### Selectors
+
 ## Logging
 
 Logs can be written from anywhere in the system by calling a function coresponging to the desied level of verbosity. There are 6 levels of verbosity available.

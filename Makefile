@@ -111,7 +111,10 @@ endif
 DOCKER   :=$(shell which docker)
 
 DEVTARGETS=test dev
-ISDEV     =echo "${DEVTARGETS}" | grep -wq "${TARGET}"
+
+ifeq (${ISDEV},)
+	ISDEV?=echo "${DEVTARGETS}" | grep -wq "${TARGET}"
+endif
 
 define RANDOM_STRING ## %func Generate a random 32 character alphanumeric string.
 cat /dev/urandom         \
@@ -259,7 +262,7 @@ ROOTDIR=${ROOTDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}}    \
 TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}     \
 OUTROOTDIR=${OUTROOTDIR} OUTCOREDIR=${OUTCOREDIR} D_UID=${D_UID}      \
 TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${BASELINUX}         \
-IDS_DATABASES_ROOT_PASSWORD=${IDS_DATABASES_ROOT_PASSWORD}            \
+IDS_DB_ROOT_PASSWORD=${IDS_DB_ROOT_PASSWORD}            \
 DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} COREDIR=${COREDIR}              \
 CORERELDIR=${CORERELDIR} ROOTRELDIR=${ROOTRELDIR}                     \
 DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}
@@ -530,8 +533,7 @@ ${ENV_LOCK}: ${VAR_FILE} ### Lock the environment target
 	) && {                                          \
 		echo -e >&2 "\e[2m"Env changed, need to check dependencies..."\e[0m"; \
 		 ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
-			composer install                        \
-			--ignore-platform-reqs                  \
+			composer install --ignore-platform-reqs \
 			`${ISDEV} || echo "--no-dev"`;          \
 	} || true;
 
@@ -604,7 +606,7 @@ templates: ${GENERABLE}
 ${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) ${ENV_LOCK} ${ENVBUILD}
 	@ echo -e >&2 "\e[2m"Rebuilding template `basename ${@}`"\e[0m";
 	@ test -w ${@} || test -w `dirname ${@}`;
-	export TEMPLATE_SOURCE="$(call IMPORT_TEMPLATE,cat ${<})" \
+	@ export TEMPLATE_SOURCE="$(call IMPORT_TEMPLATE,cat ${<})" \
 	&& echo -en "$$TEMPLATE_SOURCE" >${@}
 
 # 	export TEMPLATE_SOURCE="$(call SHELLOUT,cat ${<})" \

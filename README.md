@@ -21,27 +21,27 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.15 s (1034.8 files/s, 155258.7 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.18 s (906.5 files/s, 139908.5 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                              77           3042            391          12803
-JSON                             13              0              0           4109
+PHP                              79           3064            386          12893
+JSON                             13              0              0           4158
+Markdown                          2            592              0           1274
 YAML                             27            112             14           1113
-Markdown                          1            281              0            606
-make                              2            139              9            567
+make                              2            140              9            568
 SVG                              25              0              3            239
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15             17             21
 HTML                              1              0              0             13
 INI                               3              0              0             11
-CSS                               1              0              0              1
 JavaScript                        1              0              0              1
+CSS                               1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            157           3598            434          19524
+SUM:                            160           3932            429          20332
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Thu Mar 26 02:46:43 EDT 2020*
+*built by sean @ Thu May  7 06:17:10 EDT 2020*
 
 ## Installation
 
@@ -561,6 +561,13 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 ## Modeling / ORM
 
+### Defining models
+
+* Properties
+* Selectors
+* Column wrappers
+* Behavior
+
 ```php
 <?php
 namespace SeanMorris\Ids\Test\Model;
@@ -577,18 +584,48 @@ class Foozle extends \SeanMorris\Ids\Model
 
 	protected static
 		$table = 'Foozle'
+
 		, $createColumns = [
 			'publicId' => 'UNHEX(REPLACE(UUID(), "-", ""))'
 		]
+
+		, $byId = [['id' => '?']]
+
 		, $readColumns = [
 			'publicId' => 'HEX(%s)'
 		]
+
 		, $updateColumns = [
 			'publicId' => 'UNHEX(%s)'
 		]
 	;
 }
 ```
+
+### Loading Models
+
+Model load methods are dynamically generated with names in the form of:
+
+`VERB [Flat] [Submodel|Record] [By SELECTOR]([...rgs])`
+
+#### Verbs
+
+* get - Gets an array of models.
+* getOne - Gets a single model.
+* load - Returns a callback that gets an array of models.
+* loadOne - Alias of getOne.
+* generate - Returns a callback that produces a Generator of models.
+* count - Returns a count of models.
+* report - Return an (optionally) aggregated result set as a 2d array.
+
+#### Modifiers
+
+* Flat - Don't join child models, even if specified in selector (parent class tables are still joined)
+* Submodel - Include any subclass of a given model in result set (May not include all tables!);
+* Record - Load records but skip initialization logic (before/afterRead methods).
+
+#### Selectors
+
 ## Logging
 
 Logs can be written from anywhere in the system by calling a function coresponging to the desied level of verbosity. There are 6 levels of verbosity available.

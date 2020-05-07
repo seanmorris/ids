@@ -7,7 +7,7 @@ namespace SeanMorris\Ids\Idilic\Route;
  * 	-d= or --domain=
  * 		Set the domain for the current command.
  */
-class RootRoute implements \SeanMorris\Ids\Routable
+class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 {
 	function _dynamic($router)
 	{

@@ -1538,7 +1538,7 @@ class Model
 		$originalName = $name;
 
 		if(preg_match(
-			'/^(?:(loadOne|load|generate|get|count)?)
+			'/^(?:(loadOne|load|generate|get|count|report)?)
 				((?:Flat)?)
 				((?:Submodel|Record)?s?)
 				((?:Page|Cursor)?)
@@ -1584,7 +1584,7 @@ class Model
 			}
 		}
 		else if(preg_match(
-			'/^(?:(loadOne|load|generate|get|count)?)
+			'/^(?:(loadOne|load|generate|get|count|report)?)
 				((?:Flat)?)
 				((?:Submodel|Record)?s?)$/x'
 			, $originalName
@@ -1612,8 +1612,8 @@ class Model
 				}
 			}
 
-			$paged  = FALSE;
 			$cursor = FALSE;
+			$paged  = FALSE;
 			$name   = NULL;
 		}
 
@@ -1782,7 +1782,7 @@ class Model
 
 		if(!$superior)
 		{
-			$select->group('id');
+			$select->group(...$columns);
 		}
 
 		if(!$selectDef['flat'] && isset($selectDef['join']) && is_array($selectDef['join']))

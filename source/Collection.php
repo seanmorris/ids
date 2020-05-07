@@ -7,16 +7,15 @@ use SeanMorris\Ids\Inject\FactoryMethod;
 use \Iterator, \IteratorAggregate, \AppendIterator;
 use \CallbackFilterIterator, \Countable, \Traversible;
 
-use FilterIterator;
-
+use \SeanMorris\Ids\Collection\RankIterator;
 use \SeanMorris\Ids\Collection\CacheReIterator;
-use \SeanMorris\Ids\Collection\RankOuterIterator;
 
 use \SeanMorris\Ids\___\BaseCollection;
 
 (new class { use Injectable; })::inject([
-	'CallbackFilterIterator' => CallbackFilterIterator::class
-	, 'RankOuterIterator'    => RankOuterIterator::class
+
+	'FilterIterator' => CallbackFilterIterator::class
+	, 'RankIterator' => RankIterator::class
 
 	, 'Store' => \SplObjectStorage::class
 	, 'Type'  => NULL
@@ -26,12 +25,11 @@ use \SeanMorris\Ids\___\BaseCollection;
 abstract class Collection extends BaseCollection implements IteratorAggregate, Countable
 {
 	protected
-		$index , $ranked = [] , $tagged = [];
+		$index , $ranked = [] , $derivedFrom = NULL, $readOnly = FALSE;
 
 	protected static
-		$Type, $Store, $RankOuterIterator
-		, $CallbackFilterIterator
-		, $Map, $Filter, $Nullable;
+		$Type, $Store, $Rank, $RankIterator
+		, $Map, $Filter, $Nullable, $FilterIterator;
 
 	public function __construct(iterable ...$seedLists)
 	{
@@ -77,6 +75,12 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 
 	public function add(...$items)
 	{
+		if($this->derivedFrom)
+		{
+			$this->derivedFrom->add(...$items);
+			return;
+		}
+
 		foreach($items as $item)
 		{
 			if($this->has($item))
@@ -85,7 +89,6 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 			}
 
 			$rank = $this->rank($item);
-			$tags = $this->tag($item);
 
 			if(!isset($this->ranked[$rank]))
 			{
@@ -94,22 +97,18 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 
 			$this->ranked[$rank][$item] = $item;
 
-			foreach($tags as $tag)
-			{
-				if(!isset($this->tagged[$tag]))
-				{
-					$this->tagged[$tag] = new static::$Store;
-				}
-
-				$this->tagged[$tag][$item] = $item;
-			}
-
-			$this->index[$item] = (object)['rank' => $rank, 'tags' => $tags];
+			$this->index[$item] = (object)['rank' => $rank];
 		}
 	}
 
 	public function remove(...$items)
 	{
+		if($this->derivedFrom)
+		{
+			$this->derivedFrom->remove(...$items);
+			return;
+		}
+
 		foreach($items as $item)
 		{
 			if(!$this->has($item))
@@ -121,17 +120,18 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 
 			unset($this->ranked[$index->rank][$item]);
 
-			foreach($index->tags as $tag)
-			{
-				unset($this->tagged[$tag][$item]);
-			}
-
 			unset($this->index[$item]);
 		}
 	}
 
 	public function count()
 	{
+		if($this->derivedFrom)
+		{
+			$this->derivedFrom->count();
+			return;
+		}
+
 		return array_sum(array_map('count', $this->ranked));
 	}
 
@@ -154,8 +154,8 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 
 		$mapped = $collectionClass::inject([
 
-			'RankOuterIterator' => $collectionClass::$RankOuterIterator::inject([
-				'map'    => WrappedMethod::wrap($callback)
+			'RankIterator' => $collectionClass::$RankIterator::inject([
+				'map' => WrappedMethod::wrap($callback)
 			])
 
 			, 'Nullable' => $nullable
@@ -164,9 +164,10 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 
 		$collection = new $mapped;
 
+		$collection->derivedFrom = $this;
+
 		$collection->index  =& $this->index;
 		$collection->ranked =& $this->ranked;
-		$collection->tagged =& $this->tagged;
 
 		return $collection;
 	}
@@ -179,9 +180,10 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 
 		$collection = new $filtered;
 
+		$collection->derivedFrom = $this;
+
 		$collection->index  =& $this->index;
 		$collection->ranked =& $this->ranked;
-		$collection->tagged =& $this->tagged;
 
 		return $collection;
 	}
@@ -200,27 +202,23 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 
 	protected function rank($item)
 	{
-		return 0;
-	}
-
-	protected function tag($item)
-	{
-		return [];
+		return static::$Rank
+			? static::$Rank($item)
+			: 0;
 	}
 
 	public function getIterator()
     {
-    	$ranks = new static::$RankOuterIterator(...$this->ranked);
-
+    	$ranks = new static::$RankIterator(...$this->ranked);
 
 		if(static::$Filter)
 		{
-			$ranks = new static::$CallbackFilterIterator($ranks, static::$Filter);
+			$ranks = new static::$FilterIterator($ranks, static::$Filter);
 		}
 
 		if(static::$Nullable)
 		{
-			$ranks = new static::$CallbackFilterIterator($ranks, function($v) {
+			$ranks = new static::$FilterIterator($ranks, function($v) {
 
 				return $v !== NULL;
 

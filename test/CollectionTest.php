@@ -1,13 +1,13 @@
 <?php
 namespace SeanMorris\Ids\Test;
 
-use \___\StdCollection, \___\DatetimeCollection;
 use \stdClass, \Datetime, \SeanMorris\Ids\Collection;
+use \___\StdCollection, \___\DatetimeCollection, \UnitTestCase;
 
 Collection::of(stdClass::class, StdCollection::class);
 Collection::of(Datetime::class, DatetimeCollection::class);
 
-class CollectionTest extends \UnitTestCase
+class CollectionTest extends UnitTestCase
 {
 	public function testAcceptReject()
 	{
@@ -137,10 +137,10 @@ class CollectionTest extends \UnitTestCase
 			, 'Simple map operation returned incorrect number of results.'
 		);
 
-		foreach($doubled as $rank => $item)
+		foreach($doubled as $original => $item)
 		{
 			$this->assertTrue(
-				$item->i % 2 === 0
+				$item->i === $original->i * 2
 				, 'Simple map operation returned incorrect results.'
 			);
 		}
@@ -169,10 +169,10 @@ class CollectionTest extends \UnitTestCase
 			, 'Non-nullable map operation returned incorrect number of results.'
 		);
 
-		foreach($doubled as $rank => $item)
+		foreach($doubled as $original => $item)
 		{
 			$this->assertTrue(
-				$item->i % 2 === 0
+				$item->i === $original->i * 2
 				, 'Non-nullable map operation returned incorrect results.'
 			);
 		}
@@ -201,10 +201,10 @@ class CollectionTest extends \UnitTestCase
 
 		$count = 0;
 
-		foreach($doubled as $rank => $item)
+		foreach($doubled as $original => $item)
 		{
 			$this->assertTrue(
-				$item->i % 2 === 0
+				$item->i === $original->i * 2
 				, 'Nullable map operation returned incorrect results.'
 			);
 
@@ -236,10 +236,10 @@ class CollectionTest extends \UnitTestCase
 			, 'Non-nullable map operation returned incorrect number of results.'
 		);
 
-		foreach($doubled as $rank => $item)
+		foreach($doubled as $original => $item)
 		{
 			$this->assertTrue(
-				$item % 2 === 0
+				$original->i * 2 === $item
 				, 'Map to int operation returned incorrect results.'
 			);
 		}
@@ -266,10 +266,10 @@ class CollectionTest extends \UnitTestCase
 
 		$count = 0;
 
-		foreach($doubled as $rank => $item)
+		foreach($doubled as $original => $item)
 		{
 			$this->assertTrue(
-				$item % 2 === 0
+				$original->i * 2 === $item
 				, 'Nullable map to int operation returned incorrect results.'
 			);
 
