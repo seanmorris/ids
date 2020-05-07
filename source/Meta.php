@@ -325,7 +325,11 @@ class Meta
 						$second = strpos($class, '\\', $first  + 1);
 						$third  = strpos($class, '\\', $second + 1);
 
-						var_dump(substr($class, $second + 1, $third - $second - 1));
+						// var_dump($class, $first, $second, $third, substr(
+						// 	$class
+						// 	, $second + 1
+						// 	, $third - $second - 1
+						// ));
 
 						if(substr($class, $second + 1, $third - $second - 1) === 'Test')
 						{

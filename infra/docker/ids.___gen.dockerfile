@@ -141,6 +141,9 @@ RUN set -eux; \
 	sed -i '/DocumentRoot \/var\/www\/html/a \	\	AllowOverride All' \
 		/etc/apache2/sites-available/000-default.conf; \
 
+	sed -i '/DocumentRoot \/var\/www\/html/a \	\	Options FollowSymLinks' \
+		/etc/apache2/sites-available/000-default.conf; \
+
 	sed -i '/DocumentRoot \/var\/www\/html/a \	<Directory /var/www/html/>' \
 		/etc/apache2/sites-available/000-default.conf;
 
