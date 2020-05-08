@@ -38,7 +38,7 @@ services:
       - ${TRGT_ENV}
     build:
       context: ../../
-      dockerfile: ${COREDIR}infra/docker/ids.___gen.dockerfile
+      dockerfile: ${CORERELDIR}infra/docker/ids.___gen.dockerfile
       target:  server-${TARGET}
       network: bridge
       args:

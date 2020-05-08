@@ -455,7 +455,7 @@ stop d: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the current project service
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down
 
 stop-all da: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the all project services on the current target. including orphans.
-	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
 
 restart r: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Restart the project services in the foreground.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} restart ${IMAGE}

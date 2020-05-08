@@ -237,7 +237,7 @@ set_exception_handler(function($exception)
 	{
 		$renderedException = \SeanMorris\Ids\Log::renderException($exception, FALSE);
 
-		header('Content-type: text/plain');
+		headers_sent() || header('Content-type: text/plain');
 		print $renderedException;
 	}
 

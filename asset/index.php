@@ -38,7 +38,17 @@ $debug = ob_get_contents();
 
 ob_end_clean();
 
-print $response;
+if($response instanceof Traversable || is_array($response))
+{
+	foreach($response as $chunk)
+	{
+		echo $chunk;
+	}
+}
+else
+{
+	print $response;
+}
 
 if(Settings::read('devmode') && $debug)
 {
