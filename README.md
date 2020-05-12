@@ -21,13 +21,13 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.18 s (852.2 files/s, 140278.1 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.16 s (927.4 files/s, 153256.2 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                              78           3066            391          12911
 JSON                             10              0              0           3907
-Markdown                          2            824              0           1687
+Markdown                          2            862              0           1748
 YAML                             24             97             14           1041
 make                              1            137              9            566
 SVG                              25              0              3            239
@@ -38,10 +38,10 @@ INI                               3              0              0             11
 JavaScript                        1              0              0              1
 CSS                               1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            152           4148            434          20438
+SUM:                            152           4186            434          20499
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue May 12 18:11:37 EDT 2020*
+*built by sean @ Tue May 12 18:24:44 EDT 2020*
 
 ## Installation
 
@@ -881,6 +881,10 @@ $datetimeCollection = new DatetimeCollection();
 
 ```
 
+### Class Promotion
+
+### Creating Injectable Classes
+
 Creating a new injectable class from scratch is easy. You can either inherit from an existing class that uses the `SeanMorris\Ids\Injectable` trait, or create an entirely new class from scratch with the following construct:
 
 ```php
@@ -985,86 +989,9 @@ class EvenCoolerDateFormatter extends AwesomeDateFormatter
 
 ```
 
-### Factories, Singletons & Injectable Methods
-
-Behaviors may be dynamically provided as injections by wrapping closure with a simple class to let the system know how to treat it:
-
-```php
-<?php
-
-use \SeanMorris\Ids\Collection;
-use \SeanMorris\Ids\WrappedMethod;
-
-$mappedCollection = Collection::inject([
-
-	'RankIterator' => $collectionClass::$RankIterator::inject([
-		'map' => WrappedMethod::wrap($callback)
-	])
-
-]);
-
-```
-
-Factory methods may be provided in a similar manner. A magic method will be defined for `__get()`, so that the object will only be instatiated if the property is accessed:
-
-```php
-<?php
-use \SeanMorris\Ids\Inject\FactoryMethod;
-
-$coolDateFormatter = AwesomeDateFormatter::inject([
-
-	assembledObject::CLASS => FactoryMethod::wrap(function(){
-
-		$object = new StdClass;
-
-		$object->someProperty = 'important value';
-		$object->someOtherVar = 'slightly less important value';
-
-		return $object;
-	})
-
-]);
-```
-
-Singletons may be loaded in a similar manner. A method wrapped by `SingletonMethod` will be called only once and its return value used as the provided injection for all cases.
-
-Singletons provided as static properties will be instatiated on definition, rather than on property access.
-
-```php
-<?php
-use \SeanMorris\Ids\Inject\SingletonMethod
-
-class AwesomeLogger
-{
-	protected $fileHandle;
-
-	writeLog($line)
-	{
-		fwrite($this->fileHandle, $line);
-	}
-}
-
-$CoolerLogger = AwesomeLogger::inject([
-
-	logFile::CLASS => SingletonMethod::wrap(function(){
-
-		$fileHandle = fopen(LOG_FILE_LOCATION, 'a');
-
-		fwrite("Log started!\n", $fileHandle);
-
-		return $fileHandle;
-	})
-]);
-
-$logger = new $CoolerLogger;
-
-$logger->writeLine('This is a log line!');
-
-```
-
 ### Subclassing existing/default injections
 
-If the existing injection is a static property, you can simply acesss it and call `::inject()` on it to create an injected subclass:
+If the existing injection is a static property, you can simply acesss it and call `::inject()` on it to create a subclass of the existing injection:
 
 ```php
 <?php
@@ -1130,6 +1057,126 @@ class RegularOldClass
 );
 
 $object = new InjectableRegularOldClass();
+
+```
+
+### Factories, Singletons & Injectable Methods
+
+Behaviors may be dynamically provided as injections by wrapping closure with a simple class to let the system know how to treat it.
+
+The methods are wrapped by classes so they may participate in the `Loader` system. See *Global Injections* for more information on that topic.
+
+#### Injected Methods
+
+The WrappeMethod class allows you to pass a method along that will not be called by the system, allowing it to be used in code.
+
+```php
+<?php
+
+use \SeanMorris\Ids\WrappedMethod;
+use \SeanMorris\Ids\Collection\RankIterator;
+
+$RankIterator = RankIterator::inject([
+	'map' => WrappedMethod::wrap(function($input){
+
+		$output = doSomething($input);
+
+		return $output;
+
+	})
+]);
+
+```
+
+`RankIterator` implements the following method to use the method passed in:
+
+```php
+<?php
+
+class RankIterator extends AppendIterator
+{
+	use Injectable;
+
+	protected static $map;
+
+	// ...
+
+	public function current()
+	{
+		$value = $this->getInnerIterator()->current();
+
+		if(static::$map)
+		{
+			$mapper = static::$map;
+			$value  = $mapper($value, $this->key());
+		}
+
+		return $value;
+	}
+
+	// ...
+}
+
+```
+
+#### Factory Methods
+
+Factory methods may be provided in a similar manner. A magic method will be defined for `__get()`, so that the object will only be instatiated if the property is accessed:
+
+```php
+<?php
+use \SeanMorris\Ids\Inject\FactoryMethod;
+
+$coolDateFormatter = AwesomeDateFormatter::inject([
+
+	assembledObject::CLASS => FactoryMethod::wrap(function(){
+
+		$object = new StdClass;
+
+		$object->someProperty = 'important value';
+		$object->someOtherVar = 'slightly less important value';
+
+		return $object;
+	})
+
+]);
+```
+
+### Singleton Methods
+
+Singletons may be loaded in a similar manner. A method wrapped by `SingletonMethod` will be called only once and its return value used as the provided injection for all cases.
+
+Singletons provided as static properties will be instatiated on definition, rather than on property access.
+
+```php
+<?php
+use \SeanMorris\Ids\Inject\SingletonMethod
+
+class AwesomeLogger
+{
+	protected $fileHandle;
+
+	writeLog($line)
+	{
+		fwrite($this->fileHandle, $line);
+	}
+}
+
+$CoolerLogger = AwesomeLogger::inject([
+
+	logFile::CLASS => SingletonMethod::wrap(function(){
+
+		$fileHandle = fopen(LOG_FILE_LOCATION, 'a');
+
+		fwrite("Log started!\n", $fileHandle);
+
+		return $fileHandle;
+	})
+]);
+
+$logger = new $CoolerLogger;
+
+$logger->writeLine('This is a log line!');
 
 ```
 
