@@ -986,7 +986,6 @@ Factory methods may be provided in a similar manner. A magic method will be defi
 
 ```php
 <?php
-use \SeanMorris\Ids\Injectable;
 use \SeanMorris\Ids\Inject\FactoryMethod;
 
 $$coolDateFormatter = AwesomeDateFormatter::inject([
@@ -1091,6 +1090,27 @@ $$mappedCollection = Collection::inject([
 	'RankIterator' => SubInjectedRankIterator::CLASS
 
 ]);
+
+```
+
+### Creating injectables out of existing classes
+
+Any class that can be extended can become injectable:
+
+```php
+<?php
+use \SeanMorris\Ids\Injectable;
+
+class RegularOldClass
+{
+	// ...
+}
+
+(new class() extends RegularOldClass { use Injectable; })::inject(
+	[], InjectableRegularOldClass::CLASS
+);
+
+$$object = new InjectableRegularOldClass();
 
 ```
 

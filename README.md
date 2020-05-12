@@ -21,13 +21,13 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.16 s (961.2 files/s, 157885.1 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.16 s (936.8 files/s, 153997.4 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                              78           3066            391          12911
 JSON                             10              0              0           3907
-Markdown                          2            813              0           1645
+Markdown                          2            817              0           1661
 YAML                             24             97             14           1041
 make                              1            137              9            566
 SVG                              25              0              3            239
@@ -35,13 +35,13 @@ Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15             17             21
 HTML                              1              0              0             13
 INI                               3              0              0             11
-CSS                               1              0              0              1
 JavaScript                        1              0              0              1
+CSS                               1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            152           4137            434          20396
+SUM:                            152           4141            434          20412
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue May 12 17:48:11 EDT 2020*
+*built by sean @ Tue May 12 18:02:24 EDT 2020*
 
 ## Installation
 
@@ -1004,7 +1004,6 @@ Factory methods may be provided in a similar manner. A magic method will be defi
 
 ```php
 <?php
-use \SeanMorris\Ids\Injectable;
 use \SeanMorris\Ids\Inject\FactoryMethod;
 
 $coolDateFormatter = AwesomeDateFormatter::inject([
@@ -1109,6 +1108,27 @@ $mappedCollection = Collection::inject([
 	'RankIterator' => SubInjectedRankIterator::CLASS
 
 ]);
+
+```
+
+### Creating injectables out of existing classes
+
+Any class that can be extended can become injectable:
+
+```php
+<?php
+use \SeanMorris\Ids\Injectable;
+
+class RegularOldClass
+{
+	// ...
+}
+
+(new class() extends RegularOldClass { use Injectable; })::inject(
+	[], InjectableRegularOldClass::CLASS
+);
+
+$object = new InjectableRegularOldClass();
 
 ```
 
