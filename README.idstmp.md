@@ -1205,7 +1205,7 @@ $$logger->writeLine('This is a log line!');
 
 ```
 
-### Global injections & \\___\\... namespaces
+### Global injections & \\\___\\\... namespaces
 
 Injections can be defined globally so that classes can just pick up on them and go. Using the `\___\...` namespace, we can set up places where injections can be defined globally. You can also use the `\Author\Project\___\...` namespace.
 

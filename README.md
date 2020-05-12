@@ -21,7 +21,7 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.17 s (898.5 files/s, 149466.0 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.17 s (875.7 files/s, 145663.4 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
@@ -35,13 +35,13 @@ Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15             17             21
 HTML                              1              0              0             13
 INI                               3              0              0             11
-CSS                               1              0              0              1
 JavaScript                        1              0              0              1
+CSS                               1              0              0              1
 --------------------------------------------------------------------------------
 SUM:                            152           4242            434          20609
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue May 12 18:55:54 EDT 2020*
+*built by sean @ Tue May 12 18:59:51 EDT 2020*
 
 ## Installation
 
@@ -1223,7 +1223,7 @@ $logger->writeLine('This is a log line!');
 
 ```
 
-### Global injections & \___\... namespaces
+### Global injections & \\___\\... namespaces
 
 Injections can be defined globally so that classes can just pick up on them and go. Using the `\___\...` namespace, we can set up places where injections can be defined globally. You can also use the `\Author\Project\___\...` namespace.
 
