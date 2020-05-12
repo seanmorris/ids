@@ -21,13 +21,13 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.16 s (936.8 files/s, 153997.4 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.16 s (939.8 files/s, 154664.2 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                              78           3066            391          12911
 JSON                             10              0              0           3907
-Markdown                          2            817              0           1661
+Markdown                          2            824              0           1681
 YAML                             24             97             14           1041
 make                              1            137              9            566
 SVG                              25              0              3            239
@@ -35,13 +35,13 @@ Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15             17             21
 HTML                              1              0              0             13
 INI                               3              0              0             11
-JavaScript                        1              0              0              1
 CSS                               1              0              0              1
+JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            152           4141            434          20412
+SUM:                            152           4148            434          20432
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue May 12 18:02:24 EDT 2020*
+*built by sean @ Tue May 12 18:06:40 EDT 2020*
 
 ## Installation
 
@@ -1027,7 +1027,7 @@ Singletons provided as static properties will be instatiated on definition, rath
 
 ```php
 <?php
-
+// We can alias classes even if they don't exist yet:
 use \logFile;
 use \SeanMorris\Ids\Inject\SingletonMethod
 
@@ -1087,10 +1087,11 @@ If the existing injection is a static property, you can simply acesss it and cal
 
 ```php
 <?php
-
-use \InjectedRankIterator;
 use \SeanMorris\Ids\Collection;
 use \SeanMorris\Ids\WrappedMethod;
+
+// We can alias classes even if they don't exist yet:
+use \InjectedRankIterator;
 
 $collectionClass::$RankIterator::inject([
 
@@ -1150,6 +1151,10 @@ An injection can be defined globally in the `ids.boot.php` file in the `source/`
 
 ```php
 <?php
+use \SeanMorris\Ids\Loader;
+
+// We can alias classes even if they don't exist yet:
+use \___\LogFileInjectable;
 
 Loader::define([ LogFileInjectable::CLASS => ActualLogFileClass::CLASS ]);
 
@@ -1161,16 +1166,18 @@ Global injections may only be overridden **before** they are used in code. This 
 
 ```php
 <?php
-
 // Dependency package's ids.boot.php:
+use \SeanMorris\Ids\Loader;
+
 Loader::define([ LogFileInjectable::CLASS => LogFileClass::CLASS ]);
 
 ```
 
 ```php
 <?php
-
 // Root package's ids.boot.php:
+use \SeanMorris\Ids\Loader;
+
 Loader::define([ LogFileInjectable::CLASS => AwesomeLogFileClass::CLASS ]);
 
 ```
