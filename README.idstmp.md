@@ -588,7 +588,7 @@ class Foozle extends \SeanMorris\Ids\Model
 
 Model load methods are dynamically generated with names in the form of:
 
-`VERB [Flat] [Submodel|Record] [By SELECTOR]([...$args])`
+`VERB [Flat] [Submodel|Record] [By SELECTOR]([...$$args])`
 
 #### Verbs
 
@@ -831,8 +831,8 @@ New commands can be implemented by adding a route class named `RootRoute` under 
 
 ```php
 <?php
-namespace SeanMorris\ExamplePackage\Idilic\Route;
-class RootRoute implements \SeanMorris\Ids\Routable
+namespace SeanMorris\\ExamplePackage\\Idilic\\Route;
+class RootRoute implements \\SeanMorris\\Ids\\Routable
 {
 	/** Help text goes here. */
 	public function commandName($$router)
@@ -840,7 +840,303 @@ class RootRoute implements \SeanMorris\Ids\Routable
 }
 ```
 
-## Dependency Injection*
+## Dependency Injection
+
+Some classes provide injection constructors. They'll take one or more classes as an argument and in return will give you a new class to work with.
+
+For example, the `SeanMorris\Ids\Collection` class provides a method that will return a new subclass that will work only with the given type:
+
+*In this example, DatetimeCollection does not exist until afte the `::of()` method completes, but PHP will still allow us to access `::CLASS` on it.*
+
+```php
+<?php
+use \SeanMorris\Ids\Collection;
+
+// Create DatetimeCollection based on the existing Collection class
+Collection::of(Datetime::CLASS, DatetimeCollection::CLASS);
+
+// Create an instance of the new class:
+$$datetimeCollection = new DatetimeCollection();
+
+```
+
+Creating a new injectable class from scratch is easy. You can either inherit from an existing class that uses the `SeanMorris\Ids\Injectable` trait, or create an entirely new class from scratch with the following construct:
+
+```php
+<?php
+
+$$injectableClass = (new class { use Injectable; })::inject([]);
+
+```
+
+You could now use `new $$injectableClass` to instantiate a class with very little functionality. The problem here is that you can't inherit from an anonymous class in PHP. To solve this problem we can pass a second parameter to `::inject()` to name the class:
+
+```php
+<?php
+
+use \SeanMorris\Ids\Injectable;
+
+(new class { use Injectable; })::inject([], AwesomeInjectable::CLASS);
+
+class AwesomeClass extends AwesomeInjectable
+{
+	public function someMethod()
+	{
+		// here there be behaviors...
+	}
+}
+
+```
+In the first parameter, we can define any default injections we'd like our class to have, to facilitate situations where we'd want it to have access to a default set of behaviors we can override.
+
+```php
+<?php
+
+use \SeanMorris\Ids\Injectable;
+
+(new class { use Injectable; })::inject([
+
+	InjectedDate::CLASS => Datetime::CLASS
+
+], NewInjectable::CLASS);
+```
+
+You can now access the injections as a static property of the newly created class:
+
+```php
+<?php
+
+class DateFormatter extends AwesomeInjectable
+{
+	protected static $$InjectedDate;
+
+	public function dateToTimestamp($$date)
+	{
+		$$datetime = new static::$$InjectedDate($$date);
+
+		return $$datetime->format('');
+	}
+}
+```
+
+Since the injections are represented by static properties, injectables are accessible just fine in the static scope:
+
+```php
+<?php
+
+class DateFormatter extends AwesomeInjectable
+{
+	protected static $$InjectedDate;
+
+	public static function dateToTimestamp($$date)
+	{
+		$$datetime = new static::$$InjectedDate($$date);
+
+		return $$datetime->format('');
+	}
+}
+```
+
+You can continue to create further subclasses that may or may not override the default injections:
+
+```php
+<?php
+// Inherit injected classes normally:
+
+class CoolDateFormatter extends DateFormatter
+{
+	protected static $$InjectedDate;
+	// ...
+}
+
+// Or create new subclasses by injecting the class and passing a new name:
+// (AwesomeDateFormatter is being created based on DateFormatter here)
+
+DateFormatter::inject([
+
+	InjectedDate::CLASS => \Awesome\Project\AwesomeDatetime::CLASS
+
+], AwesomeDateFormatter::CLASS);
+
+```
+
+### Factories, Singletons & Injectable Methods
+
+Behaviors may be dynamically provided as injections by wrapping closure with a simple class to let the system know how to treat it:
+
+```php
+<?php
+
+use \SeanMorris\Ids\Collection;
+use \SeanMorris\Ids\WrappedMethod;
+
+$$mappedCollection = Collection::inject([
+
+	'RankIterator' => $$collectionClass::$$RankIterator::inject([
+		'map' => WrappedMethod::wrap($$callback)
+	])
+
+]);
+
+```
+
+Factory methods may be provided in a similar manner. A magic method will be defined for `__get()`, so that the object will only be instatiated if the property is accessed:
+
+```php
+<?php
+use \SeanMorris\Ids\Injectable;
+use \SeanMorris\Ids\Inject\FactoryMethod;
+
+$$coolDateFormatter = AwesomeDateFormatter::inject([
+
+	assembledObject::CLASS => FactoryMethod::wrap(function(){
+
+		$$object = new StdClass;
+
+		$$object->someProperty = 'important value';
+		$$object->someOtherVar = 'slightly less important value';
+
+		return $$object;
+	})
+
+]);
+```
+
+Singletons may be loaded in a similar manner. A method wrapped by `SingletonMethod` will be called only once and its return value used as the provided injection for all cases.
+
+Singletons provided as static properties will be instatiated on definition, rather than on property access.
+
+```php
+<?php
+
+use \logFile;
+use \SeanMorris\Ids\Inject\SingletonMethod
+
+class AwesomeLogger
+{
+	protected $$fileHandle;
+
+	writeLog($$line)
+	{
+		fwrite($$this->fileHandle, $$line);
+	}
+}
+
+$$CoolerLogger = AwesomeLogger::inject([
+
+	logFile::CLASS => SingletonMethod::wrap(function(){
+
+		$$fileHandle = fopen(LOG_FILE_LOCATION, 'a');
+
+		fwrite("Log started!\n", $$fileHandle);
+
+		return $$fileHandle;
+	})
+]);
+
+$$logger = new $$CoolerLogger;
+
+$$logger->writeLine('This is a log line!');
+
+```
+
+### Subclassing existing/default injections
+
+If the existing injection is a static property, you can simply acesss it and call `::inject()` on it to create an injected subclass:
+
+```php
+<?php
+
+use \SeanMorris\Ids\Collection;
+use \SeanMorris\Ids\WrappedMethod;
+
+$RankIterator = $$collectionClass::$$RankIterator::inject([
+	'map' => WrappedMethod::wrap($$callback)
+]);
+
+$$mappedCollection = Collection::inject([
+
+	'RankIterator' => $RankIterator
+
+]);
+
+```
+
+Or you could promote the class and extend it directly:
+
+If the existing injection is a static property, you can simply acesss it and call `::inject()` on it to create an injected subclass:
+
+```php
+<?php
+
+use \InjectedRankIterator;
+use \SeanMorris\Ids\Collection;
+use \SeanMorris\Ids\WrappedMethod;
+
+$$collectionClass::$$RankIterator::inject([
+
+	'map' => WrappedMethod::wrap($$callback)
+
+], \InjectedRankIterator::CLASS);
+
+class SubInjectedRankIterator extends InjectedRankIterator
+{
+	//...
+}
+
+$$mappedCollection = Collection::inject([
+
+	'RankIterator' => SubInjectedRankIterator::CLASS
+
+]);
+
+```
+
+### Global injections
+
+Injections can be defined globally so that classes can just pick up on them and go. Using the `\___\...` namespace, we can set up places where injections can be defined globally. You can also use the `\Author\Project\___\...` namespace.
+
+For example, if the `AwesomeLogger` class from above were defined like this:
+
+```php
+<?php
+
+$$injections = [logFile::CLASS => \___\LogFileInjectable::CLASS];
+
+(new class { use Injectable; })::inject($$injections, AwesomeLogger::CLASS);
+```
+
+An injection can be defined globally in the `ids.boot.php` file in the `source/` directory of the project. This can be overridden as the root project's boot file will be executed last.
+
+```php
+<?php
+
+Loader::define([ LogFileInjectable::CLASS => ActualLogFileClass::CLASS ]);
+
+```
+
+#### Overriding global injections
+
+Global injections may only be overridden **before** they are used in code. This does not count access to `::CLASS` or `use` statments that import classes from other namespaces.
+
+
+```php
+<?php
+
+// Dependency package's ids.boot.php:
+Loader::define([ LogFileInjectable::CLASS => LogFileClass::CLASS ]);
+
+```
+
+
+```php
+<?php
+
+// Root package's ids.boot.php:
+Loader::define([ LogFileInjectable::CLASS => AwesomeLogFileClass::CLASS ]);
+
+```
+
 ## Sessions
 ## Email
 

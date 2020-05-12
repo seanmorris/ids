@@ -579,11 +579,13 @@ ${ROOTDIR}config/.env%:
 infra/compose/%yml: ${ROOTDIR}.env ${ROOTDIR}.env.default ${ROOTDIR}.env_$${TARGET} ${COREDIR}.env_$${TARGET}.default ${ENV_LOCK}
 	@ test -f infra/compose/${TARGET}.yml;
 
-help: help-all ## print this message
-	@ echo "Help for SeanMorris/Ids v0.0.0"
+help: about help-all ## print this message
 
 help-%:
 	@ $(eval HELPTYPE:= echo ${@} | sed 's/.+-//' )
+	@ echo ""
+	@ echo "usage: make [@target] COMMAND [VAR='VAL']"
+	@ echo ""
 	@ $(foreach MKFL,${MAKEFILE_LIST},  \
 		cat "${MKFL}" | grep '\:.*\#\#' | grep -v '###' \
 		| while read -r LINE; do        \
@@ -598,6 +600,18 @@ help-%:
 		done | column -ts:;                             \
 	)
 	@ echo SeanMorris/Ids/Makefile generated its own helpfile @`date`
+
+about: ## print author, copyright & github location.
+	@ echo "SeanMorris/Ids v0.0.0"
+	@ echo "https://github.com/seanmorris/ids"
+	@ echo ""
+	@ echo "Ids © 2011 - 2020 Sean Morris"
+	@ echo ""
+	@ echo "All code in this package is released under"
+	@ echo "the Apache-2.0 License and is free for"
+	@ echo "use, public and private."
+	@ echo ""
+	@ echo "See LICENSE for the full terms."
 
 .SECONDEXPANSION:
 

@@ -126,8 +126,6 @@ RUN set -eux;               \
 
 RUN set -eux; \
 
-	sed -i '0,/LogLevel warn/s//LogLevel trace8/' /etc/apache2/apache2.conf; \
-
 	sed -i '0,/Listen 80/s//Listen 8080/' /etc/apache2/ports.conf; \
 
 	sed -i '0,/Listen 443/s//Listen 4433/' /etc/apache2/ports.conf; \
