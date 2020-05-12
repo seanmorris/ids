@@ -863,8 +863,6 @@ $$datetimeCollection = new DatetimeCollection();
 
 ```
 
-### Class Promotion
-
 ### Creating Injectable Classes
 
 Creating a new injectable class from scratch is easy. You can either inherit from an existing class that uses the `SeanMorris\Ids\Injectable` trait, or create an entirely new class from scratch with the following construct:
@@ -894,11 +892,56 @@ class AwesomeClass extends AwesomeInjectable
 }
 
 ```
-In the first parameter, we can define any default injections we'd like our class to have, to facilitate situations where we'd want it to have access to a default set of behaviors we can override.
+### Class Promotion
+
+The last example showed something called *class promotion*, this simply allows us to take an anonymous class and "promote" it to a named class to that other parts of the system can refer to it by name.
+
+There are two ways to promote a class:
+
+With the `Injectable` trait:
+
+```php
+<?php
+use \SeanMorris\Ids\Injectable;
+
+$$anonymousClass = new class
+{
+	use Injectable;
+
+	public function doSomething()
+	{
+		echo "I'm doing something.";
+	}
+};
+
+// Pr
+$$anonymousClass::inject([], NamedClass::CLASS);
+```
+
+Or with the `Loader` class:
 
 ```php
 <?php
 
+$$anonymousClass = new class
+{
+	public function doSomething()
+	{
+		echo "I'm doing something.";
+	}
+};
+
+Loader::define([ NamedClass::CLASS => $$anonymousClass ]);
+
+```
+
+### Defining Injections
+
+In `::inject()`'s' first parameter, we can define any default injections we'd like our class to have, to facilitate situations where we'd want it to have access to a default set of behaviors we can override.
+
+
+```php
+<?php
 use \SeanMorris\Ids\Injectable;
 
 (new class { use Injectable; })::inject([
@@ -1162,7 +1205,7 @@ $$logger->writeLine('This is a log line!');
 
 ```
 
-### Global injections
+### Global injections & \___\... namespaces
 
 Injections can be defined globally so that classes can just pick up on them and go. Using the `\___\...` namespace, we can set up places where injections can be defined globally. You can also use the `\Author\Project\___\...` namespace.
 
@@ -1210,6 +1253,46 @@ Loader::define([ LogFileInjectable::CLASS => LogFileClass::CLASS ]);
 use \SeanMorris\Ids\Loader;
 
 Loader::define([ LogFileInjectable::CLASS => AwesomeLogFileClass::CLASS ]);
+
+```
+
+#### Fallback global injections
+
+Sometimes you might want to allow injections to be overriden for the whole of the system or perhaps some of its parts. If you want this behavior as well as a fallback to a default the following pattern will handle that.
+
+In this example, any part of the system may ask for "Red Paint", "Blue Paint", or "*Just whatever* Paint". They might not get the color they asked for, but they will get paint.
+
+```php
+<?php
+// Dependency package's ids.boot.php:
+use \SeanMorris\Ids\Loader;
+
+Loader::define([ \___\Paint::CLASS      => \___\InjectedPaint::CLASS ]);
+
+Loader::define([ \___\Red\Paint::CLASS  => \___\Paint::CLASS ]);
+Loader::define([ \___\Blue\Paint::CLASS => \___\Paint::CLASS ]);
+
+```
+
+This would allow us to override all instances where "Paint" is injected.
+
+```php
+<?php
+// Root package's ids.boot.php:
+use \SeanMorris\Ids\Loader;
+
+Loader::define([ \___\Paint::CLASS => AwesomeInjectedPaint::CLASS ]);
+
+```
+
+This would allow us to override only instances where "Red Paint" is injected.
+
+```php
+<?php
+// Root package's ids.boot.php:
+use \SeanMorris\Ids\Loader;
+
+Loader::define([ \___\Red\Paint::CLASS => AwesomeInjectedRedPaint::CLASS ]);
 
 ```
 
