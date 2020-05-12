@@ -921,7 +921,7 @@ class DateFormatter extends AwesomeInjectable
 	{
 		$$datetime = new static::$$InjectedDate($$date);
 
-		return $$datetime->format('');
+		return $$datetime->getTimestamp();
 	}
 }
 ```
@@ -939,7 +939,7 @@ class DateFormatter extends AwesomeInjectable
 	{
 		$$datetime = new static::$$InjectedDate($$date);
 
-		return $$datetime->format('');
+		return $$datetime->getTimestamp();
 	}
 }
 ```
