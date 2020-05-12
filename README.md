@@ -21,13 +21,13 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.16 s (967.3 files/s, 159204.5 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.18 s (852.2 files/s, 140278.1 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                              78           3066            391          12911
 JSON                             10              0              0           3907
-Markdown                          2            823              0           1686
+Markdown                          2            824              0           1687
 YAML                             24             97             14           1041
 make                              1            137              9            566
 SVG                              25              0              3            239
@@ -35,13 +35,13 @@ Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15             17             21
 HTML                              1              0              0             13
 INI                               3              0              0             11
-CSS                               1              0              0              1
 JavaScript                        1              0              0              1
+CSS                               1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            152           4147            434          20437
+SUM:                            152           4148            434          20438
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue May 12 18:08:40 EDT 2020*
+*built by sean @ Tue May 12 18:11:37 EDT 2020*
 
 ## Installation
 
@@ -864,8 +864,13 @@ For example, the `SeanMorris\Ids\Collection` class provides a method that will r
 
 *In this example, DatetimeCollection does not exist until afte the `::of()` method completes, but PHP will still allow us to access `::CLASS` on it.*
 
+*We also alias the DatetimeCollection class with `use` BEFORE it exists. This prevents it from inheriting the `Author\Package` namespace in this scenario, although it is not necessary.*
+
 ```php
 <?php
+namespace Author\Package;
+
+use \DatetimeCollection;
 use \SeanMorris\Ids\Collection;
 
 // Create DatetimeCollection based on the existing Collection class

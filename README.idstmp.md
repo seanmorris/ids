@@ -846,8 +846,13 @@ For example, the `SeanMorris\Ids\Collection` class provides a method that will r
 
 *In this example, DatetimeCollection does not exist until afte the `::of()` method completes, but PHP will still allow us to access `::CLASS` on it.*
 
+*We also alias the DatetimeCollection class with `use` BEFORE it exists. This prevents it from inheriting the `Author\Package` namespace in this scenario, although it is not necessary.*
+
 ```php
 <?php
+namespace Author\Package;
+
+use \DatetimeCollection;
 use \SeanMorris\Ids\Collection;
 
 // Create DatetimeCollection based on the existing Collection class
