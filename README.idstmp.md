@@ -1009,8 +1009,6 @@ Singletons provided as static properties will be instatiated on definition, rath
 
 ```php
 <?php
-// We can alias classes even if they don't exist yet:
-use \logFile;
 use \SeanMorris\Ids\Inject\SingletonMethod
 
 class AwesomeLogger
@@ -1071,9 +1069,6 @@ If the existing injection is a static property, you can simply acesss it and cal
 <?php
 use \SeanMorris\Ids\Collection;
 use \SeanMorris\Ids\WrappedMethod;
-
-// We can alias classes even if they don't exist yet:
-use \InjectedRankIterator;
 
 $$collectionClass::$$RankIterator::inject([
 
@@ -1136,6 +1131,8 @@ An injection can be defined globally in the `ids.boot.php` file in the `source/`
 use \SeanMorris\Ids\Loader;
 
 // We can alias classes even if they don't exist yet:
+// If we were in a namespace, this would prevent it
+// from inheriting the FQNS.
 use \___\LogFileInjectable;
 
 Loader::define([ LogFileInjectable::CLASS => ActualLogFileClass::CLASS ]);

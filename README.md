@@ -21,13 +21,13 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.16 s (939.8 files/s, 154664.2 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.16 s (967.3 files/s, 159204.5 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                              78           3066            391          12911
 JSON                             10              0              0           3907
-Markdown                          2            824              0           1681
+Markdown                          2            823              0           1686
 YAML                             24             97             14           1041
 make                              1            137              9            566
 SVG                              25              0              3            239
@@ -38,10 +38,10 @@ INI                               3              0              0             11
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            152           4148            434          20432
+SUM:                            152           4147            434          20437
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue May 12 18:06:40 EDT 2020*
+*built by sean @ Tue May 12 18:08:40 EDT 2020*
 
 ## Installation
 
@@ -1027,8 +1027,6 @@ Singletons provided as static properties will be instatiated on definition, rath
 
 ```php
 <?php
-// We can alias classes even if they don't exist yet:
-use \logFile;
 use \SeanMorris\Ids\Inject\SingletonMethod
 
 class AwesomeLogger
@@ -1089,9 +1087,6 @@ If the existing injection is a static property, you can simply acesss it and cal
 <?php
 use \SeanMorris\Ids\Collection;
 use \SeanMorris\Ids\WrappedMethod;
-
-// We can alias classes even if they don't exist yet:
-use \InjectedRankIterator;
 
 $collectionClass::$RankIterator::inject([
 
@@ -1154,6 +1149,8 @@ An injection can be defined globally in the `ids.boot.php` file in the `source/`
 use \SeanMorris\Ids\Loader;
 
 // We can alias classes even if they don't exist yet:
+// If we were in a namespace, this would prevent it
+// from inheriting the FQNS.
 use \___\LogFileInjectable;
 
 Loader::define([ LogFileInjectable::CLASS => ActualLogFileClass::CLASS ]);
