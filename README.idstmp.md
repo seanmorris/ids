@@ -1269,8 +1269,8 @@ use \SeanMorris\Ids\Loader;
 
 Loader::define([ \___\Paint::CLASS      => BasicPaint::CLASS ]);
 
-Loader::define([ \___\Red\Paint::CLASS  => \___\Paint::CLASS ]);
-Loader::define([ \___\Blue\Paint::CLASS => \___\Paint::CLASS ]);
+Loader::define([ \___\Paint\Red::CLASS  => \___\Paint::CLASS ]);
+Loader::define([ \___\Paint\Blue::CLASS => \___\Paint::CLASS ]);
 
 ```
 
@@ -1292,7 +1292,7 @@ This would allow us to override only instances where "Red Paint" is injected.
 // Root package's ids.boot.php:
 use \SeanMorris\Ids\Loader;
 
-Loader::define([ \___\Red\Paint::CLASS => AwesomeRedPaint::CLASS ]);
+Loader::define([ \___\Paint\Red::CLASS => AwesomeRedPaint::CLASS ]);
 
 ```
 
