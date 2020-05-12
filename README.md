@@ -21,13 +21,13 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.16 s (936.7 files/s, 153227.2 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.16 s (961.2 files/s, 157885.1 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                              78           3066            391          12911
 JSON                             10              0              0           3907
-Markdown                          2            775              0           1580
+Markdown                          2            813              0           1645
 YAML                             24             97             14           1041
 make                              1            137              9            566
 SVG                              25              0              3            239
@@ -35,13 +35,13 @@ Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15             17             21
 HTML                              1              0              0             13
 INI                               3              0              0             11
-JavaScript                        1              0              0              1
 CSS                               1              0              0              1
+JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            152           4099            434          20331
+SUM:                            152           4137            434          20396
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue May 12 17:29:54 EDT 2020*
+*built by sean @ Tue May 12 17:48:11 EDT 2020*
 
 ## Installation
 
@@ -137,7 +137,6 @@ Graylog can be started and stopped with the following commands:
 $ make graylog-start      # alias gls
 $ make graylog-start-fg   # alias glsf
 $ make graylog-start-bg   # alias glsb
-
 
 $ make graylog-stop       # alias gld
 
@@ -335,7 +334,6 @@ For example: *infra/docker/aptcache.idstmp.dockerfile* starts off with the follo
 FROM ${BASELINUX}
 ```
 Varibles are not normally allowed in the `FROM` section of dockerfile,  preprocessed by make before it is used. So long as the file extenstion begins with `.idstmp.`, we can count on a `.___gen.` file being produced. This allows us to keep all the images and containers synced to one base image.
-
 
 The follwing lines from the end of the file show how one can use the shell to track who generated the file and when:
 
@@ -916,7 +914,7 @@ use \SeanMorris\Ids\Injectable;
 
 	InjectedDate::CLASS => Datetime::CLASS
 
-], NewInjectable::CLASS);
+], AwesomeInjectable::CLASS);
 ```
 
 You can now access the injections as a static property of the newly created class:
@@ -963,7 +961,6 @@ You can continue to create further subclasses that may or may not override the d
 
 class CoolDateFormatter extends DateFormatter
 {
-	protected static $InjectedDate;
 	// ...
 }
 
@@ -975,6 +972,11 @@ DateFormatter::inject([
 	InjectedDate::CLASS => \Awesome\Project\AwesomeDatetime::CLASS
 
 ], AwesomeDateFormatter::CLASS);
+
+class EvenCoolerDateFormatter extends AwesomeDateFormatter
+{
+	// ...
+}
 
 ```
 
@@ -1027,7 +1029,8 @@ Singletons provided as static properties will be instatiated on definition, rath
 ```php
 <?php
 
-use \SeanMorris\Ids\Inject\SingletonMethod, \logFile;
+use \logFile;
+use \SeanMorris\Ids\Inject\SingletonMethod
 
 class AwesomeLogger
 {
@@ -1045,8 +1048,7 @@ $CoolerLogger = AwesomeLogger::inject([
 
 		$fileHandle = fopen(LOG_FILE_LOCATION, 'a');
 
-		fwrite("Log started!
-", $fileHandle);
+		fwrite("Log started!\n", $fileHandle);
 
 		return $fileHandle;
 	})
@@ -1055,6 +1057,58 @@ $CoolerLogger = AwesomeLogger::inject([
 $logger = new $CoolerLogger;
 
 $logger->writeLine('This is a log line!');
+
+```
+
+### Subclassing existing/default injections
+
+If the existing injection is a static property, you can simply acesss it and call `::inject()` on it to create an injected subclass:
+
+```php
+<?php
+
+use \SeanMorris\Ids\Collection;
+use \SeanMorris\Ids\WrappedMethod;
+
+$RankIterator = $collectionClass::$RankIterator::inject([
+	'map' => WrappedMethod::wrap($callback)
+]);
+
+$mappedCollection = Collection::inject([
+
+	'RankIterator' => $RankIterator
+
+]);
+
+```
+
+Or you could promote the class and extend it directly:
+
+If the existing injection is a static property, you can simply acesss it and call `::inject()` on it to create an injected subclass:
+
+```php
+<?php
+
+use \InjectedRankIterator;
+use \SeanMorris\Ids\Collection;
+use \SeanMorris\Ids\WrappedMethod;
+
+$collectionClass::$RankIterator::inject([
+
+	'map' => WrappedMethod::wrap($callback)
+
+], \InjectedRankIterator::CLASS);
+
+class SubInjectedRankIterator extends InjectedRankIterator
+{
+	//...
+}
+
+$mappedCollection = Collection::inject([
+
+	'RankIterator' => SubInjectedRankIterator::CLASS
+
+]);
 
 ```
 
@@ -1085,7 +1139,6 @@ Loader::define([ LogFileInjectable::CLASS => ActualLogFileClass::CLASS ]);
 
 Global injections may only be overridden **before** they are used in code. This does not count access to `::CLASS` or `use` statments that import classes from other namespaces.
 
-
 ```php
 <?php
 
@@ -1093,7 +1146,6 @@ Global injections may only be overridden **before** they are used in code. This 
 Loader::define([ LogFileInjectable::CLASS => LogFileClass::CLASS ]);
 
 ```
-
 
 ```php
 <?php

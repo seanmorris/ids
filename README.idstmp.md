@@ -120,7 +120,6 @@ $$ make graylog-start      # alias gls
 $$ make graylog-start-fg   # alias glsf
 $$ make graylog-start-bg   # alias glsb
 
-
 $$ make graylog-stop       # alias gld
 
 $$ make graylog-restart    # alias glr
@@ -317,7 +316,6 @@ For example: *infra/docker/aptcache.idstmp.dockerfile* starts off with the follo
 FROM $${BASELINUX}
 ```
 Varibles are not normally allowed in the `FROM` section of dockerfile,  preprocessed by make before it is used. So long as the file extenstion begins with `.idstmp.`, we can count on a `.___gen.` file being produced. This allows us to keep all the images and containers synced to one base image.
-
 
 The follwing lines from the end of the file show how one can use the shell to track who generated the file and when:
 
@@ -898,7 +896,7 @@ use \SeanMorris\Ids\Injectable;
 
 	InjectedDate::CLASS => Datetime::CLASS
 
-], NewInjectable::CLASS);
+], AwesomeInjectable::CLASS);
 ```
 
 You can now access the injections as a static property of the newly created class:
@@ -945,7 +943,6 @@ You can continue to create further subclasses that may or may not override the d
 
 class CoolDateFormatter extends DateFormatter
 {
-	protected static $$InjectedDate;
 	// ...
 }
 
@@ -957,6 +954,11 @@ DateFormatter::inject([
 	InjectedDate::CLASS => \Awesome\Project\AwesomeDatetime::CLASS
 
 ], AwesomeDateFormatter::CLASS);
+
+class EvenCoolerDateFormatter extends AwesomeDateFormatter
+{
+	// ...
+}
 
 ```
 
@@ -1028,7 +1030,7 @@ $$CoolerLogger = AwesomeLogger::inject([
 
 		$$fileHandle = fopen(LOG_FILE_LOCATION, 'a');
 
-		fwrite("Log started!\n", $$fileHandle);
+		fwrite("Log started!\\n", $$fileHandle);
 
 		return $$fileHandle;
 	})
@@ -1050,13 +1052,13 @@ If the existing injection is a static property, you can simply acesss it and cal
 use \SeanMorris\Ids\Collection;
 use \SeanMorris\Ids\WrappedMethod;
 
-$RankIterator = $$collectionClass::$$RankIterator::inject([
+$$RankIterator = $$collectionClass::$$RankIterator::inject([
 	'map' => WrappedMethod::wrap($$callback)
 ]);
 
 $$mappedCollection = Collection::inject([
 
-	'RankIterator' => $RankIterator
+	'RankIterator' => $$RankIterator
 
 ]);
 
@@ -1119,7 +1121,6 @@ Loader::define([ LogFileInjectable::CLASS => ActualLogFileClass::CLASS ]);
 
 Global injections may only be overridden **before** they are used in code. This does not count access to `::CLASS` or `use` statments that import classes from other namespaces.
 
-
 ```php
 <?php
 
@@ -1127,7 +1128,6 @@ Global injections may only be overridden **before** they are used in code. This 
 Loader::define([ LogFileInjectable::CLASS => LogFileClass::CLASS ]);
 
 ```
-
 
 ```php
 <?php
