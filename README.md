@@ -21,13 +21,13 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.17 s (901.9 files/s, 149542.1 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.17 s (898.5 files/s, 149466.0 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                              78           3066            391          12911
 JSON                             10              0              0           3907
-Markdown                          2            890              0           1803
+Markdown                          2            918              0           1858
 YAML                             24             97             14           1041
 make                              1            137              9            566
 SVG                              25              0              3            239
@@ -38,10 +38,10 @@ INI                               3              0              0             11
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            152           4214            434          20554
+SUM:                            152           4242            434          20609
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue May 12 18:46:00 EDT 2020*
+*built by sean @ Tue May 12 18:55:54 EDT 2020*
 
 ## Installation
 
@@ -1285,7 +1285,7 @@ In this example, any part of the system may ask for "Red Paint", "Blue Paint", o
 // Dependency package's ids.boot.php:
 use \SeanMorris\Ids\Loader;
 
-Loader::define([ \___\Paint::CLASS      => \___\InjectedPaint::CLASS ]);
+Loader::define([ \___\Paint::CLASS      => BasicPaint::CLASS ]);
 
 Loader::define([ \___\Red\Paint::CLASS  => \___\Paint::CLASS ]);
 Loader::define([ \___\Blue\Paint::CLASS => \___\Paint::CLASS ]);
@@ -1299,7 +1299,7 @@ This would allow us to override all instances where "Paint" is injected.
 // Root package's ids.boot.php:
 use \SeanMorris\Ids\Loader;
 
-Loader::define([ \___\Paint::CLASS => AwesomeInjectedPaint::CLASS ]);
+Loader::define([ \___\Paint::CLASS => AwesomePaint::CLASS ]);
 
 ```
 
@@ -1310,7 +1310,7 @@ This would allow us to override only instances where "Red Paint" is injected.
 // Root package's ids.boot.php:
 use \SeanMorris\Ids\Loader;
 
-Loader::define([ \___\Red\Paint::CLASS => AwesomeInjectedRedPaint::CLASS ]);
+Loader::define([ \___\Red\Paint::CLASS => AwesomeRedPaint::CLASS ]);
 
 ```
 

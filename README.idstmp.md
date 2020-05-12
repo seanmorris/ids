@@ -1205,7 +1205,7 @@ $$logger->writeLine('This is a log line!');
 
 ```
 
-### Global injections & \___\... namespaces
+### Global injections & \\___\\... namespaces
 
 Injections can be defined globally so that classes can just pick up on them and go. Using the `\___\...` namespace, we can set up places where injections can be defined globally. You can also use the `\Author\Project\___\...` namespace.
 
@@ -1267,7 +1267,7 @@ In this example, any part of the system may ask for "Red Paint", "Blue Paint", o
 // Dependency package's ids.boot.php:
 use \SeanMorris\Ids\Loader;
 
-Loader::define([ \___\Paint::CLASS      => \___\InjectedPaint::CLASS ]);
+Loader::define([ \___\Paint::CLASS      => BasicPaint::CLASS ]);
 
 Loader::define([ \___\Red\Paint::CLASS  => \___\Paint::CLASS ]);
 Loader::define([ \___\Blue\Paint::CLASS => \___\Paint::CLASS ]);
@@ -1281,7 +1281,7 @@ This would allow us to override all instances where "Paint" is injected.
 // Root package's ids.boot.php:
 use \SeanMorris\Ids\Loader;
 
-Loader::define([ \___\Paint::CLASS => AwesomeInjectedPaint::CLASS ]);
+Loader::define([ \___\Paint::CLASS => AwesomePaint::CLASS ]);
 
 ```
 
@@ -1292,7 +1292,7 @@ This would allow us to override only instances where "Red Paint" is injected.
 // Root package's ids.boot.php:
 use \SeanMorris\Ids\Loader;
 
-Loader::define([ \___\Red\Paint::CLASS => AwesomeInjectedRedPaint::CLASS ]);
+Loader::define([ \___\Red\Paint::CLASS => AwesomeRedPaint::CLASS ]);
 
 ```
 
