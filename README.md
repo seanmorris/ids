@@ -21,7 +21,7 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.16 s (927.4 files/s, 153256.2 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.18 s (854.3 files/s, 141186.1 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ CSS                               1              0              0              1
 SUM:                            152           4186            434          20499
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue May 12 18:24:44 EDT 2020*
+*built by sean @ Tue May 12 18:26:11 EDT 2020*
 
 ## Installation
 
@@ -939,7 +939,7 @@ class DateFormatter extends AwesomeInjectable
 	{
 		$datetime = new static::$InjectedDate($date);
 
-		return $datetime->format('');
+		return $datetime->getTimestamp();
 	}
 }
 ```
@@ -957,7 +957,7 @@ class DateFormatter extends AwesomeInjectable
 	{
 		$datetime = new static::$InjectedDate($date);
 
-		return $datetime->format('');
+		return $datetime->getTimestamp();
 	}
 }
 ```
