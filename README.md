@@ -21,13 +21,13 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.18 s (854.3 files/s, 141186.1 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.17 s (901.9 files/s, 149542.1 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                              78           3066            391          12911
 JSON                             10              0              0           3907
-Markdown                          2            862              0           1748
+Markdown                          2            890              0           1803
 YAML                             24             97             14           1041
 make                              1            137              9            566
 SVG                              25              0              3            239
@@ -35,13 +35,13 @@ Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15             17             21
 HTML                              1              0              0             13
 INI                               3              0              0             11
-JavaScript                        1              0              0              1
 CSS                               1              0              0              1
+JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            152           4186            434          20499
+SUM:                            152           4214            434          20554
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue May 12 18:26:11 EDT 2020*
+*built by sean @ Tue May 12 18:46:00 EDT 2020*
 
 ## Installation
 
@@ -881,8 +881,6 @@ $datetimeCollection = new DatetimeCollection();
 
 ```
 
-### Class Promotion
-
 ### Creating Injectable Classes
 
 Creating a new injectable class from scratch is easy. You can either inherit from an existing class that uses the `SeanMorris\Ids\Injectable` trait, or create an entirely new class from scratch with the following construct:
@@ -912,11 +910,56 @@ class AwesomeClass extends AwesomeInjectable
 }
 
 ```
-In the first parameter, we can define any default injections we'd like our class to have, to facilitate situations where we'd want it to have access to a default set of behaviors we can override.
+### Class Promotion
+
+The last example showed something called *class promotion*, this simply allows us to take an anonymous class and "promote" it to a named class to that other parts of the system can refer to it by name.
+
+There are two ways to promote a class:
+
+With the `Injectable` trait:
+
+```php
+<?php
+use \SeanMorris\Ids\Injectable;
+
+$anonymousClass = new class
+{
+	use Injectable;
+
+	public function doSomething()
+	{
+		echo "I'm doing something.";
+	}
+};
+
+// Pr
+$anonymousClass::inject([], NamedClass::CLASS);
+```
+
+Or with the `Loader` class:
 
 ```php
 <?php
 
+$anonymousClass = new class
+{
+	public function doSomething()
+	{
+		echo "I'm doing something.";
+	}
+};
+
+Loader::define([ NamedClass::CLASS => $anonymousClass ]);
+
+```
+
+### Defining Injections
+
+In `::inject()`'s' first parameter, we can define any default injections we'd like our class to have, to facilitate situations where we'd want it to have access to a default set of behaviors we can override.
+
+
+```php
+<?php
 use \SeanMorris\Ids\Injectable;
 
 (new class { use Injectable; })::inject([
@@ -1180,7 +1223,7 @@ $logger->writeLine('This is a log line!');
 
 ```
 
-### Global injections
+### Global injections & \___\... namespaces
 
 Injections can be defined globally so that classes can just pick up on them and go. Using the `\___\...` namespace, we can set up places where injections can be defined globally. You can also use the `\Author\Project\___\...` namespace.
 
@@ -1228,6 +1271,46 @@ Loader::define([ LogFileInjectable::CLASS => LogFileClass::CLASS ]);
 use \SeanMorris\Ids\Loader;
 
 Loader::define([ LogFileInjectable::CLASS => AwesomeLogFileClass::CLASS ]);
+
+```
+
+#### Fallback global injections
+
+Sometimes you might want to allow injections to be overriden for the whole of the system or perhaps some of its parts. If you want this behavior as well as a fallback to a default the following pattern will handle that.
+
+In this example, any part of the system may ask for "Red Paint", "Blue Paint", or "*Just whatever* Paint". They might not get the color they asked for, but they will get paint.
+
+```php
+<?php
+// Dependency package's ids.boot.php:
+use \SeanMorris\Ids\Loader;
+
+Loader::define([ \___\Paint::CLASS      => \___\InjectedPaint::CLASS ]);
+
+Loader::define([ \___\Red\Paint::CLASS  => \___\Paint::CLASS ]);
+Loader::define([ \___\Blue\Paint::CLASS => \___\Paint::CLASS ]);
+
+```
+
+This would allow us to override all instances where "Paint" is injected.
+
+```php
+<?php
+// Root package's ids.boot.php:
+use \SeanMorris\Ids\Loader;
+
+Loader::define([ \___\Paint::CLASS => AwesomeInjectedPaint::CLASS ]);
+
+```
+
+This would allow us to override only instances where "Red Paint" is injected.
+
+```php
+<?php
+// Root package's ids.boot.php:
+use \SeanMorris\Ids\Loader;
+
+Loader::define([ \___\Red\Paint::CLASS => AwesomeInjectedRedPaint::CLASS ]);
 
 ```
 
