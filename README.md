@@ -21,7 +21,7 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.17 s (875.7 files/s, 145663.4 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.16 s (932.2 files/s, 155070.2 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ CSS                               1              0              0              1
 SUM:                            152           4242            434          20609
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue May 12 18:59:51 EDT 2020*
+*built by sean @ Tue May 12 19:02:10 EDT 2020*
 
 ## Installation
 
@@ -1287,8 +1287,8 @@ use \SeanMorris\Ids\Loader;
 
 Loader::define([ \___\Paint::CLASS      => BasicPaint::CLASS ]);
 
-Loader::define([ \___\Red\Paint::CLASS  => \___\Paint::CLASS ]);
-Loader::define([ \___\Blue\Paint::CLASS => \___\Paint::CLASS ]);
+Loader::define([ \___\Paint\Red::CLASS  => \___\Paint::CLASS ]);
+Loader::define([ \___\Paint\Blue::CLASS => \___\Paint::CLASS ]);
 
 ```
 
@@ -1310,7 +1310,7 @@ This would allow us to override only instances where "Red Paint" is injected.
 // Root package's ids.boot.php:
 use \SeanMorris\Ids\Loader;
 
-Loader::define([ \___\Red\Paint::CLASS => AwesomeRedPaint::CLASS ]);
+Loader::define([ \___\Paint\Red::CLASS => AwesomeRedPaint::CLASS ]);
 
 ```
 
