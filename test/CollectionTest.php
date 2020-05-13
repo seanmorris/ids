@@ -301,7 +301,7 @@ class CollectionTest extends UnitTestCase
 		{
 			$this->assertTrue(
 				$ten->i % 10 === 0
-				, 'Nullable map operation returned incorrect results.'
+				, 'Filter operation returned incorrect results.'
 			);
 
 			$count++;

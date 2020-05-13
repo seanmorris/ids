@@ -15,39 +15,27 @@ use \SeanMorris\Ids\Collection\CacheReIterator;
 use \SeanMorris\Ids\___\BaseCollection;
 
 (new class { use Injectable; })::inject([
-
 	'FilterIterator' => CallbackFilterIterator::CLASS
-	, 'RankIterator' => RankIterator::CLASS
-
-	, 'Driver' => Driver::CLASS
-	, 'Store'  => \SplObjectStorage::CLASS
-	, 'Type'   => NULL
-
+	, 'Store'        => \SplObjectStorage::CLASS
+	, 'Type'         => NULL
+	, 'Driver'       => Driver::CLASS
 ], BaseCollection::CLASS);
 
 abstract class Collection extends BaseCollection implements IteratorAggregate, Countable
 {
 	protected
-		$index , $ranked = [] , $derivedFrom = NULL, $readOnly = FALSE;
+		$index, $driver, $derivedFrom = NULL, $readOnly = FALSE;
 
 	protected static
-		$Type, $Store, $Rank, $RankIterator, $Driver
+		$Type, $Store, $Driver
 		, $Map, $Filter, $Nullable, $FilterIterator;
 
-	public function __construct(iterable ...$seedLists)
+	public function __construct()
 	{
 		$this->initInjections();
 
-		$this->index  = new static::$Store;
 		$this->driver = new static::$Driver;
-
-		foreach($seedLists as $seedList)
-		{
-			foreach($seedList as $seed)
-			{
-				$this->add($seed);
-			}
-		}
+		$this->index  = new static::$Store;
 	}
 
 	public static function of(string $type, string $name = null)
@@ -74,16 +62,14 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 			));
 		}
 
-		return $this->index->contains($item);
+		return $this->driver->has($item);
 	}
 
 	public function add(...$items)
 	{
 		if($this->derivedFrom)
 		{
-			$this->derivedFrom->add(...$items);
-
-			return;
+			return $this->derivedFrom->add(...$items);
 		}
 
 		foreach($items as $item)
@@ -93,16 +79,7 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 				continue;
 			}
 
-			$rank = $this->rank($item);
-
-			if(!isset($this->ranked[$rank]))
-			{
-				$this->ranked[$rank] = new static::$Store;
-			}
-
-			$this->ranked[$rank][$item] = $item;
-
-			$this->index[$item] = (object)['rank' => $rank];
+			$this->driver->add($item);
 		}
 	}
 
@@ -110,22 +87,17 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 	{
 		if($this->derivedFrom)
 		{
-			$this->derivedFrom->remove(...$items);
-			return;
+			return $this->derivedFrom->remove(...$items);
 		}
 
 		foreach($items as $item)
 		{
-			if(!$this->has($item))
+			if(!$this->driver->has($item))
 			{
 				continue;
 			}
 
-			$index = $this->index[$item];
-
-			unset($this->ranked[$index->rank][$item]);
-
-			unset($this->index[$item]);
+			$this->driver->remove($item);
 		}
 	}
 
@@ -136,7 +108,7 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 			return $this->derivedFrom->count();
 		}
 
-		return array_sum(array_map('count', $this->ranked));
+		return $this->driver->count();
 	}
 
 	public function map($callback)
@@ -156,40 +128,37 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 			$nullable = $returnType->allowsNull();
 		}
 
-		$mapped = $collectionClass::inject([
+		$mapper = WrappedMethod::wrap($callback);
 
-			'RankIterator' => $collectionClass::$RankIterator::inject([
-				'map' => WrappedMethod::wrap($callback)
-			])
-
-			, 'Nullable' => $nullable
-
+		$Driver = $collectionClass::$Driver::inject([
+			'map'  => $mapper
 		]);
 
-		$collection = new $mapped;
+		$MappedClass = $collectionClass::inject([
+			'Nullable' => $nullable
+			, 'Driver' => $Driver
+		]);
 
-		$collection->derivedFrom = $this;
+		$mapped = new $MappedClass;
 
-		$collection->index  =& $this->index;
-		$collection->ranked =& $this->ranked;
+		$mapped->driver = $Driver::derive($this->driver);
+		$mapped->derivedFrom = $this;
 
-		return $collection;
+		return $mapped;
 	}
 
 	public function filter($callback)
 	{
-		$filtered = static::inject([
+		$FilteredClass = static::inject([
 			'Filter' => WrappedMethod::wrap($callback)
 		]);
 
-		$collection = new $filtered;
+		$filtered = new $FilteredClass;
+		$filtered->driver = static::$Driver::derive($this->driver);
 
-		$collection->derivedFrom = $this;
+		$filtered->derivedFrom = $this;
 
-		$collection->index  =& $this->index;
-		$collection->ranked =& $this->ranked;
-
-		return $collection;
+		return $filtered;
 	}
 
 	public function reduce($callback)
@@ -204,31 +173,24 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 		return $reduced;
 	}
 
-	protected function rank($item)
-	{
-		return static::$Rank
-			? static::$Rank($item)
-			: 0;
-	}
-
 	public function getIterator()
 	{
-		$ranks = new static::$RankIterator(...$this->ranked);
+		$iterator = $this->driver->getIterator();
 
 		if(static::$Filter)
 		{
-			$ranks = new static::$FilterIterator($ranks, static::$Filter);
+			$iterator = new static::$FilterIterator($iterator, static::$Filter);
 		}
 
 		if(static::$Nullable)
 		{
-			$ranks = new static::$FilterIterator($ranks, function($v) {
+			$iterator = new static::$FilterIterator($iterator, function($v) {
 
 				return $v !== NULL;
 
 			});
 		}
 
-		return $ranks;
+		return $iterator;
 	}
 }

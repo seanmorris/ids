@@ -227,7 +227,7 @@ set_exception_handler(function($exception)
 {
 	global $switches;
 
-	if(php_sapi_name() == 'cli' && ($switches['vv'] ?? FALSE))
+	if(php_sapi_name() == 'cli' && ($switches['v'] ?? $switches['vv'] ?? $switches['vvv'] ?? FALSE))
 	{
 		$renderedException = \SeanMorris\Ids\Log::renderException($exception, FALSE);
 
