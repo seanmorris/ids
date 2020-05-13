@@ -64,44 +64,7 @@ class Meta
 
 	public static function &staticSession($depth = 0)
 	{
-		if(session_status() === PHP_SESSION_NONE
-			&& php_sapi_name() !== 'cli'
-			&& !\SeanMorris\Ids\Http\Http::disconnected()
-		){
-			session_start();
-		}
-
-		if(!isset($_SESSION['meta']))
-		{
-			$_SESSION['meta'] = [];
-			$_SESSION['sess_id'] = uniqid();
-		}
-
-		static::$session =& $_SESSION['meta'];
-
-		if($objectStack = static::getObjectStack(1, false))
-		{
-			$class = $objectStack[0];
-
-			if(!is_string($class))
-			{
-				$class = get_class($objectStack[0]);
-			}
-
-			while($depth-- > 0)
-			{
-				$class = get_parent_class($class);
-			}
-
-			if(!isset(static::$session[$class]))
-			{
-				static::$session[$class] = [];
-			}
-
-			return static::$session[$class];
-		}
-
-		return false;
+		return Session::local($depth);
 	}
 
 	public static function classes($super = NULL)

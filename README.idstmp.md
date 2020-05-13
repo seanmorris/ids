@@ -844,9 +844,9 @@ Some classes provide injection constructors. They'll take one or more classes as
 
 For example, the `SeanMorris\Ids\Collection` class provides a method that will return a new subclass that will work only with the given type:
 
-*In this example, DatetimeCollection does not exist until afte the `::of()` method completes, but PHP will still allow us to access `::CLASS` on it.*
+In this example, DatetimeCollection does not exist until afte the `::of()` method completes, but PHP will still allow us to access `::CLASS` on it.
 
-*We also alias the DatetimeCollection class with `use` BEFORE it exists. This prevents it from inheriting the `Author\Package` namespace in this scenario, although it is not necessary.*
+We also alias the DatetimeCollection class with `use` BEFORE it exists. This prevents it from inheriting the `Author\Package` namespace in this scenario, although it is not necessary.
 
 ```php
 <?php
@@ -866,6 +866,8 @@ $$datetimeCollection = new DatetimeCollection();
 ### Creating Injectable Classes
 
 Creating a new injectable class from scratch is easy. You can either inherit from an existing class that uses the `SeanMorris\Ids\Injectable` trait, or create an entirely new class from scratch with the following construct:
+
+**NOTE:** If you override the constructor, you must either call `parent::__construct()` or `$$this->initInjections();` in your subclass contructor to ensure your injections are ready when your object are instantiated.
 
 ```php
 <?php
@@ -1144,14 +1146,14 @@ $$MappedRankIterator = RankIterator::inject([
 
 ]);
 
-$iterator = new $$MappedRankIterator;
+$$iterator = new $$MappedRankIterator;
 
 ```
 
 
 #### Factory Methods
 
-Factory methods may be provided in a similar manner. A magic method will be defined for `__get()`, so that the object will only be instatiated if the property is accessed:
+Factory methods may be provided in a similar manner.
 
 ```php
 <?php

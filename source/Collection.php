@@ -7,6 +7,8 @@ use SeanMorris\Ids\Inject\FactoryMethod;
 use \Iterator, \IteratorAggregate, \AppendIterator;
 use \CallbackFilterIterator, \Countable, \Traversible;
 
+use \SeanMorris\Ids\Collection\Driver;
+
 use \SeanMorris\Ids\Collection\RankIterator;
 use \SeanMorris\Ids\Collection\CacheReIterator;
 
@@ -14,13 +16,14 @@ use \SeanMorris\Ids\___\BaseCollection;
 
 (new class { use Injectable; })::inject([
 
-	'FilterIterator' => CallbackFilterIterator::class
-	, 'RankIterator' => RankIterator::class
+	'FilterIterator' => CallbackFilterIterator::CLASS
+	, 'RankIterator' => RankIterator::CLASS
 
-	, 'Store' => \SplObjectStorage::class
-	, 'Type'  => NULL
+	, 'Driver' => Driver::CLASS
+	, 'Store'  => \SplObjectStorage::CLASS
+	, 'Type'   => NULL
 
-], \SeanMorris\Ids\___\BaseCollection::class);
+], BaseCollection::CLASS);
 
 abstract class Collection extends BaseCollection implements IteratorAggregate, Countable
 {
@@ -28,14 +31,15 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 		$index , $ranked = [] , $derivedFrom = NULL, $readOnly = FALSE;
 
 	protected static
-		$Type, $Store, $Rank, $RankIterator
+		$Type, $Store, $Rank, $RankIterator, $Driver
 		, $Map, $Filter, $Nullable, $FilterIterator;
 
 	public function __construct(iterable ...$seedLists)
 	{
 		$this->initInjections();
 
-		$this->index = new static::$Store;
+		$this->index  = new static::$Store;
+		$this->driver = new static::$Driver;
 
 		foreach($seedLists as $seedList)
 		{
@@ -78,6 +82,7 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 		if($this->derivedFrom)
 		{
 			$this->derivedFrom->add(...$items);
+
 			return;
 		}
 
@@ -128,8 +133,7 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 	{
 		if($this->derivedFrom)
 		{
-			$this->derivedFrom->count();
-			return;
+			return $this->derivedFrom->count();
 		}
 
 		return array_sum(array_map('count', $this->ranked));
@@ -208,8 +212,8 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 	}
 
 	public function getIterator()
-    {
-    	$ranks = new static::$RankIterator(...$this->ranked);
+	{
+		$ranks = new static::$RankIterator(...$this->ranked);
 
 		if(static::$Filter)
 		{
@@ -225,6 +229,6 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 			});
 		}
 
-    	return $ranks;
-    }
+		return $ranks;
+	}
 }

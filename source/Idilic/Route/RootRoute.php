@@ -213,17 +213,35 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 		$report     = [];
 		$testList   = [];
 
+		while($packageList && $packageList[0][0] === '+')
+		{
+			$testList[] = substr(array_shift($packageList), 1);
+		}
+
 		while($packageName = array_shift($packageList))
 		{
-			while($packageList && $packageList[0][0] === '+')
+			$packageName = str_replace('/', '\\', $packageName);
+			try
 			{
-				$testList[] = substr(array_shift($packageList), 1);
+				$package = \SeanMorris\Ids\Package::get($packageName);
+			}
+			catch(\Exception $exception)
+			{
+				\SeanMorris\Ids\Log::warn(sprintf('Package %s not found!', $packageName));
+				\SeanMorris\Ids\Log::query(sprintf('Package %s not found!', $packageName));
+				continue;
 			}
 
-			$packageName = str_replace('/', '\\', $packageName);
-
-			$package   = \SeanMorris\Ids\Package::get($packageName);
 			$namespace = $package->packageSpace();
+
+			while($packageList && $packageList[0][0] === '+')
+			{
+				$testList[] = sprintf(
+					'%s\\Test\\%s'
+					, $namespace
+					, substr(array_shift($packageList), 1)
+				);
+			}
 
 			if(!$testList)
 			{
@@ -271,6 +289,7 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 				}
 				else
 				{
+					\SeanMorris\Ids\Log::warn(sprintf('Test %s not found!', $test));
 					continue;
 				}
 

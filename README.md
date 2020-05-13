@@ -21,13 +21,13 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.17 s (910.4 files/s, 151466.9 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.19 s (824.2 files/s, 135356.7 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                              78           3066            391          12911
-JSON                             10              0              0           3907
-Markdown                          2            921              0           1860
+PHP                              82           3135            393          13110
+JSON                             10              0              0           3959
+Markdown                          2            926              0           1864
 YAML                             24             97             14           1041
 make                              1            137              9            566
 SVG                              25              0              3            239
@@ -38,10 +38,10 @@ INI                               3              0              0             11
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            152           4245            434          20611
+SUM:                            156           4319            436          20866
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue May 12 21:15:46 EDT 2020*
+*built by sean @ Wed May 13 16:45:21 EDT 2020*
 
 ## Installation
 
@@ -862,9 +862,9 @@ Some classes provide injection constructors. They'll take one or more classes as
 
 For example, the `SeanMorris\Ids\Collection` class provides a method that will return a new subclass that will work only with the given type:
 
-*In this example, DatetimeCollection does not exist until afte the `::of()` method completes, but PHP will still allow us to access `::CLASS` on it.*
+In this example, DatetimeCollection does not exist until afte the `::of()` method completes, but PHP will still allow us to access `::CLASS` on it.
 
-*We also alias the DatetimeCollection class with `use` BEFORE it exists. This prevents it from inheriting the `Author\Package` namespace in this scenario, although it is not necessary.*
+We also alias the DatetimeCollection class with `use` BEFORE it exists. This prevents it from inheriting the `Author\Package` namespace in this scenario, although it is not necessary.
 
 ```php
 <?php
@@ -884,6 +884,8 @@ $datetimeCollection = new DatetimeCollection();
 ### Creating Injectable Classes
 
 Creating a new injectable class from scratch is easy. You can either inherit from an existing class that uses the `SeanMorris\Ids\Injectable` trait, or create an entirely new class from scratch with the following construct:
+
+**NOTE:** If you override the constructor, you must either call `parent::__construct()` or `$this->initInjections();` in your subclass contructor to ensure your injections are ready when your object are instantiated.
 
 ```php
 <?php
@@ -1162,14 +1164,14 @@ $MappedRankIterator = RankIterator::inject([
 
 ]);
 
-terator = new $MappedRankIterator;
+$iterator = new $MappedRankIterator;
 
 ```
 
 
 #### Factory Methods
 
-Factory methods may be provided in a similar manner. A magic method will be defined for `__get()`, so that the object will only be instatiated if the property is accessed:
+Factory methods may be provided in a similar manner.
 
 ```php
 <?php
