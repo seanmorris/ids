@@ -27,17 +27,6 @@ class Driver extends BaseDriver implements IteratorAggregate, Countable
 		$this->initInjections();
 
 		$this->store = new static::$Store;
-
-		$rc = new \ReflectionClass(BaseDriver::CLASS);
-
-		Log::debug('Driver initialized');
-	}
-
-	protected function rank($item)
-	{
-		return static::$Rank
-			? static::$Rank($item)
-			: 0;
 	}
 
 	public function has($item)
@@ -47,16 +36,7 @@ class Driver extends BaseDriver implements IteratorAggregate, Countable
 
 	public function add($item)
 	{
-		$rank = $this->rank($item);
-
-		if(!isset($this->ranked[$rank]))
-		{
-			$this->ranked[$rank] = new static::$Store;
-		}
-
-		$this->ranked[$rank][$item] = $item;
-
-		$this->store[$item] = (object)['rank' => $rank];
+		$this->store[$item] = $item;
 	}
 
 	public function remove($item)
@@ -65,37 +45,34 @@ class Driver extends BaseDriver implements IteratorAggregate, Countable
 		{
 			$index = $this->store[$item];
 
-			unset($this->ranked[$index->rank][$item]);
-
 			unset($this->store[$item]);
 		}
 	}
 
 	public function count()
 	{
-		return array_sum(array_map('count', $this->ranked));
+		return count($this->store);
 	}
 
-	public function getIterator()
+	public static function getIteratorClass()
 	{
-		if($this->iterator)
-		{
-			return $this->iterator;
-		}
-
-		$iteratorClass = static::$FlatIterator::inject([
+		return static::$FlatIterator::inject([
 			'map' => static::$map
 		]);
+	}
 
-		return $this->iterator = new $iteratorClass(...$this->ranked);
+	public function getIterator() : FlatIterator
+	{
+		$iteratorClass = static::getIteratorClass();
+
+		return $this->iterator = new $iteratorClass($this->store);
 	}
 
 	public static function derive($from)
 	{
 		$new = new static;
 
-		$new->store  =& $from->store;
-		$new->ranked =& $from->ranked;
+		$new->store =& $from->store;
 
 		return $new;
 	}

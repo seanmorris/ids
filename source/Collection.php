@@ -8,6 +8,7 @@ use \Iterator, \IteratorAggregate, \AppendIterator;
 use \CallbackFilterIterator, \Countable, \Traversible;
 
 use \SeanMorris\Ids\Collection\Driver;
+use \SeanMorris\Ids\Collection\RankedDriver;
 
 use \SeanMorris\Ids\Collection\RankIterator;
 use \SeanMorris\Ids\Collection\CacheReIterator;
@@ -18,7 +19,7 @@ use \SeanMorris\Ids\___\BaseCollection;
 	'FilterIterator' => CallbackFilterIterator::CLASS
 	, 'Store'        => \SplObjectStorage::CLASS
 	, 'Type'         => NULL
-	, 'Driver'       => Driver::CLASS
+	, 'Driver'       => RankedDriver::CLASS
 ], BaseCollection::CLASS);
 
 abstract class Collection extends BaseCollection implements IteratorAggregate, Countable
