@@ -21,13 +21,13 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.16 s (932.2 files/s, 155070.2 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.17 s (910.4 files/s, 151466.9 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                              78           3066            391          12911
 JSON                             10              0              0           3907
-Markdown                          2            918              0           1858
+Markdown                          2            921              0           1860
 YAML                             24             97             14           1041
 make                              1            137              9            566
 SVG                              25              0              3            239
@@ -35,13 +35,13 @@ Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15             17             21
 HTML                              1              0              0             13
 INI                               3              0              0             11
-JavaScript                        1              0              0              1
 CSS                               1              0              0              1
+JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            152           4242            434          20609
+SUM:                            152           4245            434          20611
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue May 12 19:02:10 EDT 2020*
+*built by sean @ Tue May 12 21:15:46 EDT 2020*
 
 ## Installation
 
@@ -1113,25 +1113,7 @@ The methods are wrapped by classes so they may participate in the `Loader` syste
 
 The WrappeMethod class allows you to pass a method along that will not be called by the system, allowing it to be used in code.
 
-```php
-<?php
-
-use \SeanMorris\Ids\WrappedMethod;
-use \SeanMorris\Ids\Collection\RankIterator;
-
-$RankIterator = RankIterator::inject([
-	'map' => WrappedMethod::wrap(function($input){
-
-		$output = doSomething($input);
-
-		return $output;
-
-	})
-]);
-
-```
-
-`RankIterator` implements the following method to use the method passed in:
+`RankIterator` implements the following method in such a way that a map method can be injected:
 
 ```php
 <?php
@@ -1161,6 +1143,29 @@ class RankIterator extends AppendIterator
 }
 
 ```
+
+The new iterator class with mapping behavior can be created like so:
+
+```php
+<?php
+
+use \SeanMorris\Ids\WrappedMethod;
+use \SeanMorris\Ids\Collection\RankIterator;
+
+$MappedRankIterator = RankIterator::inject([
+
+	'map' => WrappedMethod::wrap(function($input){
+		$output = doSomething($input);
+
+		return $output;
+	})
+
+]);
+
+terator = new $MappedRankIterator;
+
+```
+
 
 #### Factory Methods
 

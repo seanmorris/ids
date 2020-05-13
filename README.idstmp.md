@@ -1095,25 +1095,7 @@ The methods are wrapped by classes so they may participate in the `Loader` syste
 
 The WrappeMethod class allows you to pass a method along that will not be called by the system, allowing it to be used in code.
 
-```php
-<?php
-
-use \SeanMorris\Ids\WrappedMethod;
-use \SeanMorris\Ids\Collection\RankIterator;
-
-$$RankIterator = RankIterator::inject([
-	'map' => WrappedMethod::wrap(function($$input){
-
-		$$output = doSomething($$input);
-
-		return $$output;
-
-	})
-]);
-
-```
-
-`RankIterator` implements the following method to use the method passed in:
+`RankIterator` implements the following method in such a way that a map method can be injected:
 
 ```php
 <?php
@@ -1143,6 +1125,29 @@ class RankIterator extends AppendIterator
 }
 
 ```
+
+The new iterator class with mapping behavior can be created like so:
+
+```php
+<?php
+
+use \SeanMorris\Ids\WrappedMethod;
+use \SeanMorris\Ids\Collection\RankIterator;
+
+$$MappedRankIterator = RankIterator::inject([
+
+	'map' => WrappedMethod::wrap(function($$input){
+		$$output = doSomething($$input);
+
+		return $$output;
+	})
+
+]);
+
+$iterator = new $$MappedRankIterator;
+
+```
+
 
 #### Factory Methods
 
