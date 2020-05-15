@@ -17,12 +17,14 @@ class FileTest extends \UnitTestCase
 	{
 		$appendData = "12345678";
 
-		$file = new \SeanMorris\Ids\Disk\File($this->testFilepath);
+		$file = \SeanMorris\Ids\Disk\File::open($this->testFilepath);
 
 		if($file->check())
 		{
 			$file->delete();
 		}
+
+		$file = \SeanMorris\Ids\Disk\File::open($this->testFilepath);
 
 		$file->write($this->testData, FALSE);
 
@@ -49,7 +51,7 @@ class FileTest extends \UnitTestCase
 
 	public function testRead()
 	{
-		$file = new \SeanMorris\Ids\Disk\File($this->testFilepath);
+		$file = \SeanMorris\Ids\Disk\File::open($this->testFilepath);
 		$data = str_split(file_get_contents($this->testFilepath));
 
 		while(!$file->eof())
@@ -75,7 +77,7 @@ class FileTest extends \UnitTestCase
 
 	public function testBasename()
 	{
-		$file = new \SeanMorris\Ids\Disk\File($this->testFilepath);
+		$file = \SeanMorris\Ids\Disk\File::open($this->testFilepath);
 
 		$this->assertEqual(
 			$file->basename()
@@ -86,9 +88,11 @@ class FileTest extends \UnitTestCase
 
 	public function testDelete()
 	{
-		$file = new \SeanMorris\Ids\Disk\File($this->testFilepath);
+		$file = \SeanMorris\Ids\Disk\File::open($this->testFilepath);
 
 		$file->delete();
+
+		$file = \SeanMorris\Ids\Disk\File::open($this->testFilepath);
 
 		$this->assertFalse($file->check(), 'Delete failed for ' . $this->testFilepath);
 
@@ -97,12 +101,14 @@ class FileTest extends \UnitTestCase
 
 	public function testAge()
 	{
-		$file = new \SeanMorris\Ids\Disk\File($this->testFilepath);
+		$file = \SeanMorris\Ids\Disk\File::open($this->testFilepath);
 
 		if($file->check())
 		{
 			$file->delete();
 		}
+
+		$file = \SeanMorris\Ids\Disk\File::open($this->testFilepath);
 
 		$file->write();
 
@@ -116,7 +122,7 @@ class FileTest extends \UnitTestCase
 
 	public function testSubtract()
 	{
-		$file = new \SeanMorris\Ids\Disk\File($this->testFilepath);
+		$file = \SeanMorris\Ids\Disk\File::open($this->testFilepath);
 		$dir  = dirname($this->testFilepath);
 	}
 }

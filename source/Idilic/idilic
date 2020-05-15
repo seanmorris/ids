@@ -130,33 +130,56 @@ foreach($requests as $req)
 
 	if(!is_scalar($res) && $res !== null)
 	{
+		$outputArgs = [];
+
+		switch($switches['format'] ?? NULL)
+		{
+			case 'pj':
+			case 'pretty-json':
+				$outputArgs = [JSON_PRETTY_PRINT];
+
+			case 'j':
+			case 'json':
+				$outputFunc = 'json_encode';
+				break;
+
+			case 'py':
+			case 'pretty-yml':
+				$outputFunc = function($r){
+					return yaml_emit(json_decode(
+						json_encode($r), JSON_OBJECT_AS_ARRAY
+					));
+				};
+				break;
+
+			case 'y':
+			case 'yml':
+				$outputFunc = 'yaml_emit';
+				break;
+
+			default:
+				function_exists('yaml_emit')
+					? $outputFunc = 'yaml_emit'
+					: $outputFunc = 'json_encode';
+				break;
+		}
+
 		if(is_object($res) && method_exists($res, 'dumpStruct'))
 		{
 			$res = $res->dumpStruct();
 		}
 
-		switch($switches['format'] ?? NULL)
+		if($res instanceof \Generator)
 		{
-			case 'yml':
-				print yaml_emit($res);
-				break;
-
-			case 'json':
-				print json_encode($res, JSON_PRETTY_PRINT);
-				break;
-
-			default:
-				if(function_exists('yaml_emit'))
-				{
-					print yaml_emit($res);
-				}
-				else
-				{
-					print json_encode($res, JSON_PRETTY_PRINT);
-				}
-				break;
+			foreach($res as $r)
+			{
+				print $outputFunc($r, ...$outputArgs) . PHP_EOL;
+			}
 		}
-
+		else
+		{
+			print $outputFunc($res, ...$outputArgs);
+		}
 	}
 	else
 	{

@@ -6,7 +6,7 @@ use PhpAmqpLib\Message\AMQPMessage,
 
 if(!class_exists('AMQPMessage'))
 {
-	Log::warn('SeanMorris\Ids\Queue requires PhpAmqpLib');
+	// Log::warn('SeanMorris\Ids\Queue requires PhpAmqpLib');
 }
 
 /**

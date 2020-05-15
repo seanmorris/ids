@@ -4,39 +4,38 @@ namespace SeanMorris\Ids;
 use \UnexpectedValueException;
 use \SeanMorris\Ids\WrappedMethod;
 use SeanMorris\Ids\Inject\FactoryMethod;
-use \Iterator, \IteratorAggregate, \AppendIterator;
-use \CallbackFilterIterator, \Countable, \Traversible;
+use \CallbackFilterIterator, \Countable, \Traversible, ArrayAccess;
+use \Iterator, \IteratorAggregate, \AppendIterator, SplObjectStorage;
 
 use \SeanMorris\Ids\Collection\Driver;
-use \SeanMorris\Ids\Collection\RankedDriver;
-
 use \SeanMorris\Ids\Collection\RankIterator;
-use \SeanMorris\Ids\Collection\CacheReIterator;
 
 use \SeanMorris\Ids\___\BaseCollection;
 
 (new class { use Injectable; })::inject([
 	'FilterIterator' => CallbackFilterIterator::CLASS
-	, 'Store'        => \SplObjectStorage::CLASS
-	, 'Type'         => NULL
-	, 'Driver'       => RankedDriver::CLASS
+	, 'RankIterator' => RankIterator::CLASS
+	, 'Driver' => Driver::CLASS
+	, 'store'  => SplObjectStorage::CLASS
+	, 'Type'   => NULL
+	, 'lookup' => NULL
 ], BaseCollection::CLASS);
 
-abstract class Collection extends BaseCollection implements IteratorAggregate, Countable
+abstract class Collection extends BaseCollection
+	implements IteratorAggregate, ArrayAccess, Countable
 {
 	protected
-		$index, $driver, $derivedFrom = NULL, $readOnly = FALSE;
+		$driver, $derivedFrom = NULL, $readOnly = FALSE;
 
 	protected static
-		$Type, $Store, $Driver
-		, $Map, $Filter, $Nullable, $FilterIterator;
+		$Type, $store, $Driver, $lookup, $index = []
+		, $Map, $Nullable, $Filter, $FilterIterator;
 
 	public function __construct()
 	{
 		$this->initInjections();
 
 		$this->driver = new static::$Driver;
-		$this->index  = new static::$Store;
 	}
 
 	public static function of(string $type, string $name = null)
@@ -193,5 +192,85 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 		}
 
 		return $iterator;
+	}
+
+	public function offsetExists($key)
+	{
+		$lookup = static::lookup($key);
+
+		if($this->driver->has($result))
+		{
+			return $result;
+		}
+
+		return FALSE;
+	}
+
+	public function offsetGet($key)
+	{
+		$result = static::lookup($key);
+
+		if($this->driver->has($result))
+		{
+			return $result;
+		}
+
+		return FALSE;
+	}
+
+	public static function lookup($key)
+	{
+		if(!$lookup = static::$lookup)
+		{
+			throw new \BadMethodCallException(sprintf(
+				'Cannot lookup instace of "%s" on %s without a injected lookup function (%s).'
+				, static::$Type
+				, __FUNCTION__
+				, __CLASS__
+				, get_called_class()
+			));
+		}
+
+		if(!is_scalar($key))
+		{
+			throw new UnexpectedValueException(
+				'Offset must be scalar.'
+			);
+		}
+
+		if(static::$index[ $key ] ?? FALSE)
+		{
+			return static::$index[ $key ];
+		}
+
+		if(!$result = $lookup($key))
+		{
+			return FALSE;
+		}
+
+		static::$index[ $key ] = $result;
+		static::$store[ $result ] = $key;
+
+		return $result;
+	}
+
+	public function offsetSet($offset, $value)
+	{
+		throw new DomainException(sprintf(
+			'Cannot set define/redefine keys on %s (%s).'
+			, __FUNCTION__
+			, __CLASS__
+			, get_called_class()
+		));
+	}
+
+	public function offsetUnset($offset)
+	{
+		throw new DomainException(sprintf(
+			'Cannot set define/redefine keys on %s (%s).'
+			, __FUNCTION__
+			, __CLASS__
+			, get_called_class()
+		));
 	}
 }

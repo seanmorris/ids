@@ -1,27 +1,10 @@
 <?php
 namespace SeanMorris\Ids\Collection;
 
-use \Countable;
-use \IteratorAggregate;
-use \SplObjectStorage;
-use \SeanMorris\Ids\Log;
-use \SeanMorris\Ids\Injectable;
-use \SeanMorris\Ids\Collection;
-use \SeanMorris\Ids\Collection\RankIterator as FlatIterator;
-
-use \SeanMorris\Ids\___\BaseDriver;
-
-// (new class {
-// 	use Injectable;
-// 	protected $ranked = [], $store, $iterator;
-// 	protected static $Rank, $Store, $FlatIterator, $map, $filter;
-// })::inject([
-// 	'FlatIterator' => FlatIterator::CLASS
-// 	, 'Store'      => \SplObjectStorage::CLASS
-// ], BaseDriver::CLASS);
-
 class RankedDriver extends Driver
 {
+	protected $ranked = [];
+	protected static $Rank;
 	protected function rank($item)
 	{
 		return static::$Rank
@@ -55,7 +38,7 @@ class RankedDriver extends Driver
 		}
 	}
 
-	public function getIterator() : FlatIterator
+	public function getIterator()
 	{
 		$iteratorClass = static::getIteratorClass();
 

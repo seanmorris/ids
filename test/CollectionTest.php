@@ -1,8 +1,10 @@
 <?php
 namespace SeanMorris\Ids\Test;
 
-use \stdClass, \Datetime, \SeanMorris\Ids\Collection;
+use \stdClass, \Datetime;
 use \___\StdCollection, \___\DatetimeCollection, \UnitTestCase;
+
+use \SeanMorris\Ids\Collection, \SeanMorris\Ids\WrappedMethod;
 
 Collection::of(stdClass::class, StdCollection::class);
 Collection::of(Datetime::class, DatetimeCollection::class);
@@ -150,9 +152,9 @@ class CollectionTest extends UnitTestCase
 	{
 		$numbers = new StdCollection;
 
-		foreach(range(0,3) as $i)
+		foreach(range(0,3) as $k => $v)
 		{
-			$numbers->add((object)(['i' => $i]));
+			$numbers->add((object)(['i' => $v]));
 		}
 
 		$doubled = $numbers->map(function($item, $rank) : stdClass {
@@ -245,7 +247,7 @@ class CollectionTest extends UnitTestCase
 		}
 	}
 
-	public function testMapoIntNullable()
+	public function testMapIntNullable()
 	{
 		$numbers = new StdCollection;
 
@@ -255,7 +257,6 @@ class CollectionTest extends UnitTestCase
 		}
 
 		$doubled = $numbers->map(function($item, $rank) : ?int {
-
 
 			if($item->i > 1)
 			{
@@ -341,8 +342,100 @@ class CollectionTest extends UnitTestCase
 		);
 	}
 
-	public function testRank()
+	public function testLookup()
 	{
+		$TripleLetters = StdCollection::inject([
+			'lookup' => WrappedMethod::wrap(function($key){
+				return (object) [ 'letters' => $key . $key . $key];
+			})
+		]);
+
+		$tripleLetters = new $TripleLetters;
+
+		$a = $TripleLetters::lookup('A');
+		$b = $TripleLetters::lookup('B');
+		$c = $TripleLetters::lookup('C');
+		$d = $TripleLetters::lookup('D');
+
+		$tripleLetters->add($a);
+		$tripleLetters->add($a, $b, $c);
+
+		$aa = $tripleLetters['A'];
+		$bb = $tripleLetters['B'];
+		$cc = $tripleLetters['C'];
+		$dd = $tripleLetters['D'];
+
+		$aaa = $tripleLetters['A'];
+		$bbb = $tripleLetters['B'];
+		$ccc = $tripleLetters['C'];
+		$ddd = $tripleLetters['D'];
+
+		$this->assertTrue(
+			$a->letters === 'AAA'
+			, 'Lookup operation returned incorrect result.'
+		);
+		$this->assertTrue(
+			$b->letters === 'BBB'
+			, 'Lookup operation returned incorrect result.'
+		);
+		$this->assertTrue(
+			$c->letters === 'CCC'
+			, 'Lookup operation returned incorrect result.'
+		);
+		$this->assertTrue(
+			$d->letters === 'DDD'
+			, 'Lookup operation returned incorrect result.'
+		);
+
+		$this->assertTrue(
+			$a === $aa
+			, 'Lookup operation returned incorrect result.'
+		);
+		$this->assertTrue(
+			$b === $bb
+			, 'Lookup operation returned incorrect result.'
+		);
+		$this->assertTrue(
+			$c === $cc
+			, 'Lookup operation returned incorrect result.'
+		);
+
+		$this->assertTrue(
+			$aa === $aaa
+			, 'Lookup operation returned incorrect result.'
+		);
+		$this->assertTrue(
+			$bb === $bbb
+			, 'Lookup operation returned incorrect result.'
+		);
+		$this->assertTrue(
+			$cc === $ccc
+			, 'Lookup operation returned incorrect result.'
+		);
+
+		$this->assertTrue(
+			$dd === FALSE
+			, 'Lookup operation returned incorrect result.'
+		);
+		$this->assertTrue(
+			$ddd === FALSE
+			, 'Lookup operation returned incorrect result.'
+		);
+
+		$i = 0;
+
+		foreach($tripleLetters as $key => $value)
+		{
+			if($i++ > 10)
+			{
+				break;
+			}
+		}
+
+		$this->assertTrue(
+			$i === 3
+			, 'Populated lookup-collection returned incorrect number of results.'
+		);
 	}
 
 	public function testTag()

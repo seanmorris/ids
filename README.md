@@ -21,11 +21,11 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.15 s (1010.6 files/s, 166023.0 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.17 s (922.2 files/s, 151167.7 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                              82           3138            392          13115
+PHP                              83           3141            392          13220
 JSON                             10              0              0           3959
 Markdown                          2            926              0           1864
 YAML                             24             97             14           1041
@@ -38,10 +38,10 @@ INI                               3              0              0             11
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            156           4322            435          20871
+SUM:                            157           4325            435          20976
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Wed May 13 17:04:34 EDT 2020*
+*built by sean @ Wed May 13 20:03:04 EDT 2020*
 
 ## Installation
 
@@ -803,7 +803,7 @@ class ExampleTest extends \UnitTestCase
 <?php
 use \SeanMorris\Ids\Disk\File;
 
-$file = new File($filename);
+$file = File::open($filename);
 
 //Check if file exists
 if($file->check())

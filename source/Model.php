@@ -316,21 +316,21 @@ class Model
 		{
 			$backtrace = debug_backtrace();
 
-			$trace = [];
+			// $trace = [];
 
-			foreach($backtrace as $frame)
-			{
-				$trace[] = sprintf('%s:%d', $frame['file'] ?? '--', $frame['line'] ?? 0);
-			}
+			// foreach($backtrace as $frame)
+			// {
+			// 	$trace[] = sprintf('%s:%d', $frame['file'] ?? '--', $frame['line'] ?? 0);
+			// }
 
-			\SeanMorris\Ids\Log::debug(sprintf(
-				'%s::_update(...)'
-					. PHP_EOL
-					. "\t" . "Called from\n\t\t%s."
-					. PHP_EOL
-				, get_called_class()
-				, implode(PHP_EOL . "\t\t", $trace)
-			));
+			// \SeanMorris\Ids\Log::debug(sprintf(
+			// 	'%s::_update(...)'
+			// 		. PHP_EOL
+			// 		. "\t" . "Called from\n\t\t%s."
+			// 		. PHP_EOL
+			// 	, get_called_class()
+			// 	, implode(PHP_EOL . "\t\t", $trace)
+			// ));
 
 			$columnsToWrappers = $curClass::getColumns('update', FALSE);
 

@@ -6,18 +6,19 @@ use \IteratorAggregate;
 use \SplObjectStorage;
 use \SeanMorris\Ids\Log;
 use \SeanMorris\Ids\Injectable;
-use \SeanMorris\Ids\Collection;
-use \SeanMorris\Ids\Collection\RankIterator as FlatIterator;
+use \SeanMorris\Ids\Collection\RankIterator;
 
 use \SeanMorris\Ids\___\BaseDriver;
 
 (new class {
+
 	use Injectable;
-	protected $ranked = [], $store, $iterator;
-	protected static $Rank, $Store, $FlatIterator, $map, $filter;
+	protected $store, $iterator;
+	protected static $FlatIterator, $filter, $map, $Store;
+
 })::inject([
-	'FlatIterator' => FlatIterator::CLASS
-	, 'Store'      => \SplObjectStorage::CLASS
+	'FlatIterator' => RankIterator::CLASS
+	, 'Store'      => SplObjectStorage::CLASS
 ], BaseDriver::CLASS);
 
 class Driver extends BaseDriver implements IteratorAggregate, Countable
@@ -61,7 +62,7 @@ class Driver extends BaseDriver implements IteratorAggregate, Countable
 		]);
 	}
 
-	public function getIterator() : FlatIterator
+	public function getIterator()
 	{
 		$iteratorClass = static::getIteratorClass();
 

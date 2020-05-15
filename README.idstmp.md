@@ -785,7 +785,7 @@ class ExampleTest extends \UnitTestCase
 <?php
 use \SeanMorris\Ids\Disk\File;
 
-$$file = new File($$filename);
+$$file = File::open($$filename);
 
 //Check if file exists
 if($$file->check())
