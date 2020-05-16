@@ -13,12 +13,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/simpletest/simpletest.git",
-                "reference": "3fea8f4a04b193538f71fa6f7c77c32bdcb0402f"
+                "reference": "140876ef9ac9a10f884c3657f022829fc5ce64d2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simpletest/simpletest/zipball/3fea8f4a04b193538f71fa6f7c77c32bdcb0402f",
-                "reference": "3fea8f4a04b193538f71fa6f7c77c32bdcb0402f",
+                "url": "https://api.github.com/repos/simpletest/simpletest/zipball/140876ef9ac9a10f884c3657f022829fc5ce64d2",
+                "reference": "140876ef9ac9a10f884c3657f022829fc5ce64d2",
                 "shasum": ""
             },
             "require": {
@@ -85,7 +85,7 @@
                 "testing",
                 "unit-test"
             ],
-            "time": "2019-12-18T15:12:09+00:00"
+            "time": "2020-04-26T13:57:35+00:00"
         }
     ],
     "aliases": [],
@@ -96,5 +96,6 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "1.1.0"
 }

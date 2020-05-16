@@ -21,27 +21,27 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.17 s (922.2 files/s, 151167.7 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.16 s (1003.0 files/s, 163960.7 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                              83           3141            392          13220
+PHP                              85           3186            406          13413
 JSON                             10              0              0           3959
 Markdown                          2            926              0           1864
 YAML                             24             97             14           1041
-make                              1            137              9            566
+make                              1            139              9            569
 SVG                              25              0              3            239
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             15             17             21
 HTML                              1              0              0             13
 INI                               3              0              0             11
-CSS                               1              0              0              1
 JavaScript                        1              0              0              1
+CSS                               1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            157           4325            435          20976
+SUM:                            159           4372            449          21172
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Wed May 13 20:03:04 EDT 2020*
+*built by sean @ Sat May 16 19:08:48 EDT 2020*
 
 ## Installation
 
