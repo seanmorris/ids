@@ -256,6 +256,8 @@ $(eval DCOMPOSE_TARGET_STACK:= -f ${COMPOSE_TARGET} ${DCOMPOSE_FILES})
 $(eval DCOMPOSE_BASE_STACK  := -f ${COMPOSE_TARGET} -f ${COMPOSE_BASE})
 endef
 
+IDS_DB_ROOT_PASSWORD?=
+
 define ENV ## %var List of environment vars to pass to sub commands.
 REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT} D_GID=${D_GID} \
 ROOTDIR=${ROOTDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}}    \
@@ -443,19 +445,22 @@ env e: ## Export the environment as seen from MAKE.
 	@ export ${ENV} && env ${SEP};
 
 start s: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d ${IMAGE}
 
 start-fg sf: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
-	${DCOMPOSE} -f ${COMPOSE_TARGET} up
+	${DCOMPOSE} -f ${COMPOSE_TARGET} up ${IMAGE}
 
 start-bg sb: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the background, streaming output to terminal.
-	(${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up &)
+	(${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up ${IMAGE} &)
 
 stop d: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the current project services on the current target.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} stop ${IMAGE}
 
 stop-all da: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the all project services on the current target. including orphans.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down
+
+stop-clean dc: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the all project services on the current target. including orphans.
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down ${IMAGE} --remove-orphans
 
 restart r: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Restart the project services in the foreground.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} restart ${IMAGE}
@@ -479,7 +484,7 @@ current-target ctr: ${COMPOSE_TARGET} ${ENV_LOCK} ## Get the current target.
 	@ [[ "${TARGET}" != "" ]] || (echo "No target set." && false)
 	@ echo ${TARGET}
 
-list-images li:${ENV_LOCK} ${PREBUILD}## List available images from current target.
+list-images li: ${ENV_LOCK} ${PREBUILD}## List available images from current target.
 	${WHILE_IMAGES} \
 		echo $$(docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH) \
 		$$(docker image inspect --format="{{ .Size }}" $$IMAGE_HASH  \
@@ -502,11 +507,11 @@ pull-images pli: ${ENV_LOCK} ${PREBUILD} ## Pull remotely hosted images.
 hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 	@ git config core.hooksPath githooks
 
-run: ${PREBUILD} ${GENERABLE}## CMD 'SERVICE COMMAND' Run a command in a given service's container.
+run: ${PREBUILD} ${GENERABLE} ## CMD 'SERVICE COMMAND' Run a command in a given service's container.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
 		 ${PASS_ENV} ${CMD}
 
-bash sh: ${PREBUILD} ${GENERABLE}## Get a bash propmpt to an idilic container.
+bash sh: ${PREBUILD} ${GENERABLE} ## Get a bash propmpt to an idilic container.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
 		${PASS_ENV} --entrypoint=bash idilic
 
@@ -518,10 +523,10 @@ composer-update cu: ## Run composer update. Will download docker image if not av
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer update \
 		--ignore-platform-reqs `${ISDEV} || echo "--no-dev"`
 
-composer-dump-autoload cda:## Run composer dump-autoload. Will download composer docker image if not available..
+composer-dump-autoload cda: ## Run composer dump-autoload. Will download composer docker image if not available..
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer dump-autoload
 
-dcompose-config dcc: ${PREBUILD} ${GENERABLE}## Print the current docker-compose configuration.
+dcompose-config dcc: ${PREBUILD} ${GENERABLE} ## Print the current docker-compose configuration.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} config
 
 dcompose-version dcv: ${PREBUILD} ${GENERABLE}## Print the current docker-compose version.
