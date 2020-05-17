@@ -4,46 +4,38 @@ namespace SeanMorris\Ids;
 use \UnexpectedValueException;
 use \SeanMorris\Ids\WrappedMethod;
 use SeanMorris\Ids\Inject\FactoryMethod;
-use \Iterator, \IteratorAggregate, \AppendIterator;
-use \CallbackFilterIterator, \Countable, \Traversible;
+use \CallbackFilterIterator, \Countable, \Traversible, ArrayAccess;
+use \Iterator, \IteratorAggregate, \AppendIterator, SplObjectStorage;
 
+use \SeanMorris\Ids\Collection\Driver;
 use \SeanMorris\Ids\Collection\RankIterator;
-use \SeanMorris\Ids\Collection\CacheReIterator;
 
 use \SeanMorris\Ids\___\BaseCollection;
 
 (new class { use Injectable; })::inject([
+	'FilterIterator' => CallbackFilterIterator::CLASS
+	, 'RankIterator' => RankIterator::CLASS
+	, 'Driver' => Driver::CLASS
+	, 'store'  => SplObjectStorage::CLASS
+	, 'Type'   => NULL
+	, 'lookup' => NULL
+], BaseCollection::CLASS);
 
-	'FilterIterator' => CallbackFilterIterator::class
-	, 'RankIterator' => RankIterator::class
-
-	, 'Store' => \SplObjectStorage::class
-	, 'Type'  => NULL
-
-], \SeanMorris\Ids\___\BaseCollection::class);
-
-abstract class Collection extends BaseCollection implements IteratorAggregate, Countable
+abstract class Collection extends BaseCollection
+	implements IteratorAggregate, ArrayAccess, Countable
 {
 	protected
-		$index , $ranked = [] , $derivedFrom = NULL, $readOnly = FALSE;
+		$driver, $derivedFrom = NULL, $readOnly = FALSE;
 
 	protected static
-		$Type, $Store, $Rank, $RankIterator
-		, $Map, $Filter, $Nullable, $FilterIterator;
+		$Type, $store, $Driver, $lookup, $index = []
+		, $Map, $Nullable, $Filter, $FilterIterator;
 
-	public function __construct(iterable ...$seedLists)
+	public function __construct()
 	{
 		$this->initInjections();
 
-		$this->index = new static::$Store;
-
-		foreach($seedLists as $seedList)
-		{
-			foreach($seedList as $seed)
-			{
-				$this->add($seed);
-			}
-		}
+		$this->driver = new static::$Driver;
 	}
 
 	public static function of(string $type, string $name = null)
@@ -70,15 +62,14 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 			));
 		}
 
-		return $this->index->contains($item);
+		return $this->driver->has($item);
 	}
 
 	public function add(...$items)
 	{
 		if($this->derivedFrom)
 		{
-			$this->derivedFrom->add(...$items);
-			return;
+			return $this->derivedFrom->add(...$items);
 		}
 
 		foreach($items as $item)
@@ -88,16 +79,7 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 				continue;
 			}
 
-			$rank = $this->rank($item);
-
-			if(!isset($this->ranked[$rank]))
-			{
-				$this->ranked[$rank] = new static::$Store;
-			}
-
-			$this->ranked[$rank][$item] = $item;
-
-			$this->index[$item] = (object)['rank' => $rank];
+			$this->driver->add($item);
 		}
 	}
 
@@ -105,22 +87,17 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 	{
 		if($this->derivedFrom)
 		{
-			$this->derivedFrom->remove(...$items);
-			return;
+			return $this->derivedFrom->remove(...$items);
 		}
 
 		foreach($items as $item)
 		{
-			if(!$this->has($item))
+			if(!$this->driver->has($item))
 			{
 				continue;
 			}
 
-			$index = $this->index[$item];
-
-			unset($this->ranked[$index->rank][$item]);
-
-			unset($this->index[$item]);
+			$this->driver->remove($item);
 		}
 	}
 
@@ -128,11 +105,10 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 	{
 		if($this->derivedFrom)
 		{
-			$this->derivedFrom->count();
-			return;
+			return $this->derivedFrom->count();
 		}
 
-		return array_sum(array_map('count', $this->ranked));
+		return $this->driver->count();
 	}
 
 	public function map($callback)
@@ -152,40 +128,37 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 			$nullable = $returnType->allowsNull();
 		}
 
-		$mapped = $collectionClass::inject([
+		$mapper = WrappedMethod::wrap($callback);
 
-			'RankIterator' => $collectionClass::$RankIterator::inject([
-				'map' => WrappedMethod::wrap($callback)
-			])
-
-			, 'Nullable' => $nullable
-
+		$Driver = $collectionClass::$Driver::inject([
+			'map'  => $mapper
 		]);
 
-		$collection = new $mapped;
+		$MappedClass = $collectionClass::inject([
+			'Nullable' => $nullable
+			, 'Driver' => $Driver
+		]);
 
-		$collection->derivedFrom = $this;
+		$mapped = new $MappedClass;
 
-		$collection->index  =& $this->index;
-		$collection->ranked =& $this->ranked;
+		$mapped->driver = $Driver::derive($this->driver);
+		$mapped->derivedFrom = $this;
 
-		return $collection;
+		return $mapped;
 	}
 
 	public function filter($callback)
 	{
-		$filtered = static::inject([
+		$FilteredClass = static::inject([
 			'Filter' => WrappedMethod::wrap($callback)
 		]);
 
-		$collection = new $filtered;
+		$filtered = new $FilteredClass;
+		$filtered->driver = static::$Driver::derive($this->driver);
 
-		$collection->derivedFrom = $this;
+		$filtered->derivedFrom = $this;
 
-		$collection->index  =& $this->index;
-		$collection->ranked =& $this->ranked;
-
-		return $collection;
+		return $filtered;
 	}
 
 	public function reduce($callback)
@@ -200,31 +173,104 @@ abstract class Collection extends BaseCollection implements IteratorAggregate, C
 		return $reduced;
 	}
 
-	protected function rank($item)
-	{
-		return static::$Rank
-			? static::$Rank($item)
-			: 0;
-	}
-
 	public function getIterator()
-    {
-    	$ranks = new static::$RankIterator(...$this->ranked);
+	{
+		$iterator = $this->driver->getIterator();
 
 		if(static::$Filter)
 		{
-			$ranks = new static::$FilterIterator($ranks, static::$Filter);
+			$iterator = new static::$FilterIterator($iterator, static::$Filter);
 		}
 
 		if(static::$Nullable)
 		{
-			$ranks = new static::$FilterIterator($ranks, function($v) {
+			$iterator = new static::$FilterIterator($iterator, function($v) {
 
 				return $v !== NULL;
 
 			});
 		}
 
-    	return $ranks;
-    }
+		return $iterator;
+	}
+
+	public function offsetExists($key)
+	{
+		$lookup = static::lookup($key);
+
+		if($this->driver->has($result))
+		{
+			return $result;
+		}
+
+		return FALSE;
+	}
+
+	public function offsetGet($key)
+	{
+		$result = static::lookup($key);
+
+		if($this->driver->has($result))
+		{
+			return $result;
+		}
+
+		return FALSE;
+	}
+
+	public static function lookup($key)
+	{
+		if(!$lookup = static::$lookup)
+		{
+			throw new \BadMethodCallException(sprintf(
+				'Cannot lookup instace of "%s" on %s without a injected lookup function (%s).'
+				, static::$Type
+				, __FUNCTION__
+				, __CLASS__
+				, get_called_class()
+			));
+		}
+
+		if(!is_scalar($key))
+		{
+			throw new UnexpectedValueException(
+				'Offset must be scalar.'
+			);
+		}
+
+		if(static::$index[ $key ] ?? FALSE)
+		{
+			return static::$index[ $key ];
+		}
+
+		if(!$result = $lookup($key))
+		{
+			return FALSE;
+		}
+
+		static::$index[ $key ] = $result;
+		static::$store[ $result ] = $key;
+
+		return $result;
+	}
+
+	public function offsetSet($offset, $value)
+	{
+		throw new DomainException(sprintf(
+			'Cannot set define/redefine keys on %s (%s).'
+			, __FUNCTION__
+			, __CLASS__
+			, get_called_class()
+		));
+	}
+
+	public function offsetUnset($offset)
+	{
+		throw new DomainException(sprintf(
+			'Cannot set define/redefine keys on %s (%s).'
+			, __FUNCTION__
+			, __CLASS__
+			, get_called_class()
+		));
+	}
 }

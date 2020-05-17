@@ -1,4 +1,4 @@
-#/usr/local/bin bash -x # idilic-passthru
+#/usr/local/bin bash -eux # idilic-passthru
 
 NO_TTY=-T
 

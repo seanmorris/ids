@@ -684,14 +684,14 @@ class Package
 	{
 		$schemaFilename = $this->globalDir() . 'schema.json';
 
-		if(! file_exists($schemaFilename))
+		if(!file_exists($schemaFilename))
 		{
 			return;
 		}
 
 		$schema = json_decode(file_get_contents($schemaFilename));
 
-		if(! $schema)
+		if(!$schema)
 		{
 			throw new \Exception(
 				sprintf('Schema file invalid at %s', $schemaFilename)

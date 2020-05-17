@@ -227,7 +227,7 @@ set_exception_handler(function($exception)
 {
 	global $switches;
 
-	if(php_sapi_name() == 'cli' && ($switches['vv'] ?? FALSE))
+	if(php_sapi_name() == 'cli' && ($switches['v'] ?? $switches['vv'] ?? $switches['vvv'] ?? FALSE))
 	{
 		$renderedException = \SeanMorris\Ids\Log::renderException($exception, FALSE);
 
@@ -237,7 +237,7 @@ set_exception_handler(function($exception)
 	{
 		$renderedException = \SeanMorris\Ids\Log::renderException($exception, FALSE);
 
-		header('Content-type: text/plain');
+		headers_sent() || header('Content-type: text/plain');
 		print $renderedException;
 	}
 
@@ -338,9 +338,25 @@ if(!\SeanMorris\Ids\Settings::read('devmode'))
 	\SeanMorris\Ids\Log::suppress();
 }
 
-foreach(\SeanMorris\Ids\Package::packageDirectories() as $packagename => $directory)
+$packageDirs = \SeanMorris\Ids\Package::packageDirectories();
+
+foreach($packageDirs as $packagename => $directory)
 {
-	$package   = \SeanMorris\Ids\Package::get($packagename);
+	$package = \SeanMorris\Ids\Package::get($packagename);
+
+	$bootFile = $package->packageDir()->file('source/ids.preboot.php');
+
+	if($bootFile->check())
+	{
+		require $bootFile;
+	}
+}
+
+$packageDirs = array_reverse($packageDirs);
+
+foreach($packageDirs as $packagename => $directory)
+{
+	$package = \SeanMorris\Ids\Package::get($packagename);
 
 	$bootFile = $package->packageDir()->file('source/ids.boot.php');
 

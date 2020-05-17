@@ -33,7 +33,7 @@ class PackageTest extends \UnitTestCase
 	{
 		$this->package = \SeanMorris\Ids\Package::get('SeanMorris/Ids');
 
-		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
+		$testSchemaFile = \SeanMorris\Ids\Disk\File::open(
 			$this->package->globalDir() . '_schema.json'
 		);
 
@@ -44,7 +44,7 @@ class PackageTest extends \UnitTestCase
 
 	public function testApplySchema()
 	{
-		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
+		$testSchemaFile = \SeanMorris\Ids\Disk\File::open(
 			$this->package->packageDir()
 			. 'test/data/testApplySchema.json'
 		);
@@ -79,7 +79,7 @@ class PackageTest extends \UnitTestCase
 
 	public function testStoreSchema()
 	{
-		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
+		$testSchemaFile = \SeanMorris\Ids\Disk\File::open(
 			$this->package->packageDir()
 			. 'test/data/testApplySchema.json'
 		);
@@ -92,7 +92,7 @@ class PackageTest extends \UnitTestCase
 
 		$this->package->storeSchema();
 
-		$schemaFile = new \SeanMorris\Ids\Disk\File(
+		$schemaFile = \SeanMorris\Ids\Disk\File::open(
 			$this->package->globalDir() . 'schema.json'
 		);
 
@@ -107,7 +107,7 @@ class PackageTest extends \UnitTestCase
 	{
 		$this->package->storeSchema();
 
-		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
+		$testSchemaFile = \SeanMorris\Ids\Disk\File::open(
 			$this->package->packageDir()
 			. 'test/data/testColumnAddSchema.json'
 		);
@@ -134,7 +134,7 @@ class PackageTest extends \UnitTestCase
 	{
 		$this->package->storeSchema();
 
-		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
+		$testSchemaFile = \SeanMorris\Ids\Disk\File::open(
 			$this->package->packageDir()
 			. 'test/data/testColumnRemoveSchema.json'
 		);

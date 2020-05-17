@@ -1,19 +1,50 @@
 <?php
 namespace SeanMorris\Ids\Disk;
+
+use \BadMethodCallException;
+
 class File
 {
+	protected static $open;
+
 	protected
 		$name
+		, $realName
 		, $originalName
 		, $exists
 		, $readHandle
 		, $writeHandle
+		, $closed = false
 	;
 
-	public function __construct($fileName, $originalName = NULL)
+	public static function open($filename)
 	{
-		$this->name = $fileName;
-		$this->originalName = $originalName;
+		if(isset(static::$open[$filename]))
+		{
+			return static::$open[$filename];
+		}
+
+		static::$open[$filename] = new static($filename);
+
+		return static::$open[$filename];
+	}
+
+	public function close()
+	{
+		if(isset(static::$open[$this->name]))
+		{
+			unset(static::$open[$this->name]);
+		}
+
+		$this->closed = true;
+
+		$this->readHandle  && fclose($this->readHandle);
+		$this->writeHandle && fclose($this->writeHandle);
+	}
+
+	protected function __construct($fileName)
+	{
+		$this->name = $this->realName = $fileName;
 	}
 
 	public function check()
@@ -22,7 +53,7 @@ class File
 
 		if($this->exists)
 		{
-			$this->name = realpath($this->name);
+			$this->realName = realpath($this->name);
 		}
 
 		return $this->exists;
@@ -50,6 +81,16 @@ class File
 
 	public function eof()
 	{
+		if($this->closed)
+		{
+			throw new BadMethodCallException(sprintf(
+			'Cannot call "%s" on CLOSED instace of "%s" (%s).'
+				, __FUNCTION__
+				, __CLASS__
+				, get_called_class()
+			));
+		}
+
 		if(!$this->check())
 		{
 			return TRUE;
@@ -61,6 +102,16 @@ class File
 
 	public function read()
 	{
+		if($this->closed)
+		{
+			throw new BadMethodCallException(sprintf(
+			'Cannot call "%s" on CLOSED instace of "%s" (%s).'
+				, __FUNCTION__
+				, __CLASS__
+				, get_called_class()
+			));
+		}
+
 		list($bytes, $reset) = func_get_args() + [1024, FALSE];
 
 		if(!$this->exists)
@@ -73,12 +124,12 @@ class File
 
 		if($reset)
 		{
-			$this->readHandle = fopen($this->name, 'r');
+			$this->readHandle = fopen($this->realName, 'r');
 		}
 
 		if(!$this->readHandle || $reset)
 		{
-			$this->readHandle = fopen($this->name, 'r');
+			$this->readHandle = fopen($this->realName, 'r');
 		}
 
 		if($bytes)
@@ -89,11 +140,21 @@ class File
 
 	public function write()
 	{
+		if($this->closed)
+		{
+			throw new BadMethodCallException(sprintf(
+			'Cannot call "%s" on CLOSED instace of "%s" (%s).'
+				, __FUNCTION__
+				, __CLASS__
+				, get_called_class()
+			));
+		}
+
 		list($data, $append) = func_get_args() + [NULL, TRUE];
 
 		if(!$this->writeHandle || !$append)
 		{
-			$this->writeHandle = fopen($this->name, $append ? 'a' : 'w');
+			$this->writeHandle = fopen($this->realName, $append ? 'a' : 'w');
 		}
 
 		if($data instanceof static)
@@ -111,17 +172,50 @@ class File
 
 	public function delete()
 	{
-		unlink($this->name);
+		if($this->closed)
+		{
+			throw new BadMethodCallException(sprintf(
+			'Cannot call "%s" on CLOSED instace of "%s" (%s).'
+				, __FUNCTION__
+				, __CLASS__
+				, get_called_class()
+			));
+		}
+
+		unlink($this->realName);
+
+		$this->close();
 	}
 
 	public function slurp()
 	{
-		return file_get_contents($this->name);
+		if($this->closed)
+		{
+			throw new BadMethodCallException(sprintf(
+			'Cannot call "%s" on CLOSED instace of "%s" (%s).'
+				, __FUNCTION__
+				, __CLASS__
+				, get_called_class()
+			));
+		}
+
+		return file_get_contents($this->realName);
 	}
 
 	public function copy($newFileName)
 	{
-		$newFile = new static($newFileName, $this->originalName);
+		if($this->closed)
+		{
+			throw new BadMethodCallException(sprintf(
+			'Cannot call "%s" on CLOSED instace of "%s" (%s).'
+				, __FUNCTION__
+				, __CLASS__
+				, get_called_class()
+			));
+		}
+
+		$newFile = new static($newFileName);
+		$newFile->originalName = $this->originalName;
 		$newFile->write(NULL, FALSE);
 
 		while($chunk = $this->read(1024))
@@ -136,7 +230,7 @@ class File
 
 	public function __toString()
 	{
-		return (string)$this->name;
+		return (string) $this->name;
 	}
 
 	public function subtract($dir)
@@ -156,16 +250,38 @@ class File
 
 	public function age()
 	{
+		if($this->closed)
+		{
+			throw new BadMethodCallException(sprintf(
+			'Cannot call "%s" on CLOSED instace of "%s" (%s).'
+				, __FUNCTION__
+				, __CLASS__
+				, get_called_class()
+			));
+		}
+
 		if(!$this->check())
 		{
 			return PHP_INT_MAX;
 		}
-		return time()-filectime($this->name);
+
+		return time() - filectime($this->realName);
 	}
 
 	public function handle()
 	{
+		if($this->closed)
+		{
+			throw new BadMethodCallException(sprintf(
+			'Cannot call "%s" on CLOSED instace of "%s" (%s).'
+				, __FUNCTION__
+				, __CLASS__
+				, get_called_class()
+			));
+		}
+
 		$this->read(0,0);
+
 		return $this->readHandle;
 	}
 }

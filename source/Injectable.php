@@ -33,7 +33,7 @@ trait Injectable
 				continue;
 			}
 
-			if(ctype_upper($property))
+			if(ctype_upper($property[0]))
 			{
 				$this->$property = $propertyClass;
 				continue;
@@ -174,6 +174,8 @@ trait Injectable
 
 		$placeholders = [];
 
+		$suffixes = [];
+
 		foreach($properties as $property)
 		{
 			$type = method_exists($property, 'getType')
@@ -201,6 +203,7 @@ trait Injectable
 		}
 
 		$placeholders[] = 'protected static $___injections = [];';
+
 		$placeholders[] = sprintf(
 			'protected static $___propMeta = %s;'
 			, var_export($propMeta, true)
@@ -211,6 +214,7 @@ trait Injectable
 			, $shortAlias
 			, $baseHash
 			, implode(' ', $placeholders)
+			, implode(' ', $suffixes)
 		);
 
 		if($alias)
@@ -239,6 +243,16 @@ trait Injectable
 
 			if(isset($propMeta[ $property ]) && $propMeta[ $property ][ 'mask' ] & 1)
 			{
+				if(is_string($injection)
+					&& class_exists($injection)
+					&& ctype_lower($property[0])
+					&& !is_a($injection, WrappedMethod::CLASS, TRUE)
+				){
+					$longName::$$property = new $injection;
+
+					continue;
+				}
+
 				$longName::$$property = $injection;
 			}
 		}
@@ -324,8 +338,9 @@ trait Injectable
 
 	protected static function generateClass($space, $name, $base, $body = NULL)
 	{
-		eval(sprintf(
-			'namespace %s; class %s extends \%s {%s}'
+		eval(sprintf(<<<'EOC'
+			namespace %s; class %s extends \%s {%s}
+			EOC
 			, $space
 			, $name
 			, $base

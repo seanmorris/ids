@@ -4,8 +4,8 @@ namespace SeanMorris\Ids\Collection;
 use \SeanMorris\Ids\Injectable;
 use \AppendIterator, \Iterator;
 
-class RankIterator extends AppendIterator {
-
+class RankIterator extends AppendIterator
+{
 	use Injectable;
 
 	protected static $map;
