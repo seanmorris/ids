@@ -19,13 +19,16 @@ if(file_exists($subidilicFile = getcwd() . '/idilic'))
 
 		if(substr($line, -strlen(IDILIC_PASSTHRU_CODE)) === IDILIC_PASSTHRU_CODE)
 		{
-			fwrite(STDERR, 'Handing off to Docker...');
+			fwrite(STDERR, sprintf(
+				'Handing off to Docker via %s...'
+				, $subidilicFile
+			));
 
-			$subidilic = 'bash -c "' .
+			$subidilic = 'bash -c '. escapeshellarg(
 				escapeshellcmd($subidilicFile)
 				. ' '
-				. implode(' ', array_map('escapeshellarg', $argv))
-				. '"';
+				. implode(' ', array_map('escapeshellarg',$argv))
+			);
 
 			passthru($subidilic, $exitCode);
 

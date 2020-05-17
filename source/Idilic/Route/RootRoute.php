@@ -1242,7 +1242,7 @@ EOT
 		// 	return 'No package supplied.';
 		// }
 
-		$docs   = \SeanMorris\Ids\Documentor::docs($packageName);
+		$docs = \SeanMorris\Ids\Documentor::docs($packageName);
 
 		foreach($docs as $doc)
 		{

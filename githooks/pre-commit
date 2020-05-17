@@ -14,14 +14,14 @@ git diff-index HEAD | grep "^:" | grep ".php" \
 	| while read FILE; do \
 		echo Checking $FILE...;
 		test -f $FILE || continue;
-		echo -ne "\t";
-		php -l $FILE 2>&1;
+		php -l $FILE 2>&1 ;
 		PHP_ERROR=$?;
+		[[ -z "$PHP_ERROR" ]] || echo -ne "\033[1A\033[2K\033[1A\033[2K";
 	done;
 
 set -eu;
 
-[[ ! -z "$PHP_ERROR" ]] && ( \
+[[ -z "$PHP_ERROR" ]] && ( \
 	echo Please correct the above errors before committing.; \
 		exit $PHP_ERROR;\
 	) \

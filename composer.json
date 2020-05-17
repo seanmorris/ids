@@ -11,13 +11,8 @@
 	, "require": {
 	}
 	, "require-dev": {
-		"simpletest/simpletest": "dev-master"
-	}
-	, "dependencies": {}
-	, "devDependencies": {
-		"@babel/cli":"^7.0.0"
-		, "@babel/core":"^7.0.0"
-		, "@babel/minify":"^7.0.0"
+		"SeanMorris/Ksqlc": "dev-master"
+		, "simpletest/simpletest": "dev-master"
 	}
 	, "autoload": {
 		"psr-4": {
