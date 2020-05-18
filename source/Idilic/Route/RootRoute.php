@@ -221,6 +221,7 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 		while($packageName = array_shift($packageList))
 		{
 			$packageName = str_replace('/', '\\', $packageName);
+
 			try
 			{
 				$package = \SeanMorris\Ids\Package::get($packageName);
@@ -233,6 +234,8 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 			}
 
 			$namespace = $package->packageSpace();
+
+			var_dump($packageName,$namespace);continue;
 
 			while($packageList && $packageList[0][0] === '+')
 			{
@@ -283,7 +286,7 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 
 					$testClass = $namespace . '\\Test\\' . $m[1];
 				}
-				else if(class_exists($test))
+				else if(is_string($test) && class_exists($test))
 				{
 					$testClass = $test;
 				}
