@@ -235,8 +235,6 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 
 			$namespace = $package->packageSpace();
 
-			var_dump($packageName,$namespace);continue;
-
 			while($packageList && $packageList[0][0] === '+')
 			{
 				$testList[] = sprintf(
@@ -245,6 +243,8 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 					, substr(array_shift($packageList), 1)
 				);
 			}
+
+			var_dump($testList);continue;
 
 			if(!$testList)
 			{
