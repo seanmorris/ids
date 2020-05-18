@@ -244,8 +244,6 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 				);
 			}
 
-			var_dump($packageName,$testList);continue;
-
 			if(!$testList)
 			{
 				$tests = $package->testDir();
@@ -269,6 +267,8 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 					, $testList
 				);
 			}
+
+			var_dump($packageName,$testList);continue;
 
 			foreach($testList as $test)
 			{
