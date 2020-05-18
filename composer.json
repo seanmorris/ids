@@ -11,7 +11,7 @@
 	, "require": {
 	}
 	, "require-dev": {
-		"SeanMorris/Ksqlc": "dev-master"
+		"seanmorris/ksqlc": "dev-master"
 		, "simpletest/simpletest": "dev-master"
 	}
 	, "autoload": {
