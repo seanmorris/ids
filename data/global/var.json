@@ -54,66 +54,6 @@
     },
     "linker": {
         "links": {
-            "Test@1589758805": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589758857": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589758909": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589758922": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589758971": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589758984": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589759006": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589759094": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589760326": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589760344": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589760567": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589760598": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589760913": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589760970": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589761406": [
-                "testValue",
-                "blah"
-            ]
         },
         "inheritance": {
             "SeanMorris\\Ids\\Mysql\\Statement": [
