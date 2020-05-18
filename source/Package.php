@@ -1036,7 +1036,6 @@ class Package
 
 					while($index = $query->fetchObject())
 					{
-						\SeanMorris\Ids\Log::query('Loaded', $index);
 						if(! isset($exportTables->$table->keys->{$index->Key_name}))
 						{
 							continue;

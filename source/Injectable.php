@@ -33,15 +33,15 @@ trait Injectable
 				continue;
 			}
 
-			if(ctype_upper($property[0]))
-			{
-				$this->$property = $propertyClass;
-				continue;
-			}
-
 			if(isset(static::$___injections[$property]) && !$this->$property)
 			{
 				$propertyClass = static::$___injections[$property];
+
+				if(ctype_upper($property[0]))
+				{
+					$this->$property = $propertyClass;
+					continue;
+				}
 
 				if(is_object($propertyClass) && $propertyClass instanceof FactoryMethod)
 				{
