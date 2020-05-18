@@ -4,9 +4,46 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9a70536e92a8dacbd2d8dee00f588d9c",
+    "content-hash": "2844b32e4c6c771e1e98d55a2981ac47",
     "packages": [],
     "packages-dev": [
+        {
+            "name": "seanmorris/ksqlc",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/seanmorris/ksqlc.git",
+                "reference": "bc01e54a018637633ea491c0d4a8ef9d350cdd1d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/seanmorris/ksqlc/zipball/bc01e54a018637633ea491c0d4a8ef9d350cdd1d",
+                "reference": "bc01e54a018637633ea491c0d4a8ef9d350cdd1d",
+                "shasum": ""
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SeanMorris\\Ksqlc\\Test\\": "test/",
+                    "SeanMorris\\Ksqlc\\": "source/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Sean Morris",
+                    "email": "ksqlc@seanmorr.is"
+                }
+            ],
+            "description": "KSQL Connector for PHP.",
+            "time": "2020-05-17T22:38:24+00:00"
+        },
         {
             "name": "simpletest/simpletest",
             "version": "dev-master",
@@ -91,6 +128,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "seanmorris/ksqlc": 20,
         "simpletest/simpletest": 20
     },
     "prefer-stable": false,
