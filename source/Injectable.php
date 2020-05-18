@@ -338,9 +338,8 @@ trait Injectable
 
 	protected static function generateClass($space, $name, $base, $body = NULL)
 	{
-		eval(sprintf(<<<'EOC'
-			namespace %s; class %s extends \%s {%s}
-			EOC
+		eval(sprintf(
+			'namespace %s; class %s extends \%s {%s}'
 			, $space
 			, $name
 			, $base
