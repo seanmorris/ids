@@ -229,7 +229,6 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 			catch(\Exception $exception)
 			{
 				\SeanMorris\Ids\Log::warn(sprintf('Package %s not found!', $packageName));
-				\SeanMorris\Ids\Log::query(sprintf('Package %s not found!', $packageName));
 				continue;
 			}
 
@@ -291,6 +290,11 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 				else
 				{
 					\SeanMorris\Ids\Log::warn(sprintf('Test %s not found!', $test));
+					continue;
+				}
+
+				if(!is_a($testClass, \UnitTestCase::CLASS, TRUE))
+				{
 					continue;
 				}
 
