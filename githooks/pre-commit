@@ -5,7 +5,9 @@ set -eu;
 # 	[[ ! -z "$VAR" ]] && declare "$VAR";
 # done < <(make @${TARGET} env SEP=-0);
 
-# [[ "$TARGET" == "dev" ]] && set +x;
+# [[ "$TARGET" == "test" ]] && set +x;
+
+echo Checking PHP syntax...;
 
 PHP_ERROR=0;
 
@@ -26,6 +28,8 @@ set -eu;
 		exit $PHP_ERROR;\
 	) \
 	|| echo No php errors found.;
+
+echo Running tests...;
 
 make @test t;
 
