@@ -698,7 +698,7 @@ class Package
 			);
 		}
 
-		if(! isset($schema->revisions))
+		if(!isset($schema->revisions))
 		{
 			$schema->revisions = [];
 		}

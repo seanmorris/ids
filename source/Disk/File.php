@@ -19,14 +19,7 @@ class File
 
 	public static function open($filename)
 	{
-		if(isset(static::$open[$filename]))
-		{
-			return static::$open[$filename];
-		}
-
-		static::$open[$filename] = new static($filename);
-
-		return static::$open[$filename];
+		return new static($filename);
 	}
 
 	public function close()
@@ -42,9 +35,11 @@ class File
 		$this->writeHandle && fclose($this->writeHandle);
 	}
 
-	protected function __construct($fileName)
+	public function __construct($fileName)
 	{
-		$this->name = $this->realName = $fileName;
+		$this->originalName =
+			$this->name     =
+			$this->realName = $fileName;
 	}
 
 	public function check()
@@ -215,7 +210,7 @@ class File
 		}
 
 		$newFile = new static($newFileName);
-		$newFile->originalName = $this->originalName;
+		$newFile->originalName = $this->name;
 		$newFile->write(NULL, FALSE);
 
 		while($chunk = $this->read(1024))
