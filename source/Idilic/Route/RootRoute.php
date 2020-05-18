@@ -268,9 +268,7 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 				);
 			}
 
-			var_dump($packageName,$testList);continue;
-
-			foreach($testList as $test)
+			while($test = array_shift($testList))
 			{
 				if(!$test)
 				{
