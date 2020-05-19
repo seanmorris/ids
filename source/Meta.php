@@ -115,9 +115,9 @@ class Meta
 		foreach ($phpFiles as $phpFile)
 		{
 			$relativePath = preg_replace(
-				sprintf('|^%s|', preg_quote(IDS_ROOT . '/vendor/'))
+				sprintf('|^%s/|', preg_quote(IDS_ROOT))
 				, ''
-				, $phpFile->getPath()
+				, $phpFile->getPathname()
 			);
 
 			foreach($skip as $s)
@@ -132,6 +132,15 @@ class Meta
 				'Scanning file %s'
 				, $relativePath
 			));
+
+			$syntaxCheckCommand = sprintf('php -l %s 2>&1', escapeshellarg($relativePath));
+
+			$checkHandle = popen($syntaxCheckCommand, 'r');
+
+			if($checkHandle)
+			{
+				continue;
+			}
 
 			$aliases = [];
 
@@ -354,8 +363,8 @@ class Meta
 
 		$escapedClassFile = escapeshellarg($classFile);
 
-		exec(sprintf("php -l %s", $escapedClassFile), $out, $statusCode);
+		$success = (bool) popen(sprintf('php -l %s 2>&1', $escapedClassFile));
 
-		return $results[$class] = ($statusCode === 0);
+		return $results[$class] = $success;
 	}
 }

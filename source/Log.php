@@ -772,7 +772,7 @@ class Log
 		if($position->class && $position->function)
 		{
 			return sprintf(
-				"%s::%s\n%s:%s%s"
+				"%s::%s - %s:%s%s"
 				, $position->class
 				, $position->function
 				, $position->file
@@ -783,7 +783,7 @@ class Log
 		else if($position->function)
 		{
 			return sprintf(
-				"%s\n%s:%s%s"
+				"%s - %s:%s%s"
 				, $position->function
 				, $position->file
 				, $position->line ?? '--'
