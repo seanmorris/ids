@@ -189,6 +189,11 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 
 	/** Execute tests for given package. */
 
+	public function test($router)
+	{
+		return $this->runTests($router);
+	}
+
 	public function runTests($router)
 	{
 		if(!$packageList = $router->path()->consumeNodes())

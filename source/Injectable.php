@@ -28,7 +28,7 @@ trait Injectable
 	{
 		foreach(static::$___propMeta as $property => $meta)
 		{
-			if(($meta[ 'mask' ] ?? 0) & 1)
+			if($meta['static'])
 			{
 				continue;
 			}
@@ -184,13 +184,14 @@ trait Injectable
 
 			$propMeta[ $property->name ] = [
 				'mask'       => $property->getModifiers()
+				, 'static'   => $property->isStatic()
 				, 'type'     => $type ? $type->getName()    : NULL
 				, 'internal' => $type ? $type->isBuiltin()  : NULL
 				, 'null'     => $type ? $type->allowsNull() : NULL
 			];
 
 			if(array_key_exists($property->name, $injections)
-				&& $propMeta[ $property->name ][ 'mask' ] & 1
+				&& $propMeta[ $property->name ]['static']
 			){
 				$modifiers = implode(' ', Reflection::getModifierNames($propMeta[ $property->name ][ 'mask' ]));
 
@@ -241,7 +242,7 @@ trait Injectable
 				}
 			}
 
-			if(isset($propMeta[ $property ]) && $propMeta[ $property ][ 'mask' ] & 1)
+			if(isset($propMeta[ $property ]) && $propMeta[ $property ]['static'])
 			{
 				if(is_string($injection)
 					&& class_exists($injection)
