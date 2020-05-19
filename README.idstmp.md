@@ -10,6 +10,17 @@
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/seanmorris/ids.idilic?logo=docker&logoColor=white&color=600&label=ids.idilic%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.idilic) [![Docker Pulls](https://img.shields.io/docker/pulls/seanmorris/ids.server?logo=docker&logoColor=white&color=960&label=ids.server%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.server)
 
+[php 7.4 tests](https://seanmorris-badger.herokuapp.com/circle/seanmorris/ids/build-and-push_7-4?label=php%207.4)
+
+
+[php 7.3 tests](https://seanmorris-badger.herokuapp.com/circle/seanmorris/ids/build-and-push_7-3?label=php%207.3)
+
+
+[php 7.2 tests](https://seanmorris-badger.herokuapp.com/circle/seanmorris/ids/build-and-push_7-2?label=php%207.2)
+
+
+[php 7.1 tests](https://seanmorris-badger.herokuapp.com/circle/seanmorris/ids/build-and-push_7-1?label=php%207.1)
+
 The Ids library provides general domain-primitives for developing web based applications. Routing, requests, modeling configuration, logging, sessions, and database access are all abstracted behind simple, expressive interfaces to efficient and powerful code.
 
 To prevent unexpected behavior, the system is set to die on all errors down to `E_NOTICE`, excluding `E_DEPRECATED` errors generated from the vendor directory.
