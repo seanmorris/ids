@@ -11,8 +11,7 @@
 	, "require": {
 	}
 	, "require-dev": {
-		"seanmorris/ksqlc": "dev-master"
-		, "simpletest/simpletest": "dev-master"
+		"simpletest/simpletest": "dev-master"
 		, "phpunit/phpunit": "^9"
 	}
 	, "autoload": {

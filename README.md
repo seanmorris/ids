@@ -10,7 +10,10 @@
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/seanmorris/ids.idilic?logo=docker&logoColor=white&color=600&label=ids.idilic%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.idilic) [![Docker Pulls](https://img.shields.io/docker/pulls/seanmorris/ids.server?logo=docker&logoColor=white&color=960&label=ids.server%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.server)
 
-[![php 7.4 tests](https://seanmorris-badger.herokuapp.com/circle/seanmorris/ids/build-and-push_7-4?label=php%207.4) ![php 7.3 tests](https://seanmorris-badger.herokuapp.com/circle/seanmorris/ids/build-and-push_7-3?label=php%207.3) ![php 7.2 tests](https://seanmorris-badger.herokuapp.com/circle/seanmorris/ids/build-and-push_7-2?label=php%207.2) ![php 7.1 tests](https://seanmorris-badger.herokuapp.com/circle/seanmorris/ids/build-and-push_7-1?label=php%207.1)](https://app.circleci.com/pipelines/github/seanmorris/ids)
+![php 7.1 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-1?label=php%207.1)
+![php 7.2 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-2?label=php%207.2)
+![php 7.3 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-3?label=php%207.3)
+![php 7.4 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-4?label=php%207.4)
 
 The Ids library provides general domain-primitives for developing web based applications. Routing, requests, modeling configuration, logging, sessions, and database access are all abstracted behind simple, expressive interfaces to efficient and powerful code.
 
@@ -23,13 +26,13 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.17 s (949.4 files/s, 150996.3 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.17 s (970.2 files/s, 154501.5 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                              84           3191            406          13433
-JSON                             12              0              0           3915
-Markdown                          2            926              0           1864
+JSON                             12              0              0           3931
+Markdown                          2            934              0           1872
 YAML                             27            112             14           1113
 make                              2            143              9            584
 SVG                              25              0              3            239
@@ -37,13 +40,13 @@ Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             17             17             23
 HTML                              1              0              0             13
 INI                               3              0              0             11
-JavaScript                        1              0              0              1
 CSS                               1              0              0              1
+JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            164           4398            449          21237
+SUM:                            164           4406            449          21261
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Mon May 18 01:22:58 EDT 2020*
+*built by sean @ Tue May 19 12:59:56 EDT 2020*
 
 ## Installation
 

@@ -54,22 +54,7 @@
     },
     "linker": {
         "links": {
-            "Test@1589771535": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589779381": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589852055": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1589859218": [
-                "testValue",
-                "blah"
-            ]
+
         },
         "inheritance": {
             "SeanMorris\\Ids\\Mysql\\Statement": [
