@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "77b5831e9ba03ec611951127ec896357",
+    "content-hash": "a1ea92d840242defd77cff06d4a58c0d",
     "packages": [],
     "packages-dev": [
         {
@@ -857,12 +857,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/seanmorris/ksqlc.git",
-                "reference": "7027db530558ca7243bfb573ab0fa4d1fac101f0"
+                "reference": "81d27427ac14a2f158ac495606fcbb01ff7b2bd0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/seanmorris/ksqlc/zipball/7027db530558ca7243bfb573ab0fa4d1fac101f0",
-                "reference": "7027db530558ca7243bfb573ab0fa4d1fac101f0",
+                "url": "https://api.github.com/repos/seanmorris/ksqlc/zipball/81d27427ac14a2f158ac495606fcbb01ff7b2bd0",
+                "reference": "81d27427ac14a2f158ac495606fcbb01ff7b2bd0",
                 "shasum": ""
             },
             "require": {
@@ -893,7 +893,7 @@
                 "kafka",
                 "ksql"
             ],
-            "time": "2020-05-18T16:52:02+00:00"
+            "time": "2020-05-19T16:56:06+00:00"
         },
         {
             "name": "sebastian/code-unit",
@@ -1821,8 +1821,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "seanmorris/ksqlc": 20,
-        "simpletest/simpletest": 20
+        "simpletest/simpletest": 20,
+        "seanmorris/ksqlc": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
