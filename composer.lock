@@ -857,16 +857,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/seanmorris/ksqlc.git",
-                "reference": "da15b2c941445625253970722f014fe398cdba89"
+                "reference": "7027db530558ca7243bfb573ab0fa4d1fac101f0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/seanmorris/ksqlc/zipball/da15b2c941445625253970722f014fe398cdba89",
-                "reference": "da15b2c941445625253970722f014fe398cdba89",
+                "url": "https://api.github.com/repos/seanmorris/ksqlc/zipball/7027db530558ca7243bfb573ab0fa4d1fac101f0",
+                "reference": "7027db530558ca7243bfb573ab0fa4d1fac101f0",
                 "shasum": ""
             },
+            "require": {
+                "php": "^7.0"
+            },
             "require-dev": {
-                "phpunit/phpunit": "^9"
+                "phpunit/phpunit": "^6"
             },
             "type": "library",
             "autoload": {
@@ -886,7 +889,11 @@
                 }
             ],
             "description": "The Asynchronous PHP KSQL Connector",
-            "time": "2020-05-18T02:16:05+00:00"
+            "keywords": [
+                "kafka",
+                "ksql"
+            ],
+            "time": "2020-05-18T16:52:02+00:00"
         },
         {
             "name": "sebastian/code-unit",
