@@ -21,14 +21,14 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.36 s (456.8 files/s, 69163.3 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.17 s (949.4 files/s, 150996.3 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                              84           3191            406          13435
-JSON                             12              0              0           3911
+PHP                              84           3191            406          13433
+JSON                             12              0              0           3915
+Markdown                          2            926              0           1864
 YAML                             27            112             14           1113
-Markdown                          1            463              0            923
 make                              2            143              9            584
 SVG                              25              0              3            239
 Bourne Shell                      4              9              0             40
@@ -38,10 +38,10 @@ INI                               3              0              0             11
 JavaScript                        1              0              0              1
 CSS                               1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            163           3935            449          20294
+SUM:                            164           4398            449          21237
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Sat May 16 19:08:48 EDT 2020*
+*built by sean @ Mon May 18 01:22:58 EDT 2020*
 
 ## Installation
 

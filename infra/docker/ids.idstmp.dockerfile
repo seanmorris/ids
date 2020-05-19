@@ -55,7 +55,6 @@ RUN set -eux;               \
 	apt-get remove -y software-properties-common \
 		apache2-bin         \
 		apt-transport-https \
-		ca-certificates     \
 		gnupg               \
 		lsb-release         \
 		perl                \
