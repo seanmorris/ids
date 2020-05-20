@@ -131,7 +131,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -143,7 +144,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -156,7 +158,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -168,7 +171,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -180,7 +184,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -192,7 +197,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -215,7 +221,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -237,7 +244,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -259,7 +267,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -281,7 +290,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -303,7 +313,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -315,7 +326,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -327,7 +339,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -339,7 +352,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -351,7 +365,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -363,7 +378,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -375,7 +391,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -387,7 +404,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -399,7 +417,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -411,7 +430,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -423,7 +443,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -435,7 +456,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -447,7 +469,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -459,7 +482,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -471,7 +495,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -483,7 +508,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -497,7 +523,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -511,7 +538,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -525,7 +553,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -539,7 +568,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -554,7 +584,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -569,7 +600,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -584,7 +616,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -599,7 +632,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -614,7 +648,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -629,7 +664,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -644,7 +680,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -659,7 +696,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -674,7 +712,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
@@ -689,7 +728,8 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
-    resourceClass: xlarge
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
       - install-composer
