@@ -161,7 +161,7 @@ YQ=${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm \
 PASS_ENV=$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /')
 
 define WHILE_IMAGES ## %frag Loop over images. Provides $$IMAGE_HASH. Finish with "done;"
-docker images ${REPO}/${PROJECT}.*:${TAG} -q | while read IMAGE_HASH; do
+docker images ${REPO}/${PROJECT}.*:${TAG} --format "{{ index .Repository }} {{ index .ID }}" | while read IMAGE_NAME IMAGE_HASH; do
 endef
 
 define WHILE_TAGS ## %frag Loop over tags. Provides $$TAG_NAME and $$IMAGE_HASH. Finish with "done;done;"
@@ -395,23 +395,17 @@ IMAGE?=
 build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start ${IMAGE}
-	@ ${WHILE_IMAGES}                           \
-		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
-		| while read IMAGE_NAME; do                                          \
-			IMAGE_BASENAME=`basename "$$IMAGE_NAME" | sed "s/\:.*\$$//"`;    \
-			echo ${REPO}/$$IMAGE_BASENAME;                                   \
-			                                                                 \
-			echo "original:$$IMAGE_HASH ${REPO}/$$IMAGE_BASENAME":${TAG};              \
-			                                                                 \
-			docker tag "$$IMAGE_HASH" ${REPO}/"$$IMAGE_BASENAME":latest${SUFFIX}${DBRANCH};   \
-			echo "  latest:$$IMAGE_HASH ${REPO}/$$IMAGE_BASENAME":latest${SUFFIX}${DBRANCH};  \
-			                                                                 \
-			docker tag "$$IMAGE_HASH" ${REPO}/"$$IMAGE_BASENAME":${HASH}${SUFFIX}${DBRANCH};  \
-			echo "    hash:$$IMAGE_HASH ${REPO}/$$IMAGE_BASENAME":${HASH}${SUFFIX}${DBRANCH}; \
-			                                                                 \
-			docker tag "$$IMAGE_HASH" ${REPO}/"$$IMAGE_BASENAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH};  \
-			echo "    date:$$IMAGE_HASH ${REPO}/$$IMAGE_BASENAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
-		done; \
+	@ ${WHILE_IMAGES} \
+		echo "original:$$IMAGE_HASH $$IMAGE_NAME":${TAG};                \
+		                                                                 \
+		docker tag "$$IMAGE_HASH" "$$IMAGE_NAME":latest${SUFFIX}${DBRANCH};   \
+		echo "  latest:$$IMAGE_HASH $$IMAGE_NAME":latest${SUFFIX}${DBRANCH};  \
+		                                                                 \
+		docker tag "$$IMAGE_HASH" "$$IMAGE_NAME":${HASH}${SUFFIX}${DBRANCH};  \
+		echo "    hash:$$IMAGE_HASH $$IMAGE_NAME":${HASH}${SUFFIX}${DBRANCH}; \
+		                                                                 \
+		docker tag "$$IMAGE_HASH" "$$IMAGE_NAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH};  \
+		echo "    date:$$IMAGE_HASH $$IMAGE_NAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
 	done;
 
 template-patterns:
@@ -499,7 +493,7 @@ list-tags lt: ## List the images tagged from the current target.
 push-images psi: ${ENV_LOCK} ## Push locally built images.
 	@ echo Pushing ${PROJECT}:${TAG}
 	@ ${WHILE_TAGS} \
-		docker push $$TAG_NAME; \
+		echo $$TAG_NAME; \
 	done;done;
 
 pull-images pli: ${ENV_LOCK} ${PREBUILD} ## Pull remotely hosted images.
