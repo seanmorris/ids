@@ -468,7 +468,7 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo PHP=7.1 make @test+make run CMD="make run CMD=\"make CMD=\\\"make test\\\"\""
+      - run: sudo PHP=7.1 make @test+make run CMD="make run CMD=\"make run CMD=\\\"make test\\\"\""
 
   recursive-test-3_7-2:
     parallelism: 1
@@ -481,7 +481,7 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo PHP=7.2 make @test+make run CMD="make run CMD=\"make CMD=\\\"make test\\\"\""
+      - run: sudo PHP=7.2 make @test+make run CMD="make run CMD=\"make run CMD=\\\"make test\\\"\""
 
   recursive-test-3_7-3:
     parallelism: 1
@@ -494,7 +494,7 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo PHP=7.3 make @test+make run CMD="make run CMD=\"make CMD=\\\"make test\\\"\""
+      - run: sudo PHP=7.3 make @test+make run CMD="make run CMD=\"make run CMD=\\\"make test\\\"\""
 
   recursive-test-3_7-4:
     parallelism: 1
@@ -507,7 +507,7 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo PHP=7.4 make @test+make run CMD="make run CMD=\"make CMD=\\\"make test\\\"\""
+      - run: sudo PHP=7.4 make @test+make run CMD="make run CMD=\"make run CMD=\\\"make test\\\"\""
 
   addon-test:
     parallelism: 1
