@@ -136,7 +136,7 @@ jobs:
     steps:
       - checkout
       - install-composer
-      - run: curl https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-1
+      - run: curl https://seanmorris-badger.herokuapp.com/ids/
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: cd ids-project && make @test current-tag build start-bg test
