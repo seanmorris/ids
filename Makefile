@@ -408,6 +408,7 @@ build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
 		echo "    date:$$IMAGE_HASH $$IMAGE_NAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
 	done;
 
+
 template-patterns:
 	@ $(call TEMPLATE_PATTERNS)
 

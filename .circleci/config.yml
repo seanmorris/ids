@@ -130,7 +130,7 @@ jobs:
   subproject-init-and-test:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -141,7 +141,7 @@ jobs:
   subproject-init-and-test_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -153,7 +153,7 @@ jobs:
   subproject-init-and-test_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -164,7 +164,7 @@ jobs:
   subproject-init-and-test_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -175,7 +175,7 @@ jobs:
   subproject-init-and-test_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -186,7 +186,7 @@ jobs:
   self-test:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -208,7 +208,7 @@ jobs:
   self-test_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -229,7 +229,7 @@ jobs:
   self-test_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -250,7 +250,7 @@ jobs:
   self-test_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -271,7 +271,7 @@ jobs:
   self-test_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -292,7 +292,7 @@ jobs:
   recursive-test-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -303,7 +303,7 @@ jobs:
   recursive-test-1_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -314,7 +314,7 @@ jobs:
   recursive-test-1_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -325,7 +325,7 @@ jobs:
   recursive-test-1_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -336,7 +336,7 @@ jobs:
   recursive-test-1_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -347,7 +347,7 @@ jobs:
   recursive-test-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -358,7 +358,7 @@ jobs:
   recursive-test-2_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -369,7 +369,7 @@ jobs:
   recursive-test-2_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -380,7 +380,7 @@ jobs:
   recursive-test-2_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -391,7 +391,7 @@ jobs:
   recursive-test-2_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -402,7 +402,7 @@ jobs:
   recursive-test-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -413,7 +413,7 @@ jobs:
   recursive-test-3_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -424,7 +424,7 @@ jobs:
   recursive-test-3_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -435,7 +435,7 @@ jobs:
   recursive-test-3_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -446,7 +446,7 @@ jobs:
   recursive-test-3_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -457,7 +457,7 @@ jobs:
   addon-test:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -470,7 +470,7 @@ jobs:
   addon-test_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -483,7 +483,7 @@ jobs:
   addon-test_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -496,7 +496,7 @@ jobs:
   addon-test_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -509,7 +509,7 @@ jobs:
   addon-test_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -523,7 +523,7 @@ jobs:
   build-and-push:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -537,7 +537,7 @@ jobs:
   build-and-push_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -551,7 +551,7 @@ jobs:
   build-and-push_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -565,7 +565,7 @@ jobs:
   build-and-push_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -579,7 +579,7 @@ jobs:
   build-and-push_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -593,7 +593,7 @@ jobs:
   build-and-push-addons:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -607,7 +607,7 @@ jobs:
   build-and-push-addons_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -621,7 +621,7 @@ jobs:
   build-and-push-addons_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -635,7 +635,7 @@ jobs:
   build-and-push-addons_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
@@ -649,7 +649,7 @@ jobs:
   build-and-push-addons_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     steps:
       - checkout
       - install-composer
