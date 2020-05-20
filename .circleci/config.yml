@@ -131,6 +131,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -142,6 +143,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -154,6 +156,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -165,6 +168,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -176,6 +180,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -187,6 +192,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -209,6 +215,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -230,6 +237,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -251,6 +259,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -272,6 +281,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -293,6 +303,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -304,6 +315,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -315,6 +327,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -326,6 +339,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -337,6 +351,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -348,6 +363,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -359,6 +375,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -370,6 +387,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -381,6 +399,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -392,6 +411,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -403,6 +423,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -414,6 +435,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -425,6 +447,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -436,6 +459,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -447,6 +471,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -458,6 +483,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -471,6 +497,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -484,6 +511,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -497,6 +525,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -510,6 +539,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -524,6 +554,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -538,6 +569,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -552,6 +584,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -566,6 +599,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -580,6 +614,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -594,6 +629,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -608,6 +644,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -622,6 +659,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -636,6 +674,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
@@ -650,6 +689,7 @@ jobs:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
+    resourceClass: xlarge
     steps:
       - checkout
       - install-composer
