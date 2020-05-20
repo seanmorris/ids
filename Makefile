@@ -393,18 +393,27 @@ build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
 	@ ${WHILE_IMAGES}                           \
 		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
 		| while read IMAGE_NAME; do                                          \
-			IMAGE_PREFIX=`echo "$$IMAGE_NAME" | sed "s/\:.*\$$//"`;          \
+			IMAGE_BASENAME=`basename "$$IMAGE_NAME" | sed "s/\:.*\$$//"`;    \
+			echo ${REPO}/$$IMAGE_BASENAME;                                   \
 			                                                                 \
-			echo "original:$$IMAGE_HASH $$IMAGE_PREFIX":${TAG};              \
+			echo "original:$$IMAGE_HASH ${REPO}/$$IMAGE_BASENAME":${TAG};              \
 			                                                                 \
-			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":latest${SUFFIX}${DBRANCH};   \
-			echo "  latest:$$IMAGE_HASH $$IMAGE_PREFIX":latest${SUFFIX}${DBRANCH};  \
+			docker tag "$$IMAGE_HASH" ${REPO}/"$$IMAGE_BASENAME":latest${SUFFIX}${DBRANCH};   \
+			echo "  latest:$$IMAGE_HASH ${REPO}/$$IMAGE_BASENAME":latest${SUFFIX}${DBRANCH};  \
 			                                                                 \
-			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":${HASH}${SUFFIX}${DBRANCH};  \
-			echo "    hash:$$IMAGE_HASH $$IMAGE_PREFIX":${HASH}${SUFFIX}${DBRANCH}; \
+			docker tag "$$IMAGE_HASH" ${REPO}/"$$IMAGE_BASENAME":${HASH}${SUFFIX}${DBRANCH};  \
+			echo "    hash:$$IMAGE_HASH ${REPO}/$$IMAGE_BASENAME":${HASH}${SUFFIX}${DBRANCH}; \
 			                                                                 \
-			docker tag "$$IMAGE_HASH" "$$IMAGE_PREFIX":`date '+%Y%m%d'`${SUFFIX}${DBRANCH};  \
-			echo "    date:$$IMAGE_HASH $$IMAGE_PREFIX":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
+			docker tag "$$IMAGE_HASH" ${REPO}/"$$IMAGE_BASENAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH};  \
+			echo "    date:$$IMAGE_HASH ${REPO}/$$IMAGE_BASENAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
+		done; \
+	done;
+
+while:
+	${WHILE_IMAGES}                           \
+		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
+		| while read IMAGE_NAME; do                                          \
+
 		done; \
 	done;
 
