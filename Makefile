@@ -411,8 +411,6 @@ build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
 			                                                                 \
 			docker tag "$$IMAGE_HASH" ${REPO}/"$$IMAGE_BASENAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH};  \
 			echo "    date:$$IMAGE_HASH ${REPO}/$$IMAGE_BASENAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
-		done; \
-	done;
 
 template-patterns:
 	@ $(call TEMPLATE_PATTERNS)
