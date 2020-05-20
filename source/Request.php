@@ -4,6 +4,7 @@ class Request
 {
 	protected
 		$uri
+		, $method
 		, $host
 		, $scheme
 		, $port
@@ -11,6 +12,7 @@ class Request
 		, $get
 		, $post
 		, $files
+		, $headers
 		, $context
 		, $switches
 	;
@@ -47,6 +49,11 @@ class Request
 		if(!$this->switches)
 		{
 			$this->switches = [];
+		}
+
+		if(!$this->headers)
+		{
+			$this->headers = [];
 		}
 	}
 
@@ -141,7 +148,12 @@ class Request
 
 	public function method()
 	{
-		return $_SERVER['REQUEST_METHOD'] ?? NULL;
+		if($this->method)
+		{
+			return $this->method;
+		}
+
+		return $this->method = $_SERVER['REQUEST_METHOD'] ?? NULL;
 	}
 
 	public function files()
@@ -206,6 +218,18 @@ class Request
 		});
 
 		return $organizedFiles;
+	}
+
+	public function headers($name = NULL)
+	{
+		if(!$this->headers)
+		{
+			$this->headers = getallheaders();
+		}
+
+		return $name
+			? ($this->headers[$name] ?? NULL)
+			: ($this->headers ?? []);
 	}
 
 	public function switches(...$args)

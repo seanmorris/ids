@@ -32,7 +32,7 @@ class ModelTest extends \UnitTestCase
 			}
 		}
 
-		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
+		$testSchemaFile = \SeanMorris\Ids\Disk\File::open(
 			$this->package->packageDir()
 			. 'test/data/testModelSchema.json'
 		);
@@ -54,7 +54,7 @@ class ModelTest extends \UnitTestCase
 
 	public function tearDown()
 	{
-		$testSchemaFile = new \SeanMorris\Ids\Disk\File(
+		$testSchemaFile = \SeanMorris\Ids\Disk\File::open(
 			$this->package->globalDir() . '_schema.json'
 		);
 

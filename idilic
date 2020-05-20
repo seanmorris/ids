@@ -1,4 +1,4 @@
-#/usr/local/bin bash -x # idilic-passthru
+#/usr/local/bin bash -eux # idilic-passthru
 
 NO_TTY=-T
 
@@ -6,4 +6,4 @@ if [[ "$1" == "repl" ]]; then
 	NO_TTY=
 fi
 
-export NO_TTY=$NO_TTY CMD="idilic $@" && make run
+export NO_TTY=$NO_TTY CMD="idilic ${@@Q}" && make run

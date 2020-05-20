@@ -111,7 +111,10 @@ endif
 DOCKER   :=$(shell which docker)
 
 DEVTARGETS=test dev
-ISDEV     =echo "${DEVTARGETS}" | grep -wq "${TARGET}"
+
+ifeq (${ISDEV},)
+	ISDEV?=echo "${DEVTARGETS}" | grep -wq "${TARGET}"
+endif
 
 define RANDOM_STRING ## %func Generate a random 32 character alphanumeric string.
 cat /dev/urandom         \
@@ -158,7 +161,7 @@ YQ=${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm \
 PASS_ENV=$$(env -i ${ENV} bash -c "compgen -e" | sed 's/^/-e /')
 
 define WHILE_IMAGES ## %frag Loop over images. Provides $$IMAGE_HASH. Finish with "done;"
-docker images ${REPO}/${PROJECT}.*:${TAG} -q | while read IMAGE_HASH; do
+docker images ${REPO}/${PROJECT}.*:${TAG} --format "{{ index .Repository }} {{ index .ID }}" | while read IMAGE_NAME IMAGE_HASH; do
 endef
 
 define WHILE_TAGS ## %frag Loop over tags. Provides $$TAG_NAME and $$IMAGE_HASH. Finish with "done;done;"
@@ -253,13 +256,15 @@ $(eval DCOMPOSE_TARGET_STACK:= -f ${COMPOSE_TARGET} ${DCOMPOSE_FILES})
 $(eval DCOMPOSE_BASE_STACK  := -f ${COMPOSE_TARGET} -f ${COMPOSE_BASE})
 endef
 
+IDS_DB_ROOT_PASSWORD?=
+
 define ENV ## %var List of environment vars to pass to sub commands.
 REPO=${REPO} MAIN_ENV=${MAIN_ENV} MAIN_DLT=${MAIN_DLT} D_GID=${D_GID} \
 ROOTDIR=${ROOTDIR} PROJECT=${PROJECT} TARGET=$${TARGET:=${TARGET}}    \
 TAG=$${TAG:=${TAG}} BRANCH=${BRANCH} PROJECT_FULLNAME=${FULLNAME}     \
 OUTROOTDIR=${OUTROOTDIR} OUTCOREDIR=${OUTCOREDIR} D_UID=${D_UID}      \
 TRGT_ENV=${TRGT_ENV} TRGT_DLT=${TRGT_DLT} DEBIAN=${BASELINUX}         \
-IDS_DATABASES_ROOT_PASSWORD=${IDS_DATABASES_ROOT_PASSWORD}            \
+IDS_DB_ROOT_PASSWORD=${IDS_DB_ROOT_PASSWORD}            \
 DOCKER=${DOCKER} DHOST_IP=${DHOST_IP} COREDIR=${COREDIR}              \
 CORERELDIR=${CORERELDIR} ROOTRELDIR=${ROOTRELDIR}                     \
 DEBIAN_ESC=${DEBIAN_ESC} PHP=${PHP}
@@ -390,32 +395,19 @@ IMAGE?=
 build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start ${IMAGE}
-	@ ${WHILE_IMAGES}                           \
-		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
-		| while read IMAGE_NAME; do                                          \
-			IMAGE_BASENAME=`basename "$$IMAGE_NAME" | sed "s/\:.*\$$//"`;    \
-			echo ${REPO}/$$IMAGE_BASENAME;                                   \
-			                                                                 \
-			echo "original:$$IMAGE_HASH ${REPO}/$$IMAGE_BASENAME":${TAG};              \
-			                                                                 \
-			docker tag "$$IMAGE_HASH" ${REPO}/"$$IMAGE_BASENAME":latest${SUFFIX}${DBRANCH};   \
-			echo "  latest:$$IMAGE_HASH ${REPO}/$$IMAGE_BASENAME":latest${SUFFIX}${DBRANCH};  \
-			                                                                 \
-			docker tag "$$IMAGE_HASH" ${REPO}/"$$IMAGE_BASENAME":${HASH}${SUFFIX}${DBRANCH};  \
-			echo "    hash:$$IMAGE_HASH ${REPO}/$$IMAGE_BASENAME":${HASH}${SUFFIX}${DBRANCH}; \
-			                                                                 \
-			docker tag "$$IMAGE_HASH" ${REPO}/"$$IMAGE_BASENAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH};  \
-			echo "    date:$$IMAGE_HASH ${REPO}/$$IMAGE_BASENAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
-		done; \
+	@ ${WHILE_IMAGES} \
+		echo "original:$$IMAGE_HASH $$IMAGE_NAME":${TAG};                \
+		                                                                 \
+		docker tag "$$IMAGE_HASH" "$$IMAGE_NAME":latest${SUFFIX}${DBRANCH};   \
+		echo "  latest:$$IMAGE_HASH $$IMAGE_NAME":latest${SUFFIX}${DBRANCH};  \
+		                                                                 \
+		docker tag "$$IMAGE_HASH" "$$IMAGE_NAME":${HASH}${SUFFIX}${DBRANCH};  \
+		echo "    hash:$$IMAGE_HASH $$IMAGE_NAME":${HASH}${SUFFIX}${DBRANCH}; \
+		                                                                 \
+		docker tag "$$IMAGE_HASH" "$$IMAGE_NAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH};  \
+		echo "    date:$$IMAGE_HASH $$IMAGE_NAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
 	done;
 
-while:
-	${WHILE_IMAGES}                           \
-		docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH \
-		| while read IMAGE_NAME; do                                          \
-
-		done; \
-	done;
 
 template-patterns:
 	@ $(call TEMPLATE_PATTERNS)
@@ -449,19 +441,22 @@ env e: ## Export the environment as seen from MAKE.
 	@ export ${ENV} && env ${SEP};
 
 start s: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d ${IMAGE}
 
 start-fg sf: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
-	${DCOMPOSE} -f ${COMPOSE_TARGET} up
+	${DCOMPOSE} -f ${COMPOSE_TARGET} up ${IMAGE}
 
 start-bg sb: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the background, streaming output to terminal.
-	(${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up &)
+	(${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up ${IMAGE} &)
 
 stop d: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the current project services on the current target.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} stop ${IMAGE}
 
 stop-all da: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the all project services on the current target. including orphans.
-	${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down
+
+stop-clean dc: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the all project services on the current target. including orphans.
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down ${IMAGE} --remove-orphans
 
 restart r: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Restart the project services in the foreground.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} restart ${IMAGE}
@@ -485,7 +480,7 @@ current-target ctr: ${COMPOSE_TARGET} ${ENV_LOCK} ## Get the current target.
 	@ [[ "${TARGET}" != "" ]] || (echo "No target set." && false)
 	@ echo ${TARGET}
 
-list-images li:${ENV_LOCK} ${PREBUILD}## List available images from current target.
+list-images li: ${ENV_LOCK} ${PREBUILD}## List available images from current target.
 	${WHILE_IMAGES} \
 		echo $$(docker image inspect --format="{{ index .RepoTags 0 }}" $$IMAGE_HASH) \
 		$$(docker image inspect --format="{{ .Size }}" $$IMAGE_HASH  \
@@ -499,7 +494,7 @@ list-tags lt: ## List the images tagged from the current target.
 push-images psi: ${ENV_LOCK} ## Push locally built images.
 	@ echo Pushing ${PROJECT}:${TAG}
 	@ ${WHILE_TAGS} \
-		docker push $$TAG_NAME; \
+		echo $$TAG_NAME; \
 	done;done;
 
 pull-images pli: ${ENV_LOCK} ${PREBUILD} ## Pull remotely hosted images.
@@ -508,11 +503,11 @@ pull-images pli: ${ENV_LOCK} ${PREBUILD} ## Pull remotely hosted images.
 hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 	@ git config core.hooksPath githooks
 
-run: ${PREBUILD} ${GENERABLE}## CMD 'SERVICE COMMAND' Run a command in a given service's container.
+run: ${PREBUILD} ${GENERABLE} ## CMD 'SERVICE COMMAND' Run a command in a given service's container.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
 		 ${PASS_ENV} ${CMD}
 
-bash sh: ${PREBUILD} ${GENERABLE}## Get a bash propmpt to an idilic container.
+bash sh: ${PREBUILD} ${GENERABLE} ## Get a bash propmpt to an idilic container.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
 		${PASS_ENV} --entrypoint=bash idilic
 
@@ -524,10 +519,10 @@ composer-update cu: ## Run composer update. Will download docker image if not av
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer update \
 		--ignore-platform-reqs `${ISDEV} || echo "--no-dev"`
 
-composer-dump-autoload cda:## Run composer dump-autoload. Will download composer docker image if not available..
+composer-dump-autoload cda: ## Run composer dump-autoload. Will download composer docker image if not available..
 	@ ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp composer dump-autoload
 
-dcompose-config dcc: ${PREBUILD} ${GENERABLE}## Print the current docker-compose configuration.
+dcompose-config dcc: ${PREBUILD} ${GENERABLE} ## Print the current docker-compose configuration.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} config
 
 dcompose-version dcv: ${PREBUILD} ${GENERABLE}## Print the current docker-compose version.
@@ -539,8 +534,7 @@ ${ENV_LOCK}: ${VAR_FILE} ### Lock the environment target
 	) && {                                          \
 		echo -e >&2 "\e[2m"Env changed, need to check dependencies..."\e[0m"; \
 		 ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
-			composer install                        \
-			--ignore-platform-reqs                  \
+			composer install --ignore-platform-reqs \
 			`${ISDEV} || echo "--no-dev"`;          \
 	} || true;
 
@@ -586,11 +580,13 @@ ${ROOTDIR}config/.env%:
 infra/compose/%yml: ${ROOTDIR}.env ${ROOTDIR}.env.default ${ROOTDIR}.env_$${TARGET} ${COREDIR}.env_$${TARGET}.default ${ENV_LOCK}
 	@ test -f infra/compose/${TARGET}.yml;
 
-help: help-all ## print this message
-	@ echo "Help for SeanMorris/Ids v0.0.0"
+help: about help-all ## print this message
 
 help-%:
 	@ $(eval HELPTYPE:= echo ${@} | sed 's/.+-//' )
+	@ echo ""
+	@ echo "usage: make [@target] COMMAND [VAR='VAL']"
+	@ echo ""
 	@ $(foreach MKFL,${MAKEFILE_LIST},  \
 		cat "${MKFL}" | grep '\:.*\#\#' | grep -v '###' \
 		| while read -r LINE; do        \
@@ -606,6 +602,18 @@ help-%:
 	)
 	@ echo SeanMorris/Ids/Makefile generated its own helpfile @`date`
 
+about: ## print author, copyright & github location.
+	@ echo "SeanMorris/Ids v0.0.0"
+	@ echo "https://github.com/seanmorris/ids"
+	@ echo ""
+	@ echo "Ids © 2011 - 2020 Sean Morris"
+	@ echo ""
+	@ echo "All code in this package is released under"
+	@ echo "the Apache-2.0 License and is free for"
+	@ echo "use, public and private."
+	@ echo ""
+	@ echo "See LICENSE for the full terms."
+
 .SECONDEXPANSION:
 
 templates: ${GENERABLE}
@@ -613,7 +621,7 @@ templates: ${GENERABLE}
 ${GENERABLE}: $$(call GEN_TO_TEMP,$${@}) ${ENV_LOCK} ${ENVBUILD}
 	@ echo -e >&2 "\e[2m"Rebuilding template `basename ${@}`"\e[0m";
 	@ test -w ${@} || test -w `dirname ${@}`;
-	export TEMPLATE_SOURCE="$(call IMPORT_TEMPLATE,cat ${<})" \
+	@ export TEMPLATE_SOURCE="$(call IMPORT_TEMPLATE,cat ${<})" \
 	&& echo -en "$$TEMPLATE_SOURCE" >${@}
 
 # 	export TEMPLATE_SOURCE="$(call SHELLOUT,cat ${<})" \

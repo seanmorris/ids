@@ -297,7 +297,6 @@ class SelectStatement extends WhereStatement
 				. ' ';
 		}
 
-
 		return sprintf(
 			"SELECT\n%s\n\nFROM\n%s\n\nWHERE\n%s"
 			, $columnString

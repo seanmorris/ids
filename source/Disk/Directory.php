@@ -58,7 +58,7 @@ class Directory extends File
 		if(in_array($filename, ['.', '..']))
 		{
 			return $this->read();
-		}		
+		}
 
 		$filename = realpath($this->name . $filename);
 
@@ -68,7 +68,7 @@ class Directory extends File
 		}
 		else
 		{
-			$file = new File($filename);
+			$file = File::open($filename);
 		}
 
 		return $file;
@@ -86,7 +86,7 @@ class Directory extends File
 
 		if(!file_exists($name) && !mkdir($name, $permissions, $recursive))
 		{
-			return false;			
+			return false;
 		}
 
 		return new $class($name);
@@ -129,7 +129,7 @@ class Directory extends File
 			{
 				return new Directory($sub->name . '/');
 			}
-			return new File($sub->name);
+			return File::open($sub->name);
 		}
 
 		return FALSE;
@@ -137,7 +137,7 @@ class Directory extends File
 
 	public function isWritable()
 	{
-		
+
 	}
 
 	public function write(){}

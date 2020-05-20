@@ -124,7 +124,7 @@ class Package
 		$packageName = static::name($package);
 		$packageDir = static::dir($package);
 
-		$packageClass = $packageName . 'Package';
+		$packageClass = $packageName . '\\Package';
 
 		if($packageClass === __CLASS__ || class_exists($packageClass))
 		{
@@ -270,9 +270,9 @@ class Package
 		return $name;
 	}
 
-	public static function dir($package)
+	public static function dir($package = null)
 	{
-		return str_replace('\\', '/', $package ?? static::class);
+		return str_replace('\\', '/', $package ?? static::name());
 	}
 
 	public function packageDir()
@@ -684,21 +684,21 @@ class Package
 	{
 		$schemaFilename = $this->globalDir() . 'schema.json';
 
-		if(! file_exists($schemaFilename))
+		if(!file_exists($schemaFilename))
 		{
 			return;
 		}
 
 		$schema = json_decode(file_get_contents($schemaFilename));
 
-		if(! $schema)
+		if(!$schema)
 		{
 			throw new \Exception(
 				sprintf('Schema file invalid at %s', $schemaFilename)
 			);
 		}
 
-		if(! isset($schema->revisions))
+		if(!isset($schema->revisions))
 		{
 			$schema->revisions = [];
 		}
@@ -811,8 +811,6 @@ class Package
 		}
 
 		$classTables = static::$tables + ['main' => []];
-
-		var_dump($classTables);
 
 		foreach($classTables as $db =>$tables)
 		{
@@ -1038,7 +1036,6 @@ class Package
 
 					while($index = $query->fetchObject())
 					{
-						\SeanMorris\Ids\Log::query('Loaded', $index);
 						if(! isset($exportTables->$table->keys->{$index->Key_name}))
 						{
 							continue;

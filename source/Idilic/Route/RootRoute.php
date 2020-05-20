@@ -7,13 +7,31 @@ namespace SeanMorris\Ids\Idilic\Route;
  * 	-d= or --domain=
  * 		Set the domain for the current command.
  */
-class RootRoute implements \SeanMorris\Ids\Routable
+class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 {
 	function _dynamic($router)
 	{
 		$args = $router->path()->consumeNodes();
 
-		$packageName = $router->match();
+		$input = $router->match();
+
+		if($input[0] === '@')
+		{
+			$method = str_replace('/', '\\', substr($input, 1));
+
+			if($paamayim = strstr($method, '::'))
+			{
+				[$class, $method] = explode('::', $method, 2);
+
+				return $class::$method(...$args);
+			}
+			else
+			{
+				return $method(...$args);
+			}
+		}
+
+		$packageName = $input;
 
 		if(!$packageName)
 		{
@@ -171,6 +189,11 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 	/** Execute tests for given package. */
 
+	public function test($router)
+	{
+		return $this->runTests($router);
+	}
+
 	public function runTests($router)
 	{
 		if(!$packageList = $router->path()->consumeNodes())
@@ -185,39 +208,101 @@ class RootRoute implements \SeanMorris\Ids\Routable
 				, XDEBUG_PATH_BLACKLIST
 				, [realpath(IDS_ROOT . '/vendor/')]
 			);
+
+			$coverageOpts = XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE;
 		}
 
-		$coverageOpts = XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE;
 
 		$relReports = [];
 		$reports    = [];
 		$report     = [];
+		$testList   = [];
+
+		while($packageList && $packageList[0][0] === '+')
+		{
+			$testList[] = substr(array_shift($packageList), 1);
+		}
 
 		while($packageName = array_shift($packageList))
 		{
 			$packageName = str_replace('/', '\\', $packageName);
 
-			$package   = \SeanMorris\Ids\Package::get($packageName);
-			$namespace = $package->packageSpace();
-			$tests     = $package->testDir();
-
-			$testsFound = [];
-
-			while($tests->check() && $test = $tests->read())
+			try
 			{
-				$testsFound[] = $test;
+				$package = \SeanMorris\Ids\Package::get($packageName);
+			}
+			catch(\Exception $exception)
+			{
+				\SeanMorris\Ids\Log::warn(sprintf('Package %s not found!', $packageName));
+				continue;
 			}
 
-			$testsFound = array_reverse($testsFound);
+			$namespace = $package->packageSpace();
 
-			foreach($testsFound as $test)
+			while($packageList && $packageList[0][0] === '+')
 			{
-				if(!preg_match('/(\w+?Test)\.php/', $test->name(), $m))
+				$testList[] = sprintf(
+					'%s\\Test\\%s'
+					, $namespace
+					, substr(array_shift($packageList), 1)
+				);
+			}
+
+			if(!$testList)
+			{
+				$tests = $package->testDir();
+
+				$testList = [];
+
+				while($tests->check() && $test = $tests->read())
+				{
+					$testList[] = $test;
+				}
+
+				$testList = array_reverse($testList);
+			}
+			else
+			{
+				$testList = array_map(
+					function($test)
+					{
+						return str_replace('/', '\\', $test);
+					}
+					, $testList
+				);
+			}
+
+			while($test = array_shift($testList))
+			{
+				if(!$test)
 				{
 					continue;
 				}
 
-				$testClass = $namespace . '\\Test\\' . $m[1];
+				if(!is_string($test))
+				{
+					if(!preg_match('/(\w+?Test)\.php/', $test->name(), $m))
+					{
+						continue;
+					}
+
+					$testClass = $namespace . '\\Test\\' . $m[1];
+				}
+				else if(is_string($test) && class_exists($test))
+				{
+					$testClass = $test;
+				}
+				else
+				{
+					\SeanMorris\Ids\Log::warn(sprintf('Test %s not found!', $test));
+					continue;
+				}
+
+				if(!is_a($testClass, \UnitTestCase::CLASS, TRUE))
+				{
+					continue;
+				}
+
 				$test = new $testClass;
 
 				if(function_exists('xdebug_start_code_coverage'))
@@ -971,10 +1056,6 @@ class RootRoute implements \SeanMorris\Ids\Routable
 		return $package->deleteVar($var);
 	}
 
-	/** Start a RePL. */
-
-
-
 	/** Print project info. */
 
 	public function info()
@@ -1104,11 +1185,6 @@ EOT
 		return print_r($pharPath, 1);
 	}
 
-	public static function parseDoc()
-	{
-
-	}
-
 	/** Access docker. */
 
 	public function docker($router)
@@ -1183,8 +1259,6 @@ EOT
 		}
 	}
 
-
-
 	/** Generate documentation for a given package.*/
 
 	public function document($router)
@@ -1197,13 +1271,15 @@ EOT
 		// 	return 'No package supplied.';
 		// }
 
-		$docs   = \SeanMorris\Ids\Documentor::docs($packageName);
+		$docs = \SeanMorris\Ids\Documentor::docs($packageName);
 
 		foreach($docs as $doc)
 		{
 			print json_encode([$doc]) . PHP_EOL;
 		}
 	}
+
+	/** print phpinfo() */
 
 	public function phpinfo()
 	{
