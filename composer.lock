@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a1ea92d840242defd77cff06d4a58c0d",
+    "content-hash": "85860034eeffe06734876cac3a7bbc7f",
     "packages": [],
     "packages-dev": [
         {
@@ -850,50 +850,6 @@
                 }
             ],
             "time": "2020-04-30T06:32:53+00:00"
-        },
-        {
-            "name": "seanmorris/ksqlc",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/seanmorris/ksqlc.git",
-                "reference": "81d27427ac14a2f158ac495606fcbb01ff7b2bd0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/seanmorris/ksqlc/zipball/81d27427ac14a2f158ac495606fcbb01ff7b2bd0",
-                "reference": "81d27427ac14a2f158ac495606fcbb01ff7b2bd0",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^6"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "SeanMorris\\Ksqlc\\Test\\": "test/",
-                    "SeanMorris\\Ksqlc\\": "source/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "Sean Morris",
-                    "email": "ksqlc@seanmorr.is"
-                }
-            ],
-            "description": "The Asynchronous PHP KSQL Connector",
-            "keywords": [
-                "kafka",
-                "ksql"
-            ],
-            "time": "2020-05-19T16:56:06+00:00"
         },
         {
             "name": "sebastian/code-unit",
@@ -1821,8 +1777,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "simpletest/simpletest": 20,
-        "seanmorris/ksqlc": 20
+        "simpletest/simpletest": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

@@ -53,7 +53,12 @@
         }
     },
     "linker": {
-        "links": {},
+        "links": {
+            "Test@1590025077": [
+                "testValue",
+                "blah"
+            ]
+        },
         "inheritance": {
             "PharIo\\Version\\AbstractVersionConstraint": [
                 "PharIo\\Version\\AndVersionConstraintGroup",
@@ -558,15 +563,15 @@
             ],
             "SeanMorris\\Ids\\Collection\\Driver": [
                 "SeanMorris\\Ids\\Collection\\RankedDriver",
-                "SeanMorris\\Ids\\Collection\\RankedDriver"
+                "SeanMorris\\Ids\\Collection\\ReadOnlyDriver"
             ],
             "SeanMorris\\Ids\\___\\BaseDriver": [
                 "SeanMorris\\Ids\\Collection\\RankedDriver",
-                "SeanMorris\\Ids\\Collection\\RankedDriver"
+                "SeanMorris\\Ids\\Collection\\ReadOnlyDriver"
             ],
-            "class@anonymous\u0000\/app\/source\/Collection\/Driver.php0x7f306cee016d": [
+            "class@anonymous\u0000\/app\/source\/Collection\/Driver.php0x7f3bbd62c16d": [
                 "SeanMorris\\Ids\\Collection\\RankedDriver",
-                "SeanMorris\\Ids\\Collection\\RankedDriver"
+                "SeanMorris\\Ids\\Collection\\ReadOnlyDriver"
             ],
             "SeanMorris\\Ids\\Http\\HttpException": [
                 "SeanMorris\\Ids\\Http\\Http303",
@@ -951,7 +956,7 @@
                 "SeanMorris\\Ids\\AssetManager",
                 "SeanMorris\\Ids\\ChildProcess",
                 "SeanMorris\\Ids\\Collection\\RankedDriver",
-                "SeanMorris\\Ids\\Collection\\RankedDriver",
+                "SeanMorris\\Ids\\Collection\\ReadOnlyDriver",
                 "SeanMorris\\Ids\\Database",
                 "SeanMorris\\Ids\\Disk\\Directory",
                 "SeanMorris\\Ids\\Disk\\File",

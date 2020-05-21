@@ -3,7 +3,7 @@ namespace SeanMorris\Ids\Collection;
 
 use \BadMethodCallException;
 
-class RankedDriver extends Driver
+class ReadOnlyDriver extends Driver
 {
 	public function add($item)
 	{
