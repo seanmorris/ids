@@ -4,10 +4,9 @@ class Documentor
 {
 	public static function docs($namespace = '')
 	{
-		$namespace = str_replace('/', '\\', $namespace);
-
-		$allClasses = \SeanMorris\Ids\Linker::classes(':');
-		$allClasses = (array) ($allClasses->{''} ?? []);
+		$namespace  = str_replace('/', '\\', $namespace);
+		$allClasses = \SeanMorris\Ids\Linker::classes();
+		$allClasses = $allClasses[''] ?? [];
 
 		if($namespace)
 		{

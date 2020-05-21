@@ -133,14 +133,12 @@ class Meta
 				, $relativePath
 			));
 
-			$syntaxCheckCommand = sprintf('php -l %s 2>&1', escapeshellarg($relativePath));
-
-			$checkHandle = popen($syntaxCheckCommand, 'r');
-
-			if($checkHandle)
+			if(!static::checkSyntax($relativePath))
 			{
 				continue;
 			}
+
+			// fclose($checkHandle);
 
 			$aliases = [];
 
@@ -361,10 +359,23 @@ class Meta
 			}
 		}
 
-		$escapedClassFile = escapeshellarg($classFile);
+		return $results[$class] = static::checkSyntax($classFile);
+	}
 
-		$success = (bool) popen(sprintf('php -l %s 2>&1', $escapedClassFile));
+	public static function checkSyntax($filename)
+	{
+		$syntaxCheckCommand = sprintf(
+			'php -l %s 2>&1'
+			, escapeshellarg(realpath($filename))
+		);
 
-		return $results[$class] = $success;
+		$handle  = popen($syntaxCheckCommand, 'r');
+
+		while(!feof($handle))
+		{
+			fread($handle, 8192);
+		}
+
+		return !pclose($handle);
 	}
 }

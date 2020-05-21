@@ -1263,13 +1263,13 @@ EOT
 
 	public function document($router)
 	{
-		$args = $router->path()->consumeNodes();
+		$args = $router->path()->nodes();
 		$packageName = array_shift($args);
 
-		// if(!$packageName = array_shift($args))
-		// {
-		// 	return 'No package supplied.';
-		// }
+		if(!$packageName = array_shift($args))
+		{
+			return 'No package supplied.';
+		}
 
 		$docs = \SeanMorris\Ids\Documentor::docs($packageName);
 
