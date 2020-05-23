@@ -284,13 +284,13 @@ class Model
 
 		if($id || $inserted)
 		{
-			$curClass::afterWrite($this, $values);
-			$curClass::afterCreate($this, $values);
-
 			if($id)
 			{
 				$this->id = $id;
 			}
+
+			$curClass::afterWrite($this, $values);
+			$curClass::afterCreate($this, $values);
 
 			return $this;
 		}
