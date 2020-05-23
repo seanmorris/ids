@@ -50,17 +50,16 @@ abstract class WhereStatement extends Statement
 		$args = array_map(
 			function($value, $wrapper)
 			{
+				if($wrapper && is_array($value))
+				{
+					return array_map(
+						function($v) use($wrapper) { return sprintf($wrapper, $v); }
+						, $value
+					);
+				}
+
 				if($wrapper)
 				{
-					if(is_array($value))
-					{
-						return array_map(
-							function($v) use($wrapper) {
-								return sprintf($wrapper, $v);
-							}
-							, $value
-						);
-					}
 					return sprintf($wrapper, $value);
 				}
 
@@ -70,7 +69,7 @@ abstract class WhereStatement extends Statement
 			, $this->valueWrappers
 		);
 
-		\SeanMorris\Ids\Log::debug('Args:', $args);
+		// \SeanMorris\Ids\Log::debug('Args:', $args);
 
 		if($nonscalar = array_filter($args, function($a) {
 			return !is_scalar($a)
@@ -103,18 +102,14 @@ abstract class WhereStatement extends Statement
 
 		static::$queryTime += $queryTime;
 
-		if(!static::RETURNS)
-		{
-			\SeanMorris\Ids\Log::query('Query executed.', new \SeanMorris\Ids\LogMeta([
-				'query'         => $queryObject->queryString
-				, 'query_time'  => $queryTime
-				, 'querty_tier' => $this->databaseTier()
-				, 'query_type'  => get_called_class()
-				, 'query_args'  => $finalArgs
-				, 'query_table' => $this->table
-			]));
-		}
-
+		\SeanMorris\Ids\Log::query($queryObject->queryString, $args, new \SeanMorris\Ids\LogMeta([
+			'query'         => $queryObject->queryString
+			, 'query_time'  => $queryTime
+			, 'querty_tier' => $this->databaseTier()
+			, 'query_type'  => get_called_class()
+			, 'query_args'  => $finalArgs
+			, 'query_table' => $this->table
+		]));
 
 		$slowQuery = \SeanMorris\Ids\Settings::read('slowQuery');
 		$queryLimit = \SeanMorris\Ids\Settings::read('queryLimit');
@@ -144,7 +139,7 @@ abstract class WhereStatement extends Statement
 
 		\SeanMorris\Ids\Log::debug(
 			'Queries Run: ' . static::$queryCount
-			, sprintf('Query ran in %f seconds.', $queryTime)
+			, sprintf('Query ran in %0.3fms.', $queryTime * 1000)
 			, sprintf('Total time waiting on database: %f seconds.', parent::$queryTime)
 		);
 
