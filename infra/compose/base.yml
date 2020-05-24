@@ -38,7 +38,7 @@ services:
       - ${TRGT_ENV}
     build:
       context: ../../
-      dockerfile: ${COREDIR}infra/docker/ids.___gen.dockerfile
+      dockerfile: ${CORERELDIR}infra/docker/ids.___gen.dockerfile
       target:  server-${TARGET}
       network: bridge
       args:
@@ -60,7 +60,7 @@ services:
       - ${TRGT_DLT}
       - ${TRGT_ENV}
     environment:
-      MYSQL_RANDOM_ROOT_PASSWORD: 1
+      MYSQL_ROOT_PASSWORD: ${IDS_DB_ROOT_PASSWORD}
       MYSQL_USER:     ${IDS_DATABASES_MAIN_USERNAME}
       MYSQL_PASSWORD: ${IDS_DATABASES_MAIN_PASSWORD}
       MYSQL_DATABASE: ${IDS_DATABASES_MAIN_DATABASE}

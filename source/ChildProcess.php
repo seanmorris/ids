@@ -1,5 +1,11 @@
 <?php
 namespace SeanMorris\Ids;
+
+/**
+ * Manges communication with spawned processes. Allows the main program
+ * to communicate with the child (optionally) asyncronously.
+ */
+
 class ChildProcess
 {
 	protected
@@ -8,11 +14,13 @@ class ChildProcess
 		, $stdIn
 		, $stdOut
 		, $stdErr
-		, $pipeDescriptor = array(
-			0 => array('pipe', 'r'),
-			1 => array('pipe', 'w'),
-			2 => array('pipe', 'w'),
-		)
+		, $stdOutBuffer = ''
+		, $stdErrBuffer = ''
+		, $pipeDescriptor = [
+			0 => ['pipe', 'r'],
+			1 => ['pipe', 'w'],
+			2 => ['pipe', 'w'],
+		]
 	;
 
 	public function __construct($command, $asyncOut = FALSE, $asyncIn = FALSE)
@@ -24,10 +32,9 @@ class ChildProcess
 			, $pipes
 		);
 
-		list($this->stdIn, $this->stdOut, $this->stdErr) = $pipes;
+		[$this->stdIn, $this->stdOut, $this->stdErr] = $pipes;
 
 		stream_set_blocking($this->stdIn,  !$asyncIn);
-		// stream_set_blocking($this->stdIn,  TRUE);
 		stream_set_blocking($this->stdOut, !$asyncOut);
 		stream_set_blocking($this->stdErr, !$asyncOut);
 	}
@@ -53,17 +60,49 @@ class ChildProcess
 
 	public function read()
 	{
-		return trim(fgets($this->stdOut));
+		$got = fgets($this->stdOut);
+
+		if(!$this->feof() && substr($got, -1) !== "\n")
+		{
+			$this->stdOutBuffer .= $got;
+			return;
+		}
+		else
+		{
+			$message = $this->stdOutBuffer .= $got;
+
+			$this->stdOutBuffer = NULL;
+
+			return $message;
+		}
+
+		return $got;
+	}
+
+	public function readError()
+	{
+		return fgets($this->stdErr);
+
+		if(!$this->feof() && substr($got, -1) !== "\n")
+		{
+			$this->stdErrBuffer .= $got;
+			return;
+		}
+		else
+		{
+			$message = $this->stdErrBuffer .= $got;
+
+			$this->stdErrBuffer = NULL;
+
+			return $message;
+		}
+
+		return $got;
 	}
 
 	public function feof()
 	{
 		return feof($this->stdOut);
-	}
-
-	public function readError()
-	{
-		return trim(fgets($this->stdErr));
 	}
 
 	public function feofError()
@@ -77,11 +116,6 @@ class ChildProcess
 		{
 			return TRUE;
 		}
-
-		// if(!$this->feof())
-		// {
-		// 	return FALSE;
-		// }
 
 		$status = proc_get_status($this->process);
 

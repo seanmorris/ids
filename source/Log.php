@@ -182,12 +182,8 @@ class Log
 				static::$also = (object) ( $also ?: [] );
 			}
 
-			if(
-				!isset(static::$also->$levelString)
-				 && (
-				 	!isset($switches['vv'])
-				 	|| !$switches['vv']
-				 )
+			if(	!isset(static::$also->$levelString)
+				 && !($switches['verbose'] ?? $switches['v'] ?? $switches['vv'] ?? $switches['vvv'] ?? 0)
 			){
 				return;
 			}
@@ -253,20 +249,7 @@ class Log
 
 		if($logLocation !== 'php://stderr' && static::showErrors($level))
 		{
-			foreach($data as $d)
-			{
-				if($d instanceof LogMeta)
-				{
-					continue;
-				}
-				if(is_scalar($d))
-				{
-					print $d . PHP_EOL;
-					continue;
-				}
-
-				fwrite(fopen('php://stderr', 'w'), $output);
-			}
+			fwrite(fopen('php://stderr', 'w'), $output . PHP_EOL);
 		}
 
 		$logBlob->type         = $levelString;
@@ -789,7 +772,7 @@ class Log
 		if($position->class && $position->function)
 		{
 			return sprintf(
-				"%s::%s\n%s:%s%s"
+				"%s::%s - %s:%s%s"
 				, $position->class
 				, $position->function
 				, $position->file
@@ -800,7 +783,7 @@ class Log
 		else if($position->function)
 		{
 			return sprintf(
-				"%s\n%s:%s%s"
+				"%s - %s:%s%s"
 				, $position->function
 				, $position->file
 				, $position->line ?? '--'
@@ -1114,18 +1097,76 @@ class Log
 	{
 		global $switches;
 
-		return (php_sapi_name() == 'cli'
-			&& (($switches['vv'] ?? 0)
-				|| ($level <= static::$levels['warn']
-					&&
-					($switches['verbose']
-						?? $switches['vv']
-						?? $switches['v']
-						?? FALSE
-					)
-				)
-			)
-		);
+		$maxLevel = 0;
+		$maxLevelString = Settings::read('logLevel');
+
+		if(isset(static::$levels[$maxLevelString]))
+		{
+			$maxLevel = static::$levels[$maxLevelString];
+		}
+
+		if(php_sapi_name() !== 'cli')
+		{
+			return FALSE;
+		}
+
+		$isQueryOrStronger = FALSE;
+
+		if($level >= static::$levels['query'])
+		{
+			$isQueryOrStronger = TRUE;
+		}
+
+		if($switches['vv'] ?? FALSE)
+		{
+			if($isQueryOrStronger && $maxLevel < static::$levels['query'])
+			{
+				return FALSE;
+			}
+
+			return TRUE;
+		}
+
+		if($switches['vvv'] ?? FALSE)
+		{
+			return TRUE;
+		}
+
+		$isWarningOrStronger = FALSE;
+
+		if($level <= static::$levels['warn'])
+		{
+			$isWarningOrStronger = TRUE;
+		}
+
+		$verbose = FALSE;
+
+		if($switches['verbose'] ?? $switches['v'] ?? FALSE)
+		{
+			$verbose = TRUE;
+		}
+
+		if($maxLevel >= static::$levels['warn'])
+		{
+			if($isWarningOrStronger)
+			{
+				return TRUE;
+			}
+
+			if($verbose && $level <= $maxLevel)
+			{
+				return TRUE;
+			}
+		}
+		else
+		{
+			if($verbose && $isWarningOrStronger)
+			{
+				return TRUE;
+			}
+		}
+
+		return FALSE;
 	}
 
 	protected static function loadCensors()

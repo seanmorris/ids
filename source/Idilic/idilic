@@ -19,13 +19,16 @@ if(file_exists($subidilicFile = getcwd() . '/idilic'))
 
 		if(substr($line, -strlen(IDILIC_PASSTHRU_CODE)) === IDILIC_PASSTHRU_CODE)
 		{
-			fwrite(STDERR, 'Handing off to Docker...');
+			fwrite(STDERR, sprintf(
+				'Handing off to Docker (%s)...'
+				, dirname($subidilicFile)
+			));
 
-			$subidilic = 'bash -c "' .
+			$subidilic = 'bash -c ' . escapeshellarg(
 				escapeshellcmd($subidilicFile)
 				. ' '
 				. implode(' ', array_map('escapeshellarg', $argv))
-				. '"';
+			);
 
 			passthru($subidilic, $exitCode);
 
@@ -130,20 +133,20 @@ foreach($requests as $req)
 
 	if(!is_scalar($res) && $res !== null)
 	{
-		if(is_object($res) && method_exists($res, 'dumpStruct'))
-		{
-			$res = $res->dumpStruct();
-		}
+		$outputArgs = [];
 
 		switch($switches['format'] ?? NULL)
 		{
-			case 'yml':
-				print yaml_emit($res);
-				break;
+			case 'pj':
+			case 'pretty-json':
+				$outputArgs = [JSON_PRETTY_PRINT];
 
+			case 'j':
 			case 'json':
+				$outputFunc = 'json_encode';
 				print json_encode($res, JSON_PRETTY_PRINT);
 				break;
+
 
 			case 'tsv':
 				$delimiter = "\t";
@@ -197,20 +200,47 @@ foreach($requests as $req)
 						fputcsv(STDOUT, $row, $delimiter);
 					}
 				}
+				return;
+				break;
+
+			case 'py':
+			case 'pretty-yml':
+				$outputFunc = function($r){
+					return yaml_emit(json_decode(
+						json_encode($r), JSON_OBJECT_AS_ARRAY
+					));
+				};
+				break;
+
+			case 'y':
+			case 'yml':
+				$outputFunc = 'yaml_emit';
+
 				break;
 
 			default:
-				if(function_exists('yaml_emit'))
-				{
-					print yaml_emit($res);
-				}
-				else
-				{
-					print json_encode($res, JSON_PRETTY_PRINT);
-				}
+				function_exists('yaml_emit')
+					? $outputFunc = 'yaml_emit'
+					: $outputFunc = 'json_encode';
 				break;
 		}
 
+		if(is_object($res) && method_exists($res, 'dumpStruct'))
+		{
+			$res = $res->dumpStruct();
+		}
+
+		if($res instanceof \Generator)
+		{
+			foreach($res as $r)
+			{
+				print $outputFunc($r, ...$outputArgs) . PHP_EOL;
+			}
+		}
+		else
+		{
+			print $outputFunc($res, ...$outputArgs);
+		}
 	}
 	else
 	{

@@ -130,10 +130,13 @@ jobs:
   subproject-init-and-test:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
+      - run: curl https://seanmorris-badger.herokuapp.com/ids/
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: cd ids-project && make @test current-tag build start-bg test
@@ -141,10 +144,13 @@ jobs:
   subproject-init-and-test_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
+      - run: curl -X PURGE https://camo.githubusercontent.com/df5e6413e42c1af3738c1c32d36f59a2957c7f27/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d313f6c6162656c3d706870253230372e31
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: cd ids-project && PHP=7.1 make @test current-tag build start-bg test
@@ -153,10 +159,13 @@ jobs:
   subproject-init-and-test_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
+      - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d323f6c6162656c3d706870253230372e32
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: cd ids-project && PHP=7.2 make @test current-tag build start-bg test
@@ -164,10 +173,13 @@ jobs:
   subproject-init-and-test_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
+      - run: curl -X PURGE https://camo.githubusercontent.com/5bbcbc87b9d3f282baefb92933eb4a18010a5093/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d333f6c6162656c3d706870253230372e33
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: cd ids-project && PHP=7.3 make @test current-tag build start-bg test
@@ -175,10 +187,13 @@ jobs:
   subproject-init-and-test_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
+      - run: curl -X PURGE https://camo.githubusercontent.com/a0bf9532a9c1f031f4b487543308da2a35ccf328/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d343f6c6162656c3d706870253230372e34
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: cd ids-project && PHP=7.4 make @test current-tag build start-bg test
@@ -186,7 +201,9 @@ jobs:
   self-test:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -208,7 +225,9 @@ jobs:
   self-test_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -229,7 +248,9 @@ jobs:
   self-test_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -250,7 +271,9 @@ jobs:
   self-test_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -271,7 +294,9 @@ jobs:
   self-test_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -292,7 +317,9 @@ jobs:
   recursive-test-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -303,7 +330,9 @@ jobs:
   recursive-test-1_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -314,7 +343,9 @@ jobs:
   recursive-test-1_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -325,7 +356,9 @@ jobs:
   recursive-test-1_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -336,7 +369,9 @@ jobs:
   recursive-test-1_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -347,7 +382,9 @@ jobs:
   recursive-test-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -358,7 +395,9 @@ jobs:
   recursive-test-2_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -369,7 +408,9 @@ jobs:
   recursive-test-2_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -380,7 +421,9 @@ jobs:
   recursive-test-2_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -391,7 +434,9 @@ jobs:
   recursive-test-2_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -402,7 +447,9 @@ jobs:
   recursive-test-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -413,51 +460,61 @@ jobs:
   recursive-test-3_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo PHP=7.1 make @test+make run CMD="make run CMD=\"make CMD=\\\"make test\\\"\""
+      - run: sudo PHP=7.1 make @test+make run CMD="make run CMD=\"make run CMD=\\\"make test\\\"\""
 
   recursive-test-3_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo PHP=7.2 make @test+make run CMD="make run CMD=\"make CMD=\\\"make test\\\"\""
+      - run: sudo PHP=7.2 make @test+make run CMD="make run CMD=\"make run CMD=\\\"make test\\\"\""
 
   recursive-test-3_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo PHP=7.3 make @test+make run CMD="make run CMD=\"make CMD=\\\"make test\\\"\""
+      - run: sudo PHP=7.3 make @test+make run CMD="make run CMD=\"make run CMD=\\\"make test\\\"\""
 
   recursive-test-3_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo PHP=7.4 make @test+make run CMD="make run CMD=\"make CMD=\\\"make test\\\"\""
+      - run: sudo PHP=7.4 make @test+make run CMD="make run CMD=\"make run CMD=\\\"make test\\\"\""
 
   addon-test:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -470,7 +527,9 @@ jobs:
   addon-test_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -483,7 +542,9 @@ jobs:
   addon-test_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -496,7 +557,9 @@ jobs:
   addon-test_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -509,7 +572,9 @@ jobs:
   addon-test_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -523,7 +588,9 @@ jobs:
   build-and-push:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -537,7 +604,9 @@ jobs:
   build-and-push_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -551,7 +620,9 @@ jobs:
   build-and-push_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -565,7 +636,9 @@ jobs:
   build-and-push_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -579,7 +652,9 @@ jobs:
   build-and-push_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -593,7 +668,9 @@ jobs:
   build-and-push-addons:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -607,7 +684,9 @@ jobs:
   build-and-push-addons_7-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -617,11 +696,14 @@ jobs:
       - run: PHP=7.1 make @dev+aptcache+graylog+inotify ct b psi
       - run: PHP=7.1 make @test+aptcache ct b psi
       - run: PHP=7.1 make @prod+aptcache ct b psi
+      - run: curl -X PURGE https://camo.githubusercontent.com/df5e6413e42c1af3738c1c32d36f59a2957c7f27/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d313f6c6162656c3d706870253230372e31
 
   build-and-push-addons_7-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -631,11 +713,14 @@ jobs:
       - run: PHP=7.2 make @dev+aptcache+graylog+inotify ct b psi
       - run: PHP=7.2 make @test+aptcache ct b psi
       - run: PHP=7.2 make @prod+aptcache ct b psi
+      - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d323f6c6162656c3d706870253230372e32
 
   build-and-push-addons_7-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -645,11 +730,14 @@ jobs:
       - run: PHP=7.3 make @dev+aptcache+graylog+inotify ct b psi
       - run: PHP=7.3 make @test+aptcache ct b psi
       - run: PHP=7.3 make @prod+aptcache ct b psi
+      - run: curl -X PURGE https://camo.githubusercontent.com/5bbcbc87b9d3f282baefb92933eb4a18010a5093/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d333f6c6162656c3d706870253230372e33
 
   build-and-push-addons_7-4:
     parallelism: 1
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - install-composer
@@ -659,3 +747,4 @@ jobs:
       - run: PHP=7.4 make @dev+aptcache+graylog+inotify ct b psi
       - run: PHP=7.4 make @test+aptcache ct b psi
       - run: PHP=7.4 make @prod+aptcache ct b psi
+      - run: curl -X PURGE https://camo.githubusercontent.com/a0bf9532a9c1f031f4b487543308da2a35ccf328/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d343f6c6162656c3d706870253230372e34

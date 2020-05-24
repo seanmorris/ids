@@ -4,11 +4,19 @@
 
 */ eye dee ess /* • The PHP + Docker Framework
 
-![seanmorris/ids](https://img.shields.io/packagist/v/seanmorris/ids?color=900&label=seanmorris%2Fids&logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAACAAAAAfCAYAAACGVs%2BMAAAHb0lEQVR42pVWa1CU1xk2dSYzHSs4aEsEHZ0VAYEFBBGQAcRba5CxtUJpbeiIN2BdLgLLrizKQkx0ubhDMBCuy3UBuQuIGtAogSQ1pK026bSdtjO10TbRH06bJqPZp%2Bc5zLoyDJX9Zp7Z833f%2Bz7Pe97L%2BXbRPNdLtoVCoXBetWrVYwE4iMf0ncXpyOXm5pYsMLZ69eor%2Fv7%2BTwICAiB%2BFwTaKpXKJ8uXL7%2BydOnSMYHkBUjaI3R1dY3z8PC46%2BXlBW9vb4SGhiIsLMwqgAWA9tbw8HDs3bsX%2B%2FfvR0xMzF1BG7egbLi4uPiuWbPmEXeyZcsWK8U3b968YISEhCAwMJC%2BaGhowOjoqDUnJ4cbeUTu%2BXRtO1eyfhs3boRd2HEEBQXJAKqqqtDe3g6LxQKj0QhRTixZskQ5X%2Br3%2BPn53T9z5gx27txJEoeFufNDhw6hoqICZWVlaGxsRHNzM1paWvjLZ%2BS9v3jx4j2ztJ2cnBKjo6Ons7Ky0NHRgd27d5PMobSz8Tw9PaFWq9Hf389dS9Gmpia0traipqYGmZmZ0nbt2rXTosETn6Vg2bJlEwkJCRgZGbGazWZs376dhAsWZ7r37duHuLg45OfnU5zCNnBTzIqN08rGFgFMPAvA2dl5mN3a3d0NBhAbG4vg4GCSLyjtO3bs4G4pxHTPErdloLS09FlfcbpWrlw5PCsAZqCvr48OsnsTExPh6%2Bv7wmajjSifrHdbW9sccQbFrHAs6cMg7AHYu3%2BYZKxfZ2cnBgYGUFtbi5SUlOeb0XYe2MRlwxUWFsJgMDBzzMIc8cHBQWi1Wvj4%2BNCP%2FnMDcHd3HxaNgcjISOh0Ooni4mIcO3aMJxrTLMX9lP5Y77WBa7nzgoICClBoljADYUb0er1EUlISA54%2FAN7YTjyK2Y5dOnAkd%2B3ahZDNoQgO9EfoRhGQOCcio6JQVFTEjM0R5%2BzX19cjIiKCO7eJ%2F%2F8A%2BNCWXoJBsA9YVxL6Bgbj3PEDuNtWglfc3FFWXk5xe9PZA%2BAUsI94BPNQI5%2FjATADycnJaBdkASFhqNGr8O%2BxRmDKgvdrixETHQV3hSd%2B8csk0TP9FJfCGo2G5whHknxzJokjq%2FBYD2eXFfYAXv6eU%2F9axTq%2BtDWb%2BA1B1NZtSPhZIk4fScDD0Rrgd33AR53AdDeqNIdRfDQe6Un78fOkg1J8aGgIKpWKO2Qp54gT3qIkuyM24fCrUf1S%2FKYxM%2BhA7NbJ6LAQ%2BPj5zzSb2L2Xjy%2BUvj44uCdGCuI3vcAHlhlMtgO%2F7QP%2BcgUT1aexbUsI8vUFePPsWcTHx7Puc74lvCecV7iiIGkv%2FtBgmOzIPRi0qFOXjCfXxQwXZ8JV1JZRe673gMuKH0CVGAd80ounE214cquV4JoB2CDfPxiuhtc6BVxfWSn%2FjIhP%2BbynJjVaizLw9XgDqC0D%2BGLobeDXXRg5r5MEU7VFePqeGVPNpdDm5iAvO0siIz0dVW%2BeAj6%2BKDNhZQDMyFQ7vhypRl56KuIP%2FAq7Xt0Dl%2B%2B7InjTJvYBISfHzd0dVyv0wEdd%2BNelC%2FYAPu9%2FC%2Fj0Eu4N1%2BBHsXGoP3cKQ3XlaBC%2F53VqjDeU4mZTOSZbTLhWW4o642lmQgTdyZ6QgXS%2FfQ5TbZW40%2FMOJpvLYT6lgmLdOmzwVSJAlJSN90MR2P3LddSipj2Afw5eAO4MWL%2B81og3dNk4kpKGo0ePorIgC3%2B2lMwIfdIN3G7HZ0MXUPm6Xgb09Xst%2BEaUZby%2BBHnqVNEmJpEdi%2BDql1nSH0pAUIASCk9vbIvZKrhP4OG7ZqlFTVsA9%2F7eff6bbyda8ehyNcYrTiInMx0XCjLxJ4tRiF6cqfWHXZjqPofe5pNi3YnszAzcaCzDrWYTUlNSMWbSoa4yA7f7S2krxxWfXULuaz9GeEQkCk%2FmSe6HQoNa1KT2InGWf2fwdMr1Hv0R3CzPgfX9dug12bhaZxTp7bA323QvLEY1tGlx4t4Cgy4XqarjSBMoFGs2aJ54Rxva0kcGMdmG4eqz0OdJbqlBLWpSW45iU06Sf606MXK0OFV1y5SHdFWa8Kuw4k7fTKMRH%2Fegy5QBQ%2B4%2BmZX8vFwYTqRJ6LUaOapFmp%2FShrb0kYL4dEDso9KqFpzkpga1qCnF8dw%2F1K748O82Z79WWq5Vf2suOYXf91ZZMX2RPSAEevD55Qpcqy%2FASE0JjFpRgmoDwTWf8R1taCt96EsOcpGT3NSg1nPac29umDSW13NUX5kMOvxjpA5%2Fu1SDvw6%2Bgy%2BumnHbUikylIrL5Vp8NdZAcM1nfEcb2tJH%2BpKDXOScpfWi61p5blWD4QRSj6uhVkuImquRf0KN0TIN%2FnvdDHzYQXDNZ3xHG5u99CUHuRY5enVoDzbdMGnxcLzFyp0Q9wQeiDn%2Bj9i1rckIrvmM72hjs6cvOcjlcAD1xxM3XTdmdf2x5Q3OND9EVn4PCNaYjcjTk%2BCaz2zvaUsf%2BpKDXA5I22t0%2FvBPNoiRmbjXY3r6YOAtcXpVLAi0pQ99yfEcp%2BNBtKoPOIkD47EAHMRj%2Br5I%2FH8NrWvzntWI2gAAAABJRU5ErkJggg%3D%3D&style=for-the-badge) [![Apache-2.0 Licence Badge](https://img.shields.io/npm/l/cv3-inject?logo=apache&color=338800&style=for-the-badge)](https://github.com/seanmorris/cv3-inject/blob/master/LICENSE)
+![seanmorris/ids](https://img.shields.io/packagist/v/seanmorris/ids?color=900&label=seanmorris%2Fids&logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAACAAAAAfCAYAAACGVs%2BMAAAHb0lEQVR42pVWa1CU1xk2dSYzHSs4aEsEHZ0VAYEFBBGQAcRba5CxtUJpbeiIN2BdLgLLrizKQkx0ubhDMBCuy3UBuQuIGtAogSQ1pK026bSdtjO10TbRH06bJqPZp%2Bc5zLoyDJX9Zp7Z833f%2Bz7Pe97L%2BXbRPNdLtoVCoXBetWrVYwE4iMf0ncXpyOXm5pYsMLZ69eor%2Fv7%2BTwICAiB%2BFwTaKpXKJ8uXL7%2BydOnSMYHkBUjaI3R1dY3z8PC46%2BXlBW9vb4SGhiIsLMwqgAWA9tbw8HDs3bsX%2B%2FfvR0xMzF1BG7egbLi4uPiuWbPmEXeyZcsWK8U3b968YISEhCAwMJC%2BaGhowOjoqDUnJ4cbeUTu%2BXRtO1eyfhs3boRd2HEEBQXJAKqqqtDe3g6LxQKj0QhRTixZskQ5X%2Br3%2BPn53T9z5gx27txJEoeFufNDhw6hoqICZWVlaGxsRHNzM1paWvjLZ%2BS9v3jx4j2ztJ2cnBKjo6Ons7Ky0NHRgd27d5PMobSz8Tw9PaFWq9Hf389dS9Gmpia0traipqYGmZmZ0nbt2rXTosETn6Vg2bJlEwkJCRgZGbGazWZs376dhAsWZ7r37duHuLg45OfnU5zCNnBTzIqN08rGFgFMPAvA2dl5mN3a3d0NBhAbG4vg4GCSLyjtO3bs4G4pxHTPErdloLS09FlfcbpWrlw5PCsAZqCvr48OsnsTExPh6%2Bv7wmajjSifrHdbW9sccQbFrHAs6cMg7AHYu3%2BYZKxfZ2cnBgYGUFtbi5SUlOeb0XYe2MRlwxUWFsJgMDBzzMIc8cHBQWi1Wvj4%2BNCP%2FnMDcHd3HxaNgcjISOh0Ooni4mIcO3aMJxrTLMX9lP5Y77WBa7nzgoICClBoljADYUb0er1EUlISA54%2FAN7YTjyK2Y5dOnAkd%2B3ahZDNoQgO9EfoRhGQOCcio6JQVFTEjM0R5%2BzX19cjIiKCO7eJ%2F%2F8A%2BNCWXoJBsA9YVxL6Bgbj3PEDuNtWglfc3FFWXk5xe9PZA%2BAUsI94BPNQI5%2FjATADycnJaBdkASFhqNGr8O%2BxRmDKgvdrixETHQV3hSd%2B8csk0TP9FJfCGo2G5whHknxzJokjq%2FBYD2eXFfYAXv6eU%2F9axTq%2BtDWb%2BA1B1NZtSPhZIk4fScDD0Rrgd33AR53AdDeqNIdRfDQe6Un78fOkg1J8aGgIKpWKO2Qp54gT3qIkuyM24fCrUf1S%2FKYxM%2BhA7NbJ6LAQ%2BPj5zzSb2L2Xjy%2BUvj44uCdGCuI3vcAHlhlMtgO%2F7QP%2BcgUT1aexbUsI8vUFePPsWcTHx7Puc74lvCecV7iiIGkv%2FtBgmOzIPRi0qFOXjCfXxQwXZ8JV1JZRe673gMuKH0CVGAd80ounE214cquV4JoB2CDfPxiuhtc6BVxfWSn%2FjIhP%2BbynJjVaizLw9XgDqC0D%2BGLobeDXXRg5r5MEU7VFePqeGVPNpdDm5iAvO0siIz0dVW%2BeAj6%2BKDNhZQDMyFQ7vhypRl56KuIP%2FAq7Xt0Dl%2B%2B7InjTJvYBISfHzd0dVyv0wEdd%2BNelC%2FYAPu9%2FC%2Fj0Eu4N1%2BBHsXGoP3cKQ3XlaBC%2F53VqjDeU4mZTOSZbTLhWW4o642lmQgTdyZ6QgXS%2FfQ5TbZW40%2FMOJpvLYT6lgmLdOmzwVSJAlJSN90MR2P3LddSipj2Afw5eAO4MWL%2B81og3dNk4kpKGo0ePorIgC3%2B2lMwIfdIN3G7HZ0MXUPm6Xgb09Xst%2BEaUZby%2BBHnqVNEmJpEdi%2BDql1nSH0pAUIASCk9vbIvZKrhP4OG7ZqlFTVsA9%2F7eff6bbyda8ehyNcYrTiInMx0XCjLxJ4tRiF6cqfWHXZjqPofe5pNi3YnszAzcaCzDrWYTUlNSMWbSoa4yA7f7S2krxxWfXULuaz9GeEQkCk%2FmSe6HQoNa1KT2InGWf2fwdMr1Hv0R3CzPgfX9dug12bhaZxTp7bA323QvLEY1tGlx4t4Cgy4XqarjSBMoFGs2aJ54Rxva0kcGMdmG4eqz0OdJbqlBLWpSW45iU06Sf606MXK0OFV1y5SHdFWa8Kuw4k7fTKMRH%2Fegy5QBQ%2B4%2BmZX8vFwYTqRJ6LUaOapFmp%2FShrb0kYL4dEDso9KqFpzkpga1qCnF8dw%2F1K748O82Z79WWq5Vf2suOYXf91ZZMX2RPSAEevD55Qpcqy%2FASE0JjFpRgmoDwTWf8R1taCt96EsOcpGT3NSg1nPac29umDSW13NUX5kMOvxjpA5%2Fu1SDvw6%2Bgy%2BumnHbUikylIrL5Vp8NdZAcM1nfEcb2tJH%2BpKDXOScpfWi61p5blWD4QRSj6uhVkuImquRf0KN0TIN%2FnvdDHzYQXDNZ3xHG5u99CUHuRY5enVoDzbdMGnxcLzFyp0Q9wQeiDn%2Bj9i1rckIrvmM72hjs6cvOcjlcAD1xxM3XTdmdf2x5Q3OND9EVn4PCNaYjcjTk%2BCaz2zvaUsf%2BpKDXA5I22t0%2FvBPNoiRmbjXY3r6YOAtcXpVLAi0pQ99yfEcp%2BNBtKoPOIkD47EAHMRj%2Br5I%2FH8NrWvzntWI2gAAAABJRU5ErkJggg%3D%3D&style=for-the-badge)
+[![Apache-2.0 Licence Badge](https://img.shields.io/npm/l/cv3-inject?logo=apache&color=338800&style=for-the-badge)](https://github.com/seanmorris/cv3-inject/blob/master/LICENSE)
 
-[![CircleCI](https://img.shields.io/circleci/build/github/seanmorris/ids?logo=circleci&logoColor=white&style=for-the-badge&token=b52ac489d3c2d170963021c81ecd422b7536f41c)](https://circleci.com/gh/seanmorris/ids/) [![Codecov](https://img.shields.io/codecov/c/github/seanmorris/ids?color=B80&logo=codecov&logoColor=white&style=for-the-badge)](https://codecov.io/gh/seanmorris/ids) ![Size badge](https://img.shields.io/github/languages/code-size/seanmorris/ids?logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAABQAAAAOCAQAAACFzfR7AAABF0lEQVQoFQXBQWvOAQDA4ef/7o29YWtqKU7ExWE5OIvm4LKcnXwD7aQ0N/kAczO1i1KOO0xJvQojaTm4KbJabnJysLSf5wFAa603CUB322yOAAitVT86BTTQ1+oJDYDQcv+qFRr3vC1ooYPqDkHoYgfVKmnSfhG62t/qBkHn2q8ekjRpryB0v/rZ2eh4r6tpY5pp3Gx7RTONoJfVLnpQfekYtNG0832rRj3tEaT31bOxQ5wc/oATrnnniEMfXfaZDFrAoEk71XajNN9OVVW7HYVeVZ9AF/pd3YPm267qbYs0tF597wygpaquQ7Nt9QLoVlWXCEK3q1oCCF2p6iYBpKGN6kNzATrdr2qVAACa9rgRQKPetAnAf1jX/qSkN8aIAAAAAElFTkSuQmCC&style=for-the-badge)
+[![CircleCI](https://img.shields.io/circleci/build/github/seanmorris/ids?logo=circleci&logoColor=white&style=for-the-badge&token=b52ac489d3c2d170963021c81ecd422b7536f41c)](https://circleci.com/gh/seanmorris/ids/) [![Codecov](https://img.shields.io/codecov/c/github/seanmorris/ids?color=B80&logo=codecov&logoColor=white&style=for-the-badge)](https://codecov.io/gh/seanmorris/ids)
+![Size badge](https://img.shields.io/github/languages/code-size/seanmorris/ids?logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAABQAAAAOCAQAAACFzfR7AAABF0lEQVQoFQXBQWvOAQDA4ef/7o29YWtqKU7ExWE5OIvm4LKcnXwD7aQ0N/kAczO1i1KOO0xJvQojaTm4KbJabnJysLSf5wFAa603CUB322yOAAitVT86BTTQ1+oJDYDQcv+qFRr3vC1ooYPqDkHoYgfVKmnSfhG62t/qBkHn2q8ekjRpryB0v/rZ2eh4r6tpY5pp3Gx7RTONoJfVLnpQfekYtNG0832rRj3tEaT31bOxQ5wc/oATrnnniEMfXfaZDFrAoEk71XajNN9OVVW7HYVeVZ9AF/pd3YPm267qbYs0tF597wygpaquQ7Nt9QLoVlWXCEK3q1oCCF2p6iYBpKGN6kNzATrdr2qVAACa9rgRQKPetAnAf1jX/qSkN8aIAAAAAElFTkSuQmCC&style=for-the-badge)
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/seanmorris/ids.idilic?logo=docker&logoColor=white&color=600&label=ids.idilic%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.idilic) [![Docker Pulls](https://img.shields.io/docker/pulls/seanmorris/ids.server?logo=docker&logoColor=white&color=960&label=ids.server%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.server)
+[![Docker Pulls - Idilic](https://img.shields.io/docker/pulls/seanmorris/ids.idilic?logo=docker&logoColor=white&color=600&label=ids.idilic%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.idilic)
+[![Docker Pulls - Server](https://img.shields.io/docker/pulls/seanmorris/ids.server?logo=docker&logoColor=white&color=960&label=ids.server%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.server)
+
+![php 7.1 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-1?label=php%207.1)
+![php 7.2 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-2?label=php%207.2)
+![php 7.3 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-3?label=php%207.3)
+![php 7.4 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-4?label=php%207.4)
 
 The Ids library provides general domain-primitives for developing web based applications. Routing, requests, modeling configuration, logging, sessions, and database access are all abstracted behind simple, expressive interfaces to efficient and powerful code.
 
@@ -21,27 +29,27 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.14 s (997.6 files/s, 159218.2 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.16 s (978.0 files/s, 161452.9 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                              66           2751            312          11789
-JSON                             13              0              0           3907
-Markdown                          2            562              0           1230
-YAML                             27            112             14           1113
-make                              2            139              9            567
-SVG                              21              0              2            188
+PHP                              83           3202            424          13422
+JSON                             11              0              0           3892
+Markdown                          2            928              0           1878
+YAML                             24             97             14           1130
+make                              1            141              9            573
+SVG                              25              0              3            239
 Bourne Shell                      4              9              0             40
-Bourne Again Shell                2             15             17             21
+Bourne Again Shell                2             17             17             23
 HTML                              1              0              0             13
 INI                               3              0              0             11
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            143           3588            354          18881
+SUM:                            158           4394            467          21223
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Sun Mar 15 18:33:00 EDT 2020*
+*built by sean @ Sun May 24 15:23:52 EDT 2020*
 
 ## Installation
 
@@ -137,7 +145,6 @@ Graylog can be started and stopped with the following commands:
 $ make graylog-start      # alias gls
 $ make graylog-start-fg   # alias glsf
 $ make graylog-start-bg   # alias glsb
-
 
 $ make graylog-stop       # alias gld
 
@@ -335,7 +342,6 @@ For example: *infra/docker/aptcache.idstmp.dockerfile* starts off with the follo
 FROM ${BASELINUX}
 ```
 Varibles are not normally allowed in the `FROM` section of dockerfile,  preprocessed by make before it is used. So long as the file extenstion begins with `.idstmp.`, we can count on a `.___gen.` file being produced. This allows us to keep all the images and containers synced to one base image.
-
 
 The follwing lines from the end of the file show how one can use the shell to track who generated the file and when:
 
@@ -561,6 +567,13 @@ class RootRoute implements \SeanMorris\Ids\Routable
 
 ## Modeling / ORM
 
+### Defining models
+
+* Properties
+* Selectors
+* Column wrappers
+* Behavior
+
 ```php
 <?php
 namespace SeanMorris\Ids\Test\Model;
@@ -577,18 +590,48 @@ class Foozle extends \SeanMorris\Ids\Model
 
 	protected static
 		$table = 'Foozle'
+
 		, $createColumns = [
 			'publicId' => 'UNHEX(REPLACE(UUID(), "-", ""))'
 		]
+
+		, $byId = [['id' => '?']]
+
 		, $readColumns = [
 			'publicId' => 'HEX(%s)'
 		]
+
 		, $updateColumns = [
 			'publicId' => 'UNHEX(%s)'
 		]
 	;
 }
 ```
+
+### Loading Models
+
+Model load methods are dynamically generated with names in the form of:
+
+`VERB [Flat] [Submodel|Record] [By SELECTOR]([...$args])`
+
+#### Verbs
+
+* get - Gets an array of models.
+* getOne - Gets a single model.
+* load - Returns a callback that gets an array of models.
+* loadOne - Alias of getOne.
+* generate - Returns a callback that produces a Generator of models.
+* count - Returns a count of models.
+* report - Return an (optionally) aggregated result set as a 2d array.
+
+#### Modifiers
+
+* Flat - Don't join child models, even if specified in selector (parent class tables are still joined)
+* Submodel - Include any subclass of a given model in result set (May not include all tables!);
+* Record - Load records but skip initialization logic (before/afterRead methods).
+
+#### Selectors
+
 ## Logging
 
 Logs can be written from anywhere in the system by calling a function coresponging to the desied level of verbosity. There are 6 levels of verbosity available.
@@ -768,7 +811,7 @@ class ExampleTest extends \UnitTestCase
 <?php
 use \SeanMorris\Ids\Disk\File;
 
-$file = new File($filename);
+$file = File::open($filename);
 
 //Check if file exists
 if($file->check())
@@ -812,7 +855,7 @@ New commands can be implemented by adding a route class named `RootRoute` under 
 
 ```php
 <?php
-namespace SeanMorrisxamplePackage\Idilic\Route;
+namespace SeanMorris\ExamplePackage\Idilic\Route;
 class RootRoute implements \SeanMorris\Ids\Routable
 {
 	/** Help text goes here. */
@@ -821,7 +864,471 @@ class RootRoute implements \SeanMorris\Ids\Routable
 }
 ```
 
-## Dependency Injection*
+## Dependency Injection
+
+Some classes provide injection constructors. They'll take one or more classes as an argument and in return will give you a new class to work with.
+
+For example, the `SeanMorris\Ids\Collection` class provides a method that will return a new subclass that will work only with the given type:
+
+In this example, DatetimeCollection does not exist until afte the `::of()` method completes, but PHP will still allow us to access `::CLASS` on it.
+
+We also alias the DatetimeCollection class with `use` BEFORE it exists. This prevents it from inheriting the `Author\Package` namespace in this scenario, although it is not necessary.
+
+```php
+<?php
+namespace Author\Package;
+
+use \DatetimeCollection;
+use \SeanMorris\Ids\Collection;
+
+// Create DatetimeCollection based on the existing Collection class
+Collection::of(Datetime::CLASS, DatetimeCollection::CLASS);
+
+// Create an instance of the new class:
+$datetimeCollection = new DatetimeCollection();
+
+```
+
+### Creating Injectable Classes
+
+Creating a new injectable class from scratch is easy. You can either inherit from an existing class that uses the `SeanMorris\Ids\Injectable` trait, or create an entirely new class from scratch with the following construct:
+
+**NOTE:** If you override the constructor, you must either call `parent::__construct()` or `$this->initInjections();` in your subclass contructor to ensure your injections are ready when your object are instantiated.
+
+```php
+<?php
+
+$injectableClass = (new class { use Injectable; })::inject([]);
+
+```
+
+You could now use `new $injectableClass` to instantiate a class with very little functionality. The problem here is that you can't inherit from an anonymous class in PHP. To solve this problem we can pass a second parameter to `::inject()` to name the class:
+
+```php
+<?php
+
+use \SeanMorris\Ids\Injectable;
+
+(new class { use Injectable; })::inject([], AwesomeInjectable::CLASS);
+
+class AwesomeClass extends AwesomeInjectable
+{
+	public function someMethod()
+	{
+		// here there be behaviors...
+	}
+}
+
+```
+### Class Promotion
+
+The last example showed something called *class promotion*, this simply allows us to take an anonymous class and "promote" it to a named class to that other parts of the system can refer to it by name.
+
+There are two ways to promote a class:
+
+With the `Injectable` trait:
+
+```php
+<?php
+use \SeanMorris\Ids\Injectable;
+
+$anonymousClass = new class
+{
+	use Injectable;
+
+	public function doSomething()
+	{
+		echo "I'm doing something.";
+	}
+};
+
+// Pr
+$anonymousClass::inject([], NamedClass::CLASS);
+```
+
+Or with the `Loader` class:
+
+```php
+<?php
+
+$anonymousClass = new class
+{
+	public function doSomething()
+	{
+		echo "I'm doing something.";
+	}
+};
+
+Loader::define([ NamedClass::CLASS => $anonymousClass ]);
+
+```
+
+### Defining Injections
+
+In `::inject()`'s' first parameter, we can define any default injections we'd like our class to have, to facilitate situations where we'd want it to have access to a default set of behaviors we can override.
+
+
+```php
+<?php
+use \SeanMorris\Ids\Injectable;
+
+(new class { use Injectable; })::inject([
+
+	InjectedDate::CLASS => Datetime::CLASS
+
+], AwesomeInjectable::CLASS);
+```
+
+You can now access the injections as a static property of the newly created class:
+
+```php
+<?php
+
+class DateFormatter extends AwesomeInjectable
+{
+	protected static $InjectedDate;
+
+	public function dateToTimestamp($date)
+	{
+		$datetime = new static::$InjectedDate($date);
+
+		return $datetime->getTimestamp();
+	}
+}
+```
+
+Since the injections are represented by static properties, injectables are accessible just fine in the static scope:
+
+```php
+<?php
+
+class DateFormatter extends AwesomeInjectable
+{
+	protected static $InjectedDate;
+
+	public static function dateToTimestamp($date)
+	{
+		$datetime = new static::$InjectedDate($date);
+
+		return $datetime->getTimestamp();
+	}
+}
+```
+
+You can continue to create further subclasses that may or may not override the default injections:
+
+```php
+<?php
+// Inherit injected classes normally:
+
+class CoolDateFormatter extends DateFormatter
+{
+	// ...
+}
+
+// Or create new subclasses by injecting the class and passing a new name:
+// (AwesomeDateFormatter is being created based on DateFormatter here)
+
+DateFormatter::inject([
+
+	InjectedDate::CLASS => \Awesome\Project\AwesomeDatetime::CLASS
+
+], AwesomeDateFormatter::CLASS);
+
+class EvenCoolerDateFormatter extends AwesomeDateFormatter
+{
+	// ...
+}
+
+```
+
+### Subclassing existing/default injections
+
+If the existing injection is a static property, you can simply acesss it and call `::inject()` on it to create a subclass of the existing injection:
+
+```php
+<?php
+
+use \SeanMorris\Ids\Collection;
+use \SeanMorris\Ids\WrappedMethod;
+
+$RankIterator = $collectionClass::$RankIterator::inject([
+	'map' => WrappedMethod::wrap($callback)
+]);
+
+$mappedCollection = Collection::inject([
+
+	'RankIterator' => $RankIterator
+
+]);
+
+```
+
+Or you could promote the class and extend it directly:
+
+If the existing injection is a static property, you can simply acesss it and call `::inject()` on it to create an injected subclass:
+
+```php
+<?php
+use \SeanMorris\Ids\Collection;
+use \SeanMorris\Ids\WrappedMethod;
+
+$collectionClass::$RankIterator::inject([
+
+	'map' => WrappedMethod::wrap($callback)
+
+], \InjectedRankIterator::CLASS);
+
+class SubInjectedRankIterator extends InjectedRankIterator
+{
+	//...
+}
+
+$mappedCollection = Collection::inject([
+
+	'RankIterator' => SubInjectedRankIterator::CLASS
+
+]);
+
+```
+
+### Creating injectables out of existing classes
+
+Any class that can be extended can become injectable:
+
+```php
+<?php
+use \SeanMorris\Ids\Injectable;
+
+class RegularOldClass
+{
+	// ...
+}
+
+(new class() extends RegularOldClass { use Injectable; })::inject(
+	[], InjectableRegularOldClass::CLASS
+);
+
+$object = new InjectableRegularOldClass();
+
+```
+
+### Factories, Singletons & Injectable Methods
+
+Behaviors may be dynamically provided as injections by wrapping closure with a simple class to let the system know how to treat it.
+
+The methods are wrapped by classes so they may participate in the `Loader` system. See *Global Injections* for more information on that topic.
+
+#### Injected Methods
+
+The WrappeMethod class allows you to pass a method along that will not be called by the system, allowing it to be used in code.
+
+`RankIterator` implements the following method in such a way that a map method can be injected:
+
+```php
+<?php
+
+class RankIterator extends AppendIterator
+{
+	use Injectable;
+
+	protected static $map;
+
+	// ...
+
+	public function current()
+	{
+		$value = $this->getInnerIterator()->current();
+
+		if(static::$map)
+		{
+			$mapper = static::$map;
+			$value  = $mapper($value, $this->key());
+		}
+
+		return $value;
+	}
+
+	// ...
+}
+
+```
+
+The new iterator class with mapping behavior can be created like so:
+
+```php
+<?php
+
+use \SeanMorris\Ids\WrappedMethod;
+use \SeanMorris\Ids\Collection\RankIterator;
+
+$MappedRankIterator = RankIterator::inject([
+
+	'map' => WrappedMethod::wrap(function($input){
+		$output = doSomething($input);
+
+		return $output;
+	})
+
+]);
+
+$iterator = new $MappedRankIterator;
+
+```
+
+
+#### Factory Methods
+
+Factory methods may be provided in a similar manner.
+
+```php
+<?php
+use \SeanMorris\Ids\Inject\FactoryMethod;
+
+$coolDateFormatter = AwesomeDateFormatter::inject([
+
+	assembledObject::CLASS => FactoryMethod::wrap(function(){
+
+		$object = new StdClass;
+
+		$object->someProperty = 'important value';
+		$object->someOtherVar = 'slightly less important value';
+
+		return $object;
+	})
+
+]);
+```
+
+### Singleton Methods
+
+Singletons may be loaded in a similar manner. A method wrapped by `SingletonMethod` will be called only once and its return value used as the provided injection for all cases.
+
+Singletons provided as static properties will be instatiated on definition, rather than on property access.
+
+```php
+<?php
+use \SeanMorris\Ids\Inject\SingletonMethod
+
+class AwesomeLogger
+{
+	protected $fileHandle;
+
+	writeLog($line)
+	{
+		fwrite($this->fileHandle, $line);
+	}
+}
+
+$CoolerLogger = AwesomeLogger::inject([
+
+	logFile::CLASS => SingletonMethod::wrap(function(){
+
+		$fileHandle = fopen(LOG_FILE_LOCATION, 'a');
+
+		fwrite("Log started!\n", $fileHandle);
+
+		return $fileHandle;
+	})
+]);
+
+$logger = new $CoolerLogger;
+
+$logger->writeLine('This is a log line!');
+
+```
+
+### Global injections & \\___\\... namespaces
+
+Injections can be defined globally so that classes can just pick up on them and go. Using the `\___\...` namespace, we can set up places where injections can be defined globally. You can also use the `\Author\Project\___\...` namespace.
+
+For example, if the `AwesomeLogger` class from above were defined like this:
+
+```php
+<?php
+
+$injections = [logFile::CLASS => \___\LogFileInjectable::CLASS];
+
+(new class { use Injectable; })::inject($injections, AwesomeLogger::CLASS);
+```
+
+An injection can be defined globally in the `ids.boot.php` file in the `source/` directory of the project. This can be overridden as the root project's boot file will be executed last.
+
+```php
+<?php
+use \SeanMorris\Ids\Loader;
+
+// We can alias classes even if they don't exist yet:
+// If we were in a namespace, this would prevent it
+// from inheriting the FQNS.
+use \___\LogFileInjectable;
+
+Loader::define([ LogFileInjectable::CLASS => ActualLogFileClass::CLASS ]);
+
+```
+
+#### Overriding global injections
+
+Global injections may only be overridden **before** they are used in code. This does not count access to `::CLASS` or `use` statments that import classes from other namespaces.
+
+```php
+<?php
+// Dependency package's ids.boot.php:
+use \SeanMorris\Ids\Loader;
+
+Loader::define([ LogFileInjectable::CLASS => LogFileClass::CLASS ]);
+
+```
+
+```php
+<?php
+// Root package's ids.boot.php:
+use \SeanMorris\Ids\Loader;
+
+Loader::define([ LogFileInjectable::CLASS => AwesomeLogFileClass::CLASS ]);
+
+```
+
+#### Fallback global injections
+
+Sometimes you might want to allow injections to be overriden for the whole of the system or perhaps some of its parts. If you want this behavior as well as a fallback to a default the following pattern will handle that.
+
+In this example, any part of the system may ask for "Red Paint", "Blue Paint", or "*Just whatever* Paint". They might not get the color they asked for, but they will get paint.
+
+```php
+<?php
+// Dependency package's ids.boot.php:
+use \SeanMorris\Ids\Loader;
+
+Loader::define([ \___\Paint::CLASS      => BasicPaint::CLASS ]);
+
+Loader::define([ \___\Paint\Red::CLASS  => \___\Paint::CLASS ]);
+Loader::define([ \___\Paint\Blue::CLASS => \___\Paint::CLASS ]);
+
+```
+
+This would allow us to override all instances where "Paint" is injected.
+
+```php
+<?php
+// Root package's ids.boot.php:
+use \SeanMorris\Ids\Loader;
+
+Loader::define([ \___\Paint::CLASS => AwesomePaint::CLASS ]);
+
+```
+
+This would allow us to override only instances where "Red Paint" is injected.
+
+```php
+<?php
+// Root package's ids.boot.php:
+use \SeanMorris\Ids\Loader;
+
+Loader::define([ \___\Paint\Red::CLASS => AwesomeRedPaint::CLASS ]);
+
+```
+
 ## Sessions
 ## Email
 

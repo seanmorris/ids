@@ -6,7 +6,7 @@ use PhpAmqpLib\Message\AMQPMessage,
 
 if(!class_exists('AMQPMessage'))
 {
-	Log::warn('SeanMorris\Ids\Queue requires PhpAmqpLib');
+	// Log::warn('SeanMorris\Ids\Queue requires PhpAmqpLib');
 }
 
 /**
@@ -53,6 +53,7 @@ abstract class Queue
 		, RPC                = FALSE
 
 		, ASYNC              = FALSE
+		, TICK               = 0
 
 		, BROADCAST_EXCHANGE = '::broadcast'
 		, RPC_TOPIC_EXCHANGE = '::rpcTopic'
@@ -75,7 +76,8 @@ abstract class Queue
 		, $topicQueues           = []
 		, $rpcDone               = []
 		, $rpcSendTopicQueue     = []
-		, $rpcResponseTopicQueue = [];
+		, $rpcResponseTopicQueue = []
+		, $lastTick              = 0;
 
 	/**
 	 * Initialization logid for listeners.
@@ -95,6 +97,8 @@ abstract class Queue
 	 * @return void
 	 */
 	protected static function recieve($message){}
+
+	protected static function tick($message){}
 
 	/**
 	 * Send a message to a queue. Optionally provide a topic
@@ -647,6 +651,13 @@ abstract class Queue
 
 			while(TRUE)
 			{
+				if(static::TICK)
+				{
+					if(static::$lastTick < (microtime(TRUE) / 1000) + static::TICK)
+					{
+						static::tick();
+					}
+				}
 				static::check($callback ?? $wrapper, $topic);
 			}
 		}

@@ -64,44 +64,7 @@ class Meta
 
 	public static function &staticSession($depth = 0)
 	{
-		if(session_status() === PHP_SESSION_NONE
-			&& php_sapi_name() !== 'cli'
-			&& !\SeanMorris\Ids\Http\Http::disconnected()
-		){
-			session_start();
-		}
-
-		if(!isset($_SESSION['meta']))
-		{
-			$_SESSION['meta'] = [];
-			$_SESSION['sess_id'] = uniqid();
-		}
-
-		static::$session =& $_SESSION['meta'];
-
-		if($objectStack = static::getObjectStack(1, false))
-		{
-			$class = $objectStack[0];
-
-			if(!is_string($class))
-			{
-				$class = get_class($objectStack[0]);
-			}
-
-			while($depth-- > 0)
-			{
-				$class = get_parent_class($class);
-			}
-
-			if(!isset(static::$session[$class]))
-			{
-				static::$session[$class] = [];
-			}
-
-			return static::$session[$class];
-		}
-
-		return false;
+		return Session::local($depth);
 	}
 
 	public static function classes($super = NULL)
@@ -111,26 +74,26 @@ class Meta
 
 		static $allClasses = [];
 
+		if($super && !static::classExists($super))
+		{
+			return [];
+		}
+
 		if($allClasses)
 		{
 			foreach($allClasses as $class)
 			{
-				if(!static::classExists($class))
-				{
-					continue;
-				}
+				// if(!static::classExists($class))
+				// {
+				// 	continue;
+				// }
 
-				if($super && !static::classExists($super))
+				if(!$super || is_a($class, $super, TRUE))
 				{
-					continue;
+					$classes[] = $class;
 				}
-
 				try
 				{
-					if(!$super || is_a($class, $super, TRUE))
-					{
-						$classes[] = $class;
-					}
 				}
 				catch(\Exception $e)
 				{
@@ -152,9 +115,9 @@ class Meta
 		foreach ($phpFiles as $phpFile)
 		{
 			$relativePath = preg_replace(
-				sprintf('|^%s|', preg_quote(IDS_ROOT . '/vendor/'))
+				sprintf('|^%s/|', preg_quote(IDS_ROOT))
 				, ''
-				, $phpFile->getPath()
+				, $phpFile->getPathname()
 			);
 
 			foreach($skip as $s)
@@ -167,15 +130,24 @@ class Meta
 
 			\SeanMorris\Ids\Log::debug(sprintf(
 				'Scanning file %s'
-				, $phpFile
+				, $relativePath
 			));
 
-			$aliases = [];
+			$syntaxCheckCommand = sprintf('php -l %s 2>&1', escapeshellarg($relativePath));
 
-			if(preg_match('/(simple)?[Tt]est(s)?/', $phpFile->getRealPath()))
+			$checkHandle = popen($syntaxCheckCommand, 'r');
+
+			if($checkHandle)
 			{
 				continue;
 			}
+
+			$aliases = [];
+
+			// if(preg_match('/(simple)?[Tt]est(s)?/', $phpFile->getRealPath()))
+			// {
+			// 	continue;
+			// }
 
 			$content = file_get_contents($phpFile->getRealPath());
 			$tokens = token_get_all($content);
@@ -198,7 +170,6 @@ class Meta
 				}
 
 				// @TODO: Account for use aliases when doing class lookups.
-
 				if(T_USE === $tokens[$index][0])
 				{
 					$aliased = null;
@@ -259,11 +230,6 @@ class Meta
 						{
 							break;
 						}
-
-						// if(!static::classExists($subNamespace, $phpFile->getRealPath()))
-						// {
-						// 	break;
-						// }
 					}
 
 					$index += 2;
@@ -271,8 +237,6 @@ class Meta
 					if(!$namespace)
 					{
 						$class = $tokens[$index][1];
-
-						$allClasses[] = $class;
 
 						if(!static::classExists($class))
 						{
@@ -284,6 +248,8 @@ class Meta
 							break;
 						}
 
+						$allClasses[] = $class;
+
 						if($super && !static::classExists($super))
 						{
 							break;
@@ -291,49 +257,74 @@ class Meta
 
 						if(!$super || is_a($class, $super, TRUE))
 						{
+							if(substr($class, 0, 4) === 'Test' || substr($class, -4) === 'Test')
+							{
+								break;
+							}
+
 							$classes[] = $class;
 						}
 
 						break;
 					}
 
-					$class = $namespace . '\\' . $tokens[$index][1];
-
-					try
+					if(isset($tokens[$index - 4]) && $tokens[$index - 4][0] === T_NEW)
 					{
-						if(!class_exists($class)
-							&& !interface_exists($class)
-							&& !trait_exists($class)
-						){
+						$currentClassName = 'anonymous';
+					}
+					else
+					{
+						$currentClassName = $tokens[$index][1];
+
+						$class = $namespace . '\\' . $currentClassName;
+
+						try
+						{
+							if(!class_exists($class)
+								&& !interface_exists($class)
+								&& !trait_exists($class)
+							){
+								break;
+							}
+						}
+						catch (\Exception $e)
+						{
+							Log::exception($e);
 							break;
 						}
-					}
-					catch (\Exception $e)
-					{
-						break;
-					}
 
-					if(in_array($class, $allClasses))
-					{
-						break;
-					}
+						$first  = strpos($class, '\\');
+						$second = strpos($class, '\\', $first  + 1);
+						$third  = strpos($class, '\\', $second + 1);
 
-					$allClasses[] = $class;
+						// var_dump($class, $first, $second, $third, substr(
+						// 	$class
+						// 	, $second + 1
+						// 	, $third - $second - 1
+						// ));
 
-					try
-					{
-						if(!$super || is_a($class, $super, TRUE))
+						if(substr($class, $second + 1, $third - $second - 1) === 'Test')
 						{
-							$classes[] = $class;
+							break;
 						}
-					}
-					catch(\ParseError $e)
-					{
-						print $e->getMessage();
-					}
-					catch(\Exception $e)
-					{
-						print $e->getMessage();
+
+						try
+						{
+							if(!$super || is_a($class, $super, TRUE))
+							{
+								$classes[] = $class;
+							}
+						}
+						catch(\ParseError $e)
+						{
+							Log::exception($e);
+						}
+						catch(\Exception $e)
+						{
+							Log::exception($e);
+						}
+
+						$allClasses[] = $class;
 					}
 
 					break;
@@ -372,8 +363,8 @@ class Meta
 
 		$escapedClassFile = escapeshellarg($classFile);
 
-		exec(sprintf("php -l %s", $escapedClassFile), $out, $statusCode);
+		$success = (bool) popen(sprintf('php -l %s 2>&1', $escapedClassFile));
 
-		return $results[$class] = ($statusCode === 0);
+		return $results[$class] = $success;
 	}
 }

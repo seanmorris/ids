@@ -1,10 +1,21 @@
 <?php
 namespace SeanMorris\Ids;
+
+/**
+ * Loader allows aliased classnames to be mapped to actual classes. It defers the actual
+ * alias operation until the autoloader runs, so that the aliased names may be overridden
+ * during configuration.
+ *
+ * Built-in classes may be used as well as user defined and anonymous classes.
+ *
+ */
+
 class Loader
 {
 	protected static
 	$requested = []
-	, $classes = [];
+	, $classes = []
+	, $___classMatch = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*$/';
 
 	use Injectable;
 
@@ -13,10 +24,15 @@ class Loader
 		spl_autoload_register([static::class, 'load']);
 	}
 
-	public static function inject($classes)
+	public static function define($classes)
 	{
 		foreach($classes as $alias => $target)
 		{
+			if($alias && !preg_match(static::$___classMatch, $alias))
+			{
+				continue;
+			}
+
 			if(static::$requested[$alias]??0)
 			{
 				throw new \Exception(sprintf(
@@ -27,6 +43,11 @@ class Loader
 				));
 			}
 
+			if(is_object($target))
+			{
+				$target = get_class($target);
+			}
+
 			static::$classes[$alias] = $target;
 		}
 
@@ -35,16 +56,17 @@ class Loader
 
 	public static function load($classname)
 	{
-		if(!$parts = explode('\\', $classname))
+		if(!$parts = mb_split('\\\\', $classname))
 		{
 			return;
 		}
 
-		$injectSpace = \SeanMorris\Ids\Settings::read('injectSpace');
-
-		if($injectSpace && ($parts[0] !== $injectSpace))
+		if($parts[0] !== IDS_INJECT_SPACE)
 		{
-			return;
+			if(!isset($parts[2]) || ($parts[2] !== IDS_INJECT_SPACE))
+			{
+				return;
+			}
 		}
 
 		if(!$realClass = static::$classes[$classname]??0)
@@ -52,28 +74,29 @@ class Loader
 			return;
 		}
 
-		$trace = debug_backtrace();
-
-		if(!isset($trace[1], $trace[1]['function']))
-		{
-			return;
-		}
-
-		if($trace[1]['function'] !== 'spl_autoload_call')
-		{
-			throw new \Exception('Cannot call autoloader directly.');
-		}
+		$trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
 
 		static::$requested[$classname] = [
-			'file'   => $trace[1]['file']
-			, 'line' => $trace[1]['line']
+			'file'   => $trace[1]['file']??''
+			, 'line' => $trace[1]['line']??''
 		];
 
-		if(is_object($realClass))
+		if(is_callable($realClass))
 		{
-			$realClass = get_class($realClass);
+			return $realClass;
 		}
 
-		class_alias($realClass, $classname);
+		static::cloneClass($realClass, $classname);
+
+		return $realClass;
+	}
+
+	public static function one($instance)
+	{
+		return new class( function() use($instance) {
+
+			return $instance;
+
+		}) extends FactoryMethod {};
 	}
 }

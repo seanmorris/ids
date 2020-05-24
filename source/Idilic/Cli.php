@@ -29,10 +29,10 @@ class Cli
 
 	protected static
 		$in, $out, $error;
-		
+
 	public static function option(...$names)
 	{
-		static $options; 
+		static $options;
 		$options = static::options();
 
 		while($name = array_shift($names))
@@ -145,7 +145,7 @@ class Cli
 		}
 		else
 		{
-			stream_set_blocking ($in, true);
+			stream_set_blocking($in, true);
 		}
 
 		return trim(fgets($in));
@@ -163,8 +163,7 @@ class Cli
 
 	public static function out($line)
 	{
-		$out = static::outHandle();
-		fwrite($out, $line);
+		fwrite(static::outHandle(), $line);
 	}
 
 	public static function errorHandle()
@@ -179,8 +178,7 @@ class Cli
 
 	public static function error($line)
 	{
-		$error = static::errorHandle();
-		fwrite($error, $line);
+		fwrite(static::errorHandle(), $line);
 	}
 
 	public static function color($string, $foreground = NULL, $background = NULL, $terminate = TRUE)

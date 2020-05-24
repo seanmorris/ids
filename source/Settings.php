@@ -372,10 +372,10 @@ class Settings
 
 				if(file_exists($filepath))
 				{
-					if($switches['verbose'] ?? $switches['v'] ?? FALSE)
+					if($switches['verbose'] ?? $switches['v'] ?? $switches['vv'] ?? $switches['vvv'] ?? FALSE)
 					{
 						fwrite(fopen('php://stderr', 'w'), sprintf(
-							'Using settings file: %s'
+							'Using settings file: %s' . PHP_EOL . PHP_EOL
 							, $filepath
 						));
 					}

@@ -1,5 +1,4 @@
 <?php
-
 namespace SeanMorris\Ids;
 class LogMeta
 {
