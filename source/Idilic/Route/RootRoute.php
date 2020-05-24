@@ -677,19 +677,24 @@ class RootRoute implements \SeanMorris\Ids\Routable
 	{
 		$switches = $router->request()->switches();
 
-		$packages = implode(
-			PHP_EOL
-			, \SeanMorris\Ids\Package::listPackages()
-		);
+		$packages = \SeanMorris\Ids\Package::packageDirectories();
+		// $packageDirectories = static::packageDirectories();
 
-		if($switches['s'] ?? FALSE)
+		if(!$switches['locations'])
 		{
-			return $packages;
+			return array_keys($packages);
 		}
-		else
+
+		foreach($packages as $package => $directory)
 		{
-			return preg_replace('/\//', '\\', $packages);
+			if($switches['s']??0)
+			{
+				$package = str_replace('\\', '/', $package);
+			}
+
+			yield ['package' => $package, 'directory' => $directory];
 		}
+
 	}
 
 	/** Link static information from all packages to main project. */

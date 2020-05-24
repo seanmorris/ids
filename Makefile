@@ -576,6 +576,16 @@ retarget: ### Set the current target for one invocation.
 	@ test -z "${TGT_STR}" \
 		|| >&2 echo Setting services for ${TGT_STR}...
 	@ ${NEWTARGET}
+	@- $(eval INSTALLED_PACKAGES=$(shell ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
+		${PASS_ENV} idilic listPackages --headers --format=csv --locations listPackages \
+		| sed 's/\//_/' \
+		| sed -r 's/(.*),(.*)/\U\1\E=\2/'))
+	@- $(foreach P,${INSTALLED_PACKAGES},\
+		$(eval PACKDIR_${P}) \
+	)
+	@ echo ${PACKDIR_SEANMORRIS_IDS};
+
+$(info ${PACKAGES})
 
 ${ROOTDIR}config/.env:
 	@ test -f ${@} || touch -d 0 ${@}

@@ -138,12 +138,66 @@ foreach($requests as $req)
 		switch($switches['format'] ?? NULL)
 		{
 			case 'yml':
-					print yaml_emit($res);
-					break;
+				print yaml_emit($res);
+				break;
 
 			case 'json':
-					print json_encode($res, JSON_PRETTY_PRINT);
-					break;
+				print json_encode($res, JSON_PRETTY_PRINT);
+				break;
+
+			case 'tsv':
+				$delimiter = "\t";
+
+			case 'csv':
+				$delimiter = $delimiter ?? ',';
+
+				if(is_scalar($res))
+				{
+					print $res;
+				}
+
+				if(is_array($res) || $res instanceof \Traversable)
+				{
+					$newHeaders = [];
+					$headers    = [];
+
+					foreach($res as $k => $r)
+					{
+						if($switches['--headers']??0)
+						{
+							$newHeaders = array_keys((array) $r);
+						}
+
+						if($newHeaders && !$headers)
+						{
+							$headers = $newHeaders;
+
+							if($switches['--index']??0)
+							{
+								array_unshift($headers, NULL);
+							}
+
+							fputcsv(STDOUT, $headers, $delimiter);
+						}
+
+						if(array_diff($headers, $newHeaders))
+						{
+							$headers = $newHeaders;
+
+							print PHP_EOL . '```' . PHP_EOL;
+						}
+
+						$row = array_values((array) $r);
+
+						if($switches['--index']??0)
+						{
+							array_unshift($row, $k);
+						}
+
+						fputcsv(STDOUT, $row, $delimiter);
+					}
+				}
+				break;
 
 			default:
 				if(function_exists('yaml_emit'))
