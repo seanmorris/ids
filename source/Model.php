@@ -31,15 +31,22 @@ class Model
 
 	protected function _create($curClass)
 	{
-
 		$backtrace = debug_backtrace();
 
 		$trace = [];
 
 		foreach($backtrace as $frame)
 		{
-			$trace[] = sprintf('%s:%d', $frame['file'] ?? '--', $frame['line'] ?? 0);
+			$trace[] = sprintf(
+				"%s::%s\n\t\t\t%s:%d"
+				, isset($frame['object']) ? get_class($frame['object']) : ($frame['class'] ?? '--')
+				, $frame['function'] ?? '--'
+				, $frame['file'] ?? '--'
+				, $frame['line'] ?? 0)
+			;
 		}
+
+		array_reverse($trace);
 
 		\SeanMorris\Ids\Log::debug(sprintf(
 			'%s::_create(...)'
@@ -284,13 +291,13 @@ class Model
 
 		if($id || $inserted)
 		{
-			$curClass::afterWrite($this, $values);
-			$curClass::afterCreate($this, $values);
-
 			if($id)
 			{
 				$this->id = $id;
 			}
+
+			$curClass::afterWrite($this, $values);
+			$curClass::afterCreate($this, $values);
 
 			return $this;
 		}
@@ -312,205 +319,187 @@ class Model
 	{
 		static::clearCache();
 
-		if($this->_changed)
+		if(!$this->_changed)
 		{
-			$backtrace = debug_backtrace();
+			// return TRUE;
+		}
 
-			// $trace = [];
+		$columnsToWrappers = $curClass::getColumns('update', FALSE);
 
-			// foreach($backtrace as $frame)
-			// {
-			// 	$trace[] = sprintf('%s:%d', $frame['file'] ?? '--', $frame['line'] ?? 0);
-			// }
-
-			// \SeanMorris\Ids\Log::debug(sprintf(
-			// 	'%s::_update(...)'
-			// 		. PHP_EOL
-			// 		. "\t" . "Called from\n\t\t%s."
-			// 		. PHP_EOL
-			// 	, get_called_class()
-			// 	, implode(PHP_EOL . "\t\t", $trace)
-			// ));
-
-			$columnsToWrappers = $curClass::getColumns('update', FALSE);
-
-			$wrappers = array_filter(
-				$columnsToWrappers
-				, function($columnName) use($columnsToWrappers)
-				{
-					return !isset($columnsToWrappers[$columnName]);
-				}
-			);
-
-			$columns = array_keys($columnsToWrappers);
-
-			$update = new \SeanMorris\Ids\Mysql\UpdateStatement($curClass::$table);
-			$update->columns(...$columns)->wrappers($wrappers)
-				->conditions([['id' => '?']]);
-
-			$values = [];
-			$namedValues = [];
-
-			foreach($columns as $column)
+		$wrappers = array_filter(
+			$columnsToWrappers
+			, function($columnName) use($columnsToWrappers)
 			{
-				$colVal = $this->$column;
+				return !isset($columnsToWrappers[$columnName]);
+			}
+		);
 
-				if(is_array($colVal) && isset(static::$hasOne[$column]))
+		$columns = array_keys($columnsToWrappers);
+
+		$update = new \SeanMorris\Ids\Mysql\UpdateStatement($curClass::$table);
+		$update->columns(...$columns)->wrappers($wrappers)
+			->conditions([['id' => '?']]);
+
+		$values = [];
+		$namedValues = [];
+
+		foreach($columns as $column)
+		{
+			$colVal = $this->$column;
+
+			if(is_array($colVal) && isset(static::$hasOne[$column]))
+			{
+				$colVal = $this->storeSubmodel($column, $colVal);
+			}
+			else if(is_array($colVal) && isset(static::$hasMany[$column]))
+			{
+				$colVal = $this->storeSubmodel($column, $colVal);
+			}
+			else if(is_object($colVal) && isset($colVal->id))
+			{
+				$colVal = $colVal->id;
+			}
+
+			if(isset($wrappers[$column]) && $update->hasReplacements($wrappers[$column]))
+			{
+				$namedValues[$column] =& $values[];
+				$namedValues[$column] = $colVal;
+			}
+			elseif(!isset($wrappers[$column]))
+			{
+				$namedValues[$column] =& $values[];
+				$namedValues[$column] = $colVal;
+			}
+		}
+
+		$values[] = $this->id;
+
+		if(!$postUpdate)
+		{
+			if(($curClass::beforeUpdate($this, $namedValues) === FALSE)
+				| ($curClass::beforeWrite($this, $namedValues) === FALSE)
+			){
+				return FALSE;
+			}
+		}
+
+		$update->execute(...$values);
+
+		static $reflection = [];
+
+		if($this->id)
+		{
+			if(!isset($reflections[$curClass]))
+			{
+				$reflections[$curClass] = new \ReflectionClass($curClass);
+			}
+
+			$reflection = $reflections[$curClass];
+
+			foreach($this as $property => $value)
+			{
+				if(!$reflection->hasProperty($property))
 				{
-					$colVal = $this->storeSubmodel($column, $colVal);
-				}
-				else if(is_array($colVal) && isset(static::$hasMany[$column]))
-				{
-					$colVal = $this->storeSubmodel($column, $colVal);
-				}
-				else if(is_object($colVal) && isset($colVal->id))
-				{
-					$colVal = $colVal->id;
+					continue;
 				}
 
-				if(isset($wrappers[$column]) && $update->hasReplacements($wrappers[$column]))
+				$reflectionProperty = $reflection->getProperty($property);
+
+				if($reflectionProperty->class !== $curClass)
 				{
-					$namedValues[$column] =& $values[];
-					$namedValues[$column] = $colVal;
+					continue;
 				}
-				elseif(!isset($wrappers[$column]))
+
+				if(isset($curClass::$hasOne[$property]))
 				{
-					$namedValues[$column] =& $values[];
-					$namedValues[$column] = $colVal;
+					//$this->storeRelationship($property, $this->{$property});
+				}
+
+				if(isset($curClass::$hasMany[$property]) && is_array($this->{$property}))
+				{
+					$this->storeRelationships($property, $this->{$property});
 				}
 			}
 
-			$values[] = $this->id;
+			$saved = NULL;
+
+			if($parentClass = get_parent_class($curClass))
+			{
+				$tableProperty = new \ReflectionProperty($parentClass, 'table');
+				$curParentClass = $parentClass;
+
+				while($parentClass && $tableProperty->class !== $parentClass)
+				{
+					\SeanMorris\Ids\Log::debug('CHECKING CLASS ' . $parentClass);
+					if($parentClass::beforeUpdate($this, $namedValues) === FALSE
+						| $parentClass::beforeWrite($this, $namedValues) === FALSE
+					){
+						return FALSE;
+					}
+					$parentClass = get_parent_class($parentClass);
+					$tableProperty = new \ReflectionProperty($parentClass, 'table');
+				}
+
+				if($parentClass
+					&& $parentClass::$table
+					&& $tableProperty->class === $parentClass
+				){
+					\SeanMorris\Ids\Log::debug('ASCENDING TO ' . $parentClass);
+					if(!$this->_update($parentClass))
+					{
+						return FALSE;
+					}
+				}
+
+				$parentClass = $curParentClass;
+				$tableProperty = new \ReflectionProperty($parentClass, 'table');
+
+				while($parentClass && $tableProperty->class !== $parentClass)
+				{
+					\SeanMorris\Ids\Log::debug('CHECKING CLASS ' . $parentClass);
+					if($saved
+						&& $parentClass::afterUpdate($saved, $namedValues) === FALSE
+						|| $parentClass::afterWrite($saved, $namedValues) === FALSE
+					){
+						return FALSE;
+					}
+					$parentClass = get_parent_class($parentClass);
+					$tableProperty = new \ReflectionProperty($parentClass, 'table');
+				}
+			}
+
+			$saved = static::loadOneRecord($this->id);
 
 			if(!$postUpdate)
 			{
-				if(($curClass::beforeUpdate($this, $namedValues) === FALSE)
-					| ($curClass::beforeWrite($this, $namedValues) === FALSE)
+				if($curClass::afterUpdate($saved, $namedValues) === FALSE
+					|| $curClass::afterWrite($saved, $namedValues) === FALSE
 				){
 					return FALSE;
 				}
 			}
 
-			$update->execute(...$values);
-
-			static $reflection = [];
-
-			if($this->id)
+			if(!$saved)
 			{
-				if(!isset($reflections[$curClass]))
-				{
-					$reflections[$curClass] = new \ReflectionClass($curClass);
-				}
+				\SeanMorris\Ids\Log::debug(['NOT SAVED', $this, $saved]);
 
-				$reflection = $reflections[$curClass];
-
-				foreach($this as $property => $value)
-				{
-					if(!$reflection->hasProperty($property))
-					{
-						continue;
-					}
-
-					$reflectionProperty = $reflection->getProperty($property);
-
-					if($reflectionProperty->class !== $curClass)
-					{
-						continue;
-					}
-
-					if(isset($curClass::$hasOne[$property]))
-					{
-						//$this->storeRelationship($property, $this->{$property});
-					}
-
-					if(isset($curClass::$hasMany[$property]) && is_array($this->{$property}))
-					{
-						$this->storeRelationships($property, $this->{$property});
-					}
-				}
-
-				$saved = NULL;
-
-				if($parentClass = get_parent_class($curClass))
-				{
-					$tableProperty = new \ReflectionProperty($parentClass, 'table');
-					$curParentClass = $parentClass;
-
-					while($parentClass && $tableProperty->class !== $parentClass)
-					{
-						\SeanMorris\Ids\Log::debug('CHECKING CLASS ' . $parentClass);
-						if($parentClass::beforeUpdate($this, $namedValues) === FALSE
-							| $parentClass::beforeWrite($this, $namedValues) === FALSE
-						){
-							return FALSE;
-						}
-						$parentClass = get_parent_class($parentClass);
-						$tableProperty = new \ReflectionProperty($parentClass, 'table');
-					}
-
-					if($parentClass
-						&& $parentClass::$table
-						&& $tableProperty->class === $parentClass
-					){
-						\SeanMorris\Ids\Log::debug('ASCENDING TO ' . $parentClass);
-						if(!$this->_update($parentClass))
-						{
-							return FALSE;
-						}
-					}
-
-					$parentClass = $curParentClass;
-					$tableProperty = new \ReflectionProperty($parentClass, 'table');
-
-					while($parentClass && $tableProperty->class !== $parentClass)
-					{
-						\SeanMorris\Ids\Log::debug('CHECKING CLASS ' . $parentClass);
-						if($saved
-							&& $parentClass::afterUpdate($saved, $namedValues) === FALSE
-							|| $parentClass::afterWrite($saved, $namedValues) === FALSE
-						){
-							return FALSE;
-						}
-						$parentClass = get_parent_class($parentClass);
-						$tableProperty = new \ReflectionProperty($parentClass, 'table');
-					}
-				}
-
-				$saved = static::loadOneRecord($this->id);
-
-				if(!$postUpdate)
-				{
-					if($curClass::afterUpdate($saved, $namedValues) === FALSE
-						|| $curClass::afterWrite($saved, $namedValues) === FALSE
-					){
-						return FALSE;
-					}
-				}
-
-				if(!$saved)
-				{
-					\SeanMorris\Ids\Log::debug(['NOT SAVED', $this, $saved]);
-
-					return FALSE;
-				}
+				return FALSE;
 			}
-
-			foreach($this as $property => $value)
-			{
-				if(isset($curClass::$hasMany[$property]))
-				{
-					continue;
-				}
-
-				$this->{$property} = $saved->$property;
-			}
-
-			static::clearCache();
-
-			return $this;
 		}
 
-		return FALSE;
+		foreach($this as $property => $value)
+		{
+			if(isset($curClass::$hasMany[$property]))
+			{
+				continue;
+			}
+
+			$this->{$property} = $saved->$property;
+		}
+
+		static::clearCache();
+
+		return $this;
 	}
 
 	public function delete()
@@ -2237,7 +2226,9 @@ class Model
 
 						try
 						{
-							if($subject->save())
+							$saved = $subject->save();
+
+							if($saved)
 							{
 								$this->{$property} = $subject->id;
 							}

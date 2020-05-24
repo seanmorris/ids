@@ -14,8 +14,6 @@ class Fuse
 		{
 			--$tries;
 
-			Log::debug(sprintf('Retries left #%d...', $tries));
-
 			try
 			{
 				$r = $callback();
@@ -32,9 +30,11 @@ class Fuse
 				}
 			}
 
+			sleep($delay);
+
 			Log::debug('Waiting...');
 
-			sleep($delay);
+			Log::debug(sprintf('Retries left #%d...', $tries));
 
 		} while($tries > 0);
 	}

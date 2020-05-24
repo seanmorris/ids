@@ -552,16 +552,16 @@ class SelectStatement extends WhereStatement
 		{
 			$queryObject = $this->execute(...$args);
 
-			$first = FALSE;
+			// $first = FALSE;
 
 			while($row = $queryObject->fetch(\PDO::FETCH_ASSOC))
 			{
-				if(!$first)
-				{
-					$first = TRUE;
+				// if(!$first)
+				// {
+				// 	$first = TRUE;
 
-					$this->complete($queryObject, $queryStartTime, $args);
-				}
+				// 	$this->complete($queryObject, $queryStartTime, $args);
+				// }
 				\SeanMorris\Ids\Log::debug(
 					'Generating row...'
 					, $row
@@ -592,10 +592,10 @@ class SelectStatement extends WhereStatement
 				yield $result;
 			}
 
-			if(!$first)
-			{
-				$this->complete($queryObject, $queryStartTime, $args);
-			}
+			// if(!$first)
+			// {
+			// 	$this->complete($queryObject, $queryStartTime, $args);
+			// }
 
 			\SeanMorris\Ids\Log::debug('DONE GENERATING ROWS!');
 		};
@@ -605,25 +605,27 @@ class SelectStatement extends WhereStatement
 
 	protected function complete($queryObject, $queryStartTime, $args)
 	{
-		$queryTime = microtime(TRUE) - $queryStartTime;
+		// $queryTime = microtime(TRUE) - $queryStartTime;
 
-		static::$queryTime += $queryTime;
+		// static::$queryTime += $queryTime;
 
-		$queryHash = sha1(print_r([
-			$queryObject->queryString
-			, $args
-		],1));
+		// $queryHash = sha1(print_r([
+		// 	$queryObject->queryString
+		// 	, $args
+		// ],1));
 
-		\SeanMorris\Ids\Log::query('Query executed.', $args, new \SeanMorris\Ids\LogMeta([
-			'query'         => $queryObject->queryString
-			, 'query_time'  => $queryTime * 1000
-			, 'query_tier'  => $this->databaseTier()
-			, 'query_type'  => get_called_class()
-			, 'query_table' => $this->table
-			, 'query_args'  => $args
-			, 'query_hash'  => $queryHash
-
-		]));
+		// \SeanMorris\Ids\Log::query(
+		// 	sprintf('Query completed in %0.3fms.', $queryTime * 1000)
+		// 	, new \SeanMorris\Ids\LogMeta([
+		// 		'query'         => $queryObject->queryString
+		// 		, 'query_time'  => $queryTime * 1000
+		// 		, 'query_tier'  => $this->databaseTier()
+		// 		, 'query_type'  => get_called_class()
+		// 		, 'query_table' => $this->table
+		// 		, 'query_args'  => $args
+		// 		, 'query_hash'  => $queryHash
+		// 	])
+		// );
 	}
 
 	public function group(...$groups)

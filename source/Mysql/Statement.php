@@ -51,12 +51,6 @@ abstract class Statement
 	{
 		$queryString = $this->assemble(...(func_get_args()));
 
-		\SeanMorris\Ids\Log::query(
-			'Tier:' . $this->databaseTier()
-			, 'Preparing query'
-			, $queryString
-		);
-
 		$database = $this->database();
 
 		return $database->prepare($queryString);
@@ -77,11 +71,9 @@ abstract class Statement
 
 		static::$queryTime += $queryTime;
 
-		$queryHash = sha1(print_r([
-			$queryObject->queryString, $args
-		],1));
+		$queryHash = sha1(print_r([$queryObject->queryString, $args],1));
 
-		\SeanMorris\Ids\Log::query('Query executed.', new \SeanMorris\Ids\LogMeta([
+		\SeanMorris\Ids\Log::query($queryObject->queryString, $args, new \SeanMorris\Ids\LogMeta([
 			'query'         => $queryObject->queryString
 			, 'query_time'  => $queryTime
 			, 'query_tier'  => $this->databaseTier()
