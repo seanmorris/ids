@@ -11,6 +11,7 @@ class ChildProcess
 	protected
 		$command
 		, $process
+		, $errorCode = -1
 		, $stdIn
 		, $stdOut
 		, $stdErr
@@ -79,11 +80,21 @@ class ChildProcess
 		return $got;
 	}
 
+	public function readAll()
+	{
+		if($this->feof())
+		{
+			return;
+		}
+
+		return stream_get_contents($this->stdOut);
+	}
+
 	public function readError()
 	{
-		return fgets($this->stdErr);
+		$got = fgets($this->stdErr);
 
-		if(!$this->feof() && substr($got, -1) !== "\n")
+		if(!$this->feofError() && substr($got, -1) !== "\n")
 		{
 			$this->stdErrBuffer .= $got;
 			return;
@@ -98,6 +109,16 @@ class ChildProcess
 		}
 
 		return $got;
+	}
+
+	public function readAllError()
+	{
+		if($this->feofError())
+		{
+			return;
+		}
+
+		return stream_get_contents($this->stdErrBuffer);
 	}
 
 	public function feof()
@@ -125,5 +146,22 @@ class ChildProcess
 	public function kill()
 	{
 		is_resource($this->process) && proc_close($this->process);
+	}
+
+	public function errorCode()
+	{
+		if(!$this->feof() || $this->errorCode !== -1)
+		{
+			return $this->errorCode;
+		}
+
+		$status = proc_get_status($this->process);
+
+		if($status['running'] === FALSE)
+		{
+			$this->errorCode = $status['exitcode'];
+		}
+
+		return $this->errorCode;
 	}
 }

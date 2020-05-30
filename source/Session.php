@@ -12,9 +12,9 @@ class Session
 			&& php_sapi_name() !== 'cli'
 			&& !\SeanMorris\Ids\Http\Http::disconnected()
 		){
-			$sessionSave = new \SeanMorris\Ids\___\SessionHandler;
-			session_set_save_handler($sessionSave, TRUE);
-			var_dump($sessionSave);
+			// $sessionSave = new \SeanMorris\Ids\___\SessionHandler;
+			// session_set_save_handler($sessionSave, TRUE);
+			// var_dump($sessionSave);
 
 			session_start();
 		}

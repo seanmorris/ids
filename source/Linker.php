@@ -98,7 +98,10 @@ class Linker
 
 		foreach($classes as $index => $class)
 		{
-			try{ $parents = class_parents($class); }
+			try
+			{
+				$parents = class_parents($class);
+			}
 			catch(\ErrorException $exception)
 			{
 				Log::logException($exception);

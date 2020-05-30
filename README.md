@@ -13,9 +13,9 @@
 [![Docker Pulls - Idilic](https://img.shields.io/docker/pulls/seanmorris/ids.idilic?logo=docker&logoColor=white&color=600&label=ids.idilic%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.idilic)
 [![Docker Pulls - Server](https://img.shields.io/docker/pulls/seanmorris/ids.server?logo=docker&logoColor=white&color=960&label=ids.server%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.server)
 
-![php 7.1 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-1/master?label=php%207.1)
-![php 7.2 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-2/master?label=php%207.2)
-![php 7.3 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-3/master?label=php%207.3)
+![php 7.1 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-1?label=php%207.1)
+![php 7.2 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-2?label=php%207.2)
+![php 7.3 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-3?label=php%207.3)
 ![php 7.4 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-4?label=php%207.4)
 
 The Ids library provides general domain-primitives for developing web based applications. Routing, requests, modeling configuration, logging, sessions, and database access are all abstracted behind simple, expressive interfaces to efficient and powerful code.
@@ -29,27 +29,27 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.21 s (784.0 files/s, 124905.6 lines/s)
+github.com/AlDanial/cloc v 1.84  T=0.15 s (1053.3 files/s, 173961.0 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                              84           3195            406          13444
-JSON                             12              0              0           3910
+PHP                              83           3193            463          13393
+JSON                             11              0              0           3892
 Markdown                          2            928              0           1897
-YAML                             27            112             14           1113
-make                              2            142              9            584
+YAML                             24             97             14           1130
+make                              1            140              9            564
 SVG                              25              0              3            239
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             17             17             23
 HTML                              1              0              0             13
 INI                               3              0              0             11
-JavaScript                        1              0              0              1
 CSS                               1              0              0              1
+JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            164           4403            449          21276
+SUM:                            158           4384            506          21204
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Wed May 20 17:51:50 EDT 2020*
+*built by sean @ Sat May 30 10:34:00 EDT 2020*
 
 ## Installation
 
