@@ -494,7 +494,7 @@ list-tags lt: ## List the images tagged from the current target.
 push-images psi: ${ENV_LOCK} ## Push locally built images.
 	@ echo Pushing ${PROJECT}:${TAG}
 	@ ${WHILE_TAGS} \
-		echo $$TAG_NAME; \
+		docker push $$TAG_NAME; \
 	done;done;
 
 pull-images pli: ${ENV_LOCK} ${PREBUILD} ## Pull remotely hosted images.
