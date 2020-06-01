@@ -169,6 +169,7 @@ ${WHILE_IMAGES} \
 	docker image inspect --format="{{ index .RepoTags }}" $$IMAGE_HASH \
 	| sed 's/[][]//g' \
 	| sed 's/\s/\n/g' \
+	| grep ^${REPO}/${PROJECT}.*:${TAG} \
 	| while read TAG_NAME; do
 endef
 
