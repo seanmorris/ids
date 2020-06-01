@@ -152,7 +152,7 @@ class Meta
 			}
 			catch(\Throwable $error)
 			{
-				Log::logException($error);
+				// Log::logException($error);
 				continue;
 			}
 
@@ -292,7 +292,7 @@ class Meta
 						}
 						catch (\Throwable $e)
 						{
-							Log::logException($e);
+							// Log::logException($e);
 							break;
 						}
 
