@@ -445,7 +445,7 @@ start s: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d ${IMAGE}
 
 start-fg sf: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
-	${DCOMPOSE} -f ${COMPOSE_TARGET} up ${IMAGE}
+	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up ${IMAGE}
 
 start-bg sb: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the background, streaming output to terminal.
 	(${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up ${IMAGE} &)
