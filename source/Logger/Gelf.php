@@ -75,10 +75,11 @@ class Gelf implements \SeanMorris\Ids\Logger
 		{
 			$payload = json_encode($gelf);
 
-			try{
-				// socket_write($socket, $payload . "\0", strlen($payload) + 1);
+			try
+			{
+				socket_write($socket, $payload . "\0", strlen($payload) + 1);
 			}
-			catch(\Exception $e)
+			catch(\Throwable $e)
 			{
 				return;
 			}
@@ -91,20 +92,27 @@ class Gelf implements \SeanMorris\Ids\Logger
 
 		$graylogConfig = \SeanMorris\Ids\Settings::read('graylog');
 
-		if(!isset($graylogConfig->host, $graylogConfig->port))
+		try
+		{
+			if(!isset($graylogConfig->host, $graylogConfig->port))
+			{
+				return;
+			}
+
+			if($socket)
+			{
+				return $socket;
+			}
+
+			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+
+			socket_connect($socket, $graylogConfig->host, $graylogConfig->port);
+
+			return $socket;
+		}
+		catch(\Throwable $e)
 		{
 			return;
 		}
-
-		if($socket)
-		{
-			return $socket;
-		}
-
-		$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-
-		socket_connect($socket, $graylogConfig->host, $graylogConfig->port);
-
-		return $socket;
 	}
 }

@@ -229,27 +229,27 @@ $(eval TRGT_DLT:=$(shell echo ${ROOTDIR}.env_${TARGET}.default))
 $(eval DCOMPOSE_FILES:=)
 
 $(eval DCOMPOSE_FILES+= $(and        \
-	$(filter +aptcache,${TGT_SVC}),  \
+	$(filter +aptcache,${TGT_STR}),  \
 	-f ${COMPOSE_TOOLS}/aptcache.yml \
 ))
 
 $(eval DCOMPOSE_FILES+=$(and         \
-	$(filter +graylog,${TGT_SVC}),   \
+	$(filter +graylog,${TGT_STR}),   \
 	-f ${COMPOSE_TOOLS}/graylog.yml  \
 ))
 
 $(eval DCOMPOSE_FILES+=$(and         \
-	$(filter +inotify,${TGT_SVC}),   \
+	$(filter +inotify,${TGT_STR}),   \
 	-f ${COMPOSE_TOOLS}/inotify.yml  \
 ))
 
 $(eval DCOMPOSE_FILES+=$(and         \
-	$(filter +make,${TGT_SVC}),      \
+	$(filter +make,${TGT_STR}),      \
 	-f ${COMPOSE_TOOLS}/make.yml     \
 ))
 
 $(eval DCOMPOSE_FILES+=$(and         \
-	$(filter +cloc,${TGT_SVC}),      \
+	$(filter +cloc,${TGT_STR}),      \
 	-f ${COMPOSE_TOOLS}/cloc.yml     \
 ))
 
@@ -394,6 +394,8 @@ endif
 
 IMAGE?=
 build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build worker
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build idilic
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start ${IMAGE}
 	@ ${WHILE_IMAGES} \
@@ -445,7 +447,7 @@ start s: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d ${IMAGE}
 
 start-fg sf: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
-	@ ${DCOMPOSE} -f ${COMPOSE_TARGET} up ${IMAGE}
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up ${IMAGE}
 
 start-bg sb: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the background, streaming output to terminal.
 	(${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up ${IMAGE} &)
@@ -564,8 +566,8 @@ ${VAR_FILE}: retarget
 
 retarget: ### Set the current target for one invocation.
 	@- $(eval ORIG?=${TARGET})
-	@- $(eval TGT_STR?=${TGT_STR})
-	@ $(call EXTRACT_TARGET_SERVICES, ${TGT_STR})
+# 	@- $(eval TGT_STR?=${TGT_STR})
+	@ $(call EXTRACT_TARGET_SERVICES, ${ENV_LOCK_TGT_SVC})
 	@ [[ "${ORIG}" == "${TARGET}" ]] \
 		|| >&2 echo Setting target ${ORIG}...
 	@ test -z "${TGT_STR}" \
