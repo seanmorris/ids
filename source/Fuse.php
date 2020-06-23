@@ -32,7 +32,10 @@ class Fuse
 				}
 			}
 
-			Log::debug('Waiting...');
+			Log::debug(sprintf(
+				'Waiting %s seconds...'
+				, $delay
+			));
 
 			sleep($delay);
 

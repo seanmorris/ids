@@ -200,7 +200,8 @@ while read -r ENV_LINE; do                     \
 		echo -n $$ENV_NAME=;                   \
 		grep $$ENV_NAME .entropy | {           \
 		IFS=":" read -r ENV_KEY ENTROPY_KEY;   \
-		test -n "$$ENTROPY_KEY"                \
+		test -n "$$ENTROPY_KEY"      \
+			&& test -z "$$ENV_VALUE" \
 			&& echo $$(ENTROPY_KEY=$$ENTROPY_KEY  \
 				$(call GET_ENTROPY,$$ENTROPY_KEY) \
 			)                                  \
