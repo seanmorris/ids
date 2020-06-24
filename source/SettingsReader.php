@@ -156,7 +156,7 @@ class SettingsReader implements \Iterator, \ArrayAccess
 
 			if(isset($r[$k]) && is_array($r[$k]))
 			{
-				$r[$k] = array_merge_recursive($r[$k], $v);
+				$r[$k] = array_replace_recursive($r[$k], $v);
 			}
 			else
 			{

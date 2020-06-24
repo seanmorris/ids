@@ -213,6 +213,8 @@ class Log
 
 		static::startLog($maxLevel);
 
+		$logLocation = ini_get('error_log');
+
 		$output = '';
 
 		$output .= static::color(
@@ -220,6 +222,14 @@ class Log
 			, static::HEAD_COLOR
 			, static::HEAD_BACKGROUND
 		);
+
+		file_put_contents(
+			$logLocation
+			, PHP_EOL . $output
+			, FILE_APPEND
+		);
+
+		$output = '';
 
 		foreach($data as $datum)
 		{
@@ -244,8 +254,6 @@ class Log
 
 			$output .= static::dump($datum, [], static::$colors);
 		}
-
-		$logLocation = ini_get('error_log');
 
 		if($logLocation !== 'php://stderr' && static::showErrors($level))
 		{

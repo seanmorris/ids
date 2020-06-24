@@ -15,7 +15,7 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 
 		$input = $router->match();
 
-		if($input[0] === '@')
+		if($input && is_string($input) && $input[0] === '@')
 		{
 			$method = str_replace('/', '\\', substr($input, 1));
 
