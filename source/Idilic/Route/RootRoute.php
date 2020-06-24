@@ -1061,7 +1061,6 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 	public function info()
 	{
 		$env = (object) getenv();
-		$project   = $env->PROJECT_FULLNAME ?? NULL;;
 		$databases = \SeanMorris\Ids\Settings::read('databases');
 
 		$dbs = NULL;
@@ -1086,11 +1085,14 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 			}
 		}
 
-		return sprintf(
-		'        Project: %s'
-			, $project
-		) . PHP_EOL
-		. sprintf(<<<EOT
+		return (isset($env->PROJECT_FULLNAME)
+			? sprintf(
+				'     Project: %s [%s]' . PHP_EOL
+				, $env->PROJECT ?? ''
+				, $env->PROJECT_FULLNAME ?? ''
+			)
+			: NULL
+		) . sprintf(<<<EOT
 Root Package: %s
       Domain: %s
      RootDir: %s

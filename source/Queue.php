@@ -214,7 +214,7 @@ abstract class Queue
 				 ));
 			}
 
-			if(!isset($servers->{static::RABBIT_MQ_SERVER}))
+			if(!$servers->{static::RABBIT_MQ_SERVER})
 			{
 				throw new \Exception(sprintf(
 					'RabbitMQ server "%s" does not exist for %s.'

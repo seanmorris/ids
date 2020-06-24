@@ -18,11 +18,11 @@ class Settings
 	{
 		static $cache = [];
 
-		$cacheKey = $scoredName = implode('_', $names);
+		$scoredName = implode('_', $names);
 
-		if(isset($cache[$cacheKey]))
+		if(isset($cache[$scoredName]))
 		{
-			return $cache[$cacheKey];
+			return $cache[$scoredName];
 		}
 
 		$envName = static::findEnvVarName(
@@ -35,14 +35,16 @@ class Settings
 		{
 			$env = static::getenv();
 
-			$envVar = $env[$envName];
+			$envNameCaps = strtoupper($envName);
 
-			if($envName[strlen($envName)-1] === '_')
+			$envVar = $env[$envNameCaps];
+
+			if($envNameCaps[strlen($envNameCaps)-1] === '_')
 			{
 				$envVar = str_getcsv($envVar, ' ');
 			}
 
-			return $cache[$cacheKey] = $envVar;
+			return $cache[$scoredName] = $envVar;
 		}
 
 		$settings = static::load(
@@ -50,8 +52,16 @@ class Settings
 			, static::$currentPort
 		);
 
-		while($name = array_shift($names))
+		while($names)
 		{
+			$name = array_shift($names);
+
+			if(is_array($settings) && isset($settings[ $name ]))
+			{
+				$settings = $settings[ $name ];
+				continue;
+			}
+
 			if(!isset($settings->$name))
 			{
 				$prefixNames = static::findEnvVarName(
@@ -61,12 +71,14 @@ class Settings
 					, TRUE
 				);
 
-				$prefix = key($prefixNames);
-				$suffix = current($prefixNames);
-
 				if($prefixNames)
 				{
-					return new SettingsReader($prefix, $suffix);
+					$prefix = key($prefixNames);
+					$suffix = current($prefixNames);
+
+					$cache[$scoredName] = new SettingsReader($prefix, $suffix);
+
+					return $cache[$scoredName];
 				}
 
 				return;
@@ -75,7 +87,28 @@ class Settings
 			$settings = $settings->$name;
 		}
 
-		$cache[$cacheKey] = $settings;
+		if(is_array($settings) || is_object($settings))
+		{
+			$prefix = $scoredName;
+			$suffix = array_keys((array) $settings);
+
+			$prefixNames = static::findEnvVarName(
+				$scoredName
+				, static::$currentSite
+				, static::$currentPort
+				, TRUE
+			);
+
+			if($prefixNames)
+			{
+				$prefix = key($prefixNames);
+				$suffix = current($prefixNames);
+			}
+
+			$settings = new SettingsReader($prefix, $suffix, $settings);
+		}
+
+		$cache[$scoredName] = $settings;
 
 		return $settings;
 	}
@@ -219,15 +252,15 @@ class Settings
 		[$name, $host] = preg_replace(
 			'/\W/'
 			, '_'
-			, [strtoupper($name), strtoupper($host)]
+			, [$name, $host]
 		);
 
 		$envVarPrefix = static::envVarNames(NULL);
-		$envVarNames  = static::envVarNames($name, $host, $port);
+		$envVarNames = static::envVarNames($name, $host, $port);
 
 		foreach($envVarNames as $envVarName)
 		{
-			if(array_key_exists($envVarName, $env))
+			if(array_key_exists(strtoupper($envVarName), $env))
 			{
 				return $cache[$cacheKey] = $envVarName;
 			}
@@ -241,11 +274,14 @@ class Settings
 			{
 				foreach($envVarNames as $e => $envVarName)
 				{
-					if(substr($envK, 0, strlen($envVarName)) === $envVarName)
-					{
-						$bareEnvPrefix = substr($envVarName, strlen($envVarPrefix[$e]));
+					$checkPrefix = substr($envK, 0, strlen($envVarName));
 
-						$found[$bareEnvPrefix][] = substr($envK, strlen($envVarName));
+					if($checkPrefix === strtoupper($envVarName))
+					{
+						$found[$name][] = substr($envK, strlen(
+							$envVarPrefix[$e] . $name
+						));
+
 						break;
 					}
 				}
@@ -268,12 +304,12 @@ class Settings
 
 		[$name, $host] = preg_replace(
 			['/-/'], ['___']
-			, array_map('strtoupper', [$name, $host])
+			, [$name, $host]
 		);
 
 		[$name, $host] = preg_replace(
 			['/\W/'], ['_']
-			, array_map('strtoupper', [$name, $host])
+			, [$name, $host]
 		);
 
 		$hostName = NULL;
