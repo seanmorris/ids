@@ -169,7 +169,7 @@ ${WHILE_IMAGES} \
 	docker image inspect --format="{{ index .RepoTags }}" $$IMAGE_HASH \
 	| sed 's/[][]//g' \
 	| sed 's/\s/\n/g' \
-	| grep ^${REPO}/${PROJECT}.*:${TAG} \
+	| grep ^${REPO}/${PROJECT}.*:${TAG}$ \
 	| while read TAG_NAME; do
 endef
 
@@ -445,13 +445,13 @@ env e: ## Export the environment as seen from MAKE.
 	@ export ${ENV} && env ${SEP};
 
 start s: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d ${IMAGE}
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-build -d ${IMAGE}
 
 start-fg sf: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up ${IMAGE}
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-build ${IMAGE}
 
 start-bg sb: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the background, streaming output to terminal.
-	(${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up ${IMAGE} &)
+	(${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-build ${IMAGE} &)
 
 stop d: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the current project services on the current target.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} stop ${IMAGE}
@@ -493,13 +493,17 @@ list-images li: ${ENV_LOCK} ${PREBUILD}## List available images from current tar
 	done;
 
 list-tags lt: ## List the images tagged from the current target.
-	@ ${WHILE_TAGS} echo $$TAG_NAME; done;done;
+	${WHILE_TAGS} \
+		docker image inspect --format="{{ join .RepoTags \" \" }}" $$IMAGE_HASH \
+			| sed 's/\s/\n/g'; \
+		done;done;
 
 push-images psi: ${ENV_LOCK} ## Push locally built images.
-	@ echo Pushing ${PROJECT}:${TAG}
-	@ ${WHILE_TAGS} \
-		docker push $$TAG_NAME; \
-	done;done;
+	${WHILE_TAGS} \
+		docker image inspect --format="{{ join .RepoTags \" \" }}" $$IMAGE_HASH \
+			| sed 's/\s/\n/g' \
+			| while read LONG_TAG_NAME; do docker push $$LONG_TAG_NAME; \
+		done;done;done;
 
 pull-images pli: ${ENV_LOCK} ${PREBUILD} ## Pull remotely hosted images.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull
