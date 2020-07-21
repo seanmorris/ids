@@ -512,7 +512,7 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 	/** Output a list of all model types within a project, including dependencies. */
 	public function listModels()
 	{
-		$classes = \SeanMorris\Ids\Meta::classes('SeanMorris\Ids\Model');
+		$classes = \SeanMorris\Ids\Linker::classes('SeanMorris\Ids\Model');
 
 		$classes = array_map(
 			function($class)
