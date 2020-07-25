@@ -395,8 +395,10 @@ endif
 
 IMAGE?=
 build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
-	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build idilic
-	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build worker
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull idilic \
+		|| ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build idilic
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull worker \
+		|| ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build worker
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start ${IMAGE}
 	@ ${WHILE_IMAGES} \
@@ -507,6 +509,8 @@ push-images psi: ${ENV_LOCK} ## Push locally built images.
 
 pull-images pli: ${ENV_LOCK} ${PREBUILD} ## Pull remotely hosted images.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull idilic
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull worker
 
 hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 	@ git config core.hooksPath githooks
