@@ -506,6 +506,9 @@ push-images psi: ${ENV_LOCK} ## Push locally built images.
 			| sed 's/\s/\n/g' \
 			| while read LONG_TAG_NAME; do docker push $$LONG_TAG_NAME; \
 		done;done;done;
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} push idilic
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} push worker
+
 
 pull-images pli: ${ENV_LOCK} ${PREBUILD} ## Pull remotely hosted images.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull

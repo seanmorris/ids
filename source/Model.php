@@ -2320,7 +2320,7 @@ class Model
 
 						$subject->consume($values);
 
-						if($values->onSubjugate($this, $property) === FALSE)
+						if($subject->onSubjugate($this, $property) === FALSE)
 						{
 							continue;
 						}
