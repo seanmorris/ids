@@ -786,7 +786,7 @@ class Model
 				, $curClass
 				, $name
 			)
-			, $args
+			// , $args
 			, sprintf(
 				'%s::%s(...)'
 				. PHP_EOL
@@ -1099,7 +1099,7 @@ class Model
 			$count = (int) $countResult->fetchColumn();
 
 			\SeanMorris\Ids\Log::debug(sprintf(
-				'Caching count %s', get_called_class()
+				'Caching count %s (%d)', get_called_class(), $count
 			));
 
 			$cache[0] = $count;
@@ -2694,6 +2694,20 @@ class Model
 				yield $subjectRelationship;
 			}
 		}
+	}
+
+	public function countSubjects($column)
+	{
+		$relationshipClass = '\SeanMorris\Ids\Relationship';
+
+		if(static::$relationshipClass)
+		{
+			$relationshipClass = static::$relationshipClass;
+		}
+
+		return $relationshipClass::countByOwner(
+			$this, $column
+		);
 	}
 
 	public function genSubjects($column)

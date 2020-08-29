@@ -169,7 +169,10 @@ class Log
 		{
 			if(!isset(static::$also))
 			{
-				$also = Settings::read('logAlso');
+				if($also = Settings::read('logAlso') || [])
+				{
+					$also = $also->content;
+				}
 
 				if(is_object($also) && $also->{0})
 				{
