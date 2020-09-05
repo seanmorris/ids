@@ -169,7 +169,7 @@ ${WHILE_IMAGES} \
 	docker image inspect --format="{{ index .RepoTags }}" $$IMAGE_HASH \
 	| sed 's/[][]//g' \
 	| sed 's/\s/\n/g' \
-	| grep ^${REPO}/${PROJECT}.*:${TAG}$ \
+	| grep ^${REPO}/${PROJECT}.*:${TAG}$$ \
 	| while read TAG_NAME; do
 endef
 
@@ -395,8 +395,10 @@ endif
 
 IMAGE?=
 build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
-	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build idilic
-	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build idilic
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull idilic \
+		|| ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build idilic
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull worker \
+		|| ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build worker
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start ${IMAGE}
 	@ ${WHILE_IMAGES} \
@@ -499,7 +501,25 @@ list-tags lt: ## List the images tagged from the current target.
 		done;done;
 
 push-images psi: ${ENV_LOCK} ## Push locally built images.
-	${WHILE_TAGS} \
+	@ ${WHILE_IMAGES} \
+		docker push $$IMAGE_NAME:${TAG}; \
+		echo "original:$$IMAGE_HASH $$IMAGE_NAME":${TAG};         \
+		                                                          \
+		docker push $$IMAGE_NAME:latest${SUFFIX}${DBRANCH};  \
+		echo "  latest:$$IMAGE_HASH $$IMAGE_NAME":latest${SUFFIX}${DBRANCH};  \
+		                                                                      \
+		docker push $$IMAGE_NAME:${HASH}${SUFFIX}${DBRANCH}; \
+		echo "    hash:$$IMAGE_HASH $$IMAGE_NAME":${HASH}${SUFFIX}${DBRANCH}; \
+		                                                                      \
+		docker push $$IMAGE_NAME:`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
+		echo "    date:$$IMAGE_HASH $$IMAGE_NAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
+	done;
+
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} push idilic:
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} push worker:
+
+push-images-all psia:
+	@ ${WHILE_TAGS} \
 		docker image inspect --format="{{ join .RepoTags \" \" }}" $$IMAGE_HASH \
 			| sed 's/\s/\n/g' \
 			| while read LONG_TAG_NAME; do docker push $$LONG_TAG_NAME; \
@@ -507,6 +527,8 @@ push-images psi: ${ENV_LOCK} ## Push locally built images.
 
 pull-images pli: ${ENV_LOCK} ${PREBUILD} ## Pull remotely hosted images.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull idilic:
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull worker:
 
 hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 	@ git config core.hooksPath githooks
