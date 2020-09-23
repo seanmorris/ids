@@ -1,7 +1,7 @@
 <?php
 namespace SeanMorris\Ids\Collection;
 
-class CacheReIterator extends CachingIterator implements Iterator
+class CacheReIterator extends \CachingIterator implements \Iterator
 {
 	protected $cacheIterator, $rewound = FALSE;
 
