@@ -468,10 +468,10 @@ restart r: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Restart the project services 
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} restart ${IMAGE}
 
 restart-fg rf: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down ${IMAGE} && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up ${IMAGE}
 
 restart-bg rb: ${ENV_LOCK} ${PREBUILD} ${GENERABLE}## Start the project services in the background, streaming output to terminal.
-	@ (${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up &)
+	@ (${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down ${IMAGE} && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up ${IMAGE} &)
 
 kill k: ${ENV_LOCK} ${PREBUILD} ${GENERABLE}## Kill current project services.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} kill -s 9
