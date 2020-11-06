@@ -31,7 +31,6 @@ class Model
 
 	protected function _create($curClass)
 	{
-
 		$backtrace = debug_backtrace();
 
 		$trace = [];
@@ -2188,7 +2187,8 @@ class Model
 			{
 				\SeanMorris\Ids\Log::debug('Using existing model');
 
-				$this->{$property} = $values->id;
+				// $this->{$property} = $values->id;
+				$this->__set($property, $values->id);
 			}
 			else if(is_array($values))
 			{
@@ -2213,15 +2213,16 @@ class Model
 
 					if($subject->save())
 					{
-						$this->{$property} = $subject->id;
+						$this->addSubject($property, $subject);
+						// $this->{$property} = $subject->id;
 					}
 				}
 				else if($values)
 				{
-					 if(!isset($values['class']) || !$values['class'])
-					 {
-					 	$values['class'] = $propertyClass;
-					 }
+					if(!isset($values['class']) || !$values['class'])
+					{
+						$values['class'] = $propertyClass;
+					}
 
 					\SeanMorris\Ids\Log::debug(
 						'Trying to create new model'
@@ -2243,9 +2244,9 @@ class Model
 
 						try
 						{
-							if($subject->save())
+							if(($subject->id && !$subject->_changed) || $subject->save())
 							{
-								$this->{$property} = $subject->id;
+								$this->addSubject($property, $subject);
 							}
 						}
 						catch(\SeanMorris\PressKit\Exception\ModelAccessException $exception)
@@ -2567,7 +2568,10 @@ class Model
 				, $subject
 			);
 
-			$this->__set($property, $subject);
+			$this->{$property} = $subject;
+
+			$this->_changed[$property] = TRUE;
+			$this->_unconsumed = [];
 
 			return TRUE;
 		}
