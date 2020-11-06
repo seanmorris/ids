@@ -2567,7 +2567,7 @@ class Model
 				, $subject
 			);
 
-			$this->__set($property, $subject->id);
+			$this->__set($property, $subject);
 
 			return TRUE;
 		}
