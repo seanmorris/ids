@@ -2113,14 +2113,20 @@ class Model
 		return $this->$name;
 	}
 
-	public function __set($name, $value)
+	public function __set($property, $value)
 	{
-		if(!isset($this->$name))
+		if(!property_exists($this, $property))
 		{
 			return;
 		}
 
-		$this->$name = $value;
+		if($this->{$property} !== $value)
+		{
+			$this->_changed[$property] = true;
+			$this->_unconsumed = [];
+		}
+
+		$this->{$property} = $value;
 	}
 
 	public function consume($skeleton, $override = false)
@@ -2520,8 +2526,8 @@ class Model
 			return FALSE;
 		}
 
-		if($subjectClass == $this->canHaveMany($property)
-			|| is_subclass_of($subjectClass, $this->canHaveMany($property))
+		if($subjectClass === $this->canHaveMany($property)
+			|| is_a($subjectClass, $this->canHaveMany($property), TRUE)
 		){
 			if(!$this->{$property})
 			{
@@ -2553,18 +2559,25 @@ class Model
 			return TRUE;
 		}
 
-		if($subjectClass == $this->canHaveOne($property)
-			|| is_subclass_of($subjectClass, $this->canHaveOne($property))
+		if($subjectClass === $this->canHaveOne($property)
+			|| is_a($subjectClass, $this->canHaveOne($property), TRUE)
 		){
 			\SeanMorris\Ids\Log::debug(
 				'Adding to ' . $property
 				, $subject
 			);
 
-			$this->{$property} = $subject->id;
+			$this->__set($property, $subject->id);
 
 			return TRUE;
 		}
+
+		throw new Exception(sprintf(
+			'Cannot add subject of type "%s" to property "$%s" of type "%s".'
+			, get_class($subject)
+			, $property
+			, get_class($this)
+		));
 
 		return FALSE;
 	}
