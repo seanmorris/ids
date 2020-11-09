@@ -414,7 +414,6 @@ build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
 		echo "    date:$$IMAGE_HASH $$IMAGE_NAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
 	done;
 
-
 template-patterns:
 	@ $(call TEMPLATE_PATTERNS)
 
@@ -503,8 +502,8 @@ list-tags lt: ## List the images tagged from the current target.
 push-images psi: ${ENV_LOCK} ## Push locally built images.
 	@ ${WHILE_IMAGES} \
 		docker push $$IMAGE_NAME:${TAG}; \
-		echo "original:$$IMAGE_HASH $$IMAGE_NAME":${TAG};         \
-		                                                          \
+		echo "original:$$IMAGE_HASH $$IMAGE_NAME":${TAG};    \
+		                                                     \
 		docker push $$IMAGE_NAME:latest${SUFFIX}${DBRANCH};  \
 		echo "  latest:$$IMAGE_HASH $$IMAGE_NAME":latest${SUFFIX}${DBRANCH};  \
 		                                                                      \
@@ -515,8 +514,8 @@ push-images psi: ${ENV_LOCK} ## Push locally built images.
 		echo "    date:$$IMAGE_HASH $$IMAGE_NAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
 	done;
 
-	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} push idilic:
-	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} push worker:
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} push idilic;
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} push worker;
 
 push-images-all psia:
 	@ ${WHILE_TAGS} \
@@ -527,8 +526,8 @@ push-images-all psia:
 
 pull-images pli: ${ENV_LOCK} ${PREBUILD} ## Pull remotely hosted images.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull
-	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull idilic:
-	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull worker:
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull idilic;
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull worker;
 
 hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 	@ git config core.hooksPath githooks
@@ -713,7 +712,7 @@ graylog-backup glbak: ${GENERABLE}### Backup graylog config to files.
 
 graylog-restore glres: ${GENERABLE}### Restore graylog config from files.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml run --rm mongo bash -c \
-		'mongorestore -h mongo --db graylog /settings/graylog'
+		'find /settings/graylog/*.bson -type f | xargs -I {} mongorestore -h mongo --db graylog {}'
 
 inotify-start: ${PREBUILD} ${GENERABLE}### Start inotify.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/inotify.yml up

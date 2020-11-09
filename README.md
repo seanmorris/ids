@@ -29,15 +29,15 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.84  T=0.15 s (1053.3 files/s, 173961.0 lines/s)
+github.com/AlDanial/cloc v 1.81  T=0.13 s (1456.2 files/s, 197089.2 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                              83           3193            463          13393
-JSON                             11              0              0           3892
-Markdown                          2            928              0           1897
-YAML                             24             97             14           1130
-make                              1            140              9            564
+PHP                              85           3242            474          13594
+JSON                             48              0              0           3924
+Markdown                          2            928              0           1878
+YAML                             22            103             14           1120
+make                              1            141             10            591
 SVG                              25              0              3            239
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             17             17             23
@@ -46,10 +46,10 @@ INI                               3              0              0             11
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            158           4384            506          21204
+SUM:                            195           4440            518          21435
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Sat May 30 10:34:00 EDT 2020*
+*built by sean @ Mon 09 Nov 2020 01:06:07 AM EST*
 
 ## Installation
 
