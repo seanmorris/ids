@@ -848,6 +848,7 @@ class Model
 		{
 			$select->limit($limit);
 			$select->conditions([['id' => '?', '>']]);
+			$select->order(['id' => 'ASC']);
 		}
 
 		if(isset($def['paged']) && $def['paged'])

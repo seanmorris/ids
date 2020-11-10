@@ -72,7 +72,7 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 		catch(\Exception $e)
 		{
 			$candidatePackages = array_values(array_filter(
-				\SeanMorris\Ids\Meta::classes()
+				\SeanMorris\Ids\Linker::classes()->{''} ?: \SeanMorris\Ids\Meta::classes()
 				, function($class) use($command){
 
 					if(!preg_match('/Idilic\\\Route\\\RootRoute$/', $class))
@@ -92,8 +92,6 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 							return $method->isPublic();
 						}
 					);
-
-					// var_dump($command, $methods);
 
 					if(!in_array($command, $methods))
 					{
