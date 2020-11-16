@@ -848,7 +848,11 @@ class Model
 		{
 			$select->limit($limit);
 			$select->conditions([['id' => '?', '>']]);
-			$select->order(['id' => 'ASC']);
+
+			if(isset($def['order']))
+			{
+				$select->order(['id' => 'ASC']);
+			}
 		}
 
 		if(isset($def['paged']) && $def['paged'])
@@ -1782,7 +1786,7 @@ class Model
 
 		if(!$superior)
 		{
-			$select->group(...$columns);
+			$select->group(...array_unique(['id', ...$columns]));
 		}
 
 		if(!$selectDef['flat'] && isset($selectDef['join']) && is_array($selectDef['join']))

@@ -460,6 +460,9 @@ stop d: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the current project service
 stop-all da: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the all project services on the current target. including orphans.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down
 
+stop-all-remove-orphans daro: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the all project services on the current target. including orphans.
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
+
 stop-clean dc: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the all project services on the current target. including orphans.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down ${IMAGE} --remove-orphans
 
