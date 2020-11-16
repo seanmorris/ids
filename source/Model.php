@@ -1786,7 +1786,13 @@ class Model
 
 		if(!$superior)
 		{
-			$select->group(...array_unique(['id', ...$columns]));
+			$groupColumns = $columns;
+
+			array_unshift($columns, 'id');
+
+			$groupColumns = array_unique($groupColumns);
+
+			$select->group(...$groupColumns);
 		}
 
 		if(!$selectDef['flat'] && isset($selectDef['join']) && is_array($selectDef['join']))
