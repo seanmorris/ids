@@ -710,7 +710,7 @@ class Package
 	{
 		$schema = $this->getStoredSchema();
 
-		if(! $schema)
+		if(!$schema)
 		{
 			return;
 		}
@@ -757,18 +757,18 @@ class Package
 		$globalDir = $this->globalDir();
 		$schemaFilename = $globalDir . 'schema.json';
 
-		if(! $globalDir->check())
+		if(!$globalDir->check())
 		{
 			$globalDir->create(NULL, 0766, TRUE);
 		}
 
-		if(! $globalDir->check())
+		if(!$globalDir->check())
 		{
 			throw new \Exception(
 				sprintf('Cannot find global dir %s', $globalDir->name()));
 		}
 
-		if(! file_exists($schemaFilename))
+		if(!file_exists($schemaFilename))
 		{
 			file_put_contents($schemaFilename, '{}');
 		}
@@ -779,7 +779,7 @@ class Package
 		$revisionCount = count((array) $schema->revisions);
 		$changeCount = count((array) $changes);
 
-		if(! $schema->revisions)
+		if(!$schema->revisions)
 		{
 			$schema->revisions = new \StdClass();
 		}
@@ -794,7 +794,8 @@ class Package
 
 			file_put_contents(
 				$schemaFilename,
-				json_encode($schema, JSON_PRETTY_PRINT));
+				json_encode($schema, JSON_PRETTY_PRINT)
+			);
 
 			return $changes;
 		}
@@ -802,10 +803,11 @@ class Package
 
 	public function getSchemaChanges()
 	{
+		$schemaName = \SeanMorris\Ids\Settings::read('databases', 'main', 'database');
 		$storedSchema = $this->getFullSchema();
-		$changes = (object) [];
+		$changes      = (object) [];
 
-		if(! $storedSchema)
+		if(!$storedSchema)
 		{
 			$storedSchema = (object) [];
 		}
@@ -826,22 +828,22 @@ class Package
 
 				$tableCheck->execute();
 
-				if(! $tableCheck->fetchObject())
+				if(!$tableCheck->fetchObject())
 				{
 					continue;
 				}
 
-				if(! isset($storedSchema->$table))
+				if(!isset($storedSchema->$table))
 				{
 					$storedSchema->$table = new \StdClass;
 				}
 
-				if(! isset($storedSchema->$table->fields))
+				if(!isset($storedSchema->$table->fields))
 				{
 					$storedSchema->$table->fields = new \StdClass;
 				}
 
-				if(! isset($storedSchema->$table->keys))
+				if(!isset($storedSchema->$table->keys))
 				{
 					$storedSchema->$table->keys = new \StdClass;
 				}
@@ -861,17 +863,35 @@ class Package
 						continue;
 					}
 
-					if(! isset($changes->$table))
+					if(! isset($changes->{$table}))
 					{
-						$changes->$table = new \StdClass;
+						$changes->{$table} = new \StdClass;
 					}
 
-					if(! isset($changes->$table->fields))
+					if(! isset($changes->{$table}->fields))
 					{
-						$changes->$table->fields = new \StdClass;
+						$changes->{$table}->fields = new \StdClass;
 					}
 
-					$changes->$table->fields->{$column->Field} = $column;
+					$column->Expression = null;
+
+					if($column->Extra === 'VIRTUAL GENERATED' || $column->Extra === 'STORED GENERATED')
+					{
+						$generationQueryString = 'SELECT GENERATION_EXPRESSION FROM `information_schema`.`COLUMNS`
+							WHERE
+								TABLE_SCHEMA    = ?
+								AND TABLE_NAME  = ?
+								AND COLUMN_NAME = ?
+						';
+
+						\SeanMorris\Ids\Log::query($generationQueryString);
+						$generationQuery = $db->prepare($generationQueryString);
+						$generationQuery->execute([$schemaName, $table, $column->Field]);
+
+						$column->Expression = $generationQuery->fetchColumn();
+					}
+
+					$changes->{$table}->fields->{$column->Field} = $column;
 				}
 
 				$queryString = 'SHOW INDEXES FROM ' . $table;
@@ -909,22 +929,22 @@ class Package
 						continue;
 					}
 
-					if(! isset($changes->$table))
+					if(!isset($changes->{$table}))
 					{
-						$changes->$table = new \StdClass;
+						$changes->{$table} = new \StdClass;
 					}
 
-					if(! isset($changes->$table->keys))
+					if(!isset($changes->{$table}->keys))
 					{
-						$changes->$table->keys = new \StdClass;
+						$changes->{$table}->keys = new \StdClass;
 					}
 
-					if(! isset($changes->$table->keys->{$index->Key_name}))
+					if(!isset($changes->{$table}->keys->{$index->Key_name}))
 					{
-						$changes->$table->keys->{$index->Key_name} = new \StdClass;
+						$changes->{$table}->keys->{$index->Key_name} = new \StdClass;
 					}
 
-					$changes->$table->keys->{$index->Key_name}->{$index->Seq_in_index} = $index;
+					$changes->{$table}->keys->{$index->Key_name}->{$index->Seq_in_index} = $index;
 				}
 			}
 		}
@@ -1005,19 +1025,45 @@ class Package
 							continue;
 						}
 
+						switch($exportTables->$table->fields->{$column->Field}->Extra)
+						{
+							case 'auto_increment':
+								$extra = 'auto_increment';
+								break;
+
+							case 'VIRTUAL GENERATED':
+								$extra = NULL;
+								$generation = sprintf(
+									'GENERATED ALWAYS AS (%s) VIRTUAL'
+									, $exportTables->$table->fields->{$column->Field}->Expression
+								);
+								break;
+
+							case 'STORED GENERATED':
+								$extra = NULL;
+								$generation = sprintf(
+									'GENERATED ALWAYS AS (%s) STORED'
+									, $exportTables->$table->fields->{$column->Field}->Expression
+								);
+								break;
+
+							default:
+								$generation = $extra = NULL;
+						}
+
 						$queries[] = sprintf(
-							"ALTER TABLE %s MODIFY %s %s %s %s %s COMMENT '%s'"
+							"ALTER TABLE %s MODIFY %s %s %s %s %s %s COMMENT '%s'"
 							, $table
 							, $exportTables->$table->fields->{$column->Field}->Field
 							, $exportTables->$table->fields->{$column->Field}->Type
+
+							, $generation
 
 							, $exportTables->$table->fields->{$column->Field}->Null == 'YES'
 								? 'NULL'
 								: 'NOT NULL'
 
-							, $exportTables->$table->fields->{$column->Field}->Extra == 'auto_increment'
-								? 'auto_increment'
-								: NULL
+							, $extra
 
 							, $exportTables->$table->fields->{$column->Field}->Collation
 								? 'COLLATE ' . $exportTables->$table->fields->{$column->Field}->Collation
@@ -1122,7 +1168,7 @@ class Package
 					}
 				}
 
-				if(! $tableFound)
+				if(!$tableFound)
 				{
 					$createColumn = [];
 
@@ -1209,22 +1255,48 @@ class Package
 				{
 					foreach($exportTables->$table->fields as $field)
 					{
-						if(! isset($exportTables->$table->fields->{$field->Field}))
+						if(!isset($exportTables->$table->fields->{$field->Field}))
 						{
 							continue;
 						}
 
+						switch($exportTables->$table->fields->{$field->Field}->Extra)
+						{
+							case 'auto_increment':
+								$extra = 'auto_increment PRIMARY KEY';
+								$generation = NULL;
+								break;
+
+							case 'VIRTUAL GENERATED':
+								$extra = NULL;
+								$generation = sprintf(
+									'GENERATED ALWAYS AS (%s) VIRTUAL'
+									, $exportTables->$table->fields->{$field->Field}->Expression
+								);
+								break;
+
+							case 'STORED GENERATED':
+								$extra = NULL;
+								$generation = sprintf(
+									'GENERATED ALWAYS AS (%s) STORED'
+									, $exportTables->$table->fields->{$field->Field}->Expression
+								);
+								break;
+
+							default:
+								$generation = $extra = NULL;
+						}
+
 						$queries[$field->Field] = sprintf(
-							'ALTER TABLE %s ADD COLUMN %s %s %s %s'
+							'ALTER TABLE %s ADD COLUMN %s %s %s %s %s'
 							, $table
 							, $exportTables->$table->fields->{$field->Field}->Field
 							, $exportTables->$table->fields->{$field->Field}->Type
+							, $generation
 							, $exportTables->$table->fields->{$field->Field}->Null == 'YES'
 								? 'NULL'
 								: 'NOT NULL'
-							, $exportTables->$table->fields->{$field->Field}->Extra == 'auto_increment'
-								? 'auto_increment PRIMARY KEY'
-								: NULL
+							, $extra
 						);
 					}
 

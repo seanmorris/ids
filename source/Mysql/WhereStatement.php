@@ -115,7 +115,6 @@ abstract class WhereStatement extends Statement
 			]));
 		}
 
-
 		$slowQuery = \SeanMorris\Ids\Settings::read('slowQuery');
 		$queryLimit = \SeanMorris\Ids\Settings::read('queryLimit');
 
@@ -130,7 +129,7 @@ abstract class WhereStatement extends Statement
 				, ''
 				, $queryObject->queryString
 				, ''
-				, implode(PHP_EOL, \SeanMorris\Ids\Log::trace(FALSE))
+				, implode('', \SeanMorris\Ids\Log::trace(FALSE))
 			);
 		}
 
