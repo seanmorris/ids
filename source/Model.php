@@ -847,11 +847,23 @@ class Model
 		if(isset($def['cursor']) && $def['cursor'])
 		{
 			$select->limit($limit);
-			$select->conditions([['id' => '?', '>']]);
 
 			if(isset($def['order']))
 			{
+				$select->order($def['order']);
+
+				$orderSort = reset($def['order']);
+				$orderBy   = key($def['order']);
+
+				$select->conditions([[$orderBy => '?', $orderSort === 'ASC' ? '>' : '<']]);
+
+				var_dump($select);die;
+			}
+			else
+			{
 				$select->order(['id' => 'ASC']);
+
+				$select->conditions([['id' => '?', '>']]);
 			}
 		}
 

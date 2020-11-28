@@ -53,7 +53,28 @@
         }
     },
     "linker": {
-        "links": {},
+        "links": {
+            "Test@1606563454": [
+                "testValue",
+                "blah"
+            ],
+            "Test@1606563501": [
+                "testValue",
+                "blah"
+            ],
+            "Test@1606563525": [
+                "testValue",
+                "blah"
+            ],
+            "Test@1606563597": [
+                "testValue",
+                "blah"
+            ],
+            "Test@1606563639": [
+                "testValue",
+                "blah"
+            ]
+        },
         "inheritance": {
             "SeanMorris\\Ids\\Mysql\\Statement": [
                 "SeanMorris\\Ids\\Mysql\\CountStatement",
