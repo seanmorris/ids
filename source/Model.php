@@ -851,13 +851,8 @@ class Model
 			if(isset($def['order']))
 			{
 				$select->order($def['order']);
-
-				$orderSort = reset($def['order']);
-				$orderBy   = key($def['order']);
-
-				$select->conditions([[$orderBy => '?', $orderSort === 'ASC' ? '>' : '<']]);
 			}
-			else
+			else if(!isset($def['where']))
 			{
 				$select->order(['id' => 'ASC']);
 
