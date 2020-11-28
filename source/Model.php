@@ -851,12 +851,23 @@ class Model
 			if(isset($def['order']))
 			{
 				$select->order($def['order']);
+
+				$orderSort = reset($def['order']);
+				$orderBy   = key($def['order']);
+
+				if(!isset($def['where']))
+				{
+					$select->conditions([[$orderBy => '?', $orderBy === 'ASC' ? '>' : '<']]);
+				}
 			}
-			else if(!isset($def['where']))
+			else
 			{
 				$select->order(['id' => 'ASC']);
 
-				$select->conditions([['id' => '?', '>']]);
+				if(!isset($def['where']))
+				{
+					$select->conditions([['id' => '?', '>']]);
+				}
 			}
 		}
 
