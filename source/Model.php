@@ -856,8 +856,6 @@ class Model
 				$orderBy   = key($def['order']);
 
 				$select->conditions([[$orderBy => '?', $orderSort === 'ASC' ? '>' : '<']]);
-
-				var_dump($select);die;
 			}
 			else
 			{
