@@ -1211,7 +1211,7 @@ EOT
 
 		if(!is_subclass_of($class, '\SeanMorris\Ids\Queue'))
 		{
-			throw new Exception(sprintf(
+			throw new \Exception(sprintf(
 				"Provided class does not inherit: %s\n\t%s"
 				, '\SeanMorris\Ids\Queue'
 				, $class
