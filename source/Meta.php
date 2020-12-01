@@ -122,7 +122,7 @@ class Meta
 
 			foreach($skip as $s)
 			{
-				if(preg_match(sprintf('|^%s|', $s), $relativePath))
+				if(preg_match(sprintf('|^vendor/%s|', $s), $relativePath))
 				{
 					continue 2;
 				}
@@ -133,25 +133,28 @@ class Meta
 				, $relativePath
 			));
 
-			$syntaxCheckCommand = sprintf('php -l %s 2>&1', escapeshellarg($relativePath));
+			$syntaxCheck = new \SeanMorris\Ids\ChildProcess(sprintf(
+				'php -l %s 2>&1', escapeshellarg($phpFile->getPathname())
+			));
 
-			$checkHandle = popen($syntaxCheckCommand, 'r');
-
-			if($checkHandle)
+			if(!$syntaxCheck->errorCode())
 			{
 				continue;
 			}
 
-			$aliases = [];
-
-			// if(preg_match('/(simple)?[Tt]est(s)?/', $phpFile->getRealPath()))
-			// {
-			// 	continue;
-			// }
-
-			$content = file_get_contents($phpFile->getRealPath());
-			$tokens = token_get_all($content);
+			$aliases   = [];
+			$content   = file_get_contents($phpFile->getRealPath());
 			$namespace = '';
+
+			try
+			{
+				$tokens = token_get_all($content, TOKEN_PARSE);
+			}
+			catch(\Throwable $error)
+			{
+				// Log::logException($error);
+				continue;
+			}
 
 			for($index = 0; isset($tokens[$index]); $index++)
 			{
@@ -170,28 +173,28 @@ class Meta
 				}
 
 				// @TODO: Account for use aliases when doing class lookups.
-				if(T_USE === $tokens[$index][0])
-				{
-					$aliased = null;
-					// $alias[ $tokens[$index+2][1] ] = $tokens[$index+2][1];
+				// if(T_USE === $tokens[$index][0])
+				// {
+				// 	$aliased = null;
+				// 	// $alias[ $tokens[$index+2][1] ] = $tokens[$index+2][1];
 
-					$index     += 2;
-					$lastToken = null;
+				// 	$index     += 2;
+				// 	$lastToken = null;
 
-					while (isset($tokens[$index]) && is_array($tokens[$index]))
-					{
-						$lastToken = $tokens[$index];
+				// 	while (isset($tokens[$index]) && is_array($tokens[$index]))
+				// 	{
+				// 		$lastToken = $tokens[$index];
 
-						if(is_array($lastToken))
-						{
-							$lastToken = $lastToken[1];
-						}
+				// 		if(is_array($lastToken))
+				// 		{
+				// 			$lastToken = $lastToken[1];
+				// 		}
 
-						$aliased .= $tokens[$index++][1];
-					}
+				// 		$aliased .= $tokens[$index++][1];
+				// 	}
 
-					$aliases[$lastToken] = $aliased;
-				}
+				// 	$aliases[$lastToken] = $aliased;
+				// }
 
 				if((T_CLASS === $tokens[$index][0]
 						|| T_TRAIT === $tokens[$index][0]
@@ -199,38 +202,38 @@ class Meta
 					)
 					&& T_PAAMAYIM_NEKUDOTAYIM !== $tokens[$index-1][0]
 				){
-					if(T_IMPLEMENTS === $tokens[$index + 4][0]
-						|| T_EXTENDS === $tokens[$index + 4][0]
-					){
-						$subIndex = 6;
-						$subNamespace = '';
+					// if(T_IMPLEMENTS === $tokens[$index + 4][0]
+					// 	|| T_EXTENDS === $tokens[$index + 4][0]
+					// ){
+					// 	$subIndex = 6;
+					// 	$subNamespace = '';
 
-						while($tokens[$index + $subIndex][0] == T_NAMESPACE
-							|| $tokens[$index + $subIndex][0] == T_NS_SEPARATOR
-							|| $tokens[$index + $subIndex][0] == T_STRING
-							|| $tokens[$index + $subIndex][0] == T_CLASS
-							|| $tokens[$index + $subIndex][0] == T_TRAIT
-							|| $tokens[$index + $subIndex][0] == T_INTERFACE
-						){
-							$subNamespace .= $tokens[$subIndex + $index][1];
-							$subIndex++;
-						}
+					// 	while($tokens[$index + $subIndex][0] == T_NAMESPACE
+					// 		|| $tokens[$index + $subIndex][0] == T_NS_SEPARATOR
+					// 		|| $tokens[$index + $subIndex][0] == T_STRING
+					// 		|| $tokens[$index + $subIndex][0] == T_CLASS
+					// 		|| $tokens[$index + $subIndex][0] == T_TRAIT
+					// 		|| $tokens[$index + $subIndex][0] == T_INTERFACE
+					// 	){
+					// 		$subNamespace .= $tokens[$subIndex + $index][1];
+					// 		$subIndex++;
+					// 	}
 
-						if(isset($aliases[$subNamespace]))
-						{
-							$subNamespace = $aliases[$subNamespace];
-						}
+					// 	if(isset($aliases[$subNamespace]))
+					// 	{
+					// 		$subNamespace = $aliases[$subNamespace];
+					// 	}
 
-						if($subNamespace[0] !== '\\')
-						{
-							$subNamespace = $namespace . '\\' . $subNamespace;
-						}
+					// 	if($subNamespace[0] !== '\\')
+					// 	{
+					// 		$subNamespace = $namespace . '\\' . $subNamespace;
+					// 	}
 
-						if(!static::classExists($subNamespace))
-						{
-							break;
-						}
-					}
+					// 	if(!static::classExists($subNamespace))
+					// 	{
+					// 		break;
+					// 	}
+					// }
 
 					$index += 2;
 
@@ -257,10 +260,10 @@ class Meta
 
 						if(!$super || is_a($class, $super, TRUE))
 						{
-							if(substr($class, 0, 4) === 'Test' || substr($class, -4) === 'Test')
-							{
-								break;
-							}
+							// if(substr($class, 0, 4) === 'Test' || substr($class, -4) === 'Test')
+							// {
+							// 	break;
+							// }
 
 							$classes[] = $class;
 						}
@@ -287,9 +290,9 @@ class Meta
 								break;
 							}
 						}
-						catch (\Exception $e)
+						catch (\Throwable $e)
 						{
-							Log::exception($e);
+							// Log::logException($e);
 							break;
 						}
 
@@ -303,10 +306,10 @@ class Meta
 						// 	, $third - $second - 1
 						// ));
 
-						if(substr($class, $second + 1, $third - $second - 1) === 'Test')
-						{
-							break;
-						}
+						// if(substr($class, $second + 1, $third - $second - 1) === 'Test')
+						// {
+						// 	break;
+						// }
 
 						try
 						{
@@ -317,11 +320,11 @@ class Meta
 						}
 						catch(\ParseError $e)
 						{
-							Log::exception($e);
+							Log::logException($e);
 						}
 						catch(\Exception $e)
 						{
-							Log::exception($e);
+							Log::logException($e);
 						}
 
 						$allClasses[] = $class;
@@ -361,10 +364,10 @@ class Meta
 			}
 		}
 
-		$escapedClassFile = escapeshellarg($classFile);
+		$syntaxCheck = new \SeanMorris\Ids\ChildProcess(sprintf(
+			'php -l %s 2>&1', escapeshellarg($classFile)
+		));
 
-		$success = (bool) popen(sprintf('php -l %s 2>&1', $escapedClassFile));
-
-		return $results[$class] = $success;
+		return $results[$class] = !$syntaxCheck->errorCode();
 	}
 }

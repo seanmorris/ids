@@ -135,6 +135,8 @@ foreach($requests as $req)
 	{
 		$outputArgs = [];
 
+		$depth = $switches['depth'] ?? 0;
+
 		switch($switches['format'] ?? NULL)
 		{
 			case 'pj':
@@ -207,7 +209,10 @@ foreach($requests as $req)
 			case 'pretty-yml':
 				$outputFunc = function($r){
 					return yaml_emit(json_decode(
-						json_encode($r), JSON_OBJECT_AS_ARRAY
+						method_exists($r, 'toApi')
+							? json_encode($r->toApi($depth))
+							: json_encode($r)
+						, JSON_OBJECT_AS_ARRAY
 					));
 				};
 				break;
@@ -234,11 +239,19 @@ foreach($requests as $req)
 		{
 			foreach($res as $r)
 			{
+				$r = method_exists($r, 'toApi')
+					? $r->toApi($depth)
+					: $r;
+
 				print $outputFunc($r, ...$outputArgs) . PHP_EOL;
 			}
 		}
 		else
 		{
+			$res = method_exists($res, 'toApi')
+				? $res->toApi($depth)
+				: $res;
+
 			print $outputFunc($res, ...$outputArgs);
 		}
 	}

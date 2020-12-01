@@ -102,14 +102,17 @@ abstract class WhereStatement extends Statement
 
 		static::$queryTime += $queryTime;
 
-		\SeanMorris\Ids\Log::query($queryObject->queryString, $args, new \SeanMorris\Ids\LogMeta([
-			'query'         => $queryObject->queryString
-			, 'query_time'  => $queryTime
-			, 'querty_tier' => $this->databaseTier()
-			, 'query_type'  => get_called_class()
-			, 'query_args'  => $finalArgs
-			, 'query_table' => $this->table
-		]));
+		if(!static::RETURNS)
+		{
+			\SeanMorris\Ids\Log::query('Query executed.', new \SeanMorris\Ids\LogMeta([
+				'query'         => $queryObject->queryString
+				, 'query_time'  => $queryTime
+				, 'querty_tier' => $this->databaseTier()
+				, 'query_type'  => get_called_class()
+				, 'query_args'  => $finalArgs
+				, 'query_table' => $this->table
+			]));
+		}
 
 		$slowQuery = \SeanMorris\Ids\Settings::read('slowQuery');
 		$queryLimit = \SeanMorris\Ids\Settings::read('queryLimit');
@@ -125,7 +128,7 @@ abstract class WhereStatement extends Statement
 				, ''
 				, $queryObject->queryString
 				, ''
-				, implode(PHP_EOL, \SeanMorris\Ids\Log::trace(FALSE))
+				, implode('', \SeanMorris\Ids\Log::trace(FALSE))
 			);
 		}
 

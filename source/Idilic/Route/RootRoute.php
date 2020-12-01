@@ -15,7 +15,7 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 
 		$input = $router->match();
 
-		if($input[0] === '@')
+		if($input && is_string($input) && $input[0] === '@')
 		{
 			$method = str_replace('/', '\\', substr($input, 1));
 
@@ -72,7 +72,7 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 		catch(\Exception $e)
 		{
 			$candidatePackages = array_values(array_filter(
-				\SeanMorris\Ids\Meta::classes()
+				\SeanMorris\Ids\Linker::classes()->{''} ?: \SeanMorris\Ids\Meta::classes()
 				, function($class) use($command){
 
 					if(!preg_match('/Idilic\\\Route\\\RootRoute$/', $class))
@@ -92,8 +92,6 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 							return $method->isPublic();
 						}
 					);
-
-					// var_dump($command, $methods);
 
 					if(!in_array($command, $methods))
 					{
@@ -512,7 +510,7 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 	/** Output a list of all model types within a project, including dependencies. */
 	public function listModels()
 	{
-		$classes = \SeanMorris\Ids\Meta::classes('SeanMorris\Ids\Model');
+		$classes = \SeanMorris\Ids\Linker::classes('SeanMorris\Ids\Model');
 
 		$classes = array_map(
 			function($class)
@@ -1069,7 +1067,6 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 	public function info()
 	{
 		$env = (object) getenv();
-		$project   = $env->PROJECT_FULLNAME ?? NULL;;
 		$databases = \SeanMorris\Ids\Settings::read('databases');
 
 		$dbs = NULL;
@@ -1094,11 +1091,14 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 			}
 		}
 
-		return sprintf(
-		'        Project: %s'
-			, $project
-		) . PHP_EOL
-		. sprintf(<<<EOT
+		return (isset($env->PROJECT_FULLNAME)
+			? sprintf(
+				'     Project: %s [%s]' . PHP_EOL
+				, $env->PROJECT ?? ''
+				, $env->PROJECT_FULLNAME ?? ''
+			)
+			: NULL
+		) . sprintf(<<<EOT
 Root Package: %s
       Domain: %s
      RootDir: %s
@@ -1219,7 +1219,7 @@ EOT
 
 		if(!is_subclass_of($class, '\SeanMorris\Ids\Queue'))
 		{
-			throw new Exception(sprintf(
+			throw new \Exception(sprintf(
 				"Provided class does not inherit: %s\n\t%s"
 				, '\SeanMorris\Ids\Queue'
 				, $class

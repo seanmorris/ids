@@ -169,6 +169,7 @@ ${WHILE_IMAGES} \
 	docker image inspect --format="{{ index .RepoTags }}" $$IMAGE_HASH \
 	| sed 's/[][]//g' \
 	| sed 's/\s/\n/g' \
+	| grep ^${REPO}/${PROJECT}.*:${TAG}$$ \
 	| while read TAG_NAME; do
 endef
 
@@ -199,7 +200,8 @@ while read -r ENV_LINE; do                     \
 		echo -n $$ENV_NAME=;                   \
 		grep $$ENV_NAME .entropy | {           \
 		IFS=":" read -r ENV_KEY ENTROPY_KEY;   \
-		test -n "$$ENTROPY_KEY"                \
+		test -n "$$ENTROPY_KEY"      \
+			&& test -z "$$ENV_VALUE" \
 			&& echo $$(ENTROPY_KEY=$$ENTROPY_KEY  \
 				$(call GET_ENTROPY,$$ENTROPY_KEY) \
 			)                                  \
@@ -228,27 +230,27 @@ $(eval TRGT_DLT:=$(shell echo ${ROOTDIR}.env_${TARGET}.default))
 $(eval DCOMPOSE_FILES:=)
 
 $(eval DCOMPOSE_FILES+= $(and        \
-	$(filter +aptcache,${TGT_SVC}),  \
+	$(filter +aptcache,${TGT_STR}),  \
 	-f ${COMPOSE_TOOLS}/aptcache.yml \
 ))
 
 $(eval DCOMPOSE_FILES+=$(and         \
-	$(filter +graylog,${TGT_SVC}),   \
+	$(filter +graylog,${TGT_STR}),   \
 	-f ${COMPOSE_TOOLS}/graylog.yml  \
 ))
 
 $(eval DCOMPOSE_FILES+=$(and         \
-	$(filter +inotify,${TGT_SVC}),   \
+	$(filter +inotify,${TGT_STR}),   \
 	-f ${COMPOSE_TOOLS}/inotify.yml  \
 ))
 
 $(eval DCOMPOSE_FILES+=$(and         \
-	$(filter +make,${TGT_SVC}),      \
+	$(filter +make,${TGT_STR}),      \
 	-f ${COMPOSE_TOOLS}/make.yml     \
 ))
 
 $(eval DCOMPOSE_FILES+=$(and         \
-	$(filter +cloc,${TGT_SVC}),      \
+	$(filter +cloc,${TGT_STR}),      \
 	-f ${COMPOSE_TOOLS}/cloc.yml     \
 ))
 
@@ -393,6 +395,10 @@ endif
 
 IMAGE?=
 build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull idilic \
+		|| ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build idilic
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull worker \
+		|| ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build worker
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start ${IMAGE}
 	@ ${WHILE_IMAGES} \
@@ -407,7 +413,6 @@ build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
 		docker tag "$$IMAGE_HASH" "$$IMAGE_NAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH};  \
 		echo "    date:$$IMAGE_HASH $$IMAGE_NAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
 	done;
-
 
 template-patterns:
 	@ $(call TEMPLATE_PATTERNS)
@@ -441,19 +446,22 @@ env e: ## Export the environment as seen from MAKE.
 	@ export ${ENV} && env ${SEP};
 
 start s: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up -d ${IMAGE}
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-build -d ${IMAGE}
 
 start-fg sf: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
-	${DCOMPOSE} -f ${COMPOSE_TARGET} up ${IMAGE}
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-build ${IMAGE}
 
 start-bg sb: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the background, streaming output to terminal.
-	(${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up ${IMAGE} &)
+	(${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-build ${IMAGE} &)
 
 stop d: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the current project services on the current target.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} stop ${IMAGE}
 
 stop-all da: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the all project services on the current target. including orphans.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down
+
+stop-all-remove-orphans daro: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the all project services on the current target. including orphans.
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down --remove-orphans
 
 stop-clean dc: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Stop the all project services on the current target. including orphans.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down ${IMAGE} --remove-orphans
@@ -462,10 +470,10 @@ restart r: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Restart the project services 
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} restart ${IMAGE}
 
 restart-fg rf: ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Start the project services in the foreground.
-	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up
+	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down ${IMAGE} && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up ${IMAGE}
 
 restart-bg rb: ${ENV_LOCK} ${PREBUILD} ${GENERABLE}## Start the project services in the background, streaming output to terminal.
-	@ (${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up &)
+	@ (${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} down ${IMAGE} && ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up ${IMAGE} &)
 
 kill k: ${ENV_LOCK} ${PREBUILD} ${GENERABLE}## Kill current project services.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} kill -s 9
@@ -489,16 +497,40 @@ list-images li: ${ENV_LOCK} ${PREBUILD}## List available images from current tar
 	done;
 
 list-tags lt: ## List the images tagged from the current target.
-	@ ${WHILE_TAGS} echo $$TAG_NAME; done;done;
+	${WHILE_TAGS} \
+		docker image inspect --format="{{ join .RepoTags \" \" }}" $$IMAGE_HASH \
+			| sed 's/\s/\n/g'; \
+		done;done;
 
 push-images psi: ${ENV_LOCK} ## Push locally built images.
-	@ echo Pushing ${PROJECT}:${TAG}
+	@ ${WHILE_IMAGES} \
+		docker push $$IMAGE_NAME:${TAG}; \
+		echo "original:$$IMAGE_HASH $$IMAGE_NAME":${TAG};    \
+		                                                     \
+		docker push $$IMAGE_NAME:latest${SUFFIX}${DBRANCH};  \
+		echo "  latest:$$IMAGE_HASH $$IMAGE_NAME":latest${SUFFIX}${DBRANCH};  \
+		                                                                      \
+		docker push $$IMAGE_NAME:${HASH}${SUFFIX}${DBRANCH}; \
+		echo "    hash:$$IMAGE_HASH $$IMAGE_NAME":${HASH}${SUFFIX}${DBRANCH}; \
+		                                                                      \
+		docker push $$IMAGE_NAME:`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
+		echo "    date:$$IMAGE_HASH $$IMAGE_NAME":`date '+%Y%m%d'`${SUFFIX}${DBRANCH}; \
+	done;
+
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} push idilic;
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} push worker;
+
+push-images-all psia:
 	@ ${WHILE_TAGS} \
-		echo $$TAG_NAME; \
-	done;done;
+		docker image inspect --format="{{ join .RepoTags \" \" }}" $$IMAGE_HASH \
+			| sed 's/\s/\n/g' \
+			| while read LONG_TAG_NAME; do docker push $$LONG_TAG_NAME; \
+		done;done;done;
 
 pull-images pli: ${ENV_LOCK} ${PREBUILD} ## Pull remotely hosted images.
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull idilic;
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull worker;
 
 hooks: ${COMPOSE_TARGET} ## Register git hootks for development.
 	@ git config core.hooksPath githooks
@@ -563,20 +595,19 @@ ${VAR_FILE}: retarget
 
 retarget: ### Set the current target for one invocation.
 	@- $(eval ORIG?=${TARGET})
-	@- $(eval TGT_STR?=${TGT_STR})
-	@ $(call EXTRACT_TARGET_SERVICES, ${TGT_STR})
+	@ $(call EXTRACT_TARGET_SERVICES, ${ENV_LOCK_TGT_SVC})
 	@ [[ "${ORIG}" == "${TARGET}" ]] \
 		|| >&2 echo Setting target ${ORIG}...
 	@ test -z "${TGT_STR}" \
 		|| >&2 echo Setting services for ${TGT_STR}...
 	@ ${NEWTARGET}
-	$(eval INSTALLED_PACKAGES=$(shell ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm ${NO_TTY} \
-		${PASS_ENV} idilic listPackages --headers --format=csv --locations listPackages \
+	$(eval INSTALLED_PACKAGES=$(shell ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} run --rm -T \
+		${PASS_ENV} idilic listPackages --headers --format=csv --locations listPackages 2>/dev/null \
 		| sed 's/\//_/' \
+		| sed 's/-//g' \
 		| sed -r 's/(.*),(.*)/\U\1\E=\2/'))
-	$(foreach P,${INSTALLED_PACKAGES},\
-		$(eval PACKDIR_${P}) \
-	)
+	$(foreach P,${INSTALLED_PACKAGES},$(eval ENV+=PACKDIR_${P}))
+	$(foreach P,${INSTALLED_PACKAGES},$(eval PACKDIR_${P}))
 
 ${ROOTDIR}config/.env:
 	@ test -f ${@} || touch -d 0 ${@}
@@ -690,7 +721,7 @@ graylog-backup glbak: ${GENERABLE}### Backup graylog config to files.
 
 graylog-restore glres: ${GENERABLE}### Restore graylog config from files.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/graylog.yml run --rm mongo bash -c \
-		'mongorestore -h mongo --db graylog /settings/graylog'
+		'find /settings/graylog/*.bson -type f | xargs -I {} mongorestore -h mongo --db graylog {}'
 
 inotify-start: ${PREBUILD} ${GENERABLE}### Start inotify.
 	${DCOMPOSE} -f ${COMPOSE_TOOLS}/inotify.yml up

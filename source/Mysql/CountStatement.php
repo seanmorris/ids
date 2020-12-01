@@ -22,7 +22,7 @@ class CountStatement extends SelectStatement
 		$cleanJoin = function($join) use(&$cleanJoin)
 		{
 			list($sub, $superCol, $subCol, $type) = $join;
-			
+
 			$sub = clone $sub;
 
 			$sub->columns = [];
@@ -39,4 +39,12 @@ class CountStatement extends SelectStatement
 	{
 		return parent::generate();
 	}
+
+	// protected function databaseTier()
+	// {
+	// 	if(\SeanMorris\Ids\Database::get('main'))
+	// 	{
+	// 		return 'main';
+	// 	}
+	// }
 }

@@ -35,11 +35,10 @@ class File
 		$this->writeHandle && fclose($this->writeHandle);
 	}
 
-	public function __construct($fileName)
+	public function __construct($fileName, $originalName = NULL)
 	{
-		$this->originalName =
-			$this->name     =
-			$this->realName = $fileName;
+		$this->name = $this->realName = $fileName;
+		$this->originalName = $originalName ?? $this->name;
 	}
 
 	public function check()

@@ -4,10 +4,13 @@ services:
 
   idilic:
     volumes: ['${OUTROOTDIR}/:/app']
+    depends_on: [database]
     extends:
       file: base.yml
       service: idilic
-    depends_on: [database]
+
+
+
 
   server:
     volumes: ['${OUTROOTDIR}:/app']
@@ -16,6 +19,9 @@ services:
       file: base.yml
       service: server
     depends_on: [database]
+
+
+
 
   database:
     ports: ['${IDS_EXPOSE_SQL:-0}:3306']

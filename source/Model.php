@@ -775,7 +775,7 @@ class Model
 				, $curClass
 				, $name
 			)
-			, $args
+			// , $args
 			, sprintf(
 				'%s::%s(...)'
 				. PHP_EOL
@@ -837,7 +837,28 @@ class Model
 		if(isset($def['cursor']) && $def['cursor'])
 		{
 			$select->limit($limit);
-			$select->conditions([['id' => '?', '>']]);
+
+			if(isset($def['order']))
+			{
+				$select->order($def['order']);
+
+				$orderSort = reset($def['order']);
+				$orderBy   = key($def['order']);
+
+				if(!isset($def['where']))
+				{
+					$select->conditions([[$orderBy => '?', $orderBy === 'ASC' ? '>' : '<']]);
+				}
+			}
+			else
+			{
+				$select->order(['id' => 'ASC']);
+
+				if(!isset($def['where']))
+				{
+					$select->conditions([['id' => '?', '>']]);
+				}
+			}
 		}
 
 		if(isset($def['paged']) && $def['paged'])
@@ -1088,7 +1109,7 @@ class Model
 			$count = (int) $countResult->fetchColumn();
 
 			\SeanMorris\Ids\Log::debug(sprintf(
-				'Caching count %s', get_called_class()
+				'Caching count %s (%d)', get_called_class(), $count
 			));
 
 			$cache[0] = $count;
@@ -1771,7 +1792,13 @@ class Model
 
 		if(!$superior)
 		{
-			$select->group(...$columns);
+			$groupColumns = $columns;
+
+			array_unshift($columns, 'id');
+
+			$groupColumns = array_unique($groupColumns);
+
+			$select->group(...$groupColumns);
 		}
 
 		if(!$selectDef['flat'] && isset($selectDef['join']) && is_array($selectDef['join']))
@@ -2102,14 +2129,20 @@ class Model
 		return $this->$name;
 	}
 
-	public function __set($name, $value)
+	public function __set($property, $value)
 	{
-		if(!isset($this->$name))
+		if(!property_exists($this, $property))
 		{
 			return;
 		}
 
-		$this->$name = $value;
+		if($this->{$property} !== $value)
+		{
+			$this->_changed[$property] = true;
+			$this->_unconsumed = [];
+		}
+
+		$this->{$property} = $value;
 	}
 
 	public function consume($skeleton, $override = false)
@@ -2171,7 +2204,8 @@ class Model
 			{
 				\SeanMorris\Ids\Log::debug('Using existing model');
 
-				$this->{$property} = $values->id;
+				// $this->{$property} = $values->id;
+				$this->__set($property, $values->id);
 			}
 			else if(is_array($values))
 			{
@@ -2196,15 +2230,16 @@ class Model
 
 					if($subject->save())
 					{
-						$this->{$property} = $subject->id;
+						$this->addSubject($property, $subject);
+						// $this->{$property} = $subject->id;
 					}
 				}
 				else if($values)
 				{
-					 if(!isset($values['class']) || !$values['class'])
-					 {
-					 	$values['class'] = $propertyClass;
-					 }
+					if(!isset($values['class']) || !$values['class'])
+					{
+						$values['class'] = $propertyClass;
+					}
 
 					\SeanMorris\Ids\Log::debug(
 						'Trying to create new model'
@@ -2230,7 +2265,7 @@ class Model
 
 							if($saved)
 							{
-								$this->{$property} = $subject->id;
+								$this->addSubject($property, $subject);
 							}
 						}
 						catch(\SeanMorris\PressKit\Exception\ModelAccessException $exception)
@@ -2280,9 +2315,16 @@ class Model
 					}
 					elseif($values instanceof $class)
 					{
+						if($values->onSubjugate($this, $property) === FALSE)
+						{
+							continue;
+						}
+
 						if($values->save())
 						{
-							$this->{$property}[$delta] = $values->id;
+							$this->{$property}[$delta] = $values;
+
+							$this->_changed[$property] = TRUE;
 
 							$subModelsSubmitted = TRUE;
 						}
@@ -2304,12 +2346,18 @@ class Model
 
 						$subject->consume($values);
 
+						if($subject->onSubjugate($this, $property) === FALSE)
+						{
+							continue;
+						}
+
 						try
 						{
-							if($subject->save())
-							{
-								$this->{$property}[$delta] = $subject->id;
-							}
+							$subject->save();
+
+							$this->{$property}[$delta] = $subject;
+
+							$this->_changed[$property] = TRUE;
 						}
 						catch(\SeanMorris\PressKit\Exception\ModelAccessException $exception)
 						{
@@ -2345,10 +2393,11 @@ class Model
 
 							try
 							{
-								if($subject->save())
-								{
-									$this->{$property}[$delta] = $subject->id;
-								}
+								$subject->save();
+
+								$this->{$property}[$delta] = $subject;
+
+								$this->_changed[$property] = TRUE;
 							}
 							catch(\SeanMorris\PressKit\Exception\ModelAccessException $exception)
 							{
@@ -2492,13 +2541,13 @@ class Model
 			return;
 		}
 
-		$subjectClass = get_class($subject);
+		if(!$subjectClass = get_class($subject))
+		{
+			return FALSE;
+		}
 
-		if($subjectClass
-			&& (
-				$subjectClass == $this->canHaveMany($property)
-				|| is_subclass_of($subjectClass, $this->canHaveMany($property))
-			)
+		if($subjectClass === $this->canHaveMany($property)
+			|| is_a($subjectClass, $this->canHaveMany($property), TRUE)
 		){
 			if(!$this->{$property})
 			{
@@ -2507,11 +2556,11 @@ class Model
 
 			foreach($this->{$property} as $existingSubject)
 			{
-				if($existingSubject && $subject ->id == (is_object($existingSubject)
+				if($existingSubject && $subject->id == (is_object($existingSubject)
 						? $existingSubject->id
 						: $existingSubject
 				)
-					&& get_class($existingSubject) == get_class($subject)
+					&& get_class($existingSubject) === get_class($subject)
 				){
 					return;
 				}
@@ -2530,23 +2579,72 @@ class Model
 			return TRUE;
 		}
 
-		if($subjectClass
-			&& (
-				$subjectClass == $this->canHaveOne($property)
-				|| is_subclass_of($subjectClass, $this->canHaveOne($property))
-			)
+		if($subjectClass === $this->canHaveOne($property)
+			|| is_a($subjectClass, $this->canHaveOne($property), TRUE)
 		){
 			\SeanMorris\Ids\Log::debug(
 				'Adding to ' . $property
 				, $subject
 			);
 
-			$this->{$property} = $subject->id;
+			$this->{$property} = $subject;
+
+			$this->_changed[$property] = TRUE;
+			$this->_unconsumed = [];
 
 			return TRUE;
 		}
 
+		throw new Exception(sprintf(
+			'Cannot add subject of type "%s" to property "$%s" of type "%s".'
+			, get_class($subject)
+			, $property
+			, get_class($this)
+		));
+
 		return FALSE;
+	}
+
+	public function removeSubject($property, $subject)
+	{
+		if(!$subjectClass = get_class($subject))
+		{
+			return FALSE;
+		}
+
+		if($subjectClass == $this->canHaveMany($property)
+			|| is_subclass_of($subjectClass, $this->canHaveMany($property))
+		){
+
+			if(!isset($this->_changed[$property]) || !$this->_changed[$property])
+			{
+				$this->_changed[$property] = TRUE;
+
+				$this->{$property} = $this->getSubjects($property, TRUE);
+			}
+
+			foreach($this->{$property} as $delta => $existingSubject)
+			{
+				if($existingSubject && $subject->id == (is_object($existingSubject)
+						? $existingSubject->id
+						: $existingSubject
+				)
+					&& get_class($existingSubject) === get_class($subject)
+				){
+					array_splice($this->{$property}, $delta, 1);
+					break;
+				}
+			}
+		}
+
+		if($subjectClass == $this->canHaveOne($property)
+			|| is_subclass_of($subjectClass, $this->canHaveOne($property))
+		){
+			if($this->{$property} === $subject)
+			{
+				$this->{$property} = NULL;
+			}
+		}
 	}
 
 	public function getSubject($column = null)
@@ -2632,6 +2730,20 @@ class Model
 				yield $subjectRelationship;
 			}
 		}
+	}
+
+	public function countSubjects($column)
+	{
+		$relationshipClass = '\SeanMorris\Ids\Relationship';
+
+		if(static::$relationshipClass)
+		{
+			$relationshipClass = static::$relationshipClass;
+		}
+
+		return $relationshipClass::countByOwner(
+			$this, $column
+		);
 	}
 
 	public function genSubjects($column)

@@ -3,7 +3,7 @@ version: '2.4'
 services:
 
   idilic:
-    volumes: ['${OUTROOTDIR}:/app', '/tmp:/tmp']
+    volumes: ['${OUTROOTDIR}/:/app']
     depends_on: [database]
     extends:
       file: base.yml
@@ -13,18 +13,18 @@ services:
       DHOST_IP: ${DHOST_IP}
 
   server:
-    volumes: ['../../:/app', '/tmp:/tmp']
+    volumes: ['${OUTROOTDIR}:/app']
     ports:   ['${IDS_EXPOSE_HTTP:-0}:8080']
-    depends_on: [database]
     extends:
       file: base.yml
       service: server
+    depends_on: [database]
     environment:
       XDEBUG_CONFIG: ${XDEBUG_CONFIG}
       DHOST_IP: ${DHOST_IP}
 
   database:
-    ports: ['${IDS_EXPOSE_SQL:-0}:${IDS_DATABASES_MAIN_PORT:-0}']
+    ports: ['${IDS_EXPOSE_SQL:-0}:${IDS_DATABASES_MAIN_PORT:-3306}']
     extends:
       file: base.yml
       service: database

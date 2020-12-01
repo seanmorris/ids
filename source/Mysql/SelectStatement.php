@@ -237,9 +237,15 @@ class SelectStatement extends WhereStatement
 		{
 			foreach($this->order as $column => $direction)
 			{
-				$columnName = $this->aliasColumnName($column, $this->alias);
+				// $columnName = $this->aliasColumnName($column, $this->alias);
 
-				$orderStrings[] = $columnName . ' ' . $direction;
+				// $orderStrings[] = $columnName . ' ' . $direction;
+				$orderStrings[] = sprintf(
+					'%s.%s %s'
+					, $this->alias
+					, $column
+					, strtoupper($direction)
+				);
 			}
 		}
 

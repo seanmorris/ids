@@ -100,16 +100,14 @@ class Database
 	{
 		foreach($args as $title => $database)
 		{
-			$database = (object) $database;
-
 			static::register(
 				$title
-				, $database->connection ?: sprintf(
+				, $database->connection ?? sprintf(
 					'mysql:dbname=%s;host=%s;port=%d'
 					, $database->database
 					, $database->hostname
-					, $database->port ?? static::DEFAULT_PORT
-					)
+					, $database->port ?: static::DEFAULT_PORT
+				)
 				, $database->username
 				, $database->password
 				, $database->retry->tries ?? 0

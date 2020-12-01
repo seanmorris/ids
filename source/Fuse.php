@@ -32,7 +32,7 @@ class Fuse
 
 			sleep($delay);
 
-			Log::debug('Waiting...');
+			Log::debug(sprintf('Waiting %s seconds...', $delay));
 
 			Log::debug(sprintf('Retries left #%d...', $tries));
 
