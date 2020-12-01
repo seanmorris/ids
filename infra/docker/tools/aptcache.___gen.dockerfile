@@ -12,5 +12,5 @@ RUN set -eux;               \
 CMD /etc/init.d/apt-cacher-ng start     \
 	&& tail -f /var/log/apt-cacher-ng/*
 
-# generated @ Sat 28 Nov 2020 06:39:51 AM EST
+# generated @ Tue 01 Dec 2020 12:51:09 PM EST
 # by sean @ the-altar

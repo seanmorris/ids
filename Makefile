@@ -41,7 +41,9 @@ D_USR ?= $(shell whoami)
 
 -include ${VAR_FILE}
 
-CUT_TARGET=cut -d @ -f 2 | cut -d + -f 1 |  cut -d - -f 1
+CUT_TARGET =cut -d @ -f 2 | cut -d + -f 1 |  cut -d - -f 1
+CUT_SERVICE=cut -d @ -f 2 | sed -r 's/[^+-]+//'
+INPUT_SVC=
 
 ifeq ($(filter @%,$(firstword ${MAKECMDGOALS})),)
 $(eval TGT_STR= )
@@ -52,10 +54,12 @@ endif
 else
 $(eval TARGET=$(shell echo ${firstword ${MAKECMDGOALS}} | ${CUT_TARGET} ))
 $(eval TGT_STR=$(firstword ${MAKECMDGOALS}))
+$(eval INPUT_SVC=$(shell echo ${firstword ${MAKECMDGOALS}} | ${CUT_SERVICE} ))
 endif
 else
 $(eval TARGET=$(shell echo ${firstword ${MAKECMDGOALS}} | ${CUT_TARGET} ))
 $(eval TGT_STR=$(firstword ${MAKECMDGOALS}))
+$(eval INPUT_SVC=$(shell echo ${firstword ${MAKECMDGOALS}} | ${CUT_SERVICE} ))
 endif
 
 # @ ( [[ "${ENV_LOCK_TAG}" != "" ]] || [[ "${ENV_LOCK_TGT_SVC}" != "${TGT_SVC}" ]] ) \
@@ -395,10 +399,7 @@ endif
 
 IMAGE?=
 build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
-	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull idilic \
-		|| ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build idilic
-	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} pull worker \
-		|| ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build worker
+	@ echo ${DCOMPOSE_TARGET_STACK}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start ${IMAGE}
 	@ ${WHILE_IMAGES} \
@@ -435,7 +436,6 @@ clean: ${PREBUILD}## Clean the project. Only applies to files from the current t
 			rm -f .env_${TARGET};         \
 			rm -f .env.default            \
 			rm -f .env"
-
 	@- docker run --rm -v ${OUTCOREDIR}:/app -w=/app \
 		${BASELINUX} bash -c "                    \
 			rm -f ${GENERABLE};                   \
@@ -562,7 +562,7 @@ dcompose-version dcv: ${PREBUILD} ${GENERABLE}## Print the current docker-compos
 
 ${ENV_LOCK}: ${VAR_FILE} ### Lock the environment target
 	@ (test "${ENV_LOCK_TAG:=}" != "${TAG}"           \
-	|| test "${ENV_LOCK_TGT_SVC:=}" != "${TGT_SVC}" \
+	|| test "${ENV_LOCK_TGT_SVC:=}" != "${INPUT_SVC}" \
 	) && {                                          \
 		echo -e >&2 "\e[2m"Env changed, need to check dependencies..."\e[0m"; \
 		 ${DRUN} -v $${COMPOSER_HOME:-$$HOME/.composer}:/tmp \
@@ -571,14 +571,14 @@ ${ENV_LOCK}: ${VAR_FILE} ### Lock the environment target
 	} || true;
 
 	@ ( test "${ENV_LOCK_TAG:=}" != "${TAG}"        \
-		|| test "${ENV_LOCK_TGT_SVC:=}" != "${TGT_SVC}" ) \
+		|| test "${ENV_LOCK_TGT_SVC:=}" != "${INPUT_SVC}" ) \
 	&& {                                            \
 		>&2 echo "Locking env...";                  \
-		echo ENV_LOCK_TGT_SVC=${TGT_SVC:=} > ${ENV_LOCK}; \
+		echo ENV_LOCK_TGT_SVC=${INPUT_SVC:=} > ${ENV_LOCK}; \
 		echo ENV_LOCK_TAG=${TAG:=} >> ${ENV_LOCK};  \
 		echo ENV_LOCK_TIME=`date` >> ${ENV_LOCK};   \
 		touch -d 0 ${ENV_LOCK};                     \
-		$(eval ENV_LOCK_TGT_SVC:=${TGT_SVC:=})      \
+		$(eval ENV_LOCK_TGT_SVC:=${INPUT_SVC:=})      \
 		$(eval ENV_LOCK_TAG:=${TAG:=})              \
 	} || true;
 
@@ -595,8 +595,8 @@ ${VAR_FILE}: retarget
 
 retarget: ### Set the current target for one invocation.
 	@- $(eval ORIG?=${TARGET})
-# 	@- $(eval TGT_STR?=${TGT_STR})
-	@ $(call EXTRACT_TARGET_SERVICES, ${ENV_LOCK_TGT_SVC})
+	@- $(eval TGT_STR=${TGT_STR})
+	@ $(call EXTRACT_TARGET_SERVICES, ${INPUT_SVC})
 	@ [[ "${ORIG}" == "${TARGET}" ]] \
 		|| >&2 echo Setting target ${ORIG}...
 	@ test -z "${TGT_STR}" \
