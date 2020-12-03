@@ -12,12 +12,37 @@ services:
       XDEBUG_CONFIG: ${XDEBUG_CONFIG}
       DHOST_IP: ${DHOST_IP}
 
+  phpfpm:
+    volumes:
+      - ${OUTROOTDIR}:/app
+      - ${CORERELDIR}../../infra/php/www.conf:/etc/php/${PHP}/fpm/pool.d/www.conf
+    extends:
+      file: base.yml
+      service: phpfpm
+    depends_on: [database]
+    environment:
+      XDEBUG_CONFIG: ${XDEBUG_CONFIG}
+      DHOST_IP: ${DHOST_IP}
+
   server:
     volumes: ['${OUTROOTDIR}:/app']
     ports:   ['${IDS_EXPOSE_HTTP:-0}:8080']
     extends:
       file: base.yml
       service: server
+    depends_on: [database]
+    environment:
+      XDEBUG_CONFIG: ${XDEBUG_CONFIG}
+      DHOST_IP: ${DHOST_IP}
+
+  nginx:
+    volumes:
+      - ${OUTROOTDIR}:/app
+      - ${CORERELDIR}../../infra/nginx/http.conf:/etc/nginx/conf.d/default.conf
+    ports:   ['7777:80']
+    extends:
+      file: base.yml
+      service: nginx
     depends_on: [database]
     environment:
       XDEBUG_CONFIG: ${XDEBUG_CONFIG}

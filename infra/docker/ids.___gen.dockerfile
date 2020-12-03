@@ -97,6 +97,24 @@ ARG ROOTRELDIR
 
 COPY ${ROOTRELDIR}/ /app
 
+FROM base AS fpm-base
+
+RUN set -eux;              \
+	apt-get update;        \
+	apt-get install -y --no-install-recommends \
+		php7.3-fpm;     \
+	apt-get autoremove -y; \
+	apt-get clean;         \
+	rm -rfv /var/www;      \
+	mkdir -p /run/php/;    \
+	chmod 777 /run/php/;   \
+	ln -s /app/public /var/www;
+
+ENTRYPOINT ["php-fpm7.3", "-F", "-R"]
+
+FROM fpm-base AS fpm-dev
+FROM fpm-base AS fpm-test
+
 FROM base AS server-base
 
 ARG GID

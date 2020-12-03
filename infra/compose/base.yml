@@ -27,6 +27,28 @@ services:
         IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST:-}
         IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT:-}
 
+  phpfpm:
+    image:   ${REPO}/${PROJECT}.phpfpm:${TAG}
+    # user:    ${D_UID}:${D_GID}
+    restart: always
+    env_file:
+      - ${MAIN_DLT}
+      - ${MAIN_ENV}
+      - ${TRGT_DLT}
+      - ${TRGT_ENV}
+    build:
+      context: ../../
+      dockerfile: ${CORERELDIR}infra/docker/ids.___gen.dockerfile
+      target:  fpm-${TARGET}
+      network: bridge
+      args:
+        UID: ${D_UID}
+        GID: ${D_GID}
+        CORERELDIR: ${CORERELDIR}
+        ROOTRELDIR: ${ROOTRELDIR}
+        IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST:-}
+        IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT:-}
+
   server:
     image:   ${REPO}/${PROJECT}.server:${TAG}
     user:    ${D_UID}:${D_GID}
@@ -48,6 +70,16 @@ services:
         ROOTRELDIR: ${ROOTRELDIR}
         IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST:-}
         IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT:-}
+
+  nginx:
+    image: nginx
+    # user:    ${D_UID}:${D_GID}
+    restart: always
+    env_file:
+      - ${MAIN_DLT}
+      - ${MAIN_ENV}
+      - ${TRGT_DLT}
+      - ${TRGT_ENV}
 
   database:
     command: ['mysqld', '--character-set-server=utf8mb4']

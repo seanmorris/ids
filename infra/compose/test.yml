@@ -12,6 +12,16 @@ services:
 
 
 
+  phpfpm:
+    volumes: ['${OUTROOTDIR}:/app']
+    extends:
+      file: base.yml
+      service: phpfpm
+    depends_on: [database]
+
+
+
+
   server:
     volumes: ['${OUTROOTDIR}:/app']
     ports:   ['${IDS_EXPOSE_HTTP:-0}:8080']
@@ -23,8 +33,19 @@ services:
 
 
 
+  nginx:
+    volumes: ['${OUTROOTDIR}:/app']
+    ports:   ['7777:80']
+    extends:
+      file: base.yml
+      service: nginx
+    depends_on: [database]
+
+
+
+
   database:
-    ports: ['${IDS_EXPOSE_SQL:-0}:3306']
+    ports: ['${IDS_EXPOSE_SQL:-0}:${IDS_DATABASES_MAIN_PORT:-3306}']
     extends:
       file: base.yml
       service: database
