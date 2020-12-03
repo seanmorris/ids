@@ -3,11 +3,11 @@ version: '2.4'
 services:
 
   idilic:
-    volumes: ['${OUTROOTDIR}/:/app']
-    depends_on: [database]
     extends:
       file: base.yml
       service: idilic
+    volumes: ['${OUTROOTDIR}/:/app']
+    depends_on: [database]
     environment:
       XDEBUG_CONFIG: ${XDEBUG_CONFIG}
       DHOST_IP: ${DHOST_IP}

@@ -12,9 +12,11 @@ class Request
 		, $get
 		, $post
 		, $files
+		, $handle
 		, $headers
 		, $context
 		, $switches
+		, $responseBuffer
 	;
 
 	public function __construct($vars = [])
@@ -54,6 +56,11 @@ class Request
 		if(!$this->headers)
 		{
 			$this->headers = [];
+		}
+
+		if(!$this->responseBuffer)
+		{
+			$this->responseBuffer = fopen('php://output', 'w');
 		}
 	}
 
@@ -144,6 +151,70 @@ class Request
 	public function post()
 	{
 		return $this->post ?? [];
+	}
+
+	public function fraw()
+	{
+		if(!$this->handle)
+		{
+			$this->handle = fopen('php://input', 'r');
+		}
+
+		return $this->handle;
+	}
+
+	public function getResponseBuffer()
+	{
+		return $this->responseBuffer;
+	}
+
+	public function fread($length)
+	{
+		$handle = $this->fraw();
+
+		return fread($handle, $length);
+	}
+
+	public function fgets()
+	{
+		$handle = $this->fraw();
+
+		return fgets($handle);
+	}
+
+	public function read()
+	{
+		$headers     = $this->headers('ids-input-headers') === 'true';
+		$contentType = $this->headers('Content-Type');
+		$handle      = $this->fraw();
+
+		switch($contentType)
+		{
+			case 'text/plain':
+				$parser = new \SeanMorris\Ids\Api\Input\Plain($handle, $headers);
+				break;
+
+			case 'text/csv':
+				$parser = new \SeanMorris\Ids\Api\Input\Csv($handle, $headers);
+				break;
+
+			case 'text/tsv':
+				$parser = new \SeanMorris\Ids\Api\Input\Tsv($handle, $headers);
+				break;
+
+			case 'text/json':
+				$parser = new \SeanMorris\Ids\Api\Input\Json($handle, $headers);
+				break;
+
+			case 'text/yaml':
+				$parser = new \SeanMorris\Ids\Api\Input\Yaml($handle, $headers);
+				break;
+		}
+
+		foreach($parser->parse() as $input)
+		{
+			yield $input;
+		}
 	}
 
 	public function method()

@@ -177,7 +177,11 @@ foreach($requests as $req)
 			$res = $res->dumpStruct();
 		}
 
-		if($res instanceof \Generator)
+		if($response instanceof \SeanMorris\Ids\Api\Response)
+		{
+			$response->send();
+		}
+		else if($response instanceof Traversable || is_array($response))
 		{
 			foreach($res as $r)
 			{
