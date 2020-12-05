@@ -21,7 +21,7 @@ class Response
 
 	public function send($encoding = 'text/plain')
 	{
-		$headers = $this->request->headers('ids-output-headers') === 'true';
+		$headers = $this->request->headers('Ids-Output-Headers') === 'true';
 		$handle  = $this->request->getResponseBuffer();
 
 		$content = $this->content;
