@@ -184,7 +184,7 @@ class Request
 
 	public function read()
 	{
-		$headers     = $this->headers('ids-input-headers') === 'true';
+		$headers     = $this->headers('Ids-Input-Headers') === 'true';
 		$contentType = $this->headers('Content-Type');
 		$handle      = $this->fraw();
 
