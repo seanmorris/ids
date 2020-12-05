@@ -202,9 +202,9 @@ class Request
 				$parser = new \SeanMorris\Ids\Api\Input\Json($handle, $headers);
 				break;
 
-			case 'text/yaml':
-				$parser = new \SeanMorris\Ids\Api\Input\Yaml($handle, $headers);
-				break;
+			// case 'text/yaml':
+			// 	$parser = new \SeanMorris\Ids\Api\Input\Yaml($handle, $headers);
+			// 	break;
 
 			case 'text/plain':
 			default:
