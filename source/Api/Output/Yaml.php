@@ -9,6 +9,11 @@ class Yaml extends \SeanMorris\Ids\Api\OutputParser
 			$content = $content();
 		}
 
+		$toArray = function($x) use(&$toArray)
+		{
+		    return is_scalar($x) ? $x : array_map($toArray, (array) $x);
+		};
+
 		if($content instanceof \Traversable || $content instanceof \Generator)
 		{
 			foreach($content as $chunk)
@@ -18,9 +23,9 @@ class Yaml extends \SeanMorris\Ids\Api\OutputParser
 					$chunk = $chunk();
 				}
 
-				if(is_scalar($chunk))
+				if(is_scalar($chunk) || is_null($chunk))
 				{
-					fwrite($this->handle, yaml_emit((array)$chunk));
+					fwrite($this->handle, yaml_emit($chunk));
 				}
 				elseif(is_object($chunk) && is_callable([$chunk, '__toApi']))
 				{
@@ -32,16 +37,21 @@ class Yaml extends \SeanMorris\Ids\Api\OutputParser
 				}
 				else
 				{
-					fwrite($this->handle, yaml_emit((array)$chunk));
+					$chunk = $toArray($chunk);
+
+					fwrite($this->handle, yaml_emit($chunk));
 				}
+
+				fwrite($this->handle, PHP_EOL);
 			}
+
 
 			return;
 		}
 
-		if(is_scalar($content))
+		if(is_scalar($chunk) || is_null($content))
 		{
-			fwrite($this->handle, yaml_emit((array)$content));
+			fwrite($this->handle, yaml_emit($content));
 		}
 		elseif(is_object($content) && is_callable([$content, '__toApi']))
 		{
@@ -53,7 +63,11 @@ class Yaml extends \SeanMorris\Ids\Api\OutputParser
 		}
 		else
 		{
-			fwrite($this->handle, yaml_emit((array)$chunk));
+			$chunk = $toArray($content);
+
+			fwrite($this->handle, yaml_emit((array)$content));
 		}
+
+		fwrite($this->handle, PHP_EOL);
 	}
 }

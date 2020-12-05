@@ -55,9 +55,11 @@ class Csv extends \SeanMorris\Ids\Api\OutputParser
 				}
 				else
 				{
-					$header = $header + array_keys((array)$chunk);
+					$header = array_unique(array_merge($header, array_keys((array)$chunk)));
+					$empty  = array_map(function(){return NULL; }, array_flip($header));
+					$values = array_replace($empty, array_filter((array)$chunk, 'is_scalar'));
 
-					fputcsv($buffer, (array)$chunk, $this->delimiter, $this->enclosure, $this->escape);
+					fputcsv($buffer, $values, $this->delimiter, $this->enclosure, $this->escape);
 				}
 			}
 

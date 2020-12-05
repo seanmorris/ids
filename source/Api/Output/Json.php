@@ -18,7 +18,7 @@ class Json extends \SeanMorris\Ids\Api\OutputParser
 					$chunk = $chunk();
 				}
 
-				if(is_scalar($chunk))
+				if(is_scalar($chunk) || is_null($chunk))
 				{
 					fwrite($this->handle, json_encode($chunk));
 				}
@@ -41,7 +41,7 @@ class Json extends \SeanMorris\Ids\Api\OutputParser
 			return;
 		}
 
-		if(is_scalar($content))
+		if(is_scalar($content) || is_null($content))
 		{
 			fwrite($this->handle, json_encode($content));
 		}
@@ -55,7 +55,7 @@ class Json extends \SeanMorris\Ids\Api\OutputParser
 		}
 		else
 		{
-			fwrite($this->handle, json_encode($chunk));
+			fwrite($this->handle, json_encode($content));
 		}
 
 		fwrite($this->handle, PHP_EOL . PHP_EOL);

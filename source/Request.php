@@ -190,10 +190,6 @@ class Request
 
 		switch($contentType)
 		{
-			case 'text/plain':
-				$parser = new \SeanMorris\Ids\Api\Input\Plain($handle, $headers);
-				break;
-
 			case 'text/csv':
 				$parser = new \SeanMorris\Ids\Api\Input\Csv($handle, $headers);
 				break;
@@ -208,6 +204,11 @@ class Request
 
 			case 'text/yaml':
 				$parser = new \SeanMorris\Ids\Api\Input\Yaml($handle, $headers);
+				break;
+
+			case 'text/plain':
+			default:
+				$parser = new \SeanMorris\Ids\Api\Input\Plain($handle, $headers);
 				break;
 		}
 

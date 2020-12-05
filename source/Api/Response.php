@@ -28,10 +28,6 @@ class Response
 
 		switch($this->encoding)
 		{
-			case 'text/plain':
-				$parser = new \SeanMorris\Ids\Api\Output\Plain($handle);
-				break;
-
 			case 'text/csv':
 				$parser = new \SeanMorris\Ids\Api\Output\Csv($handle, $headers);
 				break;
@@ -46,6 +42,11 @@ class Response
 
 			case 'text/yaml':
 				$parser = new \SeanMorris\Ids\Api\Output\Yaml($handle);
+				break;
+
+			case 'text/plain':
+			default:
+				$parser = new \SeanMorris\Ids\Api\Output\Plain($handle);
 				break;
 		}
 

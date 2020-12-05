@@ -19,12 +19,18 @@ class Json extends \SeanMorris\Ids\Api\InputParser
 
 			if($line === "\n")
 			{
-				yield json_decode($source);
+				if($source)
+				{
+					yield json_decode($source);
+				}
 
 				$source = '';
 			}
 		}
 
-		yield json_decode($source);
+		if($source)
+		{
+			yield json_decode($source);
+		}
 	}
 }

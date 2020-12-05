@@ -34,6 +34,8 @@ class Plain extends \SeanMorris\Ids\Api\OutputParser
 				{
 					fwrite($this->handle, print_r($chunk, 1));
 				}
+
+				fwrite($this->handle, PHP_EOL);
 			}
 
 			return;
@@ -55,5 +57,7 @@ class Plain extends \SeanMorris\Ids\Api\OutputParser
 		{
 			fwrite($this->handle, print_r($content, 1));
 		}
+
+		fwrite($this->handle, PHP_EOL);
 	}
 }

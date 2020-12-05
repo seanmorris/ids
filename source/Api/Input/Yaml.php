@@ -17,14 +17,23 @@ class Yaml extends \SeanMorris\Ids\Api\InputParser
 		{
 			$source .= $line;
 
-			if($line === "\n")
+			if($line === "\n" || $line === "...\n")
 			{
-				yield yaml_parse($source);
+				$source .= $line;
+
+				if(trim($source))
+				{
+					yield yaml_parse($source);
+				}
+
 
 				$source = '';
 			}
 		}
 
-		yield yaml_parse($source);
+		if($source)
+		{
+			yield yaml_parse($source);
+		}
 	}
 }

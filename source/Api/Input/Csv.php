@@ -30,7 +30,7 @@ class Csv extends \SeanMorris\Ids\Api\InputParser
 			if($this->header)
 			{
 				$lineHeader = $header + array_keys($line);
-				$lineValues = $line + array_fill(0, count($lineHeader), NULL);
+				$lineValues = array_filter($line, 'is_scalar') + array_fill(0, count($lineHeader), NULL);
 
 				yield array_combine($lineHeader, $lineValues);
 			}
