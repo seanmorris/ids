@@ -2,7 +2,7 @@
 namespace SeanMorris\Ids\Api;
 class Response
 {
-	protected $handle, $request, $content;
+	protected $handle, $request, $content, $encoding;
 
 	public function __construct($request)
 	{
@@ -21,7 +21,7 @@ class Response
 
 	public function send($encoding = 'text/plain')
 	{
-		$headers = $this->request->headers('Ids-Output-Headers') === 'true';
+		$outputHeaders = $this->request->headers('Ids-Output-Headers') === 'true';
 		$handle  = $this->request->getResponseBuffer();
 
 		$content = $this->content;
@@ -29,11 +29,11 @@ class Response
 		switch($this->encoding)
 		{
 			case 'text/csv':
-				$parser = new \SeanMorris\Ids\Api\Output\Csv($handle, $headers);
+				$parser = new \SeanMorris\Ids\Api\Output\Csv($handle, $outputHeaders);
 				break;
 
 			case 'text/tsv':
-				$parser = new \SeanMorris\Ids\Api\Output\Tsv($handle, $headers);
+				$parser = new \SeanMorris\Ids\Api\Output\Tsv($handle, $outputHeaders);
 				break;
 
 			case 'text/json':

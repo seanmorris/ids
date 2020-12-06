@@ -2,9 +2,9 @@
 namespace SeanMorris\Ids\Http;
 class Event
 {
-	protected $id, $message;
+	protected $id, $message, $eventType;
 
-	public function __construct($message = NULL, $id = NULL)
+	public function __construct($message = NULL, $id = NULL, $type = NULL)
 	{
 		$this->message = $message;
 		$this->id      = $id;
@@ -23,8 +23,10 @@ class Event
 
 		return sprintf(
 			$format
-			, 'ServerEvent'
-			, $this->message
+			, $this->eventType ?: 'ServerEvent'
+			, !$this->message || is_scalar($this->message)
+				? $this->message
+				: json_encode($this->message)
 			, $this->id
 		);
 	}

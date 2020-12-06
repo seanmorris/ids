@@ -49,6 +49,7 @@ RUN set -eux;               \
 		php7.3-mbstring  \
 		php7.3-opcache   \
 		php7.3-pdo-mysql \
+		php7.3-redis     \
 		php7.3-readline  \
 		php7.3-xml       \
 		php7.3-yaml;     \

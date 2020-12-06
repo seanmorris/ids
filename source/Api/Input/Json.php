@@ -21,7 +21,7 @@ class Json extends \SeanMorris\Ids\Api\InputParser
 			{
 				if($source)
 				{
-					yield json_decode($source);
+					yield json_decode($source, TRUE);
 				}
 
 				$source = '';
@@ -30,7 +30,7 @@ class Json extends \SeanMorris\Ids\Api\InputParser
 
 		if($source)
 		{
-			yield json_decode($source);
+			yield json_decode($source, TRUE);
 		}
 	}
 }

@@ -49,6 +49,7 @@ RUN set -eux;               \
 		php${PHP}-mbstring  \
 		php${PHP}-opcache   \
 		php${PHP}-pdo-mysql \
+		php${PHP}-redis     \
 		php${PHP}-readline  \
 		php${PHP}-xml       \
 		php${PHP}-yaml;     \

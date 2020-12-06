@@ -5,7 +5,7 @@ class Http
 	protected static $disconnect = [], $disconnected = FALSE;
 	public static function disconnected()
 	{
-		return static::$disconnected;
+		return static::$disconnected || connection_aborted();
 	}
 	public static function onDisconnect(callable $function)
 	{
@@ -40,8 +40,11 @@ class Http
 				{
 					\SeanMorris\Ids\Log::error($e);
 				}
+
 				session_write_close();
+
 				static::$disconnected = TRUE;
+
 				foreach ($disconnect as $d)
 				{
 					$d();
