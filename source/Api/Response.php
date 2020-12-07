@@ -24,9 +24,10 @@ class Response
 		$outputHeaders = $this->request->headers('Ids-Output-Headers') === 'true';
 		$handle  = $this->request->getResponseBuffer();
 
-		$content = $this->content;
+		$content  = $this->content;
+		$encoding = $this->encoding ?: $this->request->headers('Accept');
 
-		switch($this->encoding)
+		switch($encoding)
 		{
 			case 'text/csv':
 				$parser = new \SeanMorris\Ids\Api\Output\Csv($handle, $outputHeaders);
