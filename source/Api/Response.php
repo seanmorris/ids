@@ -19,7 +19,7 @@ class Response
 		$this->encoding = $encoding;
 	}
 
-	public function send($encoding = 'text/plain')
+	public function send()
 	{
 		$outputHeaders = $this->request->headers('Ids-Output-Headers') === 'true';
 		$handle  = $this->request->getResponseBuffer();
@@ -30,22 +30,27 @@ class Response
 		switch($encoding)
 		{
 			case 'text/csv':
+				header(sprintf('Content-Type: %s', $encoding));
 				$parser = new \SeanMorris\Ids\Api\Output\Csv($handle, $outputHeaders);
 				break;
 
 			case 'text/tsv':
+				header(sprintf('Content-Type: %s', $encoding));
 				$parser = new \SeanMorris\Ids\Api\Output\Tsv($handle, $outputHeaders);
 				break;
 
 			case 'text/json':
+				header(sprintf('Content-Type: %s', $encoding));
 				$parser = new \SeanMorris\Ids\Api\Output\Json($handle);
 				break;
 
 			case 'text/yaml':
+				header(sprintf('Content-Type: %s', $encoding));
 				$parser = new \SeanMorris\Ids\Api\Output\Yaml($handle);
 				break;
 
 			case 'text/plain':
+				header(sprintf('Content-Type: %s', $encoding));
 			default:
 				$parser = new \SeanMorris\Ids\Api\Output\Plain($handle);
 				break;

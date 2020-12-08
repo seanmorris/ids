@@ -34,8 +34,13 @@ class Csv extends \SeanMorris\Ids\Api\OutputParser
 				$buffer = $this->handle;
 			}
 
-			foreach($content as $chunk)
+			foreach($content as $key => $chunk)
 			{
+				if(!is_integer($key))
+				{
+					fwrite($buffer, sprintf("%s: ", $key));
+				}
+
 				if(is_callable($chunk))
 				{
 					$chunk = $chunk();

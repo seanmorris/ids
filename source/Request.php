@@ -188,6 +188,10 @@ class Request
 		$contentType = $this->headers('Content-Type');
 		$handle      = $this->fraw();
 
+		$contentTypeSplit = explode(';', $contentType);
+		$contentType = $contentTypeSplit ? $contentTypeSplit[0] : '';
+
+
 		switch($contentType)
 		{
 			case 'text/csv':
@@ -199,22 +203,26 @@ class Request
 				break;
 
 			case 'text/json':
-				$parser = new \SeanMorris\Ids\Api\Input\Json($handle, $headers);
+				$parser = new \SeanMorris\Ids\Api\Input\Json($handle);
 				break;
 
 			// case 'text/yaml':
 			// 	$parser = new \SeanMorris\Ids\Api\Input\Yaml($handle, $headers);
 			// 	break;
 
+			case 'multipart/form-data':
+				$parser = new \SeanMorris\Ids\Api\Input\FormData($handle);
+				break;
+
 			case 'text/plain':
 			default:
-				$parser = new \SeanMorris\Ids\Api\Input\Plain($handle, $headers);
+				$parser = new \SeanMorris\Ids\Api\Input\Plain($handle);
 				break;
 		}
 
-		foreach($parser->parse() as $input)
+		foreach($parser->parse() as $key => $input)
 		{
-			yield $input;
+			yield $key => $input;
 		}
 	}
 
@@ -296,7 +304,12 @@ class Request
 	{
 		if(!$this->headers)
 		{
-			$this->headers = getallheaders();
+			$headers = getallheaders();
+
+			foreach($headers as $name => $value)
+			{
+				$this->headers[ucwords($name)] = $value;
+			}
 		}
 
 		return $name

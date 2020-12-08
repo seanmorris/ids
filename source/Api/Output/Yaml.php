@@ -16,8 +16,13 @@ class Yaml extends \SeanMorris\Ids\Api\OutputParser
 
 		if($content instanceof \Traversable || $content instanceof \Generator)
 		{
-			foreach($content as $chunk)
+			foreach($content as $key => $chunk)
 			{
+				if(!is_integer($key))
+				{
+					fwrite($this->handle, sprintf("%s: ", $key));
+				}
+
 				if(is_callable($chunk))
 				{
 					$chunk = $chunk();

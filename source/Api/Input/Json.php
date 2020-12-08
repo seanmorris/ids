@@ -2,13 +2,6 @@
 namespace SeanMorris\Ids\Api\Input;
 class Json extends \SeanMorris\Ids\Api\InputParser
 {
-	protected $handle;
-
-	public function __construct($handle)
-	{
-		$this->handle = $handle;
-	}
-
 	public function parse()
 	{
 		$source = '';
