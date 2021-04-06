@@ -53,12 +53,6 @@
         }
     },
     "linker": {
-        "links": {
-            "Test@1606845831": [
-                "testValue",
-                "blah"
-            ]
-        },
         "inheritance": {
             "SeanMorris\\Ids\\Mysql\\Statement": [
                 "SeanMorris\\Ids\\Mysql\\CountStatement",
@@ -156,6 +150,12 @@
                 "SeanMorris\\Ids\\Router",
                 "SeanMorris\\Ids\\Settings",
                 "SeanMorris\\Ids\\WrappedMethod"
+            ]
+        },
+        "links": {
+            "Test@1617699726": [
+                "testValue",
+                "blah"
             ]
         }
     }
