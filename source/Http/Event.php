@@ -4,7 +4,7 @@ class Event
 {
 	protected $id, $message, $type;
 
-	public function __construct($message = NULL, $id = NULL, $type = NULL, $padding = 2049)
+	public function __construct($message = NULL, $id = NULL, $type = NULL, $padding = 4096)
 	{
 		$this->message = $message;
 		$this->type    = $type;
