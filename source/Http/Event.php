@@ -4,17 +4,16 @@ class Event
 {
 	protected $id, $message, $type;
 
-	public function __construct($message = NULL, $id = NULL, $type = NULL, $padding = 4096)
+	public function __construct($message = NULL, $id = NULL, $padding = 4096)
 	{
 		$this->message = $message;
-		$this->type    = $type;
 		$this->id      = $id;
 		$this->padding = $padding;
 	}
 
 	public function toString()
 	{
-		$format = "%s: %s\ndata: %s\n";
+		$format = "event: %s\ndata: %s\n";
 
 		if(isset($this->id))
 		{
