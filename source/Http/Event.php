@@ -2,13 +2,12 @@
 namespace SeanMorris\Ids\Http;
 class Event
 {
-	protected $id, $message, $type;
+	protected $id, $message, $eventType;
 
-	public function __construct($message = NULL, $id = NULL, $padding = 4096)
+	public function __construct($message = NULL, $id = NULL, $type = NULL)
 	{
 		$this->message = $message;
 		$this->id      = $id;
-		$this->padding = $padding;
 	}
 
 	public function toString()
@@ -24,14 +23,16 @@ class Event
 
 		$message = sprintf(
 			$format
-			, $this->type ?? 'ServerEvent'
+			, $this->eventType ?: 'ServerEvent'
 			, !$this->message || is_scalar($this->message)
 				? $this->message
 				: json_encode($this->message)
 			, $this->id
 		);
 
-		return str_pad($message, $this->padding);
+		$padding = \SeanMorris\Ids\Settings::read('subscribeHeartbeat', 0);
+
+		return str_pad($message, $padding);
 	}
 
 	public function __toString()
