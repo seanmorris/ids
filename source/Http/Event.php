@@ -2,17 +2,18 @@
 namespace SeanMorris\Ids\Http;
 class Event
 {
-	protected $id, $message, $eventType;
+	protected $id, $message, $type;
 
 	public function __construct($message = NULL, $id = NULL, $type = NULL)
 	{
 		$this->message = $message;
+		$this->type    = $type;
 		$this->id      = $id;
 	}
 
 	public function toString()
 	{
-		$format = "event: %s\ndata: %s\n";
+		$format = "%s: %s\ndata: %s\n";
 
 		if(isset($this->id))
 		{
@@ -23,7 +24,7 @@ class Event
 
 		return sprintf(
 			$format
-			, $this->eventType ?: 'ServerEvent'
+			, $this->type ?? 'ServerEvent'
 			, !$this->message || is_scalar($this->message)
 				? $this->message
 				: json_encode($this->message)

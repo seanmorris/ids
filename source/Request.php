@@ -306,13 +306,13 @@ class Request
 		{
 			$headers = getallheaders();
 
-			foreach($headers as $name => $value)
+			foreach($headers as $_name => $value)
 			{
-				$this->headers[ucwords($name)] = $value;
+				$this->headers[ucwords(strtolower($_name), '-')] = $value;
 			}
 		}
 
-		return $name
+		return $name !== NULL
 			? ($this->headers[$name] ?? NULL)
 			: ($this->headers ?? []);
 	}
