@@ -30,7 +30,7 @@ class Event
 			, $this->id
 		);
 
-		$padding = \SeanMorris\Ids\Settings::read('eventPadding', 0);
+		$padding = \SeanMorris\Ids\Settings::read('eventPadding') ?: 0;
 
 		return str_pad($message, $padding);
 	}
