@@ -19,6 +19,8 @@ class Event
 			$format .= "id: %s\n";
 		}
 
+		$format .= "\n";
+
 		$message = sprintf(
 			$format
 			, $this->eventType ?: 'ServerEvent'
@@ -30,7 +32,7 @@ class Event
 
 		$padding = \SeanMorris\Ids\Settings::read('eventPadding') ?: 0;
 
-		return str_pad($message, $padding) . "\n";
+		return str_pad($message, $padding) . "\n"
 	}
 
 	public function __toString()
