@@ -400,6 +400,7 @@ endif
 IMAGE?=
 build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
 	@ echo ${DCOMPOSE_TARGET_STACK}
+	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build worker;
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} up --no-start ${IMAGE}
 	@ ${WHILE_IMAGES} \

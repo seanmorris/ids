@@ -864,7 +864,24 @@ class Model
 			{
 				$select->order(['id' => 'ASC']);
 
+				$hasId = null;
+
 				if(!isset($def['where']))
+				{
+					$hasId = false;
+				}
+				else
+				{
+					foreach($def['where'] as $condition)
+					{
+						if(array_key_exists('id', $condition))
+						{
+							$hasId = true;
+						}
+					}
+				}
+
+				if(!$hasId)
 				{
 					$select->conditions([['id' => '?', '>']]);
 				}

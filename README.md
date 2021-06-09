@@ -28,29 +28,6 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
-```
-github.com/AlDanial/cloc v 1.81  T=0.18 s (954.3 files/s, 152036.0 lines/s)
---------------------------------------------------------------------------------
-Language                      files          blank        comment           code
---------------------------------------------------------------------------------
-PHP                              98           3350            478          14202
-JSON                             10              0              0           3891
-Markdown                          2            928              0           1879
-YAML                             22            103             14           1120
-make                              1            141              9            595
-SVG                              25              0              3            239
-Bourne Shell                      4              9              0             40
-Bourne Again Shell                2             17             17             23
-HTML                              1              0              0             13
-INI                               3              0              0             11
-CSS                               1              0              0              1
-JavaScript                        1              0              0              1
---------------------------------------------------------------------------------
-SUM:                            170           4548            521          22015
---------------------------------------------------------------------------------
-```
-*built by sean @ Sat 05 Dec 2020 06:42:26 PM EST*
-
 ## Installation
 
 Include Ids in your project with:
@@ -226,25 +203,25 @@ Make sure to set a target with `make stay@target` before issuing any commands. A
 
 ```bash
 $ make start      # Start the project in the background,
-                  # with no output
+				  # with no output
 
 $ make start-fg   # Start the project in the foreground.
 
 $ make start-bg   # Start the project in the background,
-                  # stream output to foreground.
+				  # stream output to foreground.
 
 $ make stop       # Stop all services defined for the target.
 
 $ make stop-all   # Stop all services spawned for the target
-                  # even ones no longer in target compose file.
+				  # even ones no longer in target compose file.
 
 $ make restart    # Stop, then restart the project in the background,
-                  # with no output.
+				  # with no output.
 
 $ make restart-fg # Stop, then restart the project in the foreground.
 
 $ make restart-bg # Stop, then restart the project in the background,
-                  # stream output to foreground.
+				  # stream output to foreground.
 ```
 
 ## Images & Tags

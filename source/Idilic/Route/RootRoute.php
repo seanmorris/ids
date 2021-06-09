@@ -203,7 +203,7 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 		{
 			xdebug_set_filter(
 				XDEBUG_FILTER_CODE_COVERAGE
-				, XDEBUG_PATH_BLACKLIST
+				, XDEBUG_PATH_EXCLUDE
 				, [realpath(IDS_ROOT . '/vendor/')]
 			);
 

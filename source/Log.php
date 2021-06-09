@@ -274,8 +274,15 @@ class Log
 
 		if($loggers = Settings::read('loggers'))
 		{
-			foreach($loggers as $logger)
+			foreach($loggers as $logger => $properties)
 			{
+				if(is_numeric($logger))
+				{
+					$logger = $properties;
+
+					$properties = (object)[];
+				}
+
 				if(!is_subclass_of($logger, \SeanMorris\Ids\Logger::class))
 				{
 					throw new \Exception(sprintf(
