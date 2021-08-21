@@ -251,7 +251,7 @@ set_exception_handler(function($exception)
 });
 
 $existingErrorHandler = set_error_handler(
-	function($errorNumber, $errorString, $errorFile, $errorLine, $errorContext) use(&$existingErrorHandler)
+	function($errorNumber, $errorString, $errorFile, $errorLine, $errorContext = []) use(&$existingErrorHandler)
 	{
 		$errorContextContent = NULL;
 
