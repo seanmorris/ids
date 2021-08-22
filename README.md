@@ -28,6 +28,29 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
+```
+github.com/AlDanial/cloc v 1.86  T=0.12 s (1351.3 files/s, 225468.0 lines/s)
+--------------------------------------------------------------------------------
+Language                      files          blank        comment           code
+--------------------------------------------------------------------------------
+PHP                              85           3269            475          13718
+JSON                             10              0              0           3891
+Markdown                          2            928              0           1879
+YAML                             24            103             14           1130
+make                              1            141              9            596
+SVG                              25              0              3            239
+Bourne Shell                      4              9              0             40
+Bourne Again Shell                2             17             17             23
+HTML                              1              0              0             13
+INI                               3              0              0             13
+CSS                               1              0              0              1
+JavaScript                        1              0              0              1
+--------------------------------------------------------------------------------
+SUM:                            159           4467            518          21544
+--------------------------------------------------------------------------------
+```
+*built by sean @ Sun 22 Aug 2021 05:33:53 AM EDT*
+
 ## Installation
 
 Include Ids in your project with:

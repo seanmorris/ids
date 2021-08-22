@@ -44,6 +44,7 @@ RUN set -eux;               \
 		php7.3           \
 		php7.3-cli       \
 		php7.3-common    \
+		php7.3-curl      \
 		php7.3-dom       \
 		php7.3-json      \
 		php7.3-mbstring  \

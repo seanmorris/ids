@@ -44,6 +44,7 @@ RUN set -eux;               \
 		php${PHP}           \
 		php${PHP}-cli       \
 		php${PHP}-common    \
+		php${PHP}-curl      \
 		php${PHP}-dom       \
 		php${PHP}-json      \
 		php${PHP}-mbstring  \
