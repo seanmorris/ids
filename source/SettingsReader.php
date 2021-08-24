@@ -17,7 +17,10 @@ class SettingsReader implements \Iterator, \ArrayAccess
 
 		[$this->root, $this->names, $this->keys] = [$root, $names, $keys];
 
-		$this->isArray = $root[ strlen($root) -1 ] === '_';
+		if($length = strlen($root))
+		{
+			$this->isArray = $root[ $length - 1 ] === '_';
+		}
 
 		$this->content = $content;
 	}

@@ -361,6 +361,11 @@ class Settings
 
 		$settingsFilenameFormat = $rootPackage->localDir() . 'sites/%s.%s';
 
+		if(file_exists($rootPackage->configDir()))
+		{
+			$settingsFilenameFormat = $rootPackage->configDir() . '%s.%s';
+		}
+
 		$filenames = [
 			sprintf('%s:%d/settings', $hostname, $port)
 			, sprintf('%s;%d/settings', $hostname, $port)
