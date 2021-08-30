@@ -2,7 +2,7 @@
 namespace SeanMorris\Ids\Http;
 class Http400 extends HttpException
 {
-	public function __construct($message = null, $code = 404, \Exception $previous = null)
+	public function __construct($message = null, $code = 400, \Exception $previous = null)
 	{
 		parent::__construct($message, $code, $previous);
 	}
