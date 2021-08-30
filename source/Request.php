@@ -143,13 +143,23 @@ class Request
 			+ $this->switches();
 	}
 
-	public function get()
+	public function get($key = NULL)
 	{
+		if($key)
+		{
+			return $this->get[$key] ?? NULL;
+		}
+
 		return $this->get ?? [];
 	}
 
-	public function post()
+	public function post($key = NULL)
 	{
+		if($key)
+		{
+			return $this->post[$key] ?? NULL;
+		}
+
 		return $this->post ?? [];
 	}
 
@@ -190,7 +200,6 @@ class Request
 
 		$contentTypeSplit = explode(';', $contentType);
 		$contentType = $contentTypeSplit ? $contentTypeSplit[0] : '';
-
 
 		switch($contentType)
 		{
