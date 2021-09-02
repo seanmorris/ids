@@ -182,11 +182,11 @@ foreach($requests as $req)
 			$res = $res->dumpStruct();
 		}
 
-		if($response instanceof \SeanMorris\Ids\Api\Response)
+		if($res instanceof \SeanMorris\Ids\Api\Response)
 		{
-			$response->send();
+			$res->send();
 		}
-		else if($response instanceof Traversable || is_array($response))
+		else if($res instanceof Traversable || is_array($res))
 		{
 			foreach($res as $r)
 			{

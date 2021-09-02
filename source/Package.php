@@ -95,12 +95,25 @@ class Package
 		if(isset($rootComposerData->name)
 			&& strtolower($dirFrag) === ($rootComposerData->name ?? NULL)
 		){
-			$composerJson = $rootComposerJson;
+			$composerFile = $rootComposerJson;
 			$root = TRUE;
 		}
 		else
 		{
-			$composerJson = $vendorRoot->dir($dirFrag)->file('composer.json');
+			$composerFile = $vendorRoot->dir($dirFrag)->file('composer.json');
+		}
+
+		$composerData = json_decode($composerFile->slurp());
+
+		if(isset($composerData->autoload, $composerData->autoload->{'psr-4'}))
+		{
+			foreach($composerData->autoload->{'psr-4'} as $namespace => $dir)
+			{
+				if(strtolower($namespace) == strtolower($packageName))
+				{
+					$packageName = $namespace;;
+				}
+			}
 		}
 
 		$packageName  = static::name($packageName);

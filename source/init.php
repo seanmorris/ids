@@ -343,7 +343,7 @@ foreach($packageDirs as $packagename => $directory)
 {
 	$package = \SeanMorris\Ids\Package::get($packagename);
 
-	$bootFile = $package->packageDir()->file('source/ids.preboot.php');
+	$bootFile = $package->sourceDir()->file('/ids.preboot.php');
 
 	if($bootFile->check())
 	{
@@ -357,7 +357,7 @@ foreach($packageDirs as $packagename => $directory)
 {
 	$package = \SeanMorris\Ids\Package::get($packagename);
 
-	$bootFile = $package->packageDir()->file('source/ids.boot.php');
+	$bootFile = $package->sourceDir()->file('/ids.boot.php');
 
 	if($bootFile->check())
 	{
