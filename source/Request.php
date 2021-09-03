@@ -192,6 +192,11 @@ class Request
 		return fgets($handle);
 	}
 
+	public function fslurp()
+	{
+		return file_get_contents('php://input');
+	}
+
 	public function read()
 	{
 		$headers     = $this->headers('Ids-Input-Headers') === 'true';
