@@ -152,7 +152,7 @@ class Settings
 			$settingsFile = static::findSettingsFile($hostname, $port);
 			$defaultsFile = static::findSettingsFile($hostname, $port, TRUE);
 
-			if(!static::$settings && file_exists($settingsFile))
+			if(!static::$settings && ($settingsFile || $defaultsFile))
 			{
 				static::$currentSite = $hostname;
 				static::$currentPort = $port;
