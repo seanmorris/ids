@@ -250,7 +250,7 @@ class Request
 		return $this->method = $_SERVER['REQUEST_METHOD'] ?? NULL;
 	}
 
-	public function files()
+	public function files($file = null)
 	{
 		$organizedFiles = [];
 
@@ -310,6 +310,11 @@ class Request
 				, $file['name']
 			);
 		});
+
+		if($organizedFiles[$file] ?? FALSE)
+		{
+			return $file === null ? $organizedFiles : $organizedFiles[$file];
+		}
 
 		return $organizedFiles;
 	}

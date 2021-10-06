@@ -153,5 +153,6 @@ RUN set -eux;       \
 	rm -rf /var/lib/apt/lists/*;
 
 COPY $${CORERELDIR}/infra/xdebug/30-xdebug-apache.ini /etc/php/${PHP}/apache2/conf.d/30-xdebug-apache.ini
+COPY $${CORERELDIR}/infra/php/40-upload-size.ini /etc/php/${PHP}/apache2/conf.d/40-upload-size.ini
 
 FROM server-base AS server-prod

@@ -122,14 +122,17 @@ class Settings
 
 		if(!static::$currentSite || static::$currentSite != $hostname)
 		{
-			if(isset($_SERVER['HTTP_HOST']))
+			if(!$hostname = getenv('IDS_DOMAIN'))
 			{
-				$hostname = parse_url('//' . $_SERVER['HTTP_HOST'], PHP_URL_HOST);
-			}
+				if(isset($_SERVER['HTTP_HOST']))
+				{
+					$hostname = parse_url('//' . $_SERVER['HTTP_HOST'], PHP_URL_HOST);
+				}
 
-			if(isset($_SERVER['SERVER_PORT']))
-			{
-				$port = $_SERVER['SERVER_PORT'];
+				if(isset($_SERVER['SERVER_PORT']))
+				{
+					$port = $_SERVER['SERVER_PORT'];
+				}
 			}
 
 			if(!$hostname)
