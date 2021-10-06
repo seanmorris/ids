@@ -1,4 +1,4 @@
-FROM ubuntu:xenial-20210804
+FROM debian:buster-20191118-slim
 MAINTAINER Sean Morris
 SHELL ["/bin/bash", "-c"]
 
@@ -14,17 +14,19 @@ RUN set -eux;               \
 	echo "HTTP Proxy:" `/usr/bin/proxy-detect`; \
 	apt-get update;         \
 	apt-get install -y --no-install-recommends software-properties-common \
-		apt-transport-https \
 		ca-certificates     \
+		dpkg-dev            \
 		gnupg               \
 		jq                  \
 		lsb-release         \
 		wget;               \
-	export LANG=C.UTF-8; \
-	apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64; \
-	add-apt-repository ppa:rmescandon/yq; \
-	apt-get update; \
-	apt-get install -y yq; \
+	wget -O /usr/bin/yq     \
+		https://github.com/mikefarah/yq/releases/download/2.4.1/yq_linux_$(dpkg-architecture -qDEB_HOST_ARCH_CPU); \
+	chmod +x /usr/bin/yq;   \
+	wget -O /etc/apt/trusted.gpg.d/php.gpg             \
+		https://packages.sury.org/php/apt.gpg;         \
+	sh -c "echo 'deb https://packages.sury.org/php/ $$(lsb_release -sc) main' \
+		 | tee /etc/apt/sources.list.d/sury-php.list"; \
 	apt-get purge -y --auto-remove; \
 	apt-get autoremove -y;  \
 	apt-get clean;          \
