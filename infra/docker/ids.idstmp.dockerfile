@@ -24,12 +24,13 @@ RUN set -eux;               \
 	apt-get update;         \
 	apt-get install -y --no-install-recommends software-properties-common \
 		ca-certificates     \
+		dpkg-dev            \
 		gnupg               \
 		jq                  \
 		lsb-release         \
 		wget;               \
 	wget -O /usr/bin/yq     \
-		https://github.com/mikefarah/yq/releases/download/2.4.1/yq_linux_amd64; \
+		https://github.com/mikefarah/yq/releases/download/2.4.1/yq_linux_$$(dpkg-architecture -qDEB_HOST_ARCH_CPU); \
 	chmod +x /usr/bin/yq;   \
 	wget -O /etc/apt/trusted.gpg.d/php.gpg             \
 		https://packages.sury.org/php/apt.gpg;         \
@@ -56,11 +57,9 @@ RUN set -eux;               \
 		php${PHP}-yaml;     \
 	apt-get remove -y software-properties-common \
 		apache2-bin         \
-		apt-transport-https \
 		gnupg               \
 		lsb-release         \
 		perl                \
-		php5.6              \
 		python              \
 		wget;               \
 	apt-get purge -y --auto-remove; \

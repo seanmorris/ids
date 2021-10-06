@@ -104,6 +104,19 @@ class ModelTest extends \UnitTestCase
 				$modelClass::clearCache();
 			}
 
+			if(!($this->modelIds[$modelClass] ?? FALSE))
+			{
+				$this->assertTrue(
+					$this->modelIds[$modelClass] ?? FALSE
+					, sprintf(
+						'No models loaded for %s::loadOne.'
+						, $modelClass
+					)
+				);
+
+				return;
+			}
+
 			$modelLoader = $modelClass::load($this->modelIds[$modelClass]);
 
 			$loadedModels = $modelLoader();

@@ -5,7 +5,7 @@ ARG ROOTRELDIR
 ARG IDS_APT_PROXY_HOST
 ARG IDS_APT_PROXY_PORT
 
-FROM debian:buster-20191118-slim as base
+FROM debian:buster-20210927-slim as base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
 SHELL ["/bin/bash", "-c"]
@@ -24,12 +24,13 @@ RUN set -eux;               \
 	apt-get update;         \
 	apt-get install -y --no-install-recommends software-properties-common \
 		ca-certificates     \
+		dpkg-dev            \
 		gnupg               \
 		jq                  \
 		lsb-release         \
 		wget;               \
 	wget -O /usr/bin/yq     \
-		https://github.com/mikefarah/yq/releases/download/2.4.1/yq_linux_amd64; \
+		https://github.com/mikefarah/yq/releases/download/2.4.1/yq_linux_$(dpkg-architecture -qDEB_HOST_ARCH_CPU); \
 	chmod +x /usr/bin/yq;   \
 	wget -O /etc/apt/trusted.gpg.d/php.gpg             \
 		https://packages.sury.org/php/apt.gpg;         \
@@ -41,26 +42,24 @@ RUN set -eux;               \
 		libsodium23         \
 		libssl1.1           \
 		libyaml-dev         \
-		php7.3           \
-		php7.3-cli       \
-		php7.3-common    \
-		php7.3-curl      \
-		php7.3-dom       \
-		php7.3-json      \
-		php7.3-mbstring  \
-		php7.3-opcache   \
-		php7.3-pdo-mysql \
-		php7.3-redis     \
-		php7.3-readline  \
-		php7.3-xml       \
-		php7.3-yaml;     \
+		php7.4           \
+		php7.4-cli       \
+		php7.4-common    \
+		php7.4-curl      \
+		php7.4-dom       \
+		php7.4-json      \
+		php7.4-mbstring  \
+		php7.4-opcache   \
+		php7.4-pdo-mysql \
+		php7.4-redis     \
+		php7.4-readline  \
+		php7.4-xml       \
+		php7.4-yaml;     \
 	apt-get remove -y software-properties-common \
 		apache2-bin         \
-		apt-transport-https \
 		gnupg               \
 		lsb-release         \
 		perl                \
-		php5.6              \
 		python              \
 		wget;               \
 	apt-get purge -y --auto-remove; \
@@ -84,13 +83,13 @@ ARG CORERELDIR
 
 RUN set -eux;       \
 	apt-get update; \
-	apt-get install -y --no-install-recommends php7.3-xdebug; \
+	apt-get install -y --no-install-recommends php7.4-xdebug; \
 	apt-get clean;  \
 	rm -rf /var/lib/apt/lists/*
 
 RUN echo ${CORERELDIR} && ls -al
 
-COPY ${CORERELDIR}/infra/xdebug/30-xdebug-cli.ini /etc/php/7.3/cli/conf.d/30-xdebug-cli.ini
+COPY ${CORERELDIR}/infra/xdebug/30-xdebug-cli.ini /etc/php/7.4/cli/conf.d/30-xdebug-cli.ini
 
 FROM idilic-test AS idilic-dev
 FROM idilic-base AS idilic-prod
@@ -108,9 +107,9 @@ RUN set -eux;               \
 	apt-get update;         \
 	apt-get install -y --no-install-recommends \
 		apache2             \
-		libapache2-mod-php7.3; \
+		libapache2-mod-php7.4; \
 	a2dismod mpm_event;     \
-	a2enmod rewrite ssl php7.3; \
+	a2enmod rewrite ssl php7.4; \
 	apt-get remove -y software-properties-common \
 		python              \
 		wget;               \
@@ -148,11 +147,11 @@ ARG CORERELDIR
 
 RUN set -eux;       \
 	apt-get update; \
-	apt-get install -y --no-install-recommends php7.3-xdebug; \
+	apt-get install -y --no-install-recommends php7.4-xdebug; \
 	apt-get clean;  \
 	rm -rf /var/lib/apt/lists/*;
 
-COPY ${CORERELDIR}/infra/xdebug/30-xdebug-apache.ini /etc/php/7.3/apache2/conf.d/30-xdebug-apache.ini
-COPY ${CORERELDIR}/infra/php/40-upload-size.ini /etc/php/7.3/apache2/conf.d/40-upload-size.ini
+COPY ${CORERELDIR}/infra/xdebug/30-xdebug-apache.ini /etc/php/7.4/apache2/conf.d/30-xdebug-apache.ini
+COPY ${CORERELDIR}/infra/php/40-upload-size.ini /etc/php/7.4/apache2/conf.d/40-upload-size.ini
 
 FROM server-base AS server-prod

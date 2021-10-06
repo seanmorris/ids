@@ -1038,6 +1038,8 @@ class Package
 							continue;
 						}
 
+						$generation = NULL;
+
 						switch($exportTables->$table->fields->{$column->Field}->Extra)
 						{
 							case 'auto_increment':

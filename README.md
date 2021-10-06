@@ -45,27 +45,27 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.86  T=0.13 s (1390.5 files/s, 210381.6 lines/s)
+github.com/AlDanial/cloc v 1.86  T=0.12 s (1476.4 files/s, 222472.7 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                             107           3391            496          14433
 JSON                             10              0              0           3891
-Markdown                          2            928              0           1878
+Markdown                          2            946              0           1896
 YAML                             24            103             14           1130
 make                              1            141              9            596
 SVG                              25              0              3            239
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             17             17             23
+INI                               4              0              0             15
 HTML                              1              0              0             13
-INI                               3              0              0             13
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            181           4589            539          22258
+SUM:                            182           4607            539          22278
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue 05 Oct 2021 02:34:35 PM EDT*
+*built by sean @ Wed 06 Oct 2021 05:53:31 PM EDT*
 
 ## Installation
 
@@ -795,6 +795,8 @@ XDEBUG_CONFIG_REMOTE_ENABLE=1
 ```
 
 ## Linking
+
+Some features require foreknowledge of what packages, files, and classes are present. Scanning for this list every time one of those features is used would slow things to a crawl. Build this index with the following commands:
 
 ```bash
 $ make composer-dumpautoload

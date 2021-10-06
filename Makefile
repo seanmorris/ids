@@ -12,8 +12,8 @@
 SHELL     =/bin/bash
 MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 
-BASELINUX ?= debian:buster-20191118-slim## %var The BASE base image.
-PHP       ?= 7.3
+BASELINUX ?= debian:buster-20210927-slim## %var The BASE base image.
+PHP       ?= 7.4
 
 CORERELDIR:=$(dir $(lastword $(MAKEFILE_LIST)))
 ROOTRELDIR:=$(dir $(firstword $(MAKEFILE_LIST)))

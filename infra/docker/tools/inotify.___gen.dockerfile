@@ -1,4 +1,4 @@
-FROM debian:buster-20191118-slim
+FROM debian:bullseye-20210927
 MAINTAINER Sean Morris
 
 ENV EVENT=close_write
