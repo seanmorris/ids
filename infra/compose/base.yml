@@ -50,8 +50,8 @@ services:
         IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT:-}
 
   database:
-    command: ['mysqld', '--character-set-server=utf8mb4']
-    image: mariadb:10.5.12
+    command: ['--character-set-server=utf8mb4']
+    image: yobasystems/alpine-mariadb:10.5.11
     restart: always
     volumes: ['schema:/var/lib/db-store']
     env_file:
