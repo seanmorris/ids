@@ -43,6 +43,7 @@ RUN set -eux;               \
 		libssl1.1           \
 		libyaml-dev         \
 		php7.4           \
+		php7.4-bcmath    \
 		php7.4-cli       \
 		php7.4-common    \
 		php7.4-curl      \
@@ -57,6 +58,7 @@ RUN set -eux;               \
 		php7.4-yaml;     \
 	apt-get remove -y software-properties-common \
 		apache2-bin         \
+		apt-transport-https \
 		gnupg               \
 		lsb-release         \
 		perl                \
