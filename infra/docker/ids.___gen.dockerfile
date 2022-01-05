@@ -42,6 +42,7 @@ RUN set -eux;               \
 		libssl1.1           \
 		libyaml-dev         \
 		php7.3           \
+		php7.3-bcmath    \
 		php7.3-cli       \
 		php7.3-common    \
 		php7.3-dom       \

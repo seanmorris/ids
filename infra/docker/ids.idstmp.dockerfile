@@ -42,6 +42,7 @@ RUN set -eux;               \
 		libssl1.1           \
 		libyaml-dev         \
 		php${PHP}           \
+		php${PHP}-bcmath    \
 		php${PHP}-cli       \
 		php${PHP}-common    \
 		php${PHP}-dom       \
