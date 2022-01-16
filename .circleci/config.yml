@@ -90,7 +90,7 @@ jobs:
   subproject-init-and-test:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -104,7 +104,7 @@ jobs:
   subproject-init-and-test_8-0:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -119,7 +119,7 @@ jobs:
   subproject-init-and-test_8-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -133,7 +133,7 @@ jobs:
   self-test:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -157,7 +157,7 @@ jobs:
   self-test_8-0:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -180,7 +180,7 @@ jobs:
   self-test_8-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -203,7 +203,7 @@ jobs:
   recursive-test-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -216,7 +216,7 @@ jobs:
   recursive-test-1_8-0:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -229,7 +229,7 @@ jobs:
   recursive-test-1_8-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -242,7 +242,7 @@ jobs:
   recursive-test-2:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -255,7 +255,7 @@ jobs:
   recursive-test-2_8-0:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -268,7 +268,7 @@ jobs:
   recursive-test-2_8-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -281,7 +281,7 @@ jobs:
   recursive-test-3:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -294,7 +294,7 @@ jobs:
   recursive-test-3_8-0:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -307,7 +307,7 @@ jobs:
   recursive-test-3_8-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -320,7 +320,7 @@ jobs:
   addon-test:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -335,7 +335,7 @@ jobs:
   addon-test_8-0:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -350,7 +350,7 @@ jobs:
   addon-test_8-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -365,7 +365,7 @@ jobs:
   build-and-push:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -381,7 +381,7 @@ jobs:
   build-and-push_8-0:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -397,7 +397,7 @@ jobs:
   build-and-push_8-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -413,7 +413,7 @@ jobs:
   build-and-push-addons:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -429,7 +429,7 @@ jobs:
   build-and-push-addons_8-0:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
@@ -446,7 +446,7 @@ jobs:
   build-and-push-addons_8-1:
     parallelism: 1
     machine:
-      image: ubuntu-1604:202004-01
+      image: ubuntu-2004:202010-0
       docker_layer_caching: false
     resource_class: large
     steps:
