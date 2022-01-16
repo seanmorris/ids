@@ -291,6 +291,13 @@ $existingErrorHandler = set_error_handler(
 			xdebug_break();
 		}
 
+		if($errorNumber === E_DEPRECATED)
+		{
+			return;
+		}
+
+		var_dump($errorNumber);
+
 		throw new \ErrorException($line, $errorNumber, 0, $errorFile, $errorLine);
 	}
 );

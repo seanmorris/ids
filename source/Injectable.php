@@ -229,7 +229,7 @@ trait Injectable
 			{
 				// $injection = $injection($this);
 			}
-			else
+			else if($injection)
 			{
 				if(is_object($injection))
 				{

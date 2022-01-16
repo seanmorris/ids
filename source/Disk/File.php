@@ -175,7 +175,7 @@ class File
 				return fwrite($this->writeHandle, $d);
 			}
 		}
-		else
+		else if($data)
 		{
 			return fwrite($this->writeHandle, $data);
 		}

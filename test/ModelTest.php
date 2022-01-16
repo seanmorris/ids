@@ -104,8 +104,10 @@ class ModelTest extends \UnitTestCase
 				$modelClass::clearCache();
 			}
 
-			$modelLoader = $modelClass::load($this->modelIds[$modelClass]);
+			$loadedModels = [];
 
+			// $modelLoader    = $modelClass::load($this->modelIds[$modelClass]);
+			$modelLoader  = $modelClass::load();
 			$loadedModels = $modelLoader();
 
 			$this->assertTrue(

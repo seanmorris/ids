@@ -1,4 +1,4 @@
-FROM debian:buster-20191118-slim
+FROM debian:bullseye-20211220-slim
 MAINTAINER Sean Morris
 
 RUN set -eux;               \
@@ -12,5 +12,5 @@ RUN set -eux;               \
 CMD /etc/init.d/apt-cacher-ng start     \
 	&& tail -f /var/log/apt-cacher-ng/*
 
-# generated @ Tue 05 Oct 2021 02:34:35 PM EDT
+# generated @ Sun 16 Jan 2022 05:33:30 AM EST
 # by sean @ hyperterminal

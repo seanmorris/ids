@@ -7,7 +7,7 @@ commands:
           sudo apt install -y software-properties-common
           sudo add-apt-repository -y ppa:ondrej/php
           sudo apt-get update
-          sudo apt-get install -y php7.4-cli php7.4-common php7.4-mbstring php7.4-intl php7.4-zip php7.4-bcmath php7.4-dom
+          sudo apt-get install -y php-cli php-common php-mbstring php-intl php-zip php-bcmath php-dom
           curl -s https://getcomposer.org/installer | php
           sudo mv composer.phar /usr/local/bin/composer
 
@@ -46,85 +46,45 @@ workflows:
             - addon-test
             - build-and-push
 
-  build-and-push_7-1:
+  build-and-push_8-0:
     jobs:
-      - self-test_7-1
-      - subproject-init-and-test_7-1
-      - addon-test_7-1
-      - recursive-test-1_7-1
-      - recursive-test-2_7-1
-      - recursive-test-3_7-1
-      - build-and-push_7-1:
+      - self-test_8-0
+      - subproject-init-and-test_8-0
+      - addon-test_8-0
+      - recursive-test-1_8-0
+      - recursive-test-2_8-0
+      - recursive-test-3_8-0
+      - build-and-push_8-0:
           requires:
-            - self-test_7-1
-            - subproject-init-and-test_7-1
-            - recursive-test-1_7-1
-            - recursive-test-2_7-1
-            - recursive-test-3_7-1
-      - build-and-push-addons_7-1:
+            - self-test_8-0
+            - subproject-init-and-test_8-0
+            - recursive-test-1_8-0
+            - recursive-test-2_8-0
+            - recursive-test-3_8-0
+      - build-and-push-addons_8-0:
           requires:
-            - addon-test_7-1
-            - build-and-push_7-1
+            - addon-test_8-0
+            - build-and-push_8-0
 
-  build-and-push_7-2:
+  build-and-push_8-1:
     jobs:
-      - self-test_7-2
-      - subproject-init-and-test_7-2
-      - addon-test_7-2
-      - recursive-test-1_7-2
-      - recursive-test-2_7-2
-      - recursive-test-3_7-2
-      - build-and-push_7-2:
+      - self-test_8-1
+      - subproject-init-and-test_8-1
+      - addon-test_8-1
+      - recursive-test-1_8-1
+      - recursive-test-2_8-1
+      - recursive-test-3_8-1
+      - build-and-push_8-1:
           requires:
-            - self-test_7-2
-            - subproject-init-and-test_7-2
-            - recursive-test-1_7-2
-            - recursive-test-2_7-2
-            - recursive-test-3_7-2
-      - build-and-push-addons_7-2:
+            - self-test_8-1
+            - subproject-init-and-test_8-1
+            - recursive-test-1_8-1
+            - recursive-test-2_8-1
+            - recursive-test-3_8-1
+      - build-and-push-addons_8-1:
           requires:
-            - addon-test_7-2
-            - build-and-push_7-2
-
-  build-and-push_7-3:
-    jobs:
-      - self-test_7-3
-      - subproject-init-and-test_7-3
-      - addon-test_7-3
-      - recursive-test-1_7-3
-      - recursive-test-2_7-3
-      - recursive-test-3_7-3
-      - build-and-push_7-3:
-          requires:
-            - self-test_7-3
-            - subproject-init-and-test_7-3
-            - recursive-test-1_7-3
-            - recursive-test-2_7-3
-            - recursive-test-3_7-3
-      - build-and-push-addons_7-3:
-          requires:
-            - addon-test_7-3
-            - build-and-push_7-3
-
-  build-and-push_7-4:
-    jobs:
-      - self-test_7-4
-      - subproject-init-and-test_7-4
-      - addon-test_7-4
-      - recursive-test-1_7-4
-      - recursive-test-2_7-4
-      - recursive-test-3_7-4
-      - build-and-push_7-4:
-          requires:
-            - self-test_7-4
-            - subproject-init-and-test_7-4
-            - recursive-test-1_7-4
-            - recursive-test-2_7-4
-            - recursive-test-3_7-4
-      - build-and-push-addons_7-4:
-          requires:
-            - addon-test_7-4
-            - build-and-push_7-4
+            - addon-test_8-1
+            - build-and-push_8-1
 
 jobs:
   subproject-init-and-test:
@@ -141,7 +101,7 @@ jobs:
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: cd ids-project && make @test current-tag build start-bg test
 
-  subproject-init-and-test_7-1:
+  subproject-init-and-test_8-0:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -150,13 +110,13 @@ jobs:
     steps:
       - checkout
       - install-composer
-      - run: curl -X PURGE https://camo.githubusercontent.com/df5e6413e42c1af3738c1c32d36f59a2957c7f27/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d313f6c6162656c3d706870253230372e31
+      - run: curl -X PURGE https://camo.githubusercontent.com/df5e6413e42c1af3738c1c32d36f59a2957c8.17/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d313f6c6162656c3d70688.153230372e31
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
-      - run: cd ids-project && PHP=7.1 make @test current-tag build start-bg test
+      - run: cd ids-project && PHP=8.0 make @test current-tag build start-bg test
 
 
-  subproject-init-and-test_7-2:
+  subproject-init-and-test_8-1:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -165,38 +125,10 @@ jobs:
     steps:
       - checkout
       - install-composer
-      - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d323f6c6162656c3d706870253230372e32
+      - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d323f6c6162656c3d70688.153230372e32
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
-      - run: cd ids-project && PHP=7.2 make @test current-tag build start-bg test
-
-  subproject-init-and-test_7-3:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - run: curl -X PURGE https://camo.githubusercontent.com/5bbcbc87b9d3f282baefb92933eb4a18010a5093/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d333f6c6162656c3d706870253230372e33
-      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
-      - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
-      - run: cd ids-project && PHP=7.3 make @test current-tag build start-bg test
-
-  subproject-init-and-test_7-4:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - run: curl -X PURGE https://camo.githubusercontent.com/a0bf9532a9c1f031f4b487543308da2a35ccf328/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d343f6c6162656c3d706870253230372e34
-      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
-      - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
-      - run: cd ids-project && PHP=7.4 make @test current-tag build start-bg test
+      - run: cd ids-project && PHP=8.1 make @test current-tag build start-bg test
 
   self-test:
     parallelism: 1
@@ -222,7 +154,7 @@ jobs:
       - run: make ct b
       - run: make post-coverage
 
-  self-test_7-1:
+  self-test_8-0:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -232,20 +164,20 @@ jobs:
       - checkout
       - install-composer
       - run: composer install
-      - run: PHP=7.1 make @base ct b
-      - run: PHP=7.1 make @dev ct b
-      - run: PHP=7.1 make @prod ct b
-      - run: PHP=7.1 make @test ct b
-      - run: PHP=7.1 make @base ct b
-      - run: PHP=7.1 make @test ct b t lt li
-      - run: PHP=7.1 make stay@dev ct b lt li
-      - run: PHP=7.1 make @prod ct b
-      - run: PHP=7.1 make ct b
-      - run: PHP=7.1 make @test ct b t
-      - run: PHP=7.1 make stay@base ct b
-      - run: PHP=7.1 make ct b
+      - run: PHP=8.0 make @base ct b
+      - run: PHP=8.0 make @dev ct b
+      - run: PHP=8.0 make @prod ct b
+      - run: PHP=8.0 make @test ct b
+      - run: PHP=8.0 make @base ct b
+      - run: PHP=8.0 make @test ct b t lt li
+      - run: PHP=8.0 make stay@dev ct b lt li
+      - run: PHP=8.0 make @prod ct b
+      - run: PHP=8.0 make ct b
+      - run: PHP=8.0 make @test ct b t
+      - run: PHP=8.0 make stay@base ct b
+      - run: PHP=8.0 make ct b
 
-  self-test_7-2:
+  self-test_8-1:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -255,64 +187,18 @@ jobs:
       - checkout
       - install-composer
       - run: composer install
-      - run: PHP=7.2 make @base ct b
-      - run: PHP=7.2 make @dev ct b
-      - run: PHP=7.2 make @prod ct b
-      - run: PHP=7.2 make @test ct b
-      - run: PHP=7.2 make @base ct b
-      - run: PHP=7.2 make @test ct b t lt li
-      - run: PHP=7.2 make stay@dev ct b lt li
-      - run: PHP=7.2 make @prod ct b
-      - run: PHP=7.2 make ct b
-      - run: PHP=7.2 make @test ct b t
-      - run: PHP=7.2 make stay@base ct b
-      - run: PHP=7.2 make ct b
-
-  self-test_7-3:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - run: composer install
-      - run: PHP=7.3 make @base ct b
-      - run: PHP=7.3 make @dev ct b
-      - run: PHP=7.3 make @prod ct b
-      - run: PHP=7.3 make @test ct b
-      - run: PHP=7.3 make @base ct b
-      - run: PHP=7.3 make @test ct b t lt li
-      - run: PHP=7.3 make stay@dev ct b lt li
-      - run: PHP=7.3 make @prod ct b
-      - run: PHP=7.3 make ct b
-      - run: PHP=7.3 make @test ct b t
-      - run: PHP=7.3 make stay@base ct b
-      - run: PHP=7.3 make ct b
-
-  self-test_7-4:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - run: composer install
-      - run: PHP=7.4 make @base ct b
-      - run: PHP=7.4 make @dev ct b
-      - run: PHP=7.4 make @prod ct b
-      - run: PHP=7.4 make @test ct b
-      - run: PHP=7.4 make @base ct b
-      - run: PHP=7.4 make @test ct b t lt li
-      - run: PHP=7.4 make stay@dev ct b lt li
-      - run: PHP=7.4 make @prod ct b
-      - run: PHP=7.4 make ct b
-      - run: PHP=7.4 make @test ct b t
-      - run: PHP=7.4 make stay@base ct b
-      - run: PHP=7.4 make ct b
+      - run: PHP=8.1 make @base ct b
+      - run: PHP=8.1 make @dev ct b
+      - run: PHP=8.1 make @prod ct b
+      - run: PHP=8.1 make @test ct b
+      - run: PHP=8.1 make @base ct b
+      - run: PHP=8.1 make @test ct b t lt li
+      - run: PHP=8.1 make stay@dev ct b lt li
+      - run: PHP=8.1 make @prod ct b
+      - run: PHP=8.1 make ct b
+      - run: PHP=8.1 make @test ct b t
+      - run: PHP=8.1 make stay@base ct b
+      - run: PHP=8.1 make ct b
 
   recursive-test-1:
     parallelism: 1
@@ -327,7 +213,7 @@ jobs:
       - run: composer install
       - run: sudo make @test+make ct b run CMD="make @test test"
 
-  recursive-test-1_7-1:
+  recursive-test-1_8-0:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -338,9 +224,9 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo PHP=7.1 make @test+make ct b run CMD="make @test test"
+      - run: sudo PHP=8.0 make @test+make ct b run CMD="make @test test"
 
-  recursive-test-1_7-2:
+  recursive-test-1_8-1:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -351,33 +237,7 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo PHP=7.2 make @test+make ct b run CMD="make @test test"
-
-  recursive-test-1_7-3:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - docker-permissions
-      - run: composer install
-      - run: sudo PHP=7.3 make @test+make ct b run CMD="make @test test"
-
-  recursive-test-1_7-4:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - docker-permissions
-      - run: composer install
-      - run: sudo PHP=7.4 make @test+make ct b run CMD="make @test test"
+      - run: sudo PHP=8.1 make @test+make ct b run CMD="make @test test"
 
   recursive-test-2:
     parallelism: 1
@@ -392,7 +252,7 @@ jobs:
       - run: composer install
       - run: sudo make @test+inotify+make run CMD="make @test+make run CMD=\"make test\""
 
-  recursive-test-2_7-1:
+  recursive-test-2_8-0:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -403,9 +263,9 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo PHP=7.1 make @test+make run CMD="make @test+make run CMD=\"make test\""
+      - run: sudo PHP=8.0 make @test+make run CMD="make @test+make run CMD=\"make test\""
 
-  recursive-test-2_7-2:
+  recursive-test-2_8-1:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -416,33 +276,7 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo PHP=7.2 make @test+make run CMD="make @test+make run CMD=\"make test\""
-
-  recursive-test-2_7-3:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - docker-permissions
-      - run: composer install
-      - run: sudo PHP=7.3 make @test+make run CMD="make @test+make run CMD=\"make test\""
-
-  recursive-test-2_7-4:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - docker-permissions
-      - run: composer install
-      - run: sudo PHP=7.4 make @test+make run CMD="make @test+make run CMD=\"make test\""
+      - run: sudo PHP=8.1 make @test+make run CMD="make @test+make run CMD=\"make test\""
 
   recursive-test-3:
     parallelism: 1
@@ -457,7 +291,7 @@ jobs:
       - run: composer install
       - run: sudo make @test+make run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
 
-  recursive-test-3_7-1:
+  recursive-test-3_8-0:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -468,9 +302,9 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo PHP=7.1 make @test+make run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
+      - run: sudo PHP=8.0 make @test+make run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
 
-  recursive-test-3_7-2:
+  recursive-test-3_8-1:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -481,33 +315,7 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo PHP=7.2 make @test+make run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
-
-  recursive-test-3_7-3:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - docker-permissions
-      - run: composer install
-      - run: sudo PHP=7.3 make @test+make run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
-
-  recursive-test-3_7-4:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - docker-permissions
-      - run: composer install
-      - run: sudo PHP=7.4 make @test+make run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
+      - run: sudo PHP=8.1 make @test+make run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
 
   addon-test:
     parallelism: 1
@@ -524,7 +332,7 @@ jobs:
       - run: make @test+aptcache ct b
       - run: make @test+aptcache+graylog+inotify ct t
 
-  addon-test_7-1:
+  addon-test_8-0:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -533,13 +341,13 @@ jobs:
     steps:
       - checkout
       - install-composer
-      - run: PHP=7.1 composer install
-      - run: PHP=7.1 make @base+aptcache ct b
-      - run: PHP=7.1 make @dev+aptcache+graylog+inotify ct b
-      - run: PHP=7.1 make @test+aptcache ct b
-      - run: PHP=7.1 make @test+aptcache+graylog+inotify ct t
+      - run: PHP=8.0 composer install
+      - run: PHP=8.0 make @base+aptcache ct b
+      - run: PHP=8.0 make @dev+aptcache+graylog+inotify ct b
+      - run: PHP=8.0 make @test+aptcache ct b
+      - run: PHP=8.0 make @test+aptcache+graylog+inotify ct t
 
-  addon-test_7-2:
+  addon-test_8-1:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -548,42 +356,11 @@ jobs:
     steps:
       - checkout
       - install-composer
-      - run: PHP=7.2 composer install
-      - run: PHP=7.2 make @base+aptcache ct b
-      - run: PHP=7.2 make @dev+aptcache+graylog+inotify ct b
-      - run: PHP=7.2 make @test+aptcache ct b
-      - run: PHP=7.2 make @test+aptcache+graylog+inotify ct t
-
-  addon-test_7-3:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - run: PHP=7.3 composer install
-      - run: PHP=7.3 make @base+aptcache ct b
-      - run: PHP=7.3 make @dev+aptcache+graylog+inotify ct b
-      - run: PHP=7.3 make @test+aptcache ct b
-      - run: PHP=7.3 make @test+aptcache+graylog+inotify ct t
-
-  addon-test_7-4:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - run: PHP=7.4 composer install
-      - run: PHP=7.4 make @base+aptcache ct b
-      - run: PHP=7.4 make @dev+aptcache+graylog+inotify ct b
-      - run: PHP=7.4 make @test+aptcache ct b
-      - run: PHP=7.4 make @test+aptcache+graylog+inotify ct t
-
+      - run: PHP=8.1 composer install
+      - run: PHP=8.1 make @base+aptcache ct b
+      - run: PHP=8.1 make @dev+aptcache+graylog+inotify ct b
+      - run: PHP=8.1 make @test+aptcache ct b
+      - run: PHP=8.1 make @test+aptcache+graylog+inotify ct t
 
   build-and-push:
     parallelism: 1
@@ -601,7 +378,7 @@ jobs:
       - run: make @prod ct b psi
       - run: make @test ct b psi
 
-  build-and-push_7-1:
+  build-and-push_8-0:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -612,12 +389,12 @@ jobs:
       - install-composer
       - run: composer install
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=7.1 make @base ct b psi
-      - run: PHP=7.1 make @dev  ct b psi
-      - run: PHP=7.1 make @prod ct b psi
-      - run: PHP=7.1 make @test ct b psi
+      - run: PHP=8.0 make @base ct b psi
+      - run: PHP=8.0 make @dev  ct b psi
+      - run: PHP=8.0 make @prod ct b psi
+      - run: PHP=8.0 make @test ct b psi
 
-  build-and-push_7-2:
+  build-and-push_8-1:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -628,42 +405,10 @@ jobs:
       - install-composer
       - run: composer install
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=7.2 make @base ct b psi
-      - run: PHP=7.2 make @dev  ct b psi
-      - run: PHP=7.2 make @prod ct b psi
-      - run: PHP=7.2 make @test ct b psi
-
-  build-and-push_7-3:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - run: composer install
-      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=7.3 make @base ct b psi
-      - run: PHP=7.3 make @dev  ct b psi
-      - run: PHP=7.3 make @prod ct b psi
-      - run: PHP=7.3 make @test ct b psi
-
-  build-and-push_7-4:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - run: composer install
-      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=7.4 make @base ct b psi
-      - run: PHP=7.4 make @dev  ct b psi
-      - run: PHP=7.4 make @prod ct b psi
-      - run: PHP=7.4 make @test ct b psi
+      - run: PHP=8.1 make @base ct b psi
+      - run: PHP=8.1 make @dev  ct b psi
+      - run: PHP=8.1 make @prod ct b psi
+      - run: PHP=8.1 make @test ct b psi
 
   build-and-push-addons:
     parallelism: 1
@@ -681,7 +426,7 @@ jobs:
       - run: make @prod+aptcache ct b psi
       - run: make @test+aptcache ct b psi
 
-  build-and-push-addons_7-1:
+  build-and-push-addons_8-0:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -691,14 +436,14 @@ jobs:
       - checkout
       - install-composer
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=7.1 composer install
-      - run: PHP=7.1 make @base+aptcache ct b psi
-      - run: PHP=7.1 make @dev+aptcache+graylog+inotify ct b psi
-      - run: PHP=7.1 make @test+aptcache ct b psi
-      - run: PHP=7.1 make @prod+aptcache ct b psi
-      - run: curl -X PURGE https://camo.githubusercontent.com/df5e6413e42c1af3738c1c32d36f59a2957c7f27/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d313f6c6162656c3d706870253230372e31
+      - run: PHP=8.0 composer install
+      - run: PHP=8.0 make @base+aptcache ct b psi
+      - run: PHP=8.0 make @dev+aptcache+graylog+inotify ct b psi
+      - run: PHP=8.0 make @test+aptcache ct b psi
+      - run: PHP=8.0 make @prod+aptcache ct b psi
+      - run: curl -X PURGE https://camo.githubusercontent.com/df5e6413e42c1af3738c1c32d36f59a2957c8.17/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d313f6c6162656c3d70688.153230372e31
 
-  build-and-push-addons_7-2:
+  build-and-push-addons_8-1:
     parallelism: 1
     machine:
       image: ubuntu-1604:202004-01
@@ -708,43 +453,9 @@ jobs:
       - checkout
       - install-composer
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=7.2 composer install
-      - run: PHP=7.2 make @base+aptcache ct b psi
-      - run: PHP=7.2 make @dev+aptcache+graylog+inotify ct b psi
-      - run: PHP=7.2 make @test+aptcache ct b psi
-      - run: PHP=7.2 make @prod+aptcache ct b psi
-      - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d323f6c6162656c3d706870253230372e32
-
-  build-and-push-addons_7-3:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=7.3 composer install
-      - run: PHP=7.3 make @base+aptcache ct b psi
-      - run: PHP=7.3 make @dev+aptcache+graylog+inotify ct b psi
-      - run: PHP=7.3 make @test+aptcache ct b psi
-      - run: PHP=7.3 make @prod+aptcache ct b psi
-      - run: curl -X PURGE https://camo.githubusercontent.com/5bbcbc87b9d3f282baefb92933eb4a18010a5093/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d333f6c6162656c3d706870253230372e33
-
-  build-and-push-addons_7-4:
-    parallelism: 1
-    machine:
-      image: ubuntu-1604:202004-01
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - install-composer
-      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=7.4 composer install
-      - run: PHP=7.4 make @base+aptcache ct b psi
-      - run: PHP=7.4 make @dev+aptcache+graylog+inotify ct b psi
-      - run: PHP=7.4 make @test+aptcache ct b psi
-      - run: PHP=7.4 make @prod+aptcache ct b psi
-      - run: curl -X PURGE https://camo.githubusercontent.com/a0bf9532a9c1f031f4b487543308da2a35ccf328/68747470733a2f2f7365616e6d6f727269732d6261646765722e6865726f6b756170702e636f6d2f6964732f6275696c642d616e642d707573685f372d343f6c6162656c3d706870253230372e34
+      - run: PHP=8.1 composer install
+      - run: PHP=8.1 make @base+aptcache ct b psi
+      - run: PHP=8.1 make @dev+aptcache+graylog+inotify ct b psi
+      - run: PHP=8.1 make @test+aptcache ct b psi
+      - run: PHP=8.1 make @prod+aptcache ct b psi
+      - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d323f6c6162656c3d70688.153230372e32

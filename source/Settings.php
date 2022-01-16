@@ -14,7 +14,7 @@ class Settings
 
 	protected function __construct(){}
 
-	public static function read(...$names)
+	public static function read(...$names): mixed
 	{
 		static $cache = [];
 
@@ -81,7 +81,7 @@ class Settings
 					return $cache[$scoredName];
 				}
 
-				return;
+				return NULL;
 			}
 
 			$settings = $settings->$name;

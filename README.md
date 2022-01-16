@@ -27,10 +27,8 @@
 [![Docker Pulls - Idilic](https://img.shields.io/docker/pulls/seanmorris/ids.idilic?logo=docker&logoColor=white&color=600&label=ids.idilic%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.idilic)
 [![Docker Pulls - Server](https://img.shields.io/docker/pulls/seanmorris/ids.server?logo=docker&logoColor=white&color=960&label=ids.server%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.server)
 
-![php 7.1 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-1?label=php%207.1)
-![php 7.2 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-2?label=php%207.2)
-![php 7.3 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-3?label=php%207.3)
-![php 7.4 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-4?label=php%207.4)
+![php 8.0 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_8-0?label=php%208.0)
+![php 8.1 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_8-1?label=php%208.1)
 
 <!-- /badges -->
 
@@ -45,27 +43,28 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.86  T=0.13 s (1390.5 files/s, 210381.6 lines/s)
+github.com/AlDanial/cloc v 1.86  T=0.13 s (1479.5 files/s, 217398.4 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                             107           3391            496          14433
-JSON                             10              0              0           3891
-Markdown                          2            928              0           1878
-YAML                             24            103             14           1130
-make                              1            141              9            596
+PHP                             107           3400            489          14458
+JSON                             11              0              0           4017
+Markdown                          2            946              0           1897
+YAML                             27            118             14           1204
+make                              2            145              9            611
 SVG                              25              0              3            239
+XML                               3              0              0            233
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             17             17             23
+INI                               4              0              0             15
 HTML                              1              0              0             13
-INI                               3              0              0             13
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            181           4589            539          22258
+SUM:                            190           4635            532          22752
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue 05 Oct 2021 02:34:35 PM EDT*
+*built by sean @ Sun 16 Jan 2022 05:33:30 AM EST*
 
 ## Installation
 
@@ -795,6 +794,8 @@ XDEBUG_CONFIG_REMOTE_ENABLE=1
 ```
 
 ## Linking
+
+Some features require foreknowledge of what packages, files, and classes are present. Scanning for this list every time one of those features is used would slow things to a crawl. Build this index with the following commands:
 
 ```bash
 $ make composer-dumpautoload

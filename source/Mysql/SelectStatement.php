@@ -311,7 +311,7 @@ class SelectStatement extends WhereStatement
 		) . $groupString . $orderString . $limitString;
 	}
 
-	protected function assembleJoin($type = null, $args = null, $col, $joinCol)
+	protected function assembleJoin($type, $args, $col, $joinCol)
 	{
 		$columnString = implode(PHP_EOL . ', ', $this->aliasColumns());
 
@@ -319,7 +319,7 @@ class SelectStatement extends WhereStatement
 
 		$tableString = $this->table;
 
-		$conditionString = NULL;
+		$conditionString = '';
 
 		$joinString = sprintf(
 			PHP_EOL . '%sJOIN %s as %s'
@@ -357,7 +357,6 @@ class SelectStatement extends WhereStatement
 				$columnString .= PHP_EOL . ', ' . $subColString;
 			}
 
-			// @TODO: Why is $subConditionString sometimes empty?
 			if($subConditionString)
 			{
 				if(trim($conditionString))

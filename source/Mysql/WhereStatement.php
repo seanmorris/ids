@@ -15,6 +15,7 @@ abstract class WhereStatement extends Statement
 
 	public function execute(...$args)
 	{
+
 		$queryStartTime = microtime(TRUE);
 
 		if(isset($args[0]) && is_array($args[0]))
@@ -201,7 +202,7 @@ abstract class WhereStatement extends Statement
 			$this->conditions = $conditions;
 		}
 
-		// \SeanMorris\Ids\Log::debug($this->conditions);
+		\SeanMorris\Ids\Log::debug($this->conditions);
 
 		return $this;
 	}

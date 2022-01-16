@@ -33,6 +33,7 @@ class SettingsReader implements \Iterator, \ArrayAccess
 		return Settings::read(...$path);
 	}
 
+	#[\ReturnTypeWillChange]
 	public function current()
 	{
 		$path   = explode('_', $this->root);
@@ -41,21 +42,25 @@ class SettingsReader implements \Iterator, \ArrayAccess
 		return Settings::read(...$path);
 	}
 
+	#[\ReturnTypeWillChange]
 	public function key()
 	{
 		return strtolower($this->names[ $this->i ]);
 	}
 
+	#[\ReturnTypeWillChange]
 	public function next()
 	{
 		return $this->i +=1;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function rewind()
 	{
 		return $this->i = 0;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function valid()
 	{
 		if($this->i >= 0 && $this->i < count($this->names))
@@ -71,11 +76,13 @@ class SettingsReader implements \Iterator, \ArrayAccess
 		return isset($this->keys[$name]);
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetExists($name)
 	{
 		return isset($this->keys[$name]);
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetGet($name)
 	{
 		if(!isset($this->keys[$name]))
@@ -102,6 +109,7 @@ class SettingsReader implements \Iterator, \ArrayAccess
 		return Settings::read(...$path);
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetSet($name, $value)
 	{
 		if(array_key_exists($name, $this->keys))
@@ -114,6 +122,7 @@ class SettingsReader implements \Iterator, \ArrayAccess
 		$this->names[] = $name;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($name)
 	{
 		if(!array_key_exists($name, $this->keys))
