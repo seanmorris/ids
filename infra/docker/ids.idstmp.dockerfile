@@ -24,12 +24,13 @@ RUN set -eux;               \
 	apt-get update;         \
 	apt-get install -y --no-install-recommends software-properties-common \
 		ca-certificates     \
+		dpkg-dev            \
 		gnupg               \
 		jq                  \
 		lsb-release         \
 		wget;               \
 	wget -O /usr/bin/yq     \
-		https://github.com/mikefarah/yq/releases/download/2.4.1/yq_linux_amd64; \
+		https://github.com/mikefarah/yq/releases/download/2.4.1/yq_linux_$$(dpkg-architecture -qDEB_HOST_ARCH_CPU); \
 	chmod +x /usr/bin/yq;   \
 	wget -O /etc/apt/trusted.gpg.d/php.gpg             \
 		https://packages.sury.org/php/apt.gpg;         \
@@ -43,6 +44,7 @@ RUN set -eux;               \
 		libyaml-dev         \
 		mime-support        \
 		php${PHP}           \
+		php${PHP}-bcmath    \
 		php${PHP}-cli       \
 		php${PHP}-common    \
 		php${PHP}-curl      \
