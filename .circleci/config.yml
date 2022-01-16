@@ -7,7 +7,7 @@ commands:
           sudo apt install -y software-properties-common
           sudo add-apt-repository -y ppa:ondrej/php
           sudo apt-get update
-          sudo apt-get install -y php-cli php-common php-mbstring php-intl php-zip php-bcmath php-dom
+          sudo apt-get install -y php8.1-cli php8.1-common php8.1-mbstring php8.1-intl php8.1-zip php8.1-bcmath php8.1-dom
           curl -s https://getcomposer.org/installer | php
           sudo mv composer.phar /usr/local/bin/composer
 
