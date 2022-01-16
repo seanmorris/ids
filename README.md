@@ -43,28 +43,28 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.86  T=0.13 s (1479.5 files/s, 217398.4 lines/s)
+github.com/AlDanial/cloc v 1.86  T=0.15 s (1314.7 files/s, 188818.2 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                             107           3400            489          14458
-JSON                             11              0              0           4017
-Markdown                          2            946              0           1897
-YAML                             27            118             14           1204
+PHP                             108           3407            504          14482
+JSON                             11              0              0           3917
+Markdown                          2            946              0           1895
+YAML                             27             99             14            933
 make                              2            145              9            611
 SVG                              25              0              3            239
 XML                               3              0              0            233
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             17             17             23
-INI                               4              0              0             15
+INI                               5              0              0             17
 HTML                              1              0              0             13
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            190           4635            532          22752
+SUM:                            192           4623            547          22405
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Sun 16 Jan 2022 05:33:30 AM EST*
+*built by sean @ Sun 16 Jan 2022 10:48:29 AM EST*
 
 ## Installation
 
