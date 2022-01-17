@@ -43,28 +43,27 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.86  T=0.13 s (1441.9 files/s, 206084.4 lines/s)
+github.com/AlDanial/cloc v 1.86  T=0.13 s (1442.8 files/s, 208642.9 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                             110           3430            523          14596
+PHP                             111           3462            507          14709
 JSON                             11              0              0           3915
 Markdown                          2            946              0           1893
 YAML                             27             99             14            933
 make                              2            145              9            611
 SVG                              25              0              3            239
-XML                               3              0              0            233
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             17             17             23
-INI                               5              0              0             17
+INI                               4              0              0             15
 HTML                              1              0              0             13
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            194           4646            566          22515
+SUM:                            191           4678            550          22393
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Sun 16 Jan 2022 11:03:43 PM EST*
+*built by sean @ Mon 17 Jan 2022 06:47:12 AM EST*
 
 ## Installation
 
@@ -1414,7 +1413,7 @@ Run these from the project root to build and control the project infrastructure.
 
 ## SeanMorris/Ids
 
-### Copyright 2011-2019 Sean Morris
+### Copyright 2011-2022 Sean Morris
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

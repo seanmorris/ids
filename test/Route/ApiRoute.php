@@ -36,4 +36,16 @@ class ApiRoute implements \SeanMorris\Ids\Routable
 
 		yield "\n\n";
 	}
+
+	public function rebash()
+	{
+		return 'while read -erp "< " LINE </dev/tty; do echo -e "$(curl -s localhost:2020/door --data-binary @- <<< "$LINE")"; done;' . PHP_EOL;
+	}
+
+	public function door($router)
+	{
+		$request = $router->request();
+
+		return '> ' . $request->fgets() . PHP_EOL;
+	}
 }
