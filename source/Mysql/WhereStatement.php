@@ -202,8 +202,6 @@ abstract class WhereStatement extends Statement
 			$this->conditions = $conditions;
 		}
 
-		\SeanMorris\Ids\Log::debug($this->conditions);
-
 		return $this;
 	}
 

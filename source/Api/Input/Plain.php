@@ -1,15 +1,18 @@
 <?php
 namespace SeanMorris\Ids\Api\Input;
-class Plain extends \SeanMorris\Ids\Api\InputParser
+class Plain extends \SeanMorris\Ids\Api\InputPump
 {
-	public function parse()
+	public function pump()
 	{
 		$source = '';
 		$header = [];
 
+		// stream_set_read_buffer($this->handle, 0);
+
 		while($line = fgets($this->handle))
 		{
-			yield $line;
+			\SeanMorris\Ids\Log::debug('Got', $line);
+			yield trim($line);
 		}
 	}
 }

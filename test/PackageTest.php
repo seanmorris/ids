@@ -96,8 +96,6 @@ class PackageTest extends \UnitTestCase
 			$this->package->globalDir() . 'schema.json'
 		);
 
-		\SeanMorris\Ids\Log::debug($schemaFile->slurp(), $testSchemaFile->slurp());
-
 		$this->assertEqual(
 			$schemaFile->slurp()
 			, $testSchemaFile->slurp()

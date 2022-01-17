@@ -43,13 +43,13 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.86  T=0.15 s (1314.7 files/s, 188818.2 lines/s)
+github.com/AlDanial/cloc v 1.86  T=0.13 s (1441.9 files/s, 206084.4 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                             108           3407            504          14482
-JSON                             11              0              0           3917
-Markdown                          2            946              0           1895
+PHP                             110           3430            523          14596
+JSON                             11              0              0           3915
+Markdown                          2            946              0           1893
 YAML                             27             99             14            933
 make                              2            145              9            611
 SVG                              25              0              3            239
@@ -61,10 +61,10 @@ HTML                              1              0              0             13
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            192           4623            547          22405
+SUM:                            194           4646            566          22515
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Sun 16 Jan 2022 10:48:29 AM EST*
+*built by sean @ Sun 16 Jan 2022 11:03:43 PM EST*
 
 ## Installation
 

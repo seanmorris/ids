@@ -1,106 +1,89 @@
 <?php
 namespace SeanMorris\Ids\Api\Output;
-class Csv extends \SeanMorris\Ids\Api\OutputParser
+class Csv extends \SeanMorris\Ids\Api\OutputPump
 {
 	protected $header    = NULL;
 	protected $delimiter = ',';
 	protected $enclosure = '"';
 	protected $escape    = '\\';
 
-	public function __construct($handle, $header = TRUE)
+	public function __construct($settings = ['Ids-Output-Headers' => TRUE])
 	{
-		parent::__construct($handle);
-
-		$this->header = $header;
+		$this->header = ($settings['Ids-Output-Headers'] ?? '') === 'true';
 	}
 
-	public function parse($content)
+	public function pump($content)
 	{
 		if(is_callable($content))
 		{
 			$content = $content();
 		}
 
-		if($content instanceof \Traversable || $content instanceof \Generator)
-		{
-			$header = [];
+		$header = [];
 
-			if($this->header)
+		$buffer = fopen('php://temp', 'r+');
+
+		if(!($content instanceof \Traversable))
+		{
+			$content = function() { yield $content; };
+		}
+
+		foreach($content as $key => $chunk)
+		{
+			if(!is_integer($key))
 			{
-				$buffer = fopen('php://temp', 'r+');
+				fwrite($buffer, sprintf("%s: ", $key));
+			}
+
+			if(is_callable($chunk))
+			{
+				$chunk = $chunk();
+			}
+
+			if(is_scalar($chunk))
+			{
+				fputcsv($buffer, ['' => $chunk], $this->delimiter, $this->enclosure, $this->escape);
+			}
+			elseif(is_object($chunk) && is_callable([$chunk, '__toApi']))
+			{
+				fputcsv($buffer, $content->__toApi(), $this->delimiter, $this->enclosure, $this->escape);
+			}
+			elseif(is_object($chunk) && is_callable([$chunk, '__toString']))
+			{
+				fputcsv($buffer, ['' => $content->__toString()], $this->delimiter, $this->enclosure, $this->escape);
 			}
 			else
 			{
-				$buffer = $this->handle;
+				$header = array_unique(array_merge($header, array_keys((array)$chunk)));
+				$empty  = array_map(function(){return NULL; }, array_flip($header));
+				$values = array_replace($empty, array_filter((array)$chunk, 'is_scalar'));
+
+				fputcsv($buffer, $values, $this->delimiter, $this->enclosure, $this->escape);
 			}
 
-			foreach($content as $key => $chunk)
+			if(!$this->header)
 			{
-				if(!is_integer($key))
-				{
-					fwrite($buffer, sprintf("%s: ", $key));
-				}
-
-				if(is_callable($chunk))
-				{
-					$chunk = $chunk();
-				}
-
-				if(is_scalar($chunk))
-				{
-					fputcsv($buffer, ['' => $chunk], $this->delimiter, $this->enclosure, $this->escape);
-				}
-				elseif(is_object($chunk) && is_callable([$chunk, '__toApi']))
-				{
-					fputcsv($buffer, $content->__toApi(), $this->delimiter, $this->enclosure, $this->escape);
-				}
-				elseif(is_object($chunk) && is_callable([$chunk, '__toString']))
-				{
-					fputcsv($buffer, ['' => $content->__toString()], $this->delimiter, $this->enclosure, $this->escape);
-				}
-				else
-				{
-					$header = array_unique(array_merge($header, array_keys((array)$chunk)));
-					$empty  = array_map(function(){return NULL; }, array_flip($header));
-					$values = array_replace($empty, array_filter((array)$chunk, 'is_scalar'));
-
-					fputcsv($buffer, $values, $this->delimiter, $this->enclosure, $this->escape);
-				}
+				yield fgets($buffer);
 			}
-
-			if($this->header)
-			{
-				rewind($buffer);
-
-				fputcsv($this->handle, $header, $this->delimiter, $this->enclosure, $this->escape);
-			}
-
-			stream_copy_to_stream($buffer, $this->handle);
-
-			return;
 		}
 
-		if(is_scalar($content))
+		if($this->header)
 		{
-			fputcsv($this->handle, ['' => $content], $this->delimiter, $this->enclosure, $this->escape);
-		}
-		elseif(is_object($content) && is_callable([$content, '__toApi']))
-		{
-			$line = (array) $content->__toApi();
+			$headerBuffer = fopen('php://memory', 'r+');
 
-			fputcsv($this->handle, array_keys($line), $this->delimiter, $this->enclosure, $this->escape);
-			fputcsv($this->handle, $line, $this->delimiter, $this->enclosure, $this->escape);
-		}
-		elseif(is_object($content) && is_callable([$content, '__toString']))
-		{
-			fputcsv($this->handle, ['' => $content->__toString()], $this->delimiter, $this->enclosure, $this->escape);
-		}
-		else
-		{
-			$line = (array) $content;
+			fputcsv($headerBuffer, $header, $this->delimiter, $this->enclosure, $this->escape);
 
-			fputcsv($this->handle, array_keys($line), $this->delimiter, $this->enclosure, $this->escape);
-			fputcsv($this->handle, $line, $this->delimiter, $this->enclosure, $this->escape);
+			rewind($headerBuffer);
+
+			yield fgets($headerBuffer);
+
+		}
+
+		rewind($buffer);
+
+		while(!feof($buffer))
+		{
+			yield fgets($buffer);
 		}
 	}
 }

@@ -199,7 +199,7 @@ class Request
 
 	public function read()
 	{
-		$headers     = $this->headers('Ids-Input-Headers') === 'true';
+		$headers     = $this->headers();
 		$contentType = $this->headers('Content-Type');
 		$handle      = $this->fraw();
 
@@ -217,24 +217,28 @@ class Request
 				break;
 
 			case 'text/json':
-				$parser = new \SeanMorris\Ids\Api\Input\Json($handle);
+				$parser = new \SeanMorris\Ids\Api\Input\Json($handle, $headers);
 				break;
 
-			// case 'text/yaml':
-			// 	$parser = new \SeanMorris\Ids\Api\Input\Yaml($handle, $headers);
+			case 'text/xml':
+				$parser = new \SeanMorris\Ids\Api\Input\Xml($handle, $headers);
+				break;
+
+			case 'text/yaml':
+				$parser = new \SeanMorris\Ids\Api\Input\Yaml($handle, $headers);
+				break;
+
+			// case 'multipart/form-data':
+			// 	$parser = new \SeanMorris\Ids\Api\Input\FormData($handle, $headers);
 			// 	break;
-
-			case 'multipart/form-data':
-				$parser = new \SeanMorris\Ids\Api\Input\FormData($handle);
-				break;
 
 			case 'text/plain':
 			default:
-				$parser = new \SeanMorris\Ids\Api\Input\Plain($handle);
+				$parser = new \SeanMorris\Ids\Api\Input\Plain($handle, $headers);
 				break;
 		}
 
-		foreach($parser->parse() as $key => $input)
+		foreach($parser->pump() as $key => $input)
 		{
 			yield $key => $input;
 		}

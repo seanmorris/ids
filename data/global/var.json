@@ -152,19 +152,6 @@
                 "SeanMorris\\Ids\\WrappedMethod"
             ]
         },
-        "links": {
-            "Test@1642348148": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1642348195": [
-                "testValue",
-                "blah"
-            ],
-            "Test@1642349067": [
-                "testValue",
-                "blah"
-            ]
-        }
+        "links": {}
     }
 }

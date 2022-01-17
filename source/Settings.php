@@ -14,7 +14,7 @@ class Settings
 
 	protected function __construct(){}
 
-	public static function read(...$names): mixed
+	public static function read(...$names)
 	{
 		static $cache = [];
 

@@ -1,8 +1,8 @@
 <?php
 namespace SeanMorris\Ids\Api\Output;
-class Yaml extends \SeanMorris\Ids\Api\OutputParser
+class Yaml extends \SeanMorris\Ids\Api\OutputPump
 {
-	public function parse($content)
+	public function pump($content)
 	{
 		if(is_callable($content))
 		{
@@ -14,65 +14,71 @@ class Yaml extends \SeanMorris\Ids\Api\OutputParser
 		    return is_scalar($x) ? $x : array_map($toArray, (array) $x);
 		};
 
-		if($content instanceof \Traversable || $content instanceof \Generator)
+		if(!($content instanceof \Traversable))
 		{
-			foreach($content as $key => $chunk)
+			$content = function() { yield $content; };
+		}
+
+		foreach($content as $key => $chunk)
+		{
+			$temp = fopen('php://temp', 'w+');
+
+			if(!is_integer($key))
 			{
-				if(!is_integer($key))
-				{
-					fwrite($this->handle, sprintf("%s: ", $key));
-				}
-
-				if(is_callable($chunk))
-				{
-					$chunk = $chunk();
-				}
-
-				if(is_scalar($chunk) || is_null($chunk))
-				{
-					fwrite($this->handle, yaml_emit($chunk));
-				}
-				elseif(is_object($chunk) && is_callable([$chunk, '__toApi']))
-				{
-					fwrite($this->handle, yaml_emit($content->__toApi()));
-				}
-				elseif(is_object($chunk) && is_callable([$chunk, '__toString']))
-				{
-					fwrite($this->handle, yaml_emit($content->__toString()));
-				}
-				else
-				{
-					$chunk = $toArray($chunk);
-
-					fwrite($this->handle, yaml_emit($chunk));
-				}
-
-				fwrite($this->handle, PHP_EOL);
+				fwrite($temp, sprintf("%s: ", $key));
 			}
 
+			if(is_callable($chunk))
+			{
+				$chunk = $chunk();
+			}
 
-			return;
+			if(is_scalar($chunk) || is_null($chunk))
+			{
+				fwrite($temp, yaml_emit($chunk));
+			}
+			elseif(is_object($chunk) && is_callable([$chunk, '__toApi']))
+			{
+				fwrite($temp, yaml_emit($chunk->__toApi()));
+			}
+			elseif(is_object($chunk) && is_callable([$chunk, '__toString']))
+			{
+				fwrite($temp, yaml_emit($chunk->__toString()));
+			}
+			else
+			{
+				$chunk = $toArray($chunk);
+
+				fwrite($temp, yaml_emit($chunk));
+			}
+
+			rewind($temp);
+
+			$ymlChunk = '';
+
+			while(!feof($temp))
+			{
+				$line = fgets($temp);
+
+				if($line === "...\n")
+				{
+					yield $ymlChunk;
+					break;
+				}
+
+				$ymlChunk .= $line;
+
+				// fwrite($this->handle, $line);
+			}
 		}
 
-		if(is_scalar($chunk) || is_null($content))
-		{
-			fwrite($this->handle, yaml_emit($content));
-		}
-		elseif(is_object($content) && is_callable([$content, '__toApi']))
-		{
-			fwrite($this->handle, yaml_emit($content->__toApi()));
-		}
-		elseif(is_object($content) && is_callable([$content, '__toString']))
-		{
-			fwrite($this->handle, yaml_emit($content->__toString()));
-		}
-		else
-		{
-			$chunk = $toArray($content);
+		yield '...';
 
-			fwrite($this->handle, yaml_emit((array)$content));
-		}
+		// fwrite($this->handle, "...\n");
+	}
 
-		fwrite($this->handle, PHP_EOL);
+	protected function filter()
+	{
+		// php://temp
 	}
 }

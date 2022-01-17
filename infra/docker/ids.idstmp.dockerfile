@@ -111,7 +111,7 @@ RUN set -eux;               \
 		apache2             \
 		libapache2-mod-php${PHP}; \
 	a2dismod mpm_event;     \
-	a2enmod rewrite ssl php${PHP}; \
+	a2enmod rewrite ssl http2 php${PHP}; \
 	apt-get remove -y software-properties-common \
 		python              \
 		wget;               \
@@ -158,7 +158,8 @@ RUN set -eux;       \
 	apt-get clean;  \
 	rm -rf /var/lib/apt/lists/*;
 
-COPY $${CORERELDIR}/infra/apache/http2.conf /etc/apache2/
+COPY $${CORERELDIR}/infra/apache/http2.conf /etc/apache2/conf-enabled/http2.conf
+COPY $${CORERELDIR}/infra/apache/post-streaming.conf /etc/apache2/conf-enabled/post-streaming.conf
 COPY $${CORERELDIR}/infra/xdebug/30-xdebug-apache.ini /etc/php/${PHP}/apache2/conf.d/30-xdebug-apache.ini
 #COPY $${CORERELDIR}/infra/php/40-upload-size.ini /etc/php/${PHP}/apache2/conf.d/40-upload-size.ini
 

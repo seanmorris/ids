@@ -296,8 +296,6 @@ $existingErrorHandler = set_error_handler(
 			return;
 		}
 
-		var_dump($errorNumber);
-
 		throw new \ErrorException($line, $errorNumber, 0, $errorFile, $errorLine);
 	}
 );

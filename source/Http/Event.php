@@ -3,16 +3,18 @@ namespace SeanMorris\Ids\Http;
 class Event
 {
 	protected $id, $message, $eventType;
+	protected static $sequence = 0;
 
-	public function __construct($message = NULL, $id = NULL, $type = NULL)
+	public function __construct($message = NULL, $id = NULL, $type = 'ServerEvent')
 	{
+		$this->eventType = $type;
 		$this->message = $message;
-		$this->id      = $id;
+		$this->id = $id ?? intval(microtime(true)*10000) . '.' . ++static::$sequence;
 	}
 
 	public function toString()
 	{
-		$format = "event: %s\ndata: %s\n";
+		$format = "event: %s\n%s\n";
 
 		if(isset($this->id))
 		{
@@ -23,9 +25,9 @@ class Event
 
 		$message = sprintf(
 			$format
-			, $this->eventType ?: 'ServerEvent'
+			, $this->eventType
 			, !$this->message || is_scalar($this->message)
-				? $this->message
+				? preg_replace('/^/m', "data: ", $this->message)
 				: json_encode($this->message)
 			, $this->id
 		);

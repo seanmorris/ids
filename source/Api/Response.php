@@ -19,43 +19,96 @@ class Response
 		$this->encoding = $encoding;
 	}
 
-	public function send()
+	public function send($content)
 	{
-		$outputHeaders = $this->request->headers('Ids-Output-Headers') === 'true';
-		$handle  = $this->request->getResponseBuffer();
 
-		$content  = $this->content;
+		$headers  = $this->request->headers();
 		$encoding = $this->encoding ?: $this->request->headers('Accept');
+
+		$encodingSplit = explode('+', $encoding);
+		$eventStream   = FALSE;
+
+		if($encodingSplit[0] === 'text/event-stream')
+		{
+			$encoding = 'text/' . ($encodingSplit[1] ?? 'event-stream');
+			$eventStream = TRUE;
+		}
+		else
+		{
+			$encoding = $encodingSplit[0];
+		}
 
 		switch($encoding)
 		{
 			case 'text/csv':
-				header(sprintf('Content-Type: %s', $encoding));
-				$parser = new \SeanMorris\Ids\Api\Output\Csv($handle, $outputHeaders);
+				$output = new \SeanMorris\Ids\Api\Output\Csv($headers);
 				break;
 
 			case 'text/tsv':
-				header(sprintf('Content-Type: %s', $encoding));
-				$parser = new \SeanMorris\Ids\Api\Output\Tsv($handle, $outputHeaders);
+				$output = new \SeanMorris\Ids\Api\Output\Tsv($headers);
 				break;
 
 			case 'text/json':
-				header(sprintf('Content-Type: %s', $encoding));
-				$parser = new \SeanMorris\Ids\Api\Output\Json($handle);
+				$output = new \SeanMorris\Ids\Api\Output\Json($headers);
 				break;
 
 			case 'text/yaml':
-				header(sprintf('Content-Type: %s', $encoding));
-				$parser = new \SeanMorris\Ids\Api\Output\Yaml($handle);
+				$output = new \SeanMorris\Ids\Api\Output\Yaml($headers);
 				break;
 
-			case 'text/plain':
-				header(sprintf('Content-Type: %s', $encoding));
+			case 'text/xml':
+				$output = new \SeanMorris\Ids\Api\Output\Xml($headers);
+				break;
+
 			default:
-				$parser = new \SeanMorris\Ids\Api\Output\Plain($handle);
+			case 'text/plain':
+				$encoding = 'text/plain';
+				$output = new \SeanMorris\Ids\Api\Output\Plain($headers);
 				break;
 		}
 
-		$parser->parse($this->content);
+		if($eventStream)
+		{
+			header('Cache-Control: no-cache');
+			header('Content-Type: text/event-stream');
+			header('Ids-Event-Type: ' . $encoding);
+
+			foreach($output->pump($this->request->read()) as $chunk)
+			{
+				if($encodingSplit[2] ?? '' === 'uri')
+				{
+					yield new \SeanMorris\Ids\Http\Event(
+						'data://' . $encoding . ',' . str_replace("\n", '%0A', trim($chunk))
+					);
+				}
+				else
+				{
+					yield new \SeanMorris\Ids\Http\Event(trim($chunk));
+				}
+			}
+		}
+		else
+		{
+			if(($encodingSplit[1] ?? '') === 'uri')
+			{
+				header('Content-Type: text/plain');
+			}
+			else
+			{
+				header(sprintf('Content-Type: %s', $encoding));
+			}
+
+			foreach($output->pump($this->request->read()) as $chunk)
+			{
+				if(($encodingSplit[1] ?? '') === 'uri')
+				{
+					yield 'data://' . $encoding . ',' . str_replace("\n", '%0A', trim($chunk)) . PHP_EOL;
+				}
+				else
+				{
+					yield $chunk;
+				}
+			}
+		}
 	}
 }

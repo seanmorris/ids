@@ -1,30 +1,27 @@
 <?php
 namespace SeanMorris\Ids\Api\Input;
-class Yaml extends \SeanMorris\Ids\Api\InputParser
+class Yaml extends \SeanMorris\Ids\Api\InputPump
 {
-	public function parse()
+	public function pump()
 	{
 		$source = '';
 
 		while($line = fgets($this->handle))
 		{
-			$source .= $line;
-
-			if($line === "\n" || $line === "...\n")
+			if($line === "...\n" || ($source && $line === "---\n" ))
+			{
+				yield yaml_parse($source);
+				$source = '';
+			}
+			else
 			{
 				$source .= $line;
-
-				if(trim($source))
-				{
-					yield yaml_parse($source);
-				}
-
-
-				$source = '';
 			}
 		}
 
-		if($source)
+		$source = trim($source);
+
+		if($source && $source !== '...')
 		{
 			yield yaml_parse($source);
 		}

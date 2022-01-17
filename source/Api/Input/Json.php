@@ -1,8 +1,8 @@
 <?php
 namespace SeanMorris\Ids\Api\Input;
-class Json extends \SeanMorris\Ids\Api\InputParser
+class Json extends \SeanMorris\Ids\Api\InputPump
 {
-	public function parse()
+	public function pump()
 	{
 		$source = '';
 
@@ -12,16 +12,16 @@ class Json extends \SeanMorris\Ids\Api\InputParser
 
 			if($line === "\n")
 			{
-				if($source)
+				if(trim($source))
 				{
-					yield json_decode($source, TRUE);
+					yield json_decode($source, FALSE);
 				}
 
 				$source = '';
 			}
 		}
 
-		if($source)
+		if(trim($source))
 		{
 			yield json_decode($source, TRUE);
 		}
