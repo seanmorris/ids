@@ -190,7 +190,7 @@ foreach($requests as $req)
 		{
 			foreach($res as $r)
 			{
-				$r = method_exists($r, 'toApi')
+				$r = ($r && method_exists($r, 'toApi'))
 					? $r->toApi($depth)
 					: $r;
 
@@ -199,7 +199,7 @@ foreach($requests as $req)
 		}
 		else
 		{
-			$res = method_exists($res, 'toApi')
+			$res = ($res && method_exists($res, 'toApi'))
 				? $res->toApi($depth)
 				: $res;
 

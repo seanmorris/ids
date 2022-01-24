@@ -43,15 +43,15 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.86  T=0.13 s (1442.8 files/s, 208642.9 lines/s)
+github.com/AlDanial/cloc v 1.86  T=0.14 s (1325.1 files/s, 196639.3 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                             111           3462            507          14709
-JSON                             11              0              0           3915
-Markdown                          2            946              0           1893
-YAML                             27             99             14            933
-make                              2            145              9            611
+PHP                             110           3455            507          14676
+JSON                             10              0              0           3897
+Markdown                          2            946              0           1892
+YAML                             24             84             14            859
+make                              1            141              9            596
 SVG                              25              0              3            239
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             17             17             23
@@ -60,10 +60,10 @@ HTML                              1              0              0             13
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            191           4678            550          22393
+SUM:                            185           4652            550          22252
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Mon 17 Jan 2022 06:47:12 AM EST*
+*built by sean @ Mon 24 Jan 2022 01:08:01 AM EST*
 
 ## Installation
 
