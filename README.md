@@ -20,10 +20,8 @@
 
 ![seanmorris/ids](https://img.shields.io/packagist/v/seanmorris/ids?color=900&label=seanmorris%2Fids&logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAACAAAAAfCAYAAACGVs%2BMAAAHb0lEQVR42pVWa1CU1xk2dSYzHSs4aEsEHZ0VAYEFBBGQAcRba5CxtUJpbeiIN2BdLgLLrizKQkx0ubhDMBCuy3UBuQuIGtAogSQ1pK026bSdtjO10TbRH06bJqPZp%2Bc5zLoyDJX9Zp7Z833f%2Bz7Pe97L%2BXbRPNdLtoVCoXBetWrVYwE4iMf0ncXpyOXm5pYsMLZ69eor%2Fv7%2BTwICAiB%2BFwTaKpXKJ8uXL7%2BydOnSMYHkBUjaI3R1dY3z8PC46%2BXlBW9vb4SGhiIsLMwqgAWA9tbw8HDs3bsX%2B%2FfvR0xMzF1BG7egbLi4uPiuWbPmEXeyZcsWK8U3b968YISEhCAwMJC%2BaGhowOjoqDUnJ4cbeUTu%2BXRtO1eyfhs3boRd2HEEBQXJAKqqqtDe3g6LxQKj0QhRTixZskQ5X%2Br3%2BPn53T9z5gx27txJEoeFufNDhw6hoqICZWVlaGxsRHNzM1paWvjLZ%2BS9v3jx4j2ztJ2cnBKjo6Ons7Ky0NHRgd27d5PMobSz8Tw9PaFWq9Hf389dS9Gmpia0traipqYGmZmZ0nbt2rXTosETn6Vg2bJlEwkJCRgZGbGazWZs376dhAsWZ7r37duHuLg45OfnU5zCNnBTzIqN08rGFgFMPAvA2dl5mN3a3d0NBhAbG4vg4GCSLyjtO3bs4G4pxHTPErdloLS09FlfcbpWrlw5PCsAZqCvr48OsnsTExPh6%2Bv7wmajjSifrHdbW9sccQbFrHAs6cMg7AHYu3%2BYZKxfZ2cnBgYGUFtbi5SUlOeb0XYe2MRlwxUWFsJgMDBzzMIc8cHBQWi1Wvj4%2BNCP%2FnMDcHd3HxaNgcjISOh0Ooni4mIcO3aMJxrTLMX9lP5Y77WBa7nzgoICClBoljADYUb0er1EUlISA54%2FAN7YTjyK2Y5dOnAkd%2B3ahZDNoQgO9EfoRhGQOCcio6JQVFTEjM0R5%2BzX19cjIiKCO7eJ%2F%2F8A%2BNCWXoJBsA9YVxL6Bgbj3PEDuNtWglfc3FFWXk5xe9PZA%2BAUsI94BPNQI5%2FjATADycnJaBdkASFhqNGr8O%2BxRmDKgvdrixETHQV3hSd%2B8csk0TP9FJfCGo2G5whHknxzJokjq%2FBYD2eXFfYAXv6eU%2F9axTq%2BtDWb%2BA1B1NZtSPhZIk4fScDD0Rrgd33AR53AdDeqNIdRfDQe6Un78fOkg1J8aGgIKpWKO2Qp54gT3qIkuyM24fCrUf1S%2FKYxM%2BhA7NbJ6LAQ%2BPj5zzSb2L2Xjy%2BUvj44uCdGCuI3vcAHlhlMtgO%2F7QP%2BcgUT1aexbUsI8vUFePPsWcTHx7Puc74lvCecV7iiIGkv%2FtBgmOzIPRi0qFOXjCfXxQwXZ8JV1JZRe673gMuKH0CVGAd80ounE214cquV4JoB2CDfPxiuhtc6BVxfWSn%2FjIhP%2BbynJjVaizLw9XgDqC0D%2BGLobeDXXRg5r5MEU7VFePqeGVPNpdDm5iAvO0siIz0dVW%2BeAj6%2BKDNhZQDMyFQ7vhypRl56KuIP%2FAq7Xt0Dl%2B%2B7InjTJvYBISfHzd0dVyv0wEdd%2BNelC%2FYAPu9%2FC%2Fj0Eu4N1%2BBHsXGoP3cKQ3XlaBC%2F53VqjDeU4mZTOSZbTLhWW4o642lmQgTdyZ6QgXS%2FfQ5TbZW40%2FMOJpvLYT6lgmLdOmzwVSJAlJSN90MR2P3LddSipj2Afw5eAO4MWL%2B81og3dNk4kpKGo0ePorIgC3%2B2lMwIfdIN3G7HZ0MXUPm6Xgb09Xst%2BEaUZby%2BBHnqVNEmJpEdi%2BDql1nSH0pAUIASCk9vbIvZKrhP4OG7ZqlFTVsA9%2F7eff6bbyda8ehyNcYrTiInMx0XCjLxJ4tRiF6cqfWHXZjqPofe5pNi3YnszAzcaCzDrWYTUlNSMWbSoa4yA7f7S2krxxWfXULuaz9GeEQkCk%2FmSe6HQoNa1KT2InGWf2fwdMr1Hv0R3CzPgfX9dug12bhaZxTp7bA323QvLEY1tGlx4t4Cgy4XqarjSBMoFGs2aJ54Rxva0kcGMdmG4eqz0OdJbqlBLWpSW45iU06Sf606MXK0OFV1y5SHdFWa8Kuw4k7fTKMRH%2Fegy5QBQ%2B4%2BmZX8vFwYTqRJ6LUaOapFmp%2FShrb0kYL4dEDso9KqFpzkpga1qCnF8dw%2F1K748O82Z79WWq5Vf2suOYXf91ZZMX2RPSAEevD55Qpcqy%2FASE0JjFpRgmoDwTWf8R1taCt96EsOcpGT3NSg1nPac29umDSW13NUX5kMOvxjpA5%2Fu1SDvw6%2Bgy%2BumnHbUikylIrL5Vp8NdZAcM1nfEcb2tJH%2BpKDXOScpfWi61p5blWD4QRSj6uhVkuImquRf0KN0TIN%2FnvdDHzYQXDNZ3xHG5u99CUHuRY5enVoDzbdMGnxcLzFyp0Q9wQeiDn%2Bj9i1rckIrvmM72hjs6cvOcjlcAD1xxM3XTdmdf2x5Q3OND9EVn4PCNaYjcjTk%2BCaz2zvaUsf%2BpKDXA5I22t0%2FvBPNoiRmbjXY3r6YOAtcXpVLAi0pQ99yfEcp%2BNBtKoPOIkD47EAHMRj%2Br5I%2FH8NrWvzntWI2gAAAABJRU5ErkJggg%3D%3D&style=for-the-badge)
 [![Apache-2.0 Licence Badge](https://img.shields.io/npm/l/cv3-inject?logo=apache&color=338800&style=for-the-badge)](https://github.com/seanmorris/cv3-inject/blob/master/LICENSE)
-
 [![CircleCI](https://img.shields.io/circleci/build/github/seanmorris/ids?logo=circleci&logoColor=white&style=for-the-badge&token=b52ac489d3c2d170963021c81ecd422b7536f41c)](https://circleci.com/gh/seanmorris/ids/) [![Codecov](https://img.shields.io/codecov/c/github/seanmorris/ids?color=B80&logo=codecov&logoColor=white&style=for-the-badge)](https://codecov.io/gh/seanmorris/ids)
 ![Size badge](https://img.shields.io/github/languages/code-size/seanmorris/ids?logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAABQAAAAOCAQAAACFzfR7AAABF0lEQVQoFQXBQWvOAQDA4ef/7o29YWtqKU7ExWE5OIvm4LKcnXwD7aQ0N/kAczO1i1KOO0xJvQojaTm4KbJabnJysLSf5wFAa603CUB322yOAAitVT86BTTQ1+oJDYDQcv+qFRr3vC1ooYPqDkHoYgfVKmnSfhG62t/qBkHn2q8ekjRpryB0v/rZ2eh4r6tpY5pp3Gx7RTONoJfVLnpQfekYtNG0832rRj3tEaT31bOxQ5wc/oATrnnniEMfXfaZDFrAoEk71XajNN9OVVW7HYVeVZ9AF/pd3YPm267qbYs0tF597wygpaquQ7Nt9QLoVlWXCEK3q1oCCF2p6iYBpKGN6kNzATrdr2qVAACa9rgRQKPetAnAf1jX/qSkN8aIAAAAAElFTkSuQmCC&style=for-the-badge)
-
 [![Docker Pulls - Idilic](https://img.shields.io/docker/pulls/seanmorris/ids.idilic?logo=docker&logoColor=white&color=600&label=ids.idilic%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.idilic)
 [![Docker Pulls - Server](https://img.shields.io/docker/pulls/seanmorris/ids.server?logo=docker&logoColor=white&color=960&label=ids.server%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.server)
 
@@ -42,31 +40,23 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
-```
-github.com/AlDanial/cloc v 1.86  T=0.14 s (1325.1 files/s, 196639.3 lines/s)
---------------------------------------------------------------------------------
-Language                      files          blank        comment           code
---------------------------------------------------------------------------------
-PHP                             110           3455            507          14676
-JSON                             10              0              0           3897
-Markdown                          2            946              0           1892
-YAML                             24             84             14            859
-make                              1            141              9            596
-SVG                              25              0              3            239
-Bourne Shell                      4              9              0             40
-Bourne Again Shell                2             17             17             23
-INI                               4              0              0             15
-HTML                              1              0              0             13
-CSS                               1              0              0              1
-JavaScript                        1              0              0              1
---------------------------------------------------------------------------------
-SUM:                            185           4652            550          22252
---------------------------------------------------------------------------------
-```
-*built by sean @ Mon 24 Jan 2022 01:08:01 AM EST*
+## Dependencies
+<details><summary>expand</summary>
 
-## Installation
+ * Composer
+ * Docker
+ * Docker Compose
+ * GNU Make
+ * Git
+ * Linux or Compatible OS
+ * PHP
+ * SimpleTest
+ * Minikube (required for kubernetes targets only)
 
+</details>
+
+## Installing
+<details><summary>expand</summary>
 Include Ids in your project with:
 
 ```bash
@@ -84,8 +74,10 @@ Add composer's global `vendor/bin` to your PATH by adding this to your `~/.bashr
 ```bash
 export PATH="$HOME/.composer/vendor/bin:$PATH"
 ```
+</details>
 
 ## Creating a New Ids Project
+<details><summary>expand</summary>
 
 Create a new project with composer, enter the directory and start php, apache & mysql:
 
@@ -101,19 +93,10 @@ The companion package that provides a template for new projects can be found her
 
 https://github.com/seanmorris/ids-project
 
-## Dependencies
-
- * Composer
- * Docker
- * Docker Compose
- * GNU Make
- * Git
- * Linux or Compatible OS
- * PHP
- * SimpleTest
- * Minikube (required for kubernetes targets only)
+</details>
 
 ## Dev Tools
+<details><summary>expand</summary>
 
 The `dev` build target provides facilities for connecting to xdebug and graylog.
 
@@ -133,7 +116,6 @@ $ make @dev+aptcache build
 ... to be continued
 
 ### GrayLog
-
 `\SeanMorris\Ids\Logger\Gelf` provides a simple interface to graylog. Just add it to the `IDS_LOGGERS_` environment variable to enable it. So long as there is a graylog server available , it will send all logs that meet the verbosity threshold.
 
 The default graylog config for the `dev` target looks like:
@@ -166,8 +148,10 @@ $ make graylog-restart    # alias glr
 $ make graylog-restart-fg # alias glrf
 $ make graylog-restart-bg # alias glrb
 ```
+</details>
 
-## Idilc CLI
+## Idilic CLI
+<details><summary>expand</summary>
 
 Ids comes with the `idilic` command when installed globally with composer. When executed, it will ascend through the current path looking for another project including Ids. When it finds it, it will attach to that project and utilize its facilities.
 
@@ -175,7 +159,10 @@ If it encounters a local `idilic` pass-thru in the project directory, it will ha
 
 Run `idilic help` to see actions exposed by any installed packages.
 
+</details>
+
 ## Multistaging / Environment Targets
+<details><summary>expand</summary>
 
 ### base, prod, dev, and test
 
@@ -217,7 +204,10 @@ Then create a new `.env.[TARGET]` file in `config/`. Add your defaults here.
 
 If you need some target specific build steps. then add a `FROM base as TARGET` section to any docker files in `infra/docker` that are relevant to that build target. You can expand on any existing build target, you're not limited to extending `base`.
 
+</details>
+
 ## Build
+<details><summary>expand</summary>
 
 The project may be built with `make`. Debian users can get this tool by running `apt-get install build-essential`. The build process also requires `docker` and `docker-compose`. `minikube` is required only for kubernetes testing.
 
@@ -234,7 +224,10 @@ Docker & docker-compose are available here:
  * https://docs.docker.com/install/
  * https://docs.docker.com/compose/install/
 
+</details>
+
 ## Start / Stop / Restart
+<details><summary>expand</summary>
 
 Make sure to set a target with `make stay@target` before issuing any commands. Alternatively you can run commands in the form `make @target command`.
 
@@ -260,8 +253,10 @@ $ make restart-fg # Stop, then restart the project in the foreground.
 $ make restart-bg # Stop, then restart the project in the background,
                   # stream output to foreground.
 ```
+</details>
 
 ## Images & Tags
+<details><summary>expand</summary>
 
 ```bash
 $ make list-images # List all images for the current project, target & branch.
@@ -272,8 +267,10 @@ $ make push-images # push all images for the current project, target & branch.
 
 $ make pull-images # push all images for the current project, target & branch.
 ```
+</details>
 
 ## Autotagging / Autopublishing / Git Hooks
+<details><summary>expand</summary>
 
 Register git hooks with `make hooks`.
 
@@ -297,7 +294,10 @@ Images will be built on `git commit` and pushed on `git push` if the current bra
 master:test
 master:prod
 ```
+</details>
+
 ## Available Images
+<details><summary>expand</summary>
 
 Docker images for seanmorris/ids.idilic & seanmorris/ids.server for targets `base`, `dev`, and `test` are available for use
 & extension on DockerHub:
@@ -320,9 +320,10 @@ or extend in a dockerfile with one of the following:
 FROM seanmorris/ids.idilic:TAGNAME
 FROM seanmorris/ids.server:TAGNAME
 ```
+</details>
 
 ## Service Switches
-
+<details><summary>expand</summary>
 Additional services can be included when running Ids. Simply add +toolname to your @target when issing a make command, and the necessary composer files will be included in the comtext of your command. For example, to start the system with graylog in dev mode:
 
 ```bash
@@ -338,7 +339,10 @@ Or both
 ```bash
 make @dev+graylog+inotify start
 ```
+</details>
+
 ## Templating
+<details><summary>expand</summary>
 
 *This ain't your granpappy's makefile.*
 
@@ -365,8 +369,10 @@ The follwing lines from the end of the file show how one can use the shell to tr
 ```
 
 See [Functions for Transforming Text](https://www.gnu.org/software/make/manual/html_node/Functions.html#Functions) for more information.
+</details>
 
 ## Configuration / Environment Variables / Secrets
+<details><summary>expand</summary>
 
 ### Loading Settings
 
@@ -536,7 +542,10 @@ Environment variables from the shell or .env files take precedence over yml file
 
 to be continued...
 
+</details>
+
 ## Schema Diffing & Patching
+<details><summary>expand</summary>
 
 Ensure you've installed the `idilic` cli tool from the start of the document. Use the following commands to manage your database schema.
 
@@ -548,7 +557,10 @@ Ensure you've installed the `idilic` cli tool from the start of the document. Us
 
 The schema will be stored in `data/global/schema.json`.
 
+</details>
+
 ## Routing
+<details><summary>expand</summary>
 
 ```
 IDS_ENTRYPOINT=SeanMorris\Ids\Test\Route
@@ -578,8 +590,10 @@ class RootRoute implements \SeanMorris\Ids\Routable
 	}
 }
 ```
+</details>
 
 ## Modeling / ORM
+<details><summary>expand</summary>
 
 ### Defining models
 
@@ -646,8 +660,10 @@ Model load methods are dynamically generated with names in the form of:
 
 #### Selectors
 
-## Logging
+</details>
 
+## Logging
+<details><summary>expand</summary>
 Logs can be written from anywhere in the system by calling a function coresponging to the desied level of verbosity. There are 6 levels of verbosity available.
 
 ```php
@@ -781,8 +797,10 @@ Add them to the `IDS_LOGGERS_` array to activate them:
 ```
 IDS_LOGGERS_=\SeanMorris\Ids\Logger\AdditionalLogger
 ```
+</details>
 
 ## Debugging
+<details><summary>expand</summary>
 
 ```
 XDEBUG_CONFIG_REMOTE_HOST=${DHOST_IP}
@@ -791,8 +809,12 @@ XDEBUG_CONFIG_REMOTE_PORT=9000
 XDEBUG_CONFIG_PROFILER_ENABLE=0
 XDEBUG_CONFIG_REMOTE_ENABLE=1
 ```
+</details>
 
-## Linking
+## Linking Packages
+<details><summary>expand</summary>
+
+Some features require foreknowledge of what packages, files, and classes are present. Scanning for this list every time one of those features is used would slow things to a crawl. Build this index with the following commands:
 
 Some features require foreknowledge of what packages, files, and classes are present. Scanning for this list every time one of those features is used would slow things to a crawl. Build this index with the following commands:
 
@@ -800,7 +822,11 @@ Some features require foreknowledge of what packages, files, and classes are pre
 $ make composer-dumpautoload
 $ idilic link
 ```
+
+</details>
+
 ## Testing
+<details><summary>expand</summary>
 
 ```bash
 $ make @test build test
@@ -809,9 +835,10 @@ $ make @test build test
 ```bash
 $ idilic runTests
 ```
+
 ```php
 <?php
-namespace SeanMorrisxamplePackage\Test;
+namespace SeanMorris\ExamplePackage\Test;
 class ExampleTest extends \UnitTestCase
 {
 	public function testSomething()
@@ -820,8 +847,10 @@ class ExampleTest extends \UnitTestCase
 	}
 }
 ```
+</details>
 
 ## File Access
+<details><summary>expand</summary>
 
 ```php
 <?php
@@ -856,16 +885,35 @@ $file->write($content);
 // Overwrite
 $file->write($content, FALSE);
 ```
+</details>
 
 ## Migrations*
+<details><summary>expand</summary>
+to be completed
+</details>
+
 ## Asset Management
+<details><summary>expand</summary>
+to be completed
+</details>
+
 ## HTTP API*
+<details><summary>expand</summary>
+to be completed
+</details>
+
 ## IPC / AMPQ*
-### Idilic CLI
+<details><summary>expand</summary>
+to be completed
+</details>
+
+## Implmenting Idilic CLI Commands
+<details><summary>expand</summary>
 
 Idilic commands can be run from the CLI in the form `idilic command` or `idilic Vendor/Package command`. Note that on the CLI package names can be separated by a forward slash (`/`). This is done to prevent the user from being forced to remember to escape backslashes (`\`).
 
 Run `idilic help` to get a list of available idilic commands.
+
 
 New commands can be implemented by adding a route class named `RootRoute` under the namespace `Vendor\Package\Idilic\Route` like so:
 
@@ -879,10 +927,13 @@ class RootRoute implements \SeanMorris\Ids\Routable
 	{}
 }
 ```
+</details>
 
 ## Dependency Injection
+<details><summary>expand</summary>
 
 Some classes provide injection constructors. They'll take one or more classes as an argument and in return will give you a new class to work with.
+
 
 For example, the `SeanMorris\Ids\Collection` class provides a method that will return a new subclass that will work only with the given type:
 
@@ -905,7 +956,7 @@ $datetimeCollection = new DatetimeCollection();
 
 ```
 
-### Creating Injectable Classes
+### Creating Injectables
 
 Creating a new injectable class from scratch is easy. You can either inherit from an existing class that uses the `SeanMorris\Ids\Injectable` trait, or create an entirely new class from scratch with the following construct:
 
@@ -1344,9 +1395,15 @@ use \SeanMorris\Ids\Loader;
 Loader::define([ \___\Paint\Red::CLASS => AwesomeRedPaint::CLASS ]);
 
 ```
+</details>
 
 ## Sessions
+<details><summary>expand</summary>
+to be completed
+</details>
+
 ## Email
+<details><summary>expand</summary>
 
 ```php
 <?php
@@ -1365,11 +1422,15 @@ $mail->to($recipientEmail);
 
 $mail->send(TRUE);
 ```
+</details>
 
-## Theming / Frontends
-## Existing Ids Projects
+## Themes & Frontends
+<details><summary>expand</summary>
+to be completed
+</details>
 
 ## Make Commands
+<details><summary>expand</summary>
 
 Run these from the project root to build and control the project infrastructure.
 
@@ -1399,17 +1460,7 @@ Run these from the project root to build and control the project infrastructure.
  * `make bash` `make sh`- Get a bash prompt to an `idilic` container.
  * `make run CMD="SERVICE [COMMAND]"` `make r`- Run a command in a service container.
 
-## Dependencies
-
- * Bash
- * Composer
- * Docker
- * Docker Compose
- * GNU Make
- * Git
- * Linux or Compatible OS
- * Node
- * PHP
+</details>
 
 ## SeanMorris/Ids
 
@@ -1426,3 +1477,26 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+```
+github.com/AlDanial/cloc v 1.86  T=0.13 s (1427.4 files/s, 226644.8 lines/s)
+--------------------------------------------------------------------------------
+Language                      files          blank        comment           code
+--------------------------------------------------------------------------------
+PHP                             110           3455            507          14676
+JSON                             11              0              0           6514
+Markdown                          3            973              0           2014
+YAML                             27             99             14            933
+make                              2            145              9            611
+SVG                              25              0              3            239
+Bourne Shell                      4              9              0             40
+Bourne Again Shell                2             17             17             23
+INI                               4              0              0             15
+HTML                              1              0              0             13
+CSS                               1              0              0              1
+JavaScript                        1              0              0              1
+--------------------------------------------------------------------------------
+SUM:                            191           4698            550          25080
+--------------------------------------------------------------------------------
+```
+*built by sean @ Wed 26 Jan 2022 12:33:51 AM EST*

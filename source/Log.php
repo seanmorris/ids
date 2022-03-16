@@ -1084,7 +1084,7 @@ class Log
 		return implode(PHP_EOL, $results);
 	}
 
-	protected static function render($input, $color = TRUE)
+	public static function render($input, $color = TRUE)
 	{
 		return static::dump($input, [], $color?[]:FALSE);
 
