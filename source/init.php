@@ -260,7 +260,7 @@ $existingErrorHandler = set_error_handler(
 		ob_end_clean();
 
 		$line = sprintf(
-			'(%d)"%s" thrown in %s:%d'
+			'(%d) "%s" thrown in %s:%d'
 				.  PHP_EOL
 				. '%s'
 			, $errorNumber

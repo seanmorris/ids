@@ -9,7 +9,7 @@ class ApiRoute implements \SeanMorris\Ids\Routable
 		return fopen('/app/README.md', 'r');
 	}
 
-	function reflectData($router)
+	public function reflectData($router)
 	{
 		$request = $router->request();
 
