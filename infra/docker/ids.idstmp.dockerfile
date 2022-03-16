@@ -24,12 +24,13 @@ RUN set -eux;               \
 	apt-get update;         \
 	apt-get install -y --no-install-recommends software-properties-common \
 		ca-certificates     \
+		dpkg-dev            \
 		gnupg               \
 		jq                  \
 		lsb-release         \
 		wget;               \
 	wget -O /usr/bin/yq     \
-		https://github.com/mikefarah/yq/releases/download/2.4.1/yq_linux_amd64; \
+		https://github.com/mikefarah/yq/releases/download/2.4.1/yq_linux_$$(dpkg-architecture -qDEB_HOST_ARCH_CPU); \
 	chmod +x /usr/bin/yq;   \
 	wget -O /etc/apt/trusted.gpg.d/php.gpg             \
 		https://packages.sury.org/php/apt.gpg;         \
@@ -41,25 +42,26 @@ RUN set -eux;               \
 		libsodium23         \
 		libssl1.1           \
 		libyaml-dev         \
+		mime-support        \
 		php${PHP}           \
 		php${PHP}-bcmath    \
 		php${PHP}-cli       \
 		php${PHP}-common    \
+		php${PHP}-curl      \
 		php${PHP}-dom       \
-		php${PHP}-json      \
 		php${PHP}-mbstring  \
 		php${PHP}-opcache   \
 		php${PHP}-pdo-mysql \
+		php${PHP}-redis     \
 		php${PHP}-readline  \
 		php${PHP}-xml       \
-		php${PHP}-yaml;     \
-	apt-get remove -y software-properties-common \
+		php${PHP}-yaml;
+
+RUN	apt-get remove -y --no-install-recommends \
+		software-properties-common \
 		apache2-bin         \
-		apt-transport-https \
 		gnupg               \
-		lsb-release         \
 		perl                \
-		php5.6              \
 		python              \
 		wget;               \
 	apt-get purge -y --auto-remove; \
@@ -109,17 +111,19 @@ RUN set -eux;               \
 		apache2             \
 		libapache2-mod-php${PHP}; \
 	a2dismod mpm_event;     \
-	a2enmod rewrite ssl php${PHP}; \
+	a2enmod rewrite ssl http2 php${PHP}; \
 	apt-get remove -y software-properties-common \
 		python              \
 		wget;               \
 	apt-get autoremove -y;  \
 	apt-get clean;          \
 	rm -rfv /var/www/html;  \
+	mkdir -p /etc/php/8.1/apache2/conf;\
+	mkdir -p /lock;\
 	ln -s /app/public /var/www/html; \
 	ls -al /var/www; \
-	chmod -R ug+rw /var/log/apache2 /var/run/apache2 /var/www; \
-	chgrp -R +$${GID} /var/log/apache2 /var/run/apache2 /var/www; \
+	chmod -R ug+rws /var/log/apache2 /var/run /var/lock /var/www; \
+	chgrp -R +$${GID} /var/log/apache2 /var/run /var/lock /var/www; \
 	ln -sf /proc/self/fd/2 /var/log/apache2/access.log; \
 	ln -sf /proc/self/fd/2 /var/log/apache2/error.log;  \
 	rm -rf /var/lib/apt/lists/*;
@@ -140,6 +144,9 @@ RUN set -eux; \
 
 ENTRYPOINT ["apachectl", "-D", "FOREGROUND"]
 
+
+ARG UID=0
+ARG GID=0
 FROM server-base AS server-test
 FROM server-base AS server-dev
 
@@ -151,6 +158,8 @@ RUN set -eux;       \
 	apt-get clean;  \
 	rm -rf /var/lib/apt/lists/*;
 
+COPY $${CORERELDIR}/infra/apache/http2.conf /etc/apache2/conf-enabled/http2.conf
 COPY $${CORERELDIR}/infra/xdebug/30-xdebug-apache.ini /etc/php/${PHP}/apache2/conf.d/30-xdebug-apache.ini
+#COPY $${CORERELDIR}/infra/php/40-upload-size.ini /etc/php/${PHP}/apache2/conf.d/40-upload-size.ini
 
 FROM server-base AS server-prod

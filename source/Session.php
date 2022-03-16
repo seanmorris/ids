@@ -43,7 +43,7 @@ class Session
 
 			if(!isset(static::$_SESSION[$class]))
 			{
-				static::$_SESSION[$class] = [];
+				static::$_SESSION[$class] = (object)[];
 			}
 
 			return static::$_SESSION[$class];

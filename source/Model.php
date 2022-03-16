@@ -798,7 +798,7 @@ class Model
 				, $cacheKey
 				, $cacheHit
 					? PHP_EOL . "\t\t" . 'CACHE HIT!!!'
-					: ''
+					: PHP_EOL . "\t\t" . 'cache miss...'
 			)
 		);
 
@@ -1667,7 +1667,7 @@ class Model
 
 		$class = get_called_class();
 
-		while($class)
+		while($name && $class)
 		{
 			if(!property_exists($class, $name))
 			{

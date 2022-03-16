@@ -14,6 +14,7 @@ class HttpException extends \Exception
 
 	public function __toString()
 	{
+		return $this->code. ' ' . $this->getMessage();
 		return '<pre>' . htmlspecialchars(parent::__toString()) . '</pre>';
 	}
 

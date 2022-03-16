@@ -831,7 +831,7 @@ class Log
 
 		if($log)
 		{
-			Log::debug(implode(NULL, $lines));
+			Log::debug(implode('', $lines));
 		}
 
 		return $lines;

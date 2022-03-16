@@ -81,7 +81,7 @@ class Settings
 					return $cache[$scoredName];
 				}
 
-				return;
+				return NULL;
 			}
 
 			$settings = $settings->$name;
@@ -122,14 +122,17 @@ class Settings
 
 		if(!static::$currentSite || static::$currentSite != $hostname)
 		{
-			if(isset($_SERVER['HTTP_HOST']))
+			if(!$hostname = getenv('IDS_DOMAIN'))
 			{
-				$hostname = parse_url('//' . $_SERVER['HTTP_HOST'], PHP_URL_HOST);
-			}
+				if(isset($_SERVER['HTTP_HOST']))
+				{
+					$hostname = parse_url('//' . $_SERVER['HTTP_HOST'], PHP_URL_HOST);
+				}
 
-			if(isset($_SERVER['SERVER_PORT']))
-			{
-				$port = $_SERVER['SERVER_PORT'];
+				if(isset($_SERVER['SERVER_PORT']))
+				{
+					$port = $_SERVER['SERVER_PORT'];
+				}
 			}
 
 			if(!$hostname)
@@ -152,7 +155,7 @@ class Settings
 			$settingsFile = static::findSettingsFile($hostname, $port);
 			$defaultsFile = static::findSettingsFile($hostname, $port, TRUE);
 
-			if(!static::$settings && file_exists($settingsFile))
+			if(!static::$settings && ($settingsFile || $defaultsFile))
 			{
 				static::$currentSite = $hostname;
 				static::$currentPort = $port;

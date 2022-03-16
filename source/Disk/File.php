@@ -11,7 +11,9 @@ class File
 		$name
 		, $realName
 		, $originalName
+		, $extension
 		, $exists
+		, $mime
 		, $readHandle
 		, $writeHandle
 		, $closed = false
@@ -56,6 +58,21 @@ class File
 	public function name()
 	{
 		return $this->name;
+	}
+
+	public function extension()
+	{
+		if($this->extension)
+		{
+			return $this->extension;
+		}
+
+		return $this->extension = pathinfo($this->originalName ?? $this->realName, PATHINFO_EXTENSION);
+	}
+
+	public function realName()
+	{
+		return $this->realName;
 	}
 
 	public function parent()
@@ -158,7 +175,7 @@ class File
 				return fwrite($this->writeHandle, $d);
 			}
 		}
-		else
+		else if($data)
 		{
 			return fwrite($this->writeHandle, $data);
 		}
@@ -240,6 +257,16 @@ class File
 		}
 
 		return FALSE;
+	}
+
+	public function mime()
+	{
+		if($this->mime)
+		{
+			return $this->mime;
+		}
+
+		return $this->mime = mime_content_type($this->realName);
 	}
 
 	public function age()

@@ -1,4 +1,4 @@
-FROM debian:buster-20191118-slim
+FROM debian:bullseye-20211220-slim
 MAINTAINER Sean Morris
 
 RUN set -eux;               \

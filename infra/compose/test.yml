@@ -24,7 +24,7 @@ services:
 
 
   database:
-    ports: ['${IDS_EXPOSE_SQL:-0}:3306']
+    ports: ['${IDS_EXPOSE_SQL:-0}:${IDS_DATABASES_MAIN_PORT:-3306}']
     extends:
       file: base.yml
       service: database

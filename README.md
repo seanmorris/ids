@@ -27,10 +27,8 @@
 [![Docker Pulls - Idilic](https://img.shields.io/docker/pulls/seanmorris/ids.idilic?logo=docker&logoColor=white&color=600&label=ids.idilic%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.idilic)
 [![Docker Pulls - Server](https://img.shields.io/docker/pulls/seanmorris/ids.server?logo=docker&logoColor=white&color=960&label=ids.server%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.server)
 
-![php 7.1 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-1?label=php%207.1)
-![php 7.2 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-2?label=php%207.2)
-![php 7.3 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-3?label=php%207.3)
-![php 7.4 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-4?label=php%207.4)
+![php 8.0 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_8-0?label=php%208.0)
+![php 8.1 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_8-1?label=php%208.1)
 
 <!-- /badges -->
 
@@ -45,28 +43,27 @@ The philosophy of the Ids project is headlined by security, speed and easy of us
 View the docs at [docs.ids.seanmorr.is](http://docs.ids.seanmorr.is)
 
 ```
-github.com/AlDanial/cloc v 1.81  T=0.13 s (1229.2 files/s, 199748.0 lines/s)
+github.com/AlDanial/cloc v 1.86  T=0.14 s (1325.1 files/s, 196639.3 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                              86           3270            475          13720
-JSON                             11              0              0           3909
-Markdown                          2            928              0           1879
-YAML                             25            118             14           1194
-make                              2            145              9            610
+PHP                             110           3455            507          14676
+JSON                             10              0              0           3897
+Markdown                          2            946              0           1892
+YAML                             24             84             14            859
+make                              1            141              9            596
 SVG                              25              0              3            239
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             17             17             23
+INI                               4              0              0             15
 HTML                              1              0              0             13
-INI                               3              0              0             11
-XML                               1              0              0              6
-JavaScript                        1              0              0              1
 CSS                               1              0              0              1
+JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            164           4487            518          21646
+SUM:                            185           4652            550          22252
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue 06 Apr 2021 04:52:47 AM EDT*
+*built by sean @ Mon 24 Jan 2022 01:08:01 AM EST*
 
 ## Installation
 
@@ -797,6 +794,8 @@ XDEBUG_CONFIG_REMOTE_ENABLE=1
 
 ## Linking
 
+Some features require foreknowledge of what packages, files, and classes are present. Scanning for this list every time one of those features is used would slow things to a crawl. Build this index with the following commands:
+
 ```bash
 $ make composer-dumpautoload
 $ idilic link
@@ -1414,7 +1413,7 @@ Run these from the project root to build and control the project infrastructure.
 
 ## SeanMorris/Ids
 
-### Copyright 2011-2019 Sean Morris
+### Copyright 2011-2022 Sean Morris
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

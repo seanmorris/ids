@@ -95,12 +95,25 @@ class Package
 		if(isset($rootComposerData->name)
 			&& strtolower($dirFrag) === ($rootComposerData->name ?? NULL)
 		){
-			$composerJson = $rootComposerJson;
+			$composerFile = $rootComposerJson;
 			$root = TRUE;
 		}
 		else
 		{
-			$composerJson = $vendorRoot->dir($dirFrag)->file('composer.json');
+			$composerFile = $vendorRoot->dir($dirFrag)->file('composer.json');
+		}
+
+		$composerData = json_decode($composerFile->slurp());
+
+		if(isset($composerData->autoload, $composerData->autoload->{'psr-4'}))
+		{
+			foreach($composerData->autoload->{'psr-4'} as $namespace => $dir)
+			{
+				if(strtolower($namespace) == strtolower($packageName))
+				{
+					$packageName = $namespace;;
+				}
+			}
 		}
 
 		$packageName  = static::name($packageName);
@@ -863,12 +876,12 @@ class Package
 						continue;
 					}
 
-					if(! isset($changes->{$table}))
+					if(!isset($changes->{$table}))
 					{
 						$changes->{$table} = new \StdClass;
 					}
 
-					if(! isset($changes->{$table}->fields))
+					if(!isset($changes->{$table}->fields))
 					{
 						$changes->{$table}->fields = new \StdClass;
 					}
@@ -901,6 +914,8 @@ class Package
 
 				while($index = $query->fetchObject())
 				{
+					\SeanMorris\Ids\Log::query($index);
+
 					unset($index->Cardinality);
 
 					if(isset($storedSchema->$table->keys->{$index->Key_name}))
@@ -990,6 +1005,7 @@ class Package
 					while($column = $query->fetchObject())
 					{
 						\SeanMorris\Ids\Log::query('Loaded', $column);
+
 						if(! isset($exportTables->$table->fields->{$column->Field}))
 						{
 							if(! isset($exportTables->$table))
@@ -1019,11 +1035,15 @@ class Package
 						unset($column->Key);
 						unset($exportTables->$table->fields->{$column->Field}->Key);
 
+						$generation = $extra = NULL;
+
 						if($column == $exportTables->$table->fields->{$column->Field})
 						{
 							unset($exportTables->$table->fields->{$column->Field});
 							continue;
 						}
+
+						$generation = NULL;
 
 						switch($exportTables->$table->fields->{$column->Field}->Extra)
 						{
@@ -1082,7 +1102,7 @@ class Package
 
 					while($index = $query->fetchObject())
 					{
-						if(! isset($exportTables->$table->keys->{$index->Key_name}))
+						if(!isset($exportTables->$table->keys->{$index->Key_name}))
 						{
 							continue;
 						}
@@ -1101,7 +1121,7 @@ class Package
 							, $arKey[$index->Seq_in_index]->Cardinality
 						);
 
-						if(! isset($arKey[$index->Seq_in_index]))
+						if(!isset($arKey[$index->Seq_in_index]))
 						{
 							continue;
 						}
@@ -1117,15 +1137,12 @@ class Package
 							$exportTables->$table->keys->{$index->Key_name}
 						);
 
+						\SeanMorris\Ids\Log::debug($index, $arKey[$index->Seq_in_index]);
+
 						if($index->Key_name == 'PRIMARY')
 						{
 							$queries[] = sprintf(
-								"ALTER TABLE `%s` DROP PRIMARY KEY;"
-								, $table
-							);
-
-							$queries[] = sprintf(
-								"ALTER TABLE `%s` ADD PRIMARY KEY (`%s`) COMMENT '%s';"
+								"ALTER TABLE `%s` DROP PRIMARY KEY, ADD PRIMARY KEY (`%s`) COMMENT '%s';"
 								, $table
 								, $columns
 								, $arKey[$index->Seq_in_index]->Index_comment
@@ -1134,14 +1151,9 @@ class Package
 						else if($index->Non_unique == 0)
 						{
 							$queries[] = sprintf(
-								"ALTER TABLE `%s` DROP KEY %s;"
+								"ALTER TABLE `%s` DROP KEY %s, ADD UNIQUE KEY `%s` (`%s`) COMMENT '%s';"
 								, $table
 								, $index->Key_name
-							);
-
-							$queries[] = sprintf(
-								"ALTER TABLE `%s` ADD UNIQUE KEY `%s` (`%s`) COMMENT '%s';"
-								, $table
 								, $index->Key_name
 								, $columns
 								, $arKey[$index->Seq_in_index]->Index_comment
@@ -1150,14 +1162,9 @@ class Package
 						else
 						{
 							$queries[] = sprintf(
-								"ALTER TABLE `%s` DROP KEY %s;"
+								"ALTER TABLE `%s` DROP KEY %s, ADD KEY `%s` (`%s`) COMMENT '%s';"
 								, $table
 								, $index->Key_name
-							);
-
-							$queries[] = sprintf(
-								"ALTER TABLE `%s` ADD INDEX `%s` (`%s`) COMMENT '%s';"
-								, $table
 								, $index->Key_name
 								, $columns
 								, $arKey[$index->Seq_in_index]->Index_comment
@@ -1350,6 +1357,8 @@ class Package
 
 		if($real)
 		{
+			\SeanMorris\Ids\Log::query($queries);
+
 			foreach($queries as $query)
 			{
 				\SeanMorris\Ids\Log::query($query);

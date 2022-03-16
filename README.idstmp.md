@@ -27,10 +27,8 @@
 [![Docker Pulls - Idilic](https://img.shields.io/docker/pulls/seanmorris/ids.idilic?logo=docker&logoColor=white&color=600&label=ids.idilic%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.idilic)
 [![Docker Pulls - Server](https://img.shields.io/docker/pulls/seanmorris/ids.server?logo=docker&logoColor=white&color=960&label=ids.server%20pulls&style=for-the-badge)](https://hub.docker.com/repository/docker/seanmorris/ids.server)
 
-![php 7.1 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-1?label=php%207.1)
-![php 7.2 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-2?label=php%207.2)
-![php 7.3 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-3?label=php%207.3)
-![php 7.4 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_7-4?label=php%207.4)
+![php 8.0 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_8-0?label=php%208.0)
+![php 8.1 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_8-1?label=php%208.1)
 
 <!-- /badges -->
 
@@ -1397,7 +1395,7 @@ Run these from the project root to build and control the project infrastructure.
 
 ## SeanMorris/Ids
 
-### Copyright 2011-2019 Sean Morris
+### Copyright 2011-2022 Sean Morris
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
