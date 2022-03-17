@@ -816,8 +816,6 @@ XDEBUG_CONFIG_REMOTE_ENABLE=1
 
 Some features require foreknowledge of what packages, files, and classes are present. Scanning for this list every time one of those features is used would slow things to a crawl. Build this index with the following commands:
 
-Some features require foreknowledge of what packages, files, and classes are present. Scanning for this list every time one of those features is used would slow things to a crawl. Build this index with the following commands:
-
 ```bash
 $ make composer-dumpautoload
 $ idilic link
@@ -1479,13 +1477,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ```
-github.com/AlDanial/cloc v 1.86  T=0.13 s (1427.4 files/s, 226644.8 lines/s)
+github.com/AlDanial/cloc v 1.86  T=0.14 s (1377.5 files/s, 218758.9 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 PHP                             110           3455            507          14676
 JSON                             11              0              0           6514
-Markdown                          3            973              0           2014
+Markdown                          3            974              0           2017
 YAML                             27             99             14            933
 make                              2            145              9            611
 SVG                              25              0              3            239
@@ -1496,7 +1494,7 @@ HTML                              1              0              0             13
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            191           4698            550          25080
+SUM:                            191           4699            550          25083
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Wed 26 Jan 2022 12:33:51 AM EST*
+*built by sean @ Thu 17 Mar 2022 01:05:01 PM EDT*
