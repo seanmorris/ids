@@ -84,7 +84,7 @@ Create a new project with composer, enter the directory and start php, apache & 
 ```bash
 $$ composer create-project seanmorris/ids-project -s dev --remove-vcs
 $$ cd ids-project
-$$ make @dev start-bg
+$$ make @dev build start-bg
 ```
 
 Thats it!
