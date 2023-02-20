@@ -83,6 +83,7 @@ CMD ["-d=;", "info"]
 
 FROM base as idilic-base
 FROM idilic-base AS idilic-test
+FROM idilic-base AS idilic-dev
 
 ARG PHP
 ARG CORERELDIR
@@ -97,7 +98,6 @@ RUN echo ${CORERELDIR} && ls -al
 
 COPY ${CORERELDIR}/infra/xdebug/30-xdebug-cli.ini /etc/php/${PHP}/cli/conf.d/30-xdebug-cli.ini
 
-FROM idilic-test AS idilic-dev
 FROM idilic-base AS idilic-prod
 
 ARG ROOTRELDIR
