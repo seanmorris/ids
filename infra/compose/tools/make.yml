@@ -8,6 +8,8 @@ services:
     build:
       context: ../../
       dockerfile: ${COREDIR}infra/docker/tools/make.___gen.dockerfile
+    environment:
+      PHP: ${PHP}
     volumes:
       - ${OUTROOTDIR}:/app
       - /var/run/docker.sock:/var/run/docker.sock:ro
