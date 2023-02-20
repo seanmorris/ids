@@ -86,6 +86,26 @@ workflows:
             - addon-test_8-1
             - build-and-push_8-1
 
+  build-and-push_8-2:
+    jobs:
+      - self-test_8-2
+      - subproject-init-and-test_8-2
+      - addon-test_8-2
+      - recursive-test-1_8-2
+      - recursive-test-2_8-2
+      - recursive-test-3_8-2
+      - build-and-push_8-2:
+          requires:
+            - self-test_8-2
+            - subproject-init-and-test_8-2
+            - recursive-test-1_8-2
+            - recursive-test-2_8-2
+            - recursive-test-3_8-2
+      - build-and-push-addons_8-1:
+          requires:
+            - addon-test_8-2
+            - build-and-push_8-2
+
 jobs:
   subproject-init-and-test:
     parallelism: 1
@@ -115,7 +135,6 @@ jobs:
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: cd ids-project && PHP=8.0 make @test current-tag build start-bg test
 
-
   subproject-init-and-test_8-1:
     parallelism: 1
     machine:
@@ -129,6 +148,20 @@ jobs:
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: cd ids-project && PHP=8.1 make @test current-tag build start-bg test
+
+  subproject-init-and-test_8-2:
+    parallelism: 1
+    machine:
+      image: ubuntu-2004:202010-01
+      docker_layer_caching: false
+    resource_class: large
+    steps:
+      - checkout
+      - install-composer
+      - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d323f6c6162656c3d70688.153230372e32
+      - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
+      - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
+      - run: cd ids-project && PHP=8.2 make @test current-tag build start-bg test
 
   self-test:
     parallelism: 1
@@ -200,6 +233,29 @@ jobs:
       - run: PHP=8.1 make stay@base ct b
       - run: PHP=8.1 make ct b
 
+  self-test_8-2:
+    parallelism: 1
+    machine:
+      image: ubuntu-2004:202010-01
+      docker_layer_caching: false
+    resource_class: large
+    steps:
+      - checkout
+      - install-composer
+      - run: composer install
+      - run: PHP=8.2 make @base ct b
+      - run: PHP=8.2 make @dev ct b
+      - run: PHP=8.2 make @prod ct b
+      - run: PHP=8.2 make @test ct b
+      - run: PHP=8.2 make @base ct b
+      - run: PHP=8.2 make @test ct b t lt li
+      - run: PHP=8.2 make stay@dev ct b lt li
+      - run: PHP=8.2 make @prod ct b
+      - run: PHP=8.2 make ct b
+      - run: PHP=8.2 make @test ct b t
+      - run: PHP=8.2 make stay@base ct b
+      - run: PHP=8.2 make ct b
+
   recursive-test-1:
     parallelism: 1
     machine:
@@ -238,6 +294,19 @@ jobs:
       - docker-permissions
       - run: composer install
       - run: sudo PHP=8.1 make @test+make ct b run CMD="make @test test"
+
+  recursive-test-1_8-2:
+    parallelism: 1
+    machine:
+      image: ubuntu-2004:202010-01
+      docker_layer_caching: false
+    resource_class: large
+    steps:
+      - checkout
+      - install-composer
+      - docker-permissions
+      - run: composer install
+      - run: sudo PHP=8.2 make @test+make ct b run CMD="make @test test"
 
   recursive-test-2:
     parallelism: 1
@@ -278,6 +347,19 @@ jobs:
       - run: composer install
       - run: sudo PHP=8.1 make @test+make run CMD="make @test+make run CMD=\"make test\""
 
+  recursive-test-2_8-2:
+    parallelism: 1
+    machine:
+      image: ubuntu-2004:202010-01
+      docker_layer_caching: false
+    resource_class: large
+    steps:
+      - checkout
+      - install-composer
+      - docker-permissions
+      - run: composer install
+      - run: sudo PHP=8.2 make @test+make run CMD="make @test+make run CMD=\"make test\""
+
   recursive-test-3:
     parallelism: 1
     machine:
@@ -316,6 +398,19 @@ jobs:
       - docker-permissions
       - run: composer install
       - run: sudo PHP=8.1 make @test+make run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
+
+  recursive-test-3_8-2:
+    parallelism: 1
+    machine:
+      image: ubuntu-2004:202010-01
+      docker_layer_caching: false
+    resource_class: large
+    steps:
+      - checkout
+      - install-composer
+      - docker-permissions
+      - run: composer install
+      - run: sudo PHP=8.2 make @test+make run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
 
   addon-test:
     parallelism: 1
@@ -361,6 +456,21 @@ jobs:
       - run: PHP=8.1 make @dev+aptcache+graylog+inotify ct b
       - run: PHP=8.1 make @test+aptcache ct b
       - run: PHP=8.1 make @test+aptcache+graylog+inotify ct t
+
+  addon-test_8-2:
+    parallelism: 1
+    machine:
+      image: ubuntu-2004:202010-01
+      docker_layer_caching: false
+    resource_class: large
+    steps:
+      - checkout
+      - install-composer
+      - run: PHP=8.2 composer install
+      - run: PHP=8.2 make @base+aptcache ct b
+      - run: PHP=8.2 make @dev+aptcache+graylog+inotify ct b
+      - run: PHP=8.2 make @test+aptcache ct b
+      - run: PHP=8.2 make @test+aptcache+graylog+inotify ct t
 
   build-and-push:
     parallelism: 1
@@ -410,6 +520,22 @@ jobs:
       - run: PHP=8.1 make @prod ct b psi
       - run: PHP=8.1 make @test ct b psi
 
+  build-and-push_8-2:
+    parallelism: 1
+    machine:
+      image: ubuntu-2004:202010-01
+      docker_layer_caching: false
+    resource_class: large
+    steps:
+      - checkout
+      - install-composer
+      - run: composer install
+      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+      - run: PHP=8.2 make @base ct b psi
+      - run: PHP=8.2 make @dev  ct b psi
+      - run: PHP=8.2 make @prod ct b psi
+      - run: PHP=8.2 make @test ct b psi
+
   build-and-push-addons:
     parallelism: 1
     machine:
@@ -458,4 +584,21 @@ jobs:
       - run: PHP=8.1 make @dev+aptcache+graylog+inotify ct b psi
       - run: PHP=8.1 make @test+aptcache ct b psi
       - run: PHP=8.1 make @prod+aptcache ct b psi
+      - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d323f6c6162656c3d70688.153230372e32
+
+  build-and-push-addons_8-2:
+    parallelism: 1
+    machine:
+      image: ubuntu-2004:202010-01
+      docker_layer_caching: false
+    resource_class: large
+    steps:
+      - checkout
+      - install-composer
+      - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+      - run: PHP=8.2 composer install
+      - run: PHP=8.2 make @base+aptcache ct b psi
+      - run: PHP=8.2 make @dev+aptcache+graylog+inotify ct b psi
+      - run: PHP=8.2 make @test+aptcache ct b psi
+      - run: PHP=8.2 make @prod+aptcache ct b psi
       - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d323f6c6162656c3d70688.153230372e32
