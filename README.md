@@ -1490,22 +1490,22 @@ limitations under the License.
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 SVG                              30              0           8957          65159
-PHP                             111           3476            510          14770
-JSON                             12              0              0          13320
-Markdown                          3            983              0           2022
+PHP                             111           3478            510          14776
+JSON                             12              0              0          13051
+Markdown                          3            983             16           2006
 YAML                             27             99             11            943
 make                              2            145              9            611
 Dockerfile                       12             94              6            437
 Properties                        2              0              0             46
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             17             17             23
-XML                               2              0              0             23
+XML                               2              0              0             22
 INI                               4              0              0             17
 HTML                              1              0              0             13
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            214           4823           9510          97426
+SUM:                            214           4825           9526          97146
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Tue Aug  2 08:44:38 PM EDT 2022*
+*built by sean @ Sun Feb 19 10:54:15 PM EST 2023*
