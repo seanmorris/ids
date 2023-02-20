@@ -7,7 +7,7 @@ commands:
           sudo apt install -y software-properties-common
           sudo add-apt-repository -y ppa:ondrej/php
           sudo apt-get update
-          sudo apt-get install -y php8.0-cli php8.0-common php8.0-mbstring php8.0-intl php8.0-zip php8.0-bcmath php8.0-dom cloc
+          sudo apt-get install -y php8.2-cli php8.2-common php8.2-mbstring php8.2-intl php8.2-zip php8.2-bcmath php8.2-dom cloc
           curl -s https://getcomposer.org/installer | php
           sudo mv composer.phar /usr/local/bin/composer
 
@@ -134,7 +134,6 @@ jobs:
       - run: curl -X PURGE https://camo.githubusercontent.com/df5e6413e42c1af3738c1c32d36f59a2957c8.17/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d313f6c6162656c3d70688.153230372e31
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
-      - run: rm infra/docker/ids.___gen.dockerfile && make @test infra/docker/ids.___gen.dockerfile PHP=8.0
       - run: cd ids-project && PHP=8.0 make @test current-tag build start-bg test
 
   subproject-init-and-test_8-1:
@@ -149,7 +148,6 @@ jobs:
       - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d323f6c6162656c3d70688.153230372e32
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
-      - run: rm infra/docker/ids.___gen.dockerfile && make @test infra/docker/ids.___gen.dockerfile PHP=8.1
       - run: cd ids-project && PHP=8.1 make @test current-tag build start-bg test
 
   subproject-init-and-test_8-2:
@@ -164,7 +162,6 @@ jobs:
       - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d323f6c6162656c3d70688.153230372e32
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
-      - run: rm infra/docker/ids.___gen.dockerfile && make @test infra/docker/ids.___gen.dockerfile PHP=8.2
       - run: cd ids-project && PHP=8.2 make @test current-tag build start-bg test
 
   self-test:
@@ -287,7 +284,6 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.0
       - run: sudo PHP=8.0 make @test+make ct b sb run CMD="make @test test"
 
   recursive-test-1_8-1:
@@ -301,7 +297,6 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.1
       - run: sudo PHP=8.1 make @test+make ct b sb run CMD="make @test test"
 
   recursive-test-1_8-2:
@@ -315,7 +310,6 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.2
       - run: sudo PHP=8.2 make @test+make ct b sb run CMD="make @test test"
 
   recursive-test-2:
@@ -342,7 +336,6 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.0
       - run: sudo PHP=8.0 make @test+make b sb run CMD="make @test+make run CMD=\"make test\""
 
   recursive-test-2_8-1:
@@ -356,7 +349,6 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.1
       - run: sudo PHP=8.1 make @test+make b sb run CMD="make @test+make run CMD=\"make test\""
 
   recursive-test-2_8-2:
@@ -370,7 +362,6 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.2
       - run: sudo PHP=8.2 make @test+make b sb run CMD="make @test+make run CMD=\"make test\""
 
   recursive-test-3:
@@ -397,7 +388,6 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.0
       - run: sudo PHP=8.0 make @test+make b sb run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
 
   recursive-test-3_8-1:
@@ -411,7 +401,6 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.1
       - run: sudo PHP=8.1 make @test+make b sb run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
 
   recursive-test-3_8-2:
@@ -425,7 +414,6 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.2
       - run: sudo PHP=8.2 make @test+make b sb run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
 
   addon-test:
@@ -453,7 +441,6 @@ jobs:
       - checkout
       - install-composer
       - run: PHP=8.0 composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.0
       - run: PHP=8.0 make @base+aptcache ct b
       - run: PHP=8.0 make @dev+aptcache+graylog+inotify ct b
       - run: PHP=8.0 make @test+aptcache ct b
@@ -469,7 +456,6 @@ jobs:
       - checkout
       - install-composer
       - run: PHP=8.1 composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.1
       - run: PHP=8.1 make @base+aptcache ct b
       - run: PHP=8.1 make @dev+aptcache+graylog+inotify ct b
       - run: PHP=8.1 make @test+aptcache ct b
@@ -485,7 +471,6 @@ jobs:
       - checkout
       - install-composer
       - run: PHP=8.2 composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.2
       - run: PHP=8.2 make @base+aptcache ct b
       - run: PHP=8.2 make @dev+aptcache+graylog+inotify ct b
       - run: PHP=8.2 make @test+aptcache ct b
@@ -517,7 +502,6 @@ jobs:
       - checkout
       - install-composer
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.0
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=8.0 make @base ct b psi
       - run: PHP=8.0 make @dev  ct b psi
@@ -534,7 +518,6 @@ jobs:
       - checkout
       - install-composer
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.1
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=8.1 make @base ct b psi
       - run: PHP=8.1 make @dev  ct b psi
@@ -551,7 +534,6 @@ jobs:
       - checkout
       - install-composer
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.2
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=8.2 make @base ct b psi
       - run: PHP=8.2 make @dev  ct b psi
@@ -584,7 +566,6 @@ jobs:
       - checkout
       - install-composer
       - run: PHP=8.0 composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.0
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=8.0 make @base+aptcache ct b psi
       - run: PHP=8.0 make @dev+aptcache+graylog+inotify ct b psi
@@ -602,7 +583,6 @@ jobs:
       - checkout
       - install-composer
       - run: PHP=8.1 composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.1
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=8.1 make @base+aptcache ct b psi
       - run: PHP=8.1 make @dev+aptcache+graylog+inotify ct b psi
@@ -620,7 +600,6 @@ jobs:
       - checkout
       - install-composer
       - run: PHP=8.2 composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.2
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: PHP=8.2 make @base+aptcache ct b psi
       - run: PHP=8.2 make @dev+aptcache+graylog+inotify ct b psi
