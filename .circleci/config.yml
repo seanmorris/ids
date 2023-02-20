@@ -14,9 +14,9 @@ commands:
   docker-permissions:
     steps:
       - run: | #!bash
-          sudo chgrp docker /usr/bin/docker  /var/run/docker.sock
-          sudo chmod    555 /usr/bin/docker  /var/run/docker.sock
-          sudo usermod -aG docker $USER
+          sudo chgrp docker /usr/bin/docker  /var/run/docker.sock;
+          sudo chmod    555 /usr/bin/docker  /var/run/docker.sock;
+          sudo usermod -aG docker $USER;
           sudo find . -type d -exec chmod o-rwx  {} \;
           sudo find . -type f -exec chmod o-rwx  {} \;
           sudo find . -type d -exec chmod ug+rwx {} \;
@@ -133,7 +133,7 @@ jobs:
       - run: curl -X PURGE https://camo.githubusercontent.com/df5e6413e42c1af3738c1c32d36f59a2957c8.17/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d313f6c6162656c3d70688.153230372e31
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.0
+      - run: cd ids-project && rm infra/docker/ids.___gen.dockerfile && make @test infra/docker/ids.___gen.dockerfile PHP=8.0
       - run: cd ids-project && PHP=8.0 make @test current-tag build start-bg test
 
   subproject-init-and-test_8-1:
