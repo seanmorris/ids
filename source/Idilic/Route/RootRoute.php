@@ -194,6 +194,8 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 
 	public function runTests($router)
 	{
+		$failures = 0;
+
 		if(!$packageList = $router->path()->consumeNodes())
 		{
 			$packageList = \SeanMorris\Ids\Package::listPackages();
@@ -209,7 +211,6 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 
 			$coverageOpts = XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE;
 		}
-
 
 		$relReports = [];
 		$reports    = [];
@@ -308,7 +309,10 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 					xdebug_start_code_coverage($coverageOpts);
 				}
 
-				$test->run(new \TextReporter());
+				if(!$test->run(new \TextReporter()))
+				{
+					$failures++;
+				}
 
 				if(function_exists('xdebug_stop_code_coverage'))
 				{
@@ -357,6 +361,16 @@ class RootRoute implements \SeanMorris\Ids\Idilic\IdilicEntry
 				, json_encode($report, JSON_PRETTY_PRINT)
 			);
 		}
+
+		if($failures > 0)
+		{
+			throw new \Exception(sprintf(
+				$failures === 1
+					? '%d test failed!'
+					: '%d tests failed!'
+				, $failures
+			));
+		};
 	}
 
 	public function applySchemas($router)
@@ -1138,10 +1152,11 @@ EOT
 		$args   = $router->path()->consumeNodes();
 		$config = \SeanMorris\Ids\Settings::read(...$args);
 
-		if(method_exists($config, 'dumpStruct'))
+		if(is_object($config) && method_exists($config, 'dumpStruct'))
 		{
 			$config = $config->dumpStruct();
 		}
+
 
 		\SeanMorris\Ids\Log::debug(
 			'Args: ', $args, 'Config: ', $config
@@ -1284,5 +1299,25 @@ EOT
 	public function phpinfo()
 	{
 		phpinfo();
+	}
+
+	public function gelfCheck()
+	{
+		\SeanMorris\Ids\Log::warn('Gelf test!');
+
+		if($loggers = \SeanMorris\Ids\Settings::read('loggers'))
+		{
+			foreach($loggers as $logger => $properties)
+			{
+				if(is_numeric($logger))
+				{
+					$logger = $properties;
+
+					$properties = (object)[];
+				}
+
+				$logger::log((object)['short_message' => 'testing!']);
+			}
+		}
 	}
 }

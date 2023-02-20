@@ -171,16 +171,20 @@ class Log
 			{
 				if($also = Settings::read('logAlso') || [])
 				{
-					$also = $also->content;
+					if(is_object($also))
+					{
+						$also = $also->content;
+
+						if($also->{0})
+						{
+							$also = array_combine(
+								(array) $also
+								, array_fill(0, count((array) $also), TRUE)
+							);
+						}
+					}
 				}
 
-				if(is_object($also) && $also->{0})
-				{
-					$also = array_combine(
-						(array) $also
-						, array_fill(0, count((array) $also), TRUE)
-					);
-				}
 
 				static::$also = (object) ( $also ?: [] );
 			}

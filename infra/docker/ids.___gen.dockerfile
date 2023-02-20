@@ -161,5 +161,5 @@ RUN set -eux;       \
 COPY ${CORERELDIR}/infra/apache/http2.conf /etc/apache2/conf-enabled/http2.conf
 COPY ${CORERELDIR}/infra/xdebug/30-xdebug-apache.ini /etc/php/8.1/apache2/conf.d/30-xdebug-apache.ini
 #COPY ${CORERELDIR}/infra/php/40-upload-size.ini /etc/php/8.1/apache2/conf.d/40-upload-size.ini
-# RUN usermod -a -G 1000 www-data
+
 FROM server-base AS server-prod

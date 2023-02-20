@@ -4,9 +4,11 @@ class ApiRoute implements \SeanMorris\Ids\Routable
 {
 	function index($router)
 	{
-		header('Content-Type: text/plain');
+		// header('Content-Type: text/plain');
 
-		return fopen('/app/README.md', 'r');
+		// return fopen('/app/README.md', 'r');
+
+		phpinfo();
 	}
 
 	public function reflectData($router)
@@ -27,7 +29,7 @@ class ApiRoute implements \SeanMorris\Ids\Routable
 
 		static $i = 0;
 
-		while($i++ < 3)
+		while($i++ < 5)
 		{
 			yield new \SeanMorris\Ids\Http\Event(
 				'Latest random number: ' . mt_rand()

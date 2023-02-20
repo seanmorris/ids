@@ -145,7 +145,7 @@ else
 
 $errorPath = 'php://stderr';
 
-if($_errorPath = \SeanMorris\Ids\Settings::read('log'))
+if($_errorPath = (string) \SeanMorris\Ids\Settings::read('log'))
 {
 	if(is_writable($_errorPath))
 	{
@@ -329,7 +329,7 @@ if($dbs = \SeanMorris\Ids\Settings::read('databases'))
 if(php_sapi_name() !== 'cli')
 {
 	session_set_cookie_params(
-		\SeanMorris\Ids\Settings::read('session', 'lifetime')
+		\SeanMorris\Ids\Settings::read('session', 'lifetime') ?? 1440
 		, \SeanMorris\Ids\Settings::read('session', 'path')
 		, \SeanMorris\Ids\Settings::read('session', 'domain')
 		, ($_SERVER['HTTPS'] ?? FALSE) === 'on'

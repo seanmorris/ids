@@ -1,3 +1,4 @@
-#loggers:
-#  - SeanMorris\Ids\Logger\Gelf
-#logAlso: [ query, debug ]
+loggers:
+ - SeanMorris\Ids\Logger\Gelf
+logAlso: [ query, debug ]
+logLevel: query

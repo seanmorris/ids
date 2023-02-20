@@ -50,13 +50,17 @@ if($response instanceof \SeanMorris\Ids\Api\Response)
 
 if($response instanceof Traversable || is_array($response))
 {
-	ob_flush();
-	ob_end_flush();
-
+	if(ob_get_level())
+	{
+		ob_flush();
+		ob_end_flush();
+	}
+	
 	foreach($response as $chunk)
 	{
 		Log::debug('Sending', $chunk);
 		echo $chunk;
+		
 		flush();
 	}
 }

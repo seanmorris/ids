@@ -148,6 +148,15 @@ $$ make graylog-restart    # alias glr
 $$ make graylog-restart-fg # alias glrf
 $$ make graylog-restart-bg # alias glrb
 ```
+
+Some users
+
+
+```bash
+$ sysctl -w vm.max_map_count=262144
+```
+
+
 </details>
 
 ## Idilic CLI

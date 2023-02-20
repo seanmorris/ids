@@ -6,21 +6,25 @@ services:
     extends:
       file: base.yml
       service: idilic
-    volumes: ['${OUTROOTDIR}/:/app']
+    volumes: ['${OUTROOTDIR}/:/app', '${OUTROOTDIR}/data/tmp:/tmp']
     depends_on: [database]
     environment:
-      XDEBUG_CONFIG: ${XDEBUG_CONFIG}
+      XDEBUG_CONFIG_PROFILER_ENABLE: ${XDEBUG_CONFIG_PROFILER_ENABLE}
+      XDEBUG_CONFIG_REMOTE_ENABLE: ${XDEBUG_CONFIG_REMOTE_ENABLE}
+      XDEBUG_CONFIG_CLIENT_HOST: ${XDEBUG_CONFIG_CLIENT_HOST}
       DHOST_IP: ${DHOST_IP}
 
   server:
-    volumes: ['${OUTROOTDIR}:/app']
+    volumes: ['${OUTROOTDIR}/:/app', '${OUTROOTDIR}/data/tmp:/tmp']
     ports:   ['${IDS_EXPOSE_HTTP:-0}:8080']
     extends:
       file: base.yml
       service: server
     depends_on: [database]
     environment:
-      XDEBUG_CONFIG: ${XDEBUG_CONFIG}
+      XDEBUG_CONFIG_PROFILER_ENABLE: ${XDEBUG_CONFIG_PROFILER_ENABLE}
+      XDEBUG_CONFIG_REMOTE_ENABLE: ${XDEBUG_CONFIG_REMOTE_ENABLE}
+      XDEBUG_CONFIG_CLIENT_HOST: ${XDEBUG_CONFIG_CLIENT_HOST}
       DHOST_IP: ${DHOST_IP}
 
   database:

@@ -11,11 +11,9 @@ use \SeanMorris\Ids\Collection\RankIterator;
 use \SeanMorris\Ids\___\BaseDriver;
 
 (new class {
-
 	use Injectable;
 	protected $store, $iterator;
 	protected static $FlatIterator, $filter, $map, $Store;
-
 })::inject([
 	'FlatIterator' => RankIterator::CLASS
 	, 'Store'      => SplObjectStorage::CLASS

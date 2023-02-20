@@ -84,7 +84,7 @@ Create a new project with composer, enter the directory and start php, apache & 
 ```bash
 $ composer create-project seanmorris/ids-project -s dev --remove-vcs
 $ cd ids-project
-$ make @dev start-bg
+$ make @dev build start-bg
 ```
 
 Thats it!
@@ -148,6 +148,15 @@ $ make graylog-restart    # alias glr
 $ make graylog-restart-fg # alias glrf
 $ make graylog-restart-bg # alias glrb
 ```
+
+Some users
+
+
+```bash
+sysctl -w vm.max_map_count=262144
+```
+
+
 </details>
 
 ## Idilic CLI
@@ -1477,24 +1486,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ```
-github.com/AlDanial/cloc v 1.86  T=0.14 s (1377.5 files/s, 218758.9 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-PHP                             110           3455            507          14676
-JSON                             11              0              0           6514
-Markdown                          3            974              0           2017
-YAML                             27             99             14            933
+SVG                              30              0           8957          65159
+PHP                             111           3476            510          14770
+JSON                             12              0              0          13320
+Markdown                          3            983              0           2022
+YAML                             27             99             11            943
 make                              2            145              9            611
-SVG                              25              0              3            239
+Dockerfile                       12             94              6            437
+Properties                        2              0              0             46
 Bourne Shell                      4              9              0             40
 Bourne Again Shell                2             17             17             23
-INI                               4              0              0             15
+XML                               2              0              0             23
+INI                               4              0              0             17
 HTML                              1              0              0             13
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            191           4699            550          25083
+SUM:                            214           4823           9510          97426
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Thu 17 Mar 2022 01:05:01 PM EDT*
+*built by sean @ Tue Aug  2 08:44:38 PM EDT 2022*

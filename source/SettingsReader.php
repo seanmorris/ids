@@ -73,7 +73,7 @@ class SettingsReader implements \Iterator, \ArrayAccess
 
 	public function __isset($name)
 	{
-		return isset($this->keys[$name]);
+		return isset($this->keys[strtoupper($name)]);
 	}
 
 	#[\ReturnTypeWillChange]
