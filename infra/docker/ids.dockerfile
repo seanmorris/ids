@@ -1,15 +1,18 @@
+ARG PHP
 ARG UID=1000
 ARG GID=1000
 ARG CORERELDIR
 ARG ROOTRELDIR
+ARG BASELINUX
 ARG IDS_APT_PROXY_HOST
 ARG IDS_APT_PROXY_PORT
 
-FROM debian:bullseye-20211220-slim as base
+FROM ${BASELINUX} as base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
 SHELL ["/bin/bash", "-c"]
 
+ARG PHP
 ARG CORERELDIR
 ARG IDS_APT_PROXY_HOST
 ARG IDS_APT_PROXY_PORT
@@ -43,19 +46,19 @@ RUN set -eux;               \
 		libssl1.1           \
 		libyaml-dev         \
 		mime-support        \
-		php8.1           \
-		php8.1-bcmath    \
-		php8.1-cli       \
-		php8.1-common    \
-		php8.1-curl      \
-		php8.1-dom       \
-		php8.1-mbstring  \
-		php8.1-opcache   \
-		php8.1-pdo-mysql \
-		php8.1-redis     \
-		php8.1-readline  \
-		php8.1-xml       \
-		php8.1-yaml;
+		php${PHP}           \
+		php${PHP}-bcmath    \
+		php${PHP}-cli       \
+		php${PHP}-common    \
+		php${PHP}-curl      \
+		php${PHP}-dom       \
+		php${PHP}-mbstring  \
+		php${PHP}-opcache   \
+		php${PHP}-pdo-mysql \
+		php${PHP}-redis     \
+		php${PHP}-readline  \
+		php${PHP}-xml       \
+		php${PHP}-yaml;
 
 RUN	apt-get remove -y --no-install-recommends \
 		software-properties-common \
@@ -81,17 +84,18 @@ CMD ["-d=;", "info"]
 FROM base as idilic-base
 FROM idilic-base AS idilic-test
 
+ARG PHP
 ARG CORERELDIR
 
 RUN set -eux;       \
 	apt-get update; \
-	apt-get install -y --no-install-recommends php8.1-xdebug; \
+	apt-get install -y --no-install-recommends php${PHP}-xdebug; \
 	apt-get clean;  \
 	rm -rf /var/lib/apt/lists/*
 
 RUN echo ${CORERELDIR} && ls -al
 
-COPY ${CORERELDIR}/infra/xdebug/30-xdebug-cli.ini /etc/php/8.1/cli/conf.d/30-xdebug-cli.ini
+COPY ${CORERELDIR}/infra/xdebug/30-xdebug-cli.ini /etc/php/${PHP}/cli/conf.d/30-xdebug-cli.ini
 
 FROM idilic-test AS idilic-dev
 FROM idilic-base AS idilic-prod
@@ -102,6 +106,7 @@ COPY ${ROOTRELDIR}/ /app
 
 FROM base AS server-base
 
+ARG PHP
 ARG GID
 ARG CORERELDIR
 
@@ -109,16 +114,16 @@ RUN set -eux;               \
 	apt-get update;         \
 	apt-get install -y --no-install-recommends \
 		apache2             \
-		libapache2-mod-php8.1; \
+		libapache2-mod-php${PHP}; \
 	a2dismod mpm_event;     \
-	a2enmod rewrite ssl http2 php8.1; \
+	a2enmod rewrite ssl http2 php${PHP}; \
 	apt-get remove -y software-properties-common \
 		python              \
 		wget;               \
 	apt-get autoremove -y;  \
 	apt-get clean;          \
 	rm -rfv /var/www/html;  \
-	mkdir -p /etc/php/8.1/apache2/conf;\
+	mkdir -p /etc/php/${PHP}/apache2/conf;\
 	mkdir -p /lock;\
 	ln -s /app/public /var/www/html; \
 	ls -al /var/www; \
@@ -144,22 +149,22 @@ RUN set -eux; \
 
 ENTRYPOINT ["apachectl", "-D", "FOREGROUND"]
 
-
 ARG UID=0
 ARG GID=0
 FROM server-base AS server-test
 FROM server-base AS server-dev
 
+ARG PHP
 ARG CORERELDIR
 
 RUN set -eux;       \
 	apt-get update; \
-	apt-get install -y --no-install-recommends php8.1-xdebug; \
+	apt-get install -y --no-install-recommends php${PHP}-xdebug; \
 	apt-get clean;  \
 	rm -rf /var/lib/apt/lists/*;
 
 COPY ${CORERELDIR}/infra/apache/http2.conf /etc/apache2/conf-enabled/http2.conf
-COPY ${CORERELDIR}/infra/xdebug/30-xdebug-apache.ini /etc/php/8.1/apache2/conf.d/30-xdebug-apache.ini
-#COPY ${CORERELDIR}/infra/php/40-upload-size.ini /etc/php/8.1/apache2/conf.d/40-upload-size.ini
+COPY ${CORERELDIR}/infra/xdebug/30-xdebug-apache.ini /etc/php/${PHP}/apache2/conf.d/30-xdebug-apache.ini
+#COPY ${CORERELDIR}/infra/php/40-upload-size.ini /etc/php/${PHP}/apache2/conf.d/40-upload-size.ini
 
 FROM server-base AS server-prod

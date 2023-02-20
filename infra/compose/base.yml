@@ -16,7 +16,7 @@ services:
       - /usr/bin/docker:${DOCKER}
     build:
       context: ../../
-      dockerfile: ${CORERELDIR}infra/docker/ids.___gen.dockerfile
+      dockerfile: ${CORERELDIR}infra/docker/ids.dockerfile
       target:  idilic-${TARGET}
       network: bridge
       args:
@@ -24,6 +24,8 @@ services:
         IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT:-}
         CORERELDIR: ${CORERELDIR}
         ROOTRELDIR: ${ROOTRELDIR}
+        BASELINUX:  ${DEBIAN}
+        PHP: ${PHP}
         UID: ${D_UID}
         GID: ${D_GID}
 
@@ -37,12 +39,14 @@ services:
       - ${TRGT_ENV}
     build:
       context: ../../
-      dockerfile: ${CORERELDIR}infra/docker/ids.___gen.dockerfile
+      dockerfile: ${CORERELDIR}infra/docker/ids.dockerfile
       target:  server-${TARGET}
       network: bridge
       args:
         IDS_APT_PROXY_HOST: ${IDS_APT_PROXY_HOST:-}
         IDS_APT_PROXY_PORT: ${IDS_APT_PROXY_PORT:-}
+        BASELINUX:  ${DEBIAN}
+        PHP: ${PHP}
         CORERELDIR: ${CORERELDIR}
         ROOTRELDIR: ${ROOTRELDIR}
 

@@ -9,7 +9,7 @@
 
 .SECONDEXPANSION:
 
-SHELL     =/bin/bash
+SHELL     =/bin/bash -eo pipefail
 MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 
 BASELINUX ?= debian:bullseye-20211220-slim
@@ -399,6 +399,7 @@ endif
 
 IMAGE?=
 build b: ${VAR_FILE} ${ENV_LOCK} ${PREBUILD} ${GENERABLE} ## Build the project.
+	@ echo ${FULLNAME}
 	@ echo ${DCOMPOSE_TARGET_STACK}
 	@- ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build worker;
 	@ ${DCOMPOSE} ${DCOMPOSE_TARGET_STACK} build ${IMAGE}
