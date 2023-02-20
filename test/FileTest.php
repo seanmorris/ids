@@ -2,6 +2,8 @@
 namespace SeanMorris\Ids\Test;
 class FileTest extends \UnitTestCase
 {
+	protected $package, $globalDir, $localDir, $testData, $testFilename, $testFilepath;
+
 	public function setUp()
 	{
 		$this->package = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
