@@ -9,7 +9,7 @@
 
 .SECONDEXPANSION:
 
-SHELL     =/bin/bash -eo pipefail
+SHELL     =/bin/bash
 MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 
 BASELINUX ?= debian:bullseye-20211220-slim
