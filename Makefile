@@ -741,7 +741,8 @@ aptcache-build: ${PREBUILD} ${GENERABLE}### Stop apt-cache.
 ###
 
 purge-readme:
-	@- curl -s https://github.com/seanmorris/ids/blob/master/README.md \
+	@ echo Purging images from https://github.com/${REPO}/${PROJECT}/blob/${BRANCH}/README.md;
+	@- curl -s https://github.com/${REPO}/${PROJECT}/blob/${BRANCH}/README.md \
 	| grep -Eo '<img src="http[^"]+"' \
 	| grep camo | grep -Eo 'https[^"]+' \
 	| xargs -I{} -P8 curl -w '\n' -sX PURGE '{}'
