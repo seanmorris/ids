@@ -148,7 +148,7 @@ jobs:
       - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d323f6c6162656c3d70688.153230372e32
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.1
+      - run: cd ids-project && rm infra/docker/ids.___gen.dockerfile && make @test infra/docker/ids.___gen.dockerfile PHP=8.1
       - run: cd ids-project && PHP=8.1 make @test current-tag build start-bg test
 
   subproject-init-and-test_8-2:
@@ -163,7 +163,7 @@ jobs:
       - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d323f6c6162656c3d70688.153230372e32
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.2
+      - run: cd ids-project && rm infra/docker/ids.___gen.dockerfile && make @test infra/docker/ids.___gen.dockerfile PHP=8.2
       - run: cd ids-project && PHP=8.2 make @test current-tag build start-bg test
 
   self-test:
