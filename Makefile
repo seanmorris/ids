@@ -5,7 +5,8 @@
 	da dcc dcompose-config e entropy-dir_env hooks init it k kill li \
 	list-images list-tags lt pli psi pull-images push-images \
 	r rb restart restart-bg restart-fg rf run run-phar s sb sf sh start start-bg \
-	start-fg stay@% stop stop-all t tag-images test help help-% retarget
+	start-fg stay@% stop stop-all t tag-images test help help-% retarget \
+	purge-readme post-coverage
 
 .SECONDEXPANSION:
 
@@ -739,9 +740,11 @@ aptcache-build: ${PREBUILD} ${GENERABLE}### Stop apt-cache.
 
 ###
 
+purge-readme:
+	@- curl -s https://github.com/seanmorris/ids/blob/master/README.md \
+	| grep -Eo '<img src="http[^"]+"' \
+	| grep camo | grep -Eo 'https[^"]+' \
+	| xargs -I{} -P8 curl -w '\n' -sX PURGE '{}'
+
 post-coverage:
 	echo -e "$(call IMPORT_TEMPLATE,bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN} -f /tmp/coverage-report.json)"
-
-dir:
-	@ echo ${ROOTRELDIR}
-	@ ls -al ${CORERELDIR}infra/xdebug/30-xdebug-cli.ini

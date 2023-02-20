@@ -117,7 +117,6 @@ jobs:
     steps:
       - checkout
       - install-composer
-      - run: curl https://seanmorris-badger.herokuapp.com/ids/
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: cd ids-project && make @test current-tag build start-bg test
@@ -131,7 +130,6 @@ jobs:
     steps:
       - checkout
       - install-composer
-      - run: curl -X PURGE https://camo.githubusercontent.com/df5e6413e42c1af3738c1c32d36f59a2957c8.17/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d313f6c6162656c3d70688.153230372e31
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: cd ids-project && PHP=8.0 make @test current-tag build start-bg test
@@ -145,7 +143,6 @@ jobs:
     steps:
       - checkout
       - install-composer
-      - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d323f6c6162656c3d70688.153230372e32
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: cd ids-project && PHP=8.1 make @test current-tag build start-bg test
@@ -159,7 +156,6 @@ jobs:
     steps:
       - checkout
       - install-composer
-      - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d323f6c6162656c3d70688.153230372e32
       - run: composer create-project seanmorris/ids-project -s dev --remove-vcs
       - run: cd ids-project && composer require seanmorris/ids:dev-${CIRCLE_BRANCH}
       - run: cd ids-project && PHP=8.2 make @test current-tag build start-bg test
@@ -549,9 +545,10 @@ jobs:
       - run: composer install
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       - run: make @base+aptcache ct b psi
-      - run: make @dev+aptcache+graylog+inotify  ct b psi
+      - run: make @dev+aptcache+graylog+inotify ct b psi
       - run: make @prod+aptcache ct b psi
       - run: make @test+aptcache ct b psi
+      - run: purge-readme
 
   build-and-push-addons_8-0:
     parallelism: 1
@@ -568,7 +565,7 @@ jobs:
       - run: PHP=8.0 make @dev+aptcache+graylog+inotify ct b psi
       - run: PHP=8.0 make @test+aptcache ct b psi
       - run: PHP=8.0 make @prod+aptcache ct b psi
-      - run: curl -X PURGE https://camo.githubusercontent.com/df5e6413e42c1af3738c1c32d36f59a2957c8.17/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d313f6c6162656c3d70688.153230372e31
+      - run: purge-readme
 
   build-and-push-addons_8-1:
     parallelism: 1
@@ -585,7 +582,7 @@ jobs:
       - run: PHP=8.1 make @dev+aptcache+graylog+inotify ct b psi
       - run: PHP=8.1 make @test+aptcache ct b psi
       - run: PHP=8.1 make @prod+aptcache ct b psi
-      - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d323f6c6162656c3d70688.153230372e32
+      - run: purge-readme
 
   build-and-push-addons_8-2:
     parallelism: 1
@@ -602,4 +599,4 @@ jobs:
       - run: PHP=8.2 make @dev+aptcache+graylog+inotify ct b psi
       - run: PHP=8.2 make @test+aptcache ct b psi
       - run: PHP=8.2 make @prod+aptcache ct b psi
-      - run: curl -X PURGE https://camo.githubusercontent.com/f88fddd96c2b6c651d77e8bb8546e793ac725833/68747470733a2f2f7365616e6d6f7272698.1d62616467658.1e6865726f6b7561708.1e636f6d2f69648.1f6275696c642d616e642d707573685f372d323f6c6162656c3d70688.153230372e32
+      - run: purge-readme
