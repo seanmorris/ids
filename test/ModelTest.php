@@ -3,7 +3,9 @@ namespace SeanMorris\Ids\Test;
 class ModelTest extends \UnitTestCase
 {
 	protected
-		$modelIds = []
+		$package
+		, $database
+		, $modelIds = []
 		, $modelClasses = [
 			'\SeanMorris\Ids\Test\Model\Foozle'
 			, '\SeanMorris\Ids\Test\Model\Foobar'
