@@ -273,7 +273,7 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo make @test+make ct b run CMD="make @test test"
+      - run: sudo make @test+make ct b sb run CMD="make @test test"
 
   recursive-test-1_8-0:
     parallelism: 1
@@ -287,7 +287,7 @@ jobs:
       - docker-permissions
       - run: composer install
       - run: make -B @test infra/docker/ids.___gen.dockerfile PHP=8.0
-      - run: sudo PHP=8.0 make @test+make ct b run CMD="make @test test"
+      - run: sudo PHP=8.0 make @test+make ct b sb run CMD="make @test test"
 
   recursive-test-1_8-1:
     parallelism: 1
@@ -301,7 +301,7 @@ jobs:
       - docker-permissions
       - run: composer install
       - run: make -B @test infra/docker/ids.___gen.dockerfile PHP=8.1
-      - run: sudo PHP=8.1 make @test+make ct b run CMD="make @test test"
+      - run: sudo PHP=8.1 make @test+make ct b sb run CMD="make @test test"
 
   recursive-test-1_8-2:
     parallelism: 1
@@ -315,7 +315,7 @@ jobs:
       - docker-permissions
       - run: composer install
       - run: make -B @test infra/docker/ids.___gen.dockerfile PHP=8.2
-      - run: sudo PHP=8.2 make @test+make ct b run CMD="make @test test"
+      - run: sudo PHP=8.2 make @test+make ct b sb run CMD="make @test test"
 
   recursive-test-2:
     parallelism: 1
@@ -328,7 +328,7 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo make @test+inotify+make run CMD="make @test+make run CMD=\"make test\""
+      - run: sudo make @test+inotify+make b sb run CMD="make @test+make run CMD=\"make test\""
 
   recursive-test-2_8-0:
     parallelism: 1
@@ -342,7 +342,7 @@ jobs:
       - docker-permissions
       - run: composer install
       - run: make -B @test infra/docker/ids.___gen.dockerfile PHP=8.0
-      - run: sudo PHP=8.0 make @test+make run CMD="make @test+make run CMD=\"make test\""
+      - run: sudo PHP=8.0 make @test+make b sb run CMD="make @test+make run CMD=\"make test\""
 
   recursive-test-2_8-1:
     parallelism: 1
@@ -356,7 +356,7 @@ jobs:
       - docker-permissions
       - run: composer install
       - run: make -B @test infra/docker/ids.___gen.dockerfile PHP=8.1
-      - run: sudo PHP=8.1 make @test+make run CMD="make @test+make run CMD=\"make test\""
+      - run: sudo PHP=8.1 make @test+make b sb run CMD="make @test+make run CMD=\"make test\""
 
   recursive-test-2_8-2:
     parallelism: 1
@@ -370,7 +370,7 @@ jobs:
       - docker-permissions
       - run: composer install
       - run: make -B @test infra/docker/ids.___gen.dockerfile PHP=8.2
-      - run: sudo PHP=8.2 make @test+make run CMD="make @test+make run CMD=\"make test\""
+      - run: sudo PHP=8.2 make @test+make b sb run CMD="make @test+make run CMD=\"make test\""
 
   recursive-test-3:
     parallelism: 1
@@ -383,7 +383,7 @@ jobs:
       - install-composer
       - docker-permissions
       - run: composer install
-      - run: sudo make @test+make run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
+      - run: sudo make @test+make b sb run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
 
   recursive-test-3_8-0:
     parallelism: 1
@@ -397,7 +397,7 @@ jobs:
       - docker-permissions
       - run: composer install
       - run: make -B @test infra/docker/ids.___gen.dockerfile PHP=8.0
-      - run: sudo PHP=8.0 make @test+make run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
+      - run: sudo PHP=8.0 make @test+make b sb run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
 
   recursive-test-3_8-1:
     parallelism: 1
@@ -411,7 +411,7 @@ jobs:
       - docker-permissions
       - run: composer install
       - run: make -B @test infra/docker/ids.___gen.dockerfile PHP=8.1
-      - run: sudo PHP=8.1 make @test+make run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
+      - run: sudo PHP=8.1 make @test+make b sb run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
 
   recursive-test-3_8-2:
     parallelism: 1
@@ -425,7 +425,7 @@ jobs:
       - docker-permissions
       - run: composer install
       - run: make -B @test infra/docker/ids.___gen.dockerfile PHP=8.2
-      - run: sudo PHP=8.2 make @test+make run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
+      - run: sudo PHP=8.2 make @test+make b sb run CMD="make @test+make run CMD=\"make @test+make run CMD=\\\"make test\\\"\""
 
   addon-test:
     parallelism: 1
@@ -440,7 +440,7 @@ jobs:
       - run: make @base+aptcache ct b
       - run: make @dev+aptcache+graylog+inotify ct b
       - run: make @test+aptcache ct b
-      - run: make @test+aptcache+graylog+inotify ct t
+      - run: make @test+aptcache+graylog+inotify ct sb t
 
   addon-test_8-0:
     parallelism: 1
@@ -456,7 +456,7 @@ jobs:
       - run: PHP=8.0 make @base+aptcache ct b
       - run: PHP=8.0 make @dev+aptcache+graylog+inotify ct b
       - run: PHP=8.0 make @test+aptcache ct b
-      - run: PHP=8.0 make @test+aptcache+graylog+inotify ct t
+      - run: PHP=8.0 make @test+aptcache+graylog+inotify ct sb t
 
   addon-test_8-1:
     parallelism: 1
@@ -472,7 +472,7 @@ jobs:
       - run: PHP=8.1 make @base+aptcache ct b
       - run: PHP=8.1 make @dev+aptcache+graylog+inotify ct b
       - run: PHP=8.1 make @test+aptcache ct b
-      - run: PHP=8.1 make @test+aptcache+graylog+inotify ct t
+      - run: PHP=8.1 make @test+aptcache+graylog+inotify ct sb t
 
   addon-test_8-2:
     parallelism: 1
@@ -488,7 +488,7 @@ jobs:
       - run: PHP=8.2 make @base+aptcache ct b
       - run: PHP=8.2 make @dev+aptcache+graylog+inotify ct b
       - run: PHP=8.2 make @test+aptcache ct b
-      - run: PHP=8.2 make @test+aptcache+graylog+inotify ct t
+      - run: PHP=8.2 make @test+aptcache+graylog+inotify ct sb t
 
   build-and-push:
     parallelism: 1
