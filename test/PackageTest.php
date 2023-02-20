@@ -2,7 +2,7 @@
 namespace SeanMorris\Ids\Test;
 class PackageTest extends \UnitTestCase
 {
-	protected $setUp, $package, $datanbase;
+	protected $setUp, $package, $database;
 
 	public function setUp()
 	{
