@@ -1,7 +1,7 @@
 <?php
 namespace SeanMorris\Ids;
 
-#[AllowDynamicProperties]
+#[\AllowDynamicProperties]
 class LogMeta
 {
 	public function __construct($data)
