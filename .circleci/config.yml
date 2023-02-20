@@ -583,9 +583,9 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - run: PHP=8.0 composer install
       - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.0
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=8.0 composer install
       - run: PHP=8.0 make @base+aptcache ct b psi
       - run: PHP=8.0 make @dev+aptcache+graylog+inotify ct b psi
       - run: PHP=8.0 make @test+aptcache ct b psi
@@ -601,9 +601,9 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - run: PHP=8.1 composer install
       - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.1
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=8.1 composer install
       - run: PHP=8.1 make @base+aptcache ct b psi
       - run: PHP=8.1 make @dev+aptcache+graylog+inotify ct b psi
       - run: PHP=8.1 make @test+aptcache ct b psi
@@ -619,9 +619,9 @@ jobs:
     steps:
       - checkout
       - install-composer
+      - run: PHP=8.2 composer install
       - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.2
       - run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run: PHP=8.2 composer install
       - run: PHP=8.2 make @base+aptcache ct b psi
       - run: PHP=8.2 make @dev+aptcache+graylog+inotify ct b psi
       - run: PHP=8.2 make @test+aptcache ct b psi
