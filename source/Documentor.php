@@ -6,7 +6,7 @@ class Documentor
 	{
 		$namespace = str_replace('/', '\\', $namespace);
 
-		$allClasses = \SeanMorris\Ids\Linker::classes(':');
+		$allClasses = \SeanMorris\Ids\Linker::classes('');
 		$allClasses = (array) ($allClasses->{''} ?? []);
 
 		if($namespace)

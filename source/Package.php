@@ -635,7 +635,6 @@ class Package
 
 		if(($vars = json_decode($varsJson)))
 		{
-
 			$currentVar = $vars;
 
 			while($varName = array_shift($varPath))
