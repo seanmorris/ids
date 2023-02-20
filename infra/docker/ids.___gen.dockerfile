@@ -5,7 +5,7 @@ ARG ROOTRELDIR
 ARG IDS_APT_PROXY_HOST
 ARG IDS_APT_PROXY_PORT
 
-FROM debian:bookworm-20230208-slim as base
+FROM debian:bullseye-20211220-slim as base
 MAINTAINER Sean Morris <sean@seanmorr.is>
 
 SHELL ["/bin/bash", "-c"]

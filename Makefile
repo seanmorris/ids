@@ -12,7 +12,7 @@
 SHELL     =/bin/bash
 MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 
-BASELINUX ?= debian:bookworm-20230208-slim
+BASELINUX ?= debian:bullseye-20211220-slim
 PHP       ?= 8.1
 
 CORERELDIR:=$(dir $(lastword $(MAKEFILE_LIST)))
