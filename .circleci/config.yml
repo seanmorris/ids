@@ -198,7 +198,6 @@ jobs:
       - checkout
       - install-composer
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.0
       - run: PHP=8.0 make @base ct b
       - run: PHP=8.0 make @dev ct b
       - run: PHP=8.0 make @prod ct b
@@ -222,7 +221,6 @@ jobs:
       - checkout
       - install-composer
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.1
       - run: PHP=8.1 make @base ct b
       - run: PHP=8.1 make @dev ct b
       - run: PHP=8.1 make @prod ct b
@@ -246,7 +244,6 @@ jobs:
       - checkout
       - install-composer
       - run: composer install
-      - run: rm infra/docker/ids.___gen.dockerfile; make @test infra/docker/ids.___gen.dockerfile PHP=8.2
       - run: PHP=8.2 make @base ct b
       - run: PHP=8.2 make @dev ct b
       - run: PHP=8.2 make @prod ct b
