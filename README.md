@@ -27,6 +27,7 @@
 
 ![php 8.0 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_8-0?label=php%208.0)
 ![php 8.1 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_8-1?label=php%208.1)
+![php 8.1 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_8-2?label=php%208.2)
 
 <!-- /badges -->
 
@@ -1492,8 +1493,8 @@ Language                      files          blank        comment           code
 SVG                              30              0           8957          65159
 PHP                             111           3478            510          14776
 JSON                             12              0              0          13051
-Markdown                          3            983             16           2006
-YAML                             27             99             11            943
+Markdown                          3            983             16           2007
+YAML                             27            107             11           1103
 make                              2            145              9            611
 Dockerfile                       12             94              6            437
 Properties                        2              0              0             46
@@ -1505,7 +1506,7 @@ HTML                              1              0              0             13
 CSS                               1              0              0              1
 JavaScript                        1              0              0              1
 --------------------------------------------------------------------------------
-SUM:                            214           4825           9526          97146
+SUM:                            214           4833           9526          97307
 --------------------------------------------------------------------------------
 ```
-*built by sean @ Sun Feb 19 10:54:15 PM EST 2023*
+*built by sean @ Mon Feb 20 05:12:21 AM EST 2023*
