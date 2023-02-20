@@ -286,6 +286,14 @@ $existingErrorHandler = set_error_handler(
 			return TRUE;
 		}
 
+		$themePath = IDS_ROOT . '/vendor/seanmorris/theme';
+
+		if($themePath === substr($errorFile, 0, strlen($themePath))
+			&& ($errorNumber === E_NOTICE || $errorNumber === E_WARNING)
+		){
+			return TRUE;
+		}
+
 		if(function_exists('xdebug_break'))
 		{
 			xdebug_break();
