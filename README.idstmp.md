@@ -27,6 +27,7 @@
 
 ![php 8.0 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_8-0?label=php%208.0)
 ![php 8.1 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_8-1?label=php%208.1)
+![php 8.1 tests](https://seanmorris-badger.herokuapp.com/ids/build-and-push_8-2?label=php%208.2)
 
 <!-- /badges -->
 
