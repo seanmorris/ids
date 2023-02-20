@@ -7,4 +7,5 @@ vendor/*
 infra/apt/cache
 !./config/.env*.default
 /vendor/
-/nbproject/private/
+/nbproject/
+/data/tmp/*
