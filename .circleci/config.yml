@@ -15,7 +15,7 @@ commands:
     steps:
       - run: | #!bash
           sudo chgrp docker /usr/bin/docker  /var/run/docker.sock;
-          sudo chmod    555 /usr/bin/docker  /var/run/docker.sock;
+          sudo chmod    666 /usr/bin/docker  /var/run/docker.sock;
           sudo usermod -aG docker $USER;
           sudo find . -type d -exec chmod o-rwx  {} \;
           sudo find . -type f -exec chmod o-rwx  {} \;
