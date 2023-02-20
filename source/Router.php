@@ -5,6 +5,7 @@ class Router
 	protected
 		$path
 		, $routes
+		, $request
 		, $parent
 		, $child
 		, $routedTo
