@@ -2,6 +2,8 @@
 namespace SeanMorris\Ids\Test;
 class DirectoryTest extends \UnitTestCase
 {
+	protected $package, $globalDir, $localDir, $testFilename;
+
 	public function setUp()
 	{
 		$this->package = \SeanMorris\Ids\Package::get('SeanMorris\Ids');
